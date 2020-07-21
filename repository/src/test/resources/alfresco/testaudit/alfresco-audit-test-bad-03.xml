@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Default Audit Configuration -->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+
+    <Application name="Alfresco Test Bad 03" key="test-bad-03">
+        <AuditPath key="1.1">
+            <AuditPath key="2.1">
+                <RecordValue key="value.1" dataExtractor="simpleValue"/>
+            </AuditPath>
+            <AuditPath key="2.1">
+                <RecordValue key="value.1" dataExtractor="simpleValue"/>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+</Audit>

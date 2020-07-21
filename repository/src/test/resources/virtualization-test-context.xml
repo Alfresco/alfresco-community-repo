@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+   <!--import needed test contexts here -->
+   <!--CM Form Engine -->
+   <bean id="typeAndAspectsFormProcessor" class="org.alfresco.repo.virtual.TypeAndAspectsFormProcessor" parent="baseFormProcessor">
+      <property name="filterRegistry" ref="typeFilterRegistry" />
+      <property name="mimetypeService" ref="mimetypeService" />
+      <property name="repository" ref="repositoryHelper" />
+      <property name="matchPattern">
+         <value>typeAndAspects</value>
+      </property>
+   </bean>
+
+   <bean id="virtualizationConfigTestBootstrap" class="org.alfresco.repo.virtual.VirtualizationConfigTestBootstrap">
+      <property name="virtualFoldersEnabled" value="${smart.folders.enabled}" />
+      <property name="systemTemplatesPath">
+         <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
+            <property name="path" value="${smart.folders.config.system.templates.path}" />
+         </bean>
+      </property>
+      <property name="systemTemplateType" value="${smart.folders.config.system.templates.template.type}" />
+      <property name="typeTemplatesPath">
+         <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
+            <property name="path" value="${smart.folders.config.type.templates.path}" />
+         </bean>
+      </property>
+      <property name="downloadAssocaiationsFolder">
+         <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
+            <property name="path" value="${smart.download.associations.folder}" />
+         </bean>
+      </property>
+      <property name="typeTemplatesQNameFilter" value="${smart.folders.config.type.templates.qname.filter}" />
+   </bean>
+   <bean id="test.config.hash.store" class="org.alfresco.repo.virtual.ref.HashStoreConfiguration.HashStoreConfigurationBean">
+      <property name="classpathsHashes" value="/org/alfresco/repo/virtual/template->8,/org/alfresco/repo/virtual/template/testTemplate1.json->9"/>
+   </bean>
+</beans>

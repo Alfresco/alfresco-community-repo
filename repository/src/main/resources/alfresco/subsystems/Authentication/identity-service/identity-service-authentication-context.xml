@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+   <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent"
+      parent="authenticationComponentBase">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="defaultAdministratorUserNameList">
+         <value>${token.authentication.defaultAdministratorUserNames}</value>
+      </property>
+      <property name="active">
+         <value>${identity-service.authentication.enabled}</value>
+      </property>
+      <property name="allowGuestLogin">
+         <value>${identity-service.authentication.allowGuestLogin}</value>
+      </property>
+      <property name="authenticatorAuthzClient">
+         <ref bean="authenticatorAuthzClient"/>
+      </property>
+   </bean>
+
+   <bean name="authenticatorAuthzClient" class="org.alfresco.repo.security.authentication.identityservice.AuthenticatorAuthzClientFactoryBean">
+      <property name="identityServiceConfig">
+         <ref bean="identityServiceConfig" />
+      </property>
+      <property name="enabled">
+         <value>${identity-service.authentication.enable-username-password-authentication:true}</value>
+      </property>
+   </bean>
+
+   <!-- Wrapped version to be used within subsystem -->
+   <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+         </list>
+      </property>
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="target">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Authentication service for chaining -->
+   <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+      <property name="ticketComponent">
+         <ref bean="ticketComponent" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="sysAdminParams">
+         <ref bean="sysAdminParams" />
+      </property>
+      <property name="protectedUsersCache">
+         <ref bean="protectedUsersCache" />
+      </property>
+      <property name="protectionEnabled">
+         <!-- for external authentication ignore ${authentication.protection.enabled} -->
+         <!-- the external users are already authenticated by something else -->
+         <value>false</value>
+      </property>
+      <property name="protectionLimit">
+         <value>${authentication.protection.limit}</value>
+      </property>
+      <property name="protectionPeriodSeconds">
+         <value>${authentication.protection.periodSeconds}</value>
+      </property>
+      <property name="personService">
+         <ref bean="PersonService" />
+      </property>
+   </bean>
+
+   <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">
+      <property name="globalProperties">
+         <ref bean="global-properties" />
+      </property>
+      <property name="realm">
+         <value>${identity-service.realm}</value>
+      </property>
+      <property name="realmKey">
+         <value>${identity-service.realm-public-key:#{null}}</value>
+      </property>
+      <property name="authServerUrl">
+         <value>${identity-service.auth-server-url}</value>
+      </property>
+      <property name="sslRequired">
+         <value>${identity-service.ssl-required:external}</value>
+      </property>
+      <property name="confidentialPort">
+         <value>${identity-service.confidential-port:0}</value>
+      </property>
+      <property name="resource">
+         <value>${identity-service.resource}</value>
+      </property>
+      <property name="useResourceRoleMappings">
+         <value>${identity-service.use-resource-role-mappings:false}</value>
+      </property>
+      <property name="cors">
+         <value>${identity-service.enable-cors:false}</value>
+      </property>
+      <property name="corsMaxAge">
+         <value>${identity-service.cors-max-age:-1}</value>
+      </property>
+      <property name="corsAllowedHeaders">
+         <value>${identity-service.cors-allowed-headers:#{null}}</value>
+      </property>
+      <property name="corsAllowedMethods">
+         <value>${identity-service.cors-allowed-methods:#{null}}</value>
+      </property>
+      <property name="corsExposedHeaders">
+         <value>${identity-service.cors-exposed-headers:#{null}}</value>
+      </property>
+      <property name="exposeToken">
+         <value>${identity-service.expose-token:false}</value>
+      </property>
+      <property name="bearerOnly">
+         <value>${identity-service.bearer-only:false}</value>
+      </property>
+      <property name="autodetectBearerOnly">
+         <value>${identity-service.autodetect-bearer-only:false}</value>
+      </property>
+      <property name="enableBasicAuth">
+         <value>${identity-service.enable-basic-auth:false}</value>
+      </property>
+      <property name="publicClient">
+         <value>${identity-service.public-client:false}</value>
+      </property>
+      <property name="allowAnyHostname">
+         <value>${identity-service.allow-any-hostname:false}</value>
+      </property>
+      <property name="disableTrustManager">
+         <value>${identity-service.disable-trust-manager:false}</value>
+      </property>
+      <property name="truststore">
+         <value>${identity-service.truststore:#{null}}</value>
+      </property>
+      <property name="truststorePassword">
+         <value>${identity-service.truststore-password:#{null}}</value>
+      </property>
+      <property name="clientKeystore">
+         <value>${identity-service.client-keystore:#{null}}</value>
+      </property>
+      <property name="clientKeystorePassword">
+         <value>${identity-service.client-keystore-password:#{null}}</value>
+      </property>
+      <property name="clientKeyPassword">
+         <value>${identity-service.client-key-password:#{null}}</value>
+      </property>
+      <property name="connectionPoolSize">
+         <value>${identity-service.connection-pool-size:20}</value>
+      </property>
+      <property name="alwaysRefreshToken">
+         <value>${identity-service.always-refresh-token:false}</value>
+      </property>
+      <property name="registerNodeAtStartup">
+         <value>${identity-service.register-node-at-startup:false}</value>
+      </property>
+      <property name="registerNodePeriod">
+         <value>${identity-service.register-node-period:-1}</value>
+      </property>
+      <property name="tokenStore">
+         <value>${identity-service.token-store:#{null}}</value>
+      </property>
+      <property name="principalAttribute">
+         <value>${identity-service.principal-attribute:#{null}}</value>
+      </property>
+      <property name="turnOffChangeSessionIdOnLogin">
+         <value>${identity-service.turn-off-change-session-id-on-login:false}</value>
+      </property>
+      <property name="tokenMinimumTimeToLive">
+         <value>${identity-service.token-minimum-time-to-live:0}</value>
+      </property>
+      <property name="minTimeBetweenJwksRequests">
+         <value>${identity-service.min-time-between-jwks-requests:10}</value>
+      </property>
+      <property name="publicKeyCacheTtl">
+         <value>${identity-service.public-key-cache-ttl:86400}</value>
+      </property>
+      <property name="pkce">
+         <value>${identity-service.enable-pkce:false}</value>
+      </property>
+      <property name="ignoreOAuthQueryParameter">
+         <value>${identity-service.ignore-oauth-query-parameter:false}</value>
+      </property>
+      <property name="clientConnectionTimeout">
+         <value>${identity-service.client-connection-timeout:2000}</value>
+      </property>
+      <property name="clientSocketTimeout">
+         <value>${identity-service.client-socket-timeout:2000}</value>
+      </property>
+   </bean>
+
+   <bean name="identityServiceDeployment" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceDeploymentFactoryBean">
+      <property name="identityServiceConfig">
+         <ref bean="identityServiceConfig" />
+      </property>
+   </bean>
+   
+   <!-- Enable control over mapping between request and user ID -->
+   <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper">
+      <property name="active">
+         <value>${identity-service.authentication.enabled}</value>
+      </property>
+      <property name="validationFailureSilent">
+         <value>${identity-service.authentication.validation.failure.silent}</value>
+      </property>
+      <property name="personService">
+         <ref bean="PersonService" />
+      </property>
+      <property name="identityServiceDeployment">
+         <ref bean="identityServiceDeployment" />
+      </property>
+   </bean>
+
+   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
+      <property name="nodeService" ref="nodeService" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="tenantService" ref="tenantService" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="compositePasswordEncoder" ref="compositePasswordEncoder" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="authenticationCache" ref="authenticationCache" />
+      <property name="singletonCache" ref="immutableSingletonCache"/>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+   </bean>
+</beans>

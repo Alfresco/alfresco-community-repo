@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!--
+        Bootstrap Data: Prototype beans for the per-tenant bootstrap.
+        These are fetched by the MultiTAdminServiceImpl when new tenant is created.
+   -->
+   <bean id="userBootstrap-mt" parent="userBootstrap-base" scope="prototype" />
+   <bean id="systemBootstrap-mt" parent="systemBootstrap-base" scope="prototype" />
+   <bean id="versionBootstrap-mt" parent="versionBootstrap-base" scope="prototype" />
+   <bean id="version2Bootstrap-mt" parent="version2Bootstrap-base" scope="prototype" />
+   <bean id="spacesArchiveBootstrap-mt" parent="spacesArchiveBootstrap-base" scope="prototype" />
+   <bean id="spacesBootstrap-mt" parent="spacesBootstrap-base" scope="prototype" />
+   
+   <bean id="baseMultiTAdminService" abstract="true">
+   
+      <property name="nodeService" ref="dbNodeServiceImpl"/> <!-- TODO - go direct, until we expose deleteStore via public NodeService API -->
+      <property name="dictionaryComponent" ref="dictionaryService"/>
+      <property name="authenticationContext" ref="authenticationContext"/>
+      <property name="repoAdminService" ref="RepoAdminService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="tenantAdminDAO" ref="tenantAdminDAO"/>
+      <property name="passwordEncoder" ref="passwordEncoder"/>
+      <property name="tenantFileContentStore" ref="fileContentStore"/> <!-- see 'mt-contentstore-context.xml' (or any further overrides) -->
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
+      <property name="moduleService" ref="moduleService"/>
+      <property name="baseAdminUsername" value="${alfresco_user_store.adminusername}"/>
+      <property name="thumbnailRegistry" ref="thumbnailRegistry"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <!-- note: if set then tenant are not co-mingled and all content roots will appear below this container (in <tenantdomain> sub-folder) -->
+      <property name="contentRootContainerPath" value="${dir.contentstore.tenants}"/>
+      
+      <!-- Experimental: Thor
+      <property name="tenantRoutingDataSource" ref="defaultDataSource"/>
+      -->
+   </bean>
+   
+   <bean id="baseTenantRoutingContentStore" class="org.alfresco.repo.tenant.AbstractTenantRoutingContentStore" abstract="true">
+      <property name="tenantService" ref="tenantService" />
+      <property name="tenantAdminDAO" ref="tenantAdminDAO" />
+      <property name="storesCache" ref="routingContentStoreCache" />
+      <property name="transactionService" ref="transactionService"/>
+   </bean>
+
+   <bean id="networksService" class="org.alfresco.repo.tenant.NetworksServiceImpl">
+      <property name="tenantAdminService" ref="tenantAdminService" />
+   </bean>
+</beans>

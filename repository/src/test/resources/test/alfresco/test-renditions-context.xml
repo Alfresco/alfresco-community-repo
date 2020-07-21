@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="mockRenderingEngine"
+      class="org.alfresco.repo.rendition.RenditionServicePermissionsTest$MockRenderingEngine"
+      parent="baseTransformationRenderingEngine">
+   </bean>
+
+<!-- Keep it simple. Disable retries when the mimetype is wrong and we can transform what it is actually -->
+   <bean id="localTransformServiceRegistryImpl" class="org.alfresco.repo.content.transform.LocalTransformServiceRegistry" >
+      <property name="jsonObjectMapper" ref="localTransformServiceRegistryJsonObjectMapper" />
+      <property name="pipelineConfigDir" value="${local.transform.pipeline.config.dir}" />
+      <property name="enabled" value="${local.transform.service.enabled}" />
+      <property name="cronExpression" value="${local.transform.service.cronExpression}"></property>
+      <property name="initialAndOnErrorCronExpression" value="${local.transform.service.initialAndOnError.cronExpression}"></property>
+      <property name="properties" ref="global-properties" />
+      <property name="transformerDebug" ref="transformerDebug" />
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
+      <property name="retryTransformOnDifferentMimeType" value="false"/>
+   </bean>
+
+</beans>

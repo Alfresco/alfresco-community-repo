@@ -1,0 +1,47 @@
+{
+  "transformOptions": {
+    "imageMagickOptions": [
+      {"value": {"name": "alphaRemove"}},
+      {"value": {"name": "autoOrient"}},
+      {"value": {"name": "startPage"}},
+      {"value": {"name": "endPage"}},
+      {"group": {"transformOptions": [
+        {"value": {"required": "true", "name": "cropGravity"}},
+        {"value": {"name": "cropWidth"}},
+        {"value": {"name": "cropHeight"}},
+        {"value": {"name": "cropPercentage"}},
+        {"value": {"name": "cropXOffset"}},
+        {"value": {"name": "cropYOffset"}}
+      ]}},
+      {"group": {"transformOptions": [
+        {"value": {"name": "thumbnail"}},
+        {"value": {"name": "resizeHeight"}},
+        {"value": {"name": "resizeWidth"}},
+        {"value": {"name": "resizePercentage"}},
+        {"value": {"name": "allowEnlargement"}},
+        {"value": {"name": "maintainAspectRatio"}}
+      ]}}
+    ],
+    "pdfRendererOptions": [
+      {"value": {"name": "page"}},
+      {"value": {"name": "width"}},
+      {"value": {"name": "height"}},
+      {"value": {"name": "allowPdfEnlargement"}},
+      {"value": {"name": "maintainPdfAspectRatio"}}
+    ]
+  },
+  "transformers": [
+    {
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+   Core and helper beans for the module-loading components.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- The ModuleService implementation -->
+   <bean id="moduleService" class="org.alfresco.repo.module.ModuleServiceImpl">
+      <!-- Uses ModuleComponentHelper which requires the ServiceRegistry -->
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="descriptorService" ref="DescriptorService" />
+      <property name="registryService" ref="RegistryService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
+   </bean>
+
+   <!-- Parent bean for beans derived from AbstractModuleComponent -->
+   <bean id="module.baseComponent" abstract="true" init-method="init">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="authenticationComponent" ref="AuthenticationComponent" />
+      <property name="moduleService" ref="ModuleService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
+   </bean>
+
+   <!-- Import of installed modules -->
+   
+   <!--  bootstrap context first - for any resources shared between modules like the data list model -->
+   <import resource="classpath*:alfresco/module/*/module-bootstrap-context.xml"/>
+   <!--  the main context for each module -->
+   <import resource="classpath*:alfresco/module/*/module-context.xml"/>
+   <import resource="classpath*:alfresco/module/*/module-uninstall-context.xml"/>
+
+</beans>

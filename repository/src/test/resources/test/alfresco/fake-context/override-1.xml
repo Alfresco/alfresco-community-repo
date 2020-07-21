@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Override a bean from A. However, this bean is overriden again -->
+<!-- By the next override, so doesn't really have any effect -->
+<beans>
+   <bean id="FromARefNoneNum1" class="java.lang.String">
+      <constructor-arg type="String"><value>125556</value></constructor-arg>
+   </bean>
+</beans>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.alfresco.org/repo/db-schema"
+    xmlns="http://www.alfresco.org/repo/db-schema"
+    elementFormDefault="qualified">
+    
+    <xs:annotation>
+        <xs:documentation xml:lang="EN">Schema used for describing database schemas.</xs:documentation>
+    </xs:annotation>
+    
+    <xs:complexType name="DbObject">
+        <xs:sequence>
+            <xs:element name="validators" type="ValidatorList" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    
+    <xs:complexType name="Schema">
+        <xs:complexContent>
+            <xs:extension base="DbObject">
+                <xs:sequence>
+                    <xs:element name="objects" type="DbObjectList"/>            
+                </xs:sequence>
+                <xs:attribute name="dbprefix" type="xs:token"/>
+                <xs:attribute name="version" type="xs:int"/>
+                <xs:attribute name="tablecolumnorder" type="xs:boolean" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    
+    <xs:complexType name="DbObjectList">
+        <xs:sequence>
+            <xs:element name="sequence" type="Sequence" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="table" type="Table" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>    
+    
+    
+    <xs:complexType name="Table">
+        <xs:complexContent>
+          <xs:extension base="DbObject">
+            <xs:sequence>
+                <xs:element name="columns" type="ColumnList"/>
+                <xs:element name="primarykey" type="PrimaryKey" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="foreignkeys" type="ForeignKeyList" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="indexes" type="IndexList" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    
+    <xs:complexType name="ColumnList">
+        <xs:sequence>
+            <xs:element name="column" type="Column" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    
+    <xs:complexType name="Column">
+        <xs:complexContent>
+            <xs:extension base="DbObject">
+              <xs:sequence>
+                  <xs:element name="type" type="xs:token"/>
+                  <xs:element name="nullable" type="xs:boolean"/>
+                  <xs:element name="autoincrement" type="xs:boolean"/>    
+              </xs:sequence>
+              <xs:attribute name="order" type="xs:int"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="Sequence">
+        <xs:complexContent>
+            <xs:extension base="DbObject"/>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="IndexList">
+        <xs:sequence>
+            <xs:element name="index" type="Index" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="Index">
+        <xs:complexContent>
+            <xs:extension base="DbObject">
+                <xs:sequence>
+                    <xs:element name="columnnames" type="ColumnNames"/>
+                </xs:sequence>
+                <xs:attribute name="unique" type="xs:boolean"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="PrimaryKey">
+        <xs:complexContent>
+            <xs:extension base="DbObject">
+                <xs:sequence>
+                    <xs:element name="columnnames" type="ColumnNames"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="ColumnNames">
+        <xs:sequence>
+            <xs:element name="columnname" type="ColumnName" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="ColumnName" mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:token">
+              <xs:attribute name="order" type="xs:int"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="ForeignKeyList">
+        <xs:sequence>
+            <xs:element name="foreignkey" type="ForeignKey" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="ForeignKey">
+        <xs:complexContent>
+            <xs:extension base="DbObject">
+                <xs:sequence>
+                    <xs:element name="localcolumn" type="xs:token"/>
+                    <xs:element name="targettable" type="xs:token"/>
+                    <xs:element name="targetcolumn" type="xs:token"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+            
+    <xs:complexType name="ValidatorList">
+      <xs:sequence>
+          <xs:element name="validator" type="Validator" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="Validator">
+        <xs:sequence>
+            <xs:element name="properties" type="PropertyList"/>
+        </xs:sequence>
+        <xs:attribute name="class" type="xs:normalizedString" use="required"/>
+    </xs:complexType>
+    
+    <xs:complexType name="PropertyList">
+        <xs:sequence>
+            <xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="Property">
+        <xs:simpleContent>
+            <xs:extension base="xs:normalizedString">
+                <xs:attribute name="name" type="xs:token" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    
+    
+    <!-- root element is schema -->
+    <xs:element name="schema" type="Schema"/>
+</xs:schema>

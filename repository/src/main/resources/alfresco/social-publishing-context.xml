@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Configure a Twitter service provider -->
+    <bean id="social.connect.twitter" class="org.springframework.social.twitter.connect.TwitterServiceProvider">
+        <constructor-arg value="${twitter.consumerKey}" />
+        <constructor-arg value="${twitter.consumerSecret}" />
+    </bean>
+
+    <!-- Configure a Facebook service provider -->
+    <bean id="social.connect.facebook" class="org.springframework.social.facebook.connect.FacebookServiceProvider">
+        <constructor-arg value="${facebook.appId}" />
+        <constructor-arg value="${facebook.appSecret}" />
+    </bean>
+
+</beans>

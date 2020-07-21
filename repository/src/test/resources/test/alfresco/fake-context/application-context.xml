@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- references to XML configurations -->
+<beans>
+   <import resource="classpath:test/alfresco/fake-context/context-a.xml" />
+   <import resource="classpath:test/alfresco/fake-context/context-b.xml" />
+   <import resource="classpath:test/alfresco/fake-context/context-c.xml" />
+
+<!--
+   <import resource="file:/home/nick/java/alfresco/projects/community_head/code/root/projects/repository/config/test/alfresco/fake-context/override-1.xml" />
+   <import resource="override-2.xml" />
+-->
+   <import resource="classpath:test/alfresco/fake-context/override-1.xml" />
+   <import resource="classpath:test/alfresco/fake-context/override-2.xml" />
+</beans>

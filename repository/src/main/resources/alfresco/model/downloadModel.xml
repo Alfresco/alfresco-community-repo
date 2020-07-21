@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 modelSchema.xsd" -->
+<model name="download:downloadModel" 
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+   <description>Alfresco Download Model</description>
+   <author>Alfresco</author>
+   <published>2012-07-31</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/download/1.0" prefix="download"/>
+   </namespaces>
+   
+   <types>
+      <type name="download:download">
+         <parent>cm:content</parent>
+         <archive>false</archive>
+         
+         <properties>
+            <property name="download:recursive">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>true</default>
+            </property>
+            
+            <property name="download:status">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <default>PENDING</default>
+               <constraints>
+                  <constraint type="LIST">
+                     <parameter name="allowedValues">
+                        <list>
+                           <value>PENDING</value>
+                           <value>IN_PROGRESS</value>
+                           <value>DONE</value>
+                           <value>MAX_CONTENT_SIZE_EXCEEDED</value>
+                           <value>CANCELLED</value>
+                        </list>
+                     </parameter>
+                  </constraint>
+               </constraints>
+            </property>
+            
+            <property name="download:sequenceNumber">
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
+            </property>
+            
+            <property name="download:done">
+               <type>d:long</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
+            </property>
+
+            <property name="download:total">
+               <type>d:long</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
+            </property>
+
+            <property name="download:filesAdded">
+               <type>d:long</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
+            </property>
+
+            <property name="download:totalFiles">
+               <type>d:long</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
+            </property>
+
+            <property name="download:cancelled">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>false</default>
+            </property>
+         </properties>
+         <associations>
+            <!-- This association points to each noderef which is a member of the sync set -->
+            <association name="download:requestedNodes">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
+      </type>
+   </types>
+</model>

@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.audit">
+
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+    
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_AuditModel" type="AuditModel">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentDataId" column="content_data_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentCrc" column="content_crc" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result_AuditApplication" type="AuditApplication">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+        <result property="applicationNameId" column="app_name_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditModelId" column="audit_model_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="disabledPathsId" column="disabled_paths_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_AuditEntry" type="AuditEntry">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditApplicationId" column="audit_app_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditUserId" column="audit_user_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="auditTime" column="audit_time" jdbcType="BIGINT" javaType="long"/>
+        <result property="auditValuesId" column="audit_values_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result_AuditQueryNoValues" type="AuditQueryResult">
+        <result property="auditAppNameId" column="audit_app_name_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="auditEntryId" column="audit_entry_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="auditUserId" column="audit_user_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="auditTime" column="audit_time" jdbcType="BIGINT" javaType="long"/>
+        <result property="auditValuesId" column="audit_values_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result_AuditQueryAllValues"
+               extends="alfresco.audit.result_AuditQueryNoValues"
+               type="AuditQueryResult">
+        <association property="auditValueRows" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
+    </resultMap>
+    <resultMap id="result_minMaxMap" type="java.util.HashMap">
+        <result property="min" column="min" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="max" column="max" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter_IdMap" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+
+    <parameterMap id="parameter_IdMinMaxMap" type="map">
+        <parameter property="auditAppId" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="min" jdbcType="VARCHAR" javaType="String"/>
+        <parameter property="max" jdbcType="VARCHAR" javaType="String"/>
+    </parameterMap>
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_AuditModel_AutoIncrement">
+        insert into alf_audit_model (content_data_id, content_crc) 
+        values (#{contentDataId}, #{contentCrc})
+    </sql>
+    
+    <sql id="insert_AuditModel_Sequence">
+        insert into alf_audit_model (id, content_data_id, content_crc) 
+        values (#{id}, #{contentDataId}, #{contentCrc})
+    </sql>
+    
+    <sql id="insert_AuditApplication_AutoIncrement">
+        insert into alf_audit_app (version, app_name_id, audit_model_id, disabled_paths_id) 
+        values (#{version}, #{applicationNameId}, #{auditModelId}, #{disabledPathsId})
+    </sql>
+    
+    <sql id="insert_AuditApplication_Sequence">
+        insert into alf_audit_app (id, version, app_name_id, audit_model_id, disabled_paths_id) 
+        values (#{id}, #{version}, #{applicationNameId}, #{auditModelId}, #{disabledPathsId})
+    </sql>
+    
+    <sql id="insert_AuditEntry_AutoIncrement">
+        insert into alf_audit_entry (audit_app_id, audit_user_id, audit_time, audit_values_id) 
+        values (#{auditApplicationId}, #{auditUserId}, #{auditTime}, #{auditValuesId})
+    </sql>
+    
+    <sql id="insert_AuditEntry_Sequence">
+        insert into alf_audit_entry (id, audit_app_id, audit_user_id, audit_time, audit_values_id) 
+        values (#{id}, #{auditApplicationId}, #{auditUserId,jdbcType=BIGINT}, #{auditTime}, #{auditValuesId,jdbcType=BIGINT})
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <!-- Get the audit model by the CRC value -->
+    <select id="select_AuditModelByCrc" parameterType="AuditModel" resultMap="result_AuditModel">
+        select
+            *
+        from
+            alf_audit_model
+        where
+            content_crc = #{contentCrc}
+    </select>
+
+    <!-- Get the audit application by ID -->
+    <select id="select_AuditApplicationById" parameterMap="parameter_IdMap" resultMap="result_AuditApplication">
+        select
+            *
+        from
+            alf_audit_app
+        where
+            id = ?
+    </select>
+
+    <!-- Get the audit application by name ID -->
+    <select id="select_AuditApplicationByNameId" parameterMap="parameter_IdMap" resultMap="result_AuditApplication">
+        select
+            *
+        from
+            alf_audit_app
+        where
+            app_name_id = ?
+    </select>
+
+    <!-- Optimistic update of the audit application -->
+    <update id="update_AuditApplication" parameterType="AuditApplication">
+        update
+            alf_audit_app
+        set
+            version = #{version},
+            app_name_id = #{applicationNameId},
+            audit_model_id = #{auditModelId},
+            disabled_paths_id = #{disabledPathsId}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    
+    <delete id="delete_AuditEntries" parameterType="AuditDeleteParameters">
+       delete
+       from
+           alf_audit_entry
+       <where>
+           <if test="auditApplicationId != null">
+               audit_app_id = #{auditApplicationId}
+           </if>
+           <if test="auditFromTime != null">
+               <![CDATA[and audit_time >= #{auditFromTime}]]>
+           </if>
+           <if test="auditToTime != null">
+               <![CDATA[and audit_time < #{auditToTime}]]>
+           </if>
+           <if test="auditFromId != null">
+               <![CDATA[and id >= #{auditFromId}]]>
+           </if>
+           <if test="auditToId != null">
+               <![CDATA[and id < #{auditToId}]]>
+           </if>
+       </where>
+    </delete>
+    
+    
+    <delete id="delete_AuditEntriesById" parameterType="AuditDeleteParameters">
+       delete
+       from
+           alf_audit_entry
+       <where>
+            id in 
+            <foreach item="item" index="index" collection="auditEntryIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+       </where>
+    </delete>
+    
+    
+    <sql id="select_AuditEntriesWhereSnippet">
+        <where>
+            <if test="auditAppNameId != null">
+                app.app_name_id = #{auditAppNameId}
+            </if>
+            <if test="auditUserId != null">
+                and entry.audit_user_id = #{auditUserId}
+            </if>
+           <if test="auditFromId != null">
+                <![CDATA[and entry.id >= #{auditFromId}]]>
+            </if>
+            <if test="auditToId != null">
+                <![CDATA[and entry.id < #{auditToId}]]>
+            </if>
+            <if test="auditFromTime != null">
+                <![CDATA[and entry.audit_time >= #{auditFromTime}]]>
+            </if>
+            <if test="auditToTime != null">
+                <![CDATA[and entry.audit_time < #{auditToTime}]]>
+            </if>
+            <if test="searchKeyId != null">
+                and sp_pl.key_prop_id = #{searchKeyId}
+            </if>
+            <if test="searchValueId != null">
+                and sp_pl.value_prop_id = #{searchValueId}
+            </if>
+        </where>
+    </sql>
+    
+    <sql id="select_AuditEntriesOrderBySnippet">
+        <if test="forward == forwardTrue">
+        order by
+            entry.id asc
+        </if>
+        <if test="forward != forwardTrue">
+        order by
+            entry.id desc
+        </if>
+    </sql>
+
+    <sql id="select_AuditEntriesWithValuesCommon">
+        select
+            app.app_name_id             as audit_app_name_id,
+            entry.id                    as audit_entry_id,
+            entry.audit_user_id         as audit_user_id,
+            entry.audit_time            as audit_time,
+            entry.audit_values_id       as audit_values_id,
+
+            pl.root_prop_id             as link_root_prop_id,
+            pl.prop_index               as link_prop_index,
+            pl.contained_in             as link_contained_in,
+            pl.key_prop_id              as link_key_prop_id,
+            pl.value_prop_id            as link_value_prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value,
+            sv.string_value             as prop_string_value,
+            serv.serializable_value     as prop_serializable_value
+        from
+            alf_audit_app app
+            join alf_audit_entry entry on (entry.audit_app_id = app.id)
+            
+        <if test="keyOrValueSearch == true">
+            join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
+        </if>
+        
+            join alf_prop_link pl on (pl.root_prop_id = entry.audit_values_id)
+            join alf_prop_value pv on (pl.value_prop_id = pv.id)
+            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
+            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
+        <include refid="select_AuditEntriesWhereSnippet"/>
+        <include refid="select_AuditEntriesOrderBySnippet"/>
+    </sql>
+
+    <sql id="select_AuditEntriesWithoutValuesCommon">
+        select
+            app.app_name_id             as audit_app_name_id,
+            entry.id                    as audit_entry_id,
+            entry.audit_user_id         as audit_user_id,
+            entry.audit_time            as audit_time,
+            entry.audit_values_id       as audit_values_id
+        from
+            alf_audit_app app
+            join alf_audit_entry entry on (entry.audit_app_id = app.id)
+            
+        <if test="keyOrValueSearch == true">
+            join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
+        </if>
+        
+        <include refid="select_AuditEntriesWhereSnippet"/>
+        <include refid="select_AuditEntriesOrderBySnippet"/>
+    </sql>
+
+    <!-- Get the maximum/minimum audit entry id for application -->
+    <select id="select_MinMaxAuditEntryId" parameterMap="parameter_IdMinMaxMap" resultMap="result_minMaxMap">
+        select
+        <if test="max != null">
+            max(alf_audit_entry.id)
+        </if>
+        <if test="max != null and min != null">
+            ,
+        </if>
+        <if test="min != null">
+            min(alf_audit_entry.id)
+        </if>
+        from
+        alf_audit_entry
+        where
+        alf_audit_entry.audit_app_id = #{auditAppId}
+    </select>
+
+</mapper>

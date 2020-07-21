@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Folder Listing Sample</shortname>
+  <description>Sample demonstrating the listing of folder contents</description>
+  <url>/sample/folder/{path}</url>
+  <format default="html">argument</format>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+  <lifecycle>sample</lifecycle>
+</webscript>

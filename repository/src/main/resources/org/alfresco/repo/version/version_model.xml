@@ -1,0 +1,178 @@
+<model name="ver:versionmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- deprecated -->
+	
+   <description>Alfresco Version Store Model</description>
+   <author>Alfresco</author>
+   <published>2005-05-30</published>
+   <version>0.1</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/versionstore/1.0" prefix="ver"/>
+   </namespaces>
+
+   <types>
+      
+	  <type name="ver:versionMetaDataValue">
+         <parent>sys:base</parent>         
+         <properties>
+            <property name="ver:metaDataName">
+               <type>d:text</type>
+            </property>
+            <property name="ver:metaDataValue">
+               <type>d:any</type>
+            </property>
+         </properties>
+      </type>
+	  
+      <type name="ver:versionedProperty">
+         <parent>sys:base</parent>         
+         <properties>
+            <property name="ver:qname">
+               <type>d:qname</type>
+            </property>
+            <property name="ver:value">
+               <type>d:any</type>
+            </property>
+            <property name="ver:multiValue">
+               <type>d:any</type>               
+               <multiple>true</multiple>
+            </property>
+            <property name="ver:isMultiValue">
+               <type>d:boolean</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="ver:versionedAssoc">
+         <parent>sys:reference</parent>         
+         <properties>
+            <property name="ver:assocQName">
+               <type>d:qname</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="ver:versionedChildAssoc">
+         <parent>ver:versionedAssoc</parent>         
+         <properties>
+            <property name="ver:isPrimary">
+               <type>d:boolean</type>
+            </property>
+            <property name="ver:nthSibling">
+               <type>d:int</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="ver:version">
+         <parent>sys:container</parent>         
+         <properties>
+            <property name="ver:versionNumber">
+               <type>d:int</type>
+            </property>
+            <property name="ver:versionLabel">
+               <type>d:text</type>
+            </property>
+            <property name="ver:frozenNodeId">
+               <type>d:text</type>
+            </property>
+            <property name="ver:frozenNodeStoreId">
+               <type>d:text</type>
+            </property>
+            <property name="ver:frozenNodeStoreProtocol">
+               <type>d:text</type>
+            </property>
+            <property name="ver:frozenNodeType">
+               <type>d:qname</type>
+            </property>
+            <property name="ver:frozenAspects">
+               <type>d:qname</type>
+               <multiple>true</multiple>
+            </property>
+         </properties>	
+         <associations>
+   			<child-association name="ver:versionMetaData">
+               <target>
+                  <class>ver:versionMetaDataValue</class>
+               </target>
+            </child-association>
+            <child-association name="ver:versionedAttributes">
+               <target>
+                  <class>ver:versionedProperty</class>
+               </target>
+            </child-association>
+            <child-association name="ver:versionedChildAssocs">
+               <target>
+                  <class>ver:versionedChildAssoc</class>
+               </target>
+            </child-association>
+            <child-association name="ver:versionedAssocs">
+               <target>
+                  <class>ver:versionedAssoc</class>
+               </target>
+            </child-association>
+            <association name="ver:successor">
+               <target>
+                  <class>ver:version</class>
+               </target>
+            </association>
+         </associations>
+		 
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="ver:versionHistory">
+         <parent>cm:cmobject</parent>
+         
+         <properties>
+            <property name="ver:versionedNodeId">
+               <type>d:text</type>
+            </property>
+         </properties>
+       
+         <associations>
+            <child-association name="ver:version">
+               <target>
+                  <class>ver:version</class>
+               </target>
+            </child-association>
+            <association name="ver:rootVersion">
+               <target>
+                  <class>ver:version</class>
+               </target>
+            </association>
+         </associations>  
+      </type>
+      
+   </types>
+   
+   <aspects>
+      <aspect name="ver:versionStoreRoot">
+         <title>Version Store Root</title>
+         <associations>
+            <child-association name="ver:versionHistory">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>ver:versionHistory</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </aspect>
+   </aspects>    
+   
+</model>

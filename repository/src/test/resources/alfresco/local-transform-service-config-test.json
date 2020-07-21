@@ -1,0 +1,129 @@
+{
+  "transformOptions": {
+    "imageMagickOptions": [
+      {"value": {"name": "alphaRemove"}},
+      {"value": {"name": "autoOrient"}},
+      {"value": {"name": "startPage"}},
+      {"value": {"name": "endPage"}},
+      {"group": {"transformOptions": [
+        {"value": {"name": "cropGravity"}},
+        {"value": {"name": "cropWidth"}},
+        {"value": {"name": "cropHeight"}},
+        {"value": {"name": "cropPercentage"}},
+        {"value": {"name": "cropXOffset"}},
+        {"value": {"name": "cropYOffset"}}
+      ]}},
+      {"group": {"transformOptions": [
+        {"value": {"name": "thumbnail"}},
+        {"value": {"name": "resizeHeight"}},
+        {"value": {"name": "resizeWidth"}},
+        {"value": {"name": "resizePercentage"}},
+        {"value": {"name": "allowEnlargement"}},
+        {"value": {"name": "maintainAspectRatio"}}
+      ]}}
+    ],
+    "tikaOptions": [
+      {"value": {"name": "transform"}},
+      {"value": {"name": "includeContents"}},
+      {"value": {"name": "notExtractBookmarksText"}},
+      {"value": {"name": "targetMimetype"}},
+      {"value": {"name": "targetEncoding"}}
+    ],
+    "pdfRendererOptions": [
+      {"value": {"name": "page"}},
+      {"value": {"name": "width"}},
+      {"value": {"name": "height"}},
+      {"value": {"name": "allowPdfEnlargement"}},
+      {"value": {"name": "maintainPdfAspectRatio"}}
+    ]
+  },
+  "transformers": [
+    {
+      "transformerName": "imagemagick",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "image/gif",  "targetMediaType": "image/gif" },
+        {"sourceMediaType": "image/gif",  "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "image/gif",  "targetMediaType": "image/png" },
+        {"sourceMediaType": "image/gif",  "targetMediaType": "image/tiff"},
+
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/gif" },
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png" },
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/tiff"},
+
+        {"sourceMediaType": "image/png",  "targetMediaType": "image/gif" },
+        {"sourceMediaType": "image/png",  "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "image/png",  "targetMediaType": "image/png" },
+        {"sourceMediaType": "image/png",  "targetMediaType": "image/tiff"},
+
+        {"sourceMediaType": "image/tiff", "targetMediaType": "image/gif" },
+        {"sourceMediaType": "image/tiff", "targetMediaType": "image/tiff"},
+        {"sourceMediaType": "source", "priority": "60","targetMediaType": "target1" },
+        {"sourceMediaType": "source", "priority": "50","targetMediaType": "target2" },
+        {"sourceMediaType": "source", "priority": "55","targetMediaType": "target3" }
+      ],
+      "transformOptions": [
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "tika",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/pdf",                           "maxSourceSizeBytes": 26214400, "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/msword",                                                        "targetMediaType": "text/plain"},
+        {"sourceMediaType": "application/vnd.ms-excel",                                                  "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.ms-powerpoint",                                             "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",   "targetMediaType": "text/plain"},
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",         "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                "targetMediaType": "text/plain"},
+        {"sourceMediaType": "source", "priority": "55","targetMediaType": "target1" },
+        {"sourceMediaType": "source", "priority": "60","targetMediaType": "target2" },
+        {"sourceMediaType": "source", "priority": "50","targetMediaType": "target3" }
+      ],
+      "transformOptions": [
+        "tikaOptions"
+      ]
+    },
+    {
+      "transformerName": "pdfrenderer",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" },
+        {"sourceMediaType": "source", "priority": "50","targetMediaType": "target1" },
+        {"sourceMediaType": "source", "priority": "55","targetMediaType": "target2" },
+        {"sourceMediaType": "source", "priority": "60","targetMediaType": "target3" }
+      ],
+      "transformOptions": [
+        "pdfRendererOptions"
+      ]
+    },
+    {
+      "transformerName": "libreoffice",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/msword",                                                                                        "targetMediaType": "application/msword" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",                                   "targetMediaType": "application/msword" },
+        {"sourceMediaType": "application/msword",                                                        "maxSourceSizeBytes": 10485760, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.ms-excel",                                                  "maxSourceSizeBytes": 10485760, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/vnd.ms-powerpoint",                                             "maxSourceSizeBytes":  6291456, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",   "maxSourceSizeBytes":   786432, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",         "maxSourceSizeBytes":  1572864, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "maxSourceSizeBytes":  4194304, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                                                "targetMediaType": "application/pdf"}
+      ]
+    },
+    {
+      "transformerName": "officeToImageViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfrenderer", "targetMediaType": "image/png"},
+        {"transformerName": "imagemagick"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    }
+  ]
+}

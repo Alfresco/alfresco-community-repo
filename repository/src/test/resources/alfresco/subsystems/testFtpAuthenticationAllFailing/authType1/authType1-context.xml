@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <!-- Test FTP authentication -->
+   <bean id="testFtpAuthenticator" class="org.alfresco.filesys.auth.ftp.TestFtpAuthenticator" parent="ftpAuthenticatorBase">
+      <property name="active">
+         <value>${authType1.testAuthentication.authenticateFTP}</value>
+      </property>
+      <property name="authenticateAs">
+         <value>false</value>
+      </property>
+   </bean>
+</beans>

@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--
+        Job definition to import people and groups from one or more external user registries in the authentication chain
+        (e.g. LDAP directory)
+    -->
+
+    <bean id="ldapSyncSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <bean id="syncTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="cronExpression" value="${synchronization.import.cron}"/>
+                    <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+                    <property name="jobDetail">
+                        <bean id="ldapPeopleJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                            <property name="jobClass" value="org.alfresco.repo.security.sync.UserRegistrySynchronizerJob"/>
+                            <property name="jobDataAsMap">
+                                <map>
+                                    <entry key="userRegistrySynchronizer" value-ref="userRegistrySynchronizer"/>
+                                    <entry key="synchronizeChangesOnly" value="${synchronization.synchronizeChangesOnly}"/>
+                                </map>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!-- The chaining user registry synchronizer -->
+    <bean id="userRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer" init-method="init" >
+        <property name="syncWhenMissingPeopleLogIn">
+            <value>${synchronization.syncWhenMissingPeopleLogIn}</value>
+        </property>
+        <property name="syncOnStartup">
+            <value>${synchronization.syncOnStartup}</value>
+        </property>
+        <property name="autoCreatePeopleOnLogin">
+            <value>${synchronization.autoCreatePeopleOnLogin}</value>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="applicationContextManager">
+            <ref bean="Authentication" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
+        </property>
+        <property name="sourceBeanName">
+            <value>userRegistry</value>
+        </property>
+        <property name="loggingInterval">
+            <value>${synchronization.loggingInterval}</value>
+        </property>
+        <property name="workerThreads">
+            <value>${synchronization.workerThreads}</value>
+        </property>
+        <property name="allowDeletions">
+            <value>${synchronization.allowDeletions}</value>
+        </property>
+        <property name="syncDelete">
+            <value>${synchronization.syncDelete}</value>
+        </property>
+        <property name="nameChecker" ref="nameChecker" />
+        <property name="externalUserControl">
+        	<value>${synchronization.externalUserControl}</value>
+        </property>
+        <property name="externalUserControlSubsystemName">
+        	<value>${synchronization.externalUserControlSubsystemName}</value>
+        </property>
+    </bean>
+
+
+</beans>

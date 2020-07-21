@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- Rendition Service -->
+
+   <bean id="RenditionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.rendition.RenditionService</value>
+      </property>
+      <property name="target">
+         <ref bean="renditionService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="RenditionService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="RenditionService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Rendition service transaction bean -->
+   <bean id="RenditionService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Rendition service security bean -->
+   <bean id="RenditionService_security"
+      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+   <!-- Rendition Service base bean -->
+   <bean id="renditionService" class="org.alfresco.repo.rendition.RenditionServiceImpl" init-method="init">
+      <property name="actionService" ref="ActionService"/>
+      <property name="actionTrackingService" ref="actionTrackingService"/>
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
+      <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
+      <property name="policyComponent" ref="policyComponent" />
+       <property name="renditionService2" ref="renditionService2"/>
+      <property name="knownCancellableActionTypes">
+        <list>
+            <bean id="org.alfresco.repo.rendition.executer.ImageRenderingEngine.NAME"
+                class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"/>
+            <bean id="org.alfresco.repo.rendition.executer.ReformatRenderingEngine.NAME"
+                class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"/>
+        </list>
+      </property>
+   </bean>
+
+    <!-- From Alfresco 3.4 onwards, this bean is deprecated and should not be used. -->
+    <bean id="perform-rendition" class="org.alfresco.repo.rendition.PerformRenditionActionExecuter" parent="action-executer">
+       <property name="publicAction">
+          <value>false</value>
+       </property>
+       <property name="actionService" ref="ActionService"/>
+    </bean>
+
+    <bean id="renditionDefinitionPersister" class="org.alfresco.repo.rendition.RenditionDefinitionPersisterImpl" >
+        <property name="runtimeActionService" ref="actionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+    </bean>
+
+	<bean id="renditionLocationResolver" class="org.alfresco.repo.rendition.StandardRenditionLocationResolverImpl" >
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="RepositoryHelper" ref="repositoryHelper" />
+	</bean>
+
+
+   <!-- i18n -->
+
+   <bean id="renderingActionResourceBundles"
+      class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.messages.rendition-config</value>
+         </list>
+      </property>
+   </bean>
+
+
+   <!-- It is possible to prevent all renditioning of a node by applying a marker aspect. -->
+   <!-- This registry keeps a list of what aspects (and what types) should be considered when preventing renditions. -->
+   <bean id="renditionPreventionRegistry" class="org.alfresco.repo.rendition.RenditionPreventionRegistry">
+      <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+
+   <!-- This abstract bean ensures that any child beans are registered centrally. -->
+   <bean id="baseRenditionPreventionClass"
+         abstract="true"
+         class="org.alfresco.repo.rendition.RenditionPreventionRegistry$SelfRegisteringClassName"
+         init-method="register">
+       <property name="registry" ref="renditionPreventionRegistry"/>
+   </bean>
+
+   <!-- By default there is only one such content class: a marker aspect -->
+   <bean id="preventRenditions" parent="baseRenditionPreventionClass">
+       <constructor-arg value="rn:preventRenditions"/>
+   </bean>
+
+
+   <!-- Rendering Action executor beans -->
+
+   <bean id="baseRenderingAction" abstract="true" parent="action-executer"
+      class="org.alfresco.repo.rendition.executer.AbstractRenderingEngine">
+      <property name="defaultRenditionContentProp"
+         value="{http://www.alfresco.org/model/content/1.0}content" />
+      <property name="defaultRenditionNodeType"
+         value="{http://www.alfresco.org/model/content/1.0}content" />
+      <property name="mimetypeMap" ref="mimetypeService" />
+      <property name="contentService">
+         <ref bean="ContentService" />
+      </property>
+      <property name="applicableTypes">
+         <list>
+            <value>{http://www.alfresco.org/model/content/1.0}content</value>
+         </list>
+      </property>
+       <property name="nodeService" ref="NodeService" />
+       <property name="renditionService" ref="RenditionService" />
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+       <property name="renditionLocationResolver" ref="renditionLocationResolver" />
+       <property name="actionTrackingService" ref="actionTrackingService" />
+       <property name="namespaceService" ref="namespaceService" />
+   </bean>
+
+   <bean id="baseTransformationRenderingEngine" abstract="true" parent="baseRenderingAction"
+         class="org.alfresco.repo.rendition.executer.AbstractTransformationRenderingEngine">
+       <property name="synchronousTransformClient" ref="synchronousTransformClient" />
+       <property name="converter" ref="transformOptionsConverter" />
+   </bean>
+
+   <bean id="baseTemplateRenderingAction" abstract="true" parent="baseRenderingAction"
+      class="org.alfresco.repo.rendition.executer.AbstractRenderingEngine">
+      <property name="templateService" ref="templateService" />
+      <property name="searchService" ref="searchService" />
+   </bean>
+
+   <!--  Rendering Engines -->
+   <bean id="reformat"
+      class="org.alfresco.repo.rendition.executer.ReformatRenderingEngine"
+      parent="baseTransformationRenderingEngine">
+   </bean>
+
+   <bean id="imageRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.ImageRenderingEngine"
+      parent="baseTransformationRenderingEngine">
+      <property name="sourceOptionsSerializers">
+        <list>
+            <bean class="org.alfresco.service.cmr.repository.PagedSourceOptions" factory-method="createSerializerInstance" />
+            <bean class="org.alfresco.service.cmr.repository.TemporalSourceOptions" factory-method="createSerializerInstance" />
+            <bean class="org.alfresco.service.cmr.repository.CropSourceOptions" factory-method="createSerializerInstance" />
+        </list>
+      </property>
+   </bean>
+
+   <bean id="freemarkerRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.FreemarkerRenderingEngine"
+      parent="baseTemplateRenderingAction">
+      <property name="repositoryHelper">
+         <ref bean="repositoryHelper" />
+      </property>
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry" />
+      </property>
+   </bean>
+
+   <bean id="htmlRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.HTMLRenderingEngine"
+      parent="baseRenderingAction">
+      <property name="tikaConfig">
+         <ref bean="tikaConfig"/>
+      </property>
+   </bean>
+
+   <bean id="compositeRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.CompositeRenderingEngine"
+      parent="baseRenderingAction">
+      <property name="actionService">
+         <ref bean="actionService" />
+      </property>
+   </bean>
+
+   <bean id="xsltRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.XSLTRenderingEngine"
+      parent="baseTemplateRenderingAction">
+      <property name="xsltFunctions" ref="xsltFunctions" />
+      <property name="namespacePrefixResolver" ref="NamespaceService" />
+      <property name="fileFolderService" ref="FileFolderService" />
+   </bean>
+
+   <bean id="xsltFunctions" class="org.alfresco.repo.rendition.executer.XSLTFunctions">
+      <property name="fileService" ref="FileFolderService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+   </bean>
+
+   <!-- Behaviours and policies for Renditions -->
+
+   <bean id="renditionedAspect" class="org.alfresco.repo.rendition.RenditionedAspect" init-method="init">
+       <property name="actionService" ref="ActionService"/>
+       <property name="dictionaryService" ref="DictionaryService"/>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="renditionService" ref="RenditionService"/>
+   </bean>
+
+   <!-- This action is used as a compensating action in the event of a failure to update a rendition -->
+   <bean id="delete-rendition" class="org.alfresco.repo.rendition.executer.DeleteRenditionActionExecuter" parent="action-executer">
+      <property name="publicAction" value="false"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="nodeService" ref="NodeService"/>
+      <property name="renditionService" ref="RenditionService"/>
+    </bean>
+
+   <!-- JavaScript API support -->
+   <bean id="renditionServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.rendition.script.ScriptRenditionService">
+        <property name="extensionName">
+            <value>renditionService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+   
+</beans>

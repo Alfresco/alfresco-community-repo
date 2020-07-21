@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+    <!-- Definition of web site model -->
+
+<model name="sctst:myTestItemModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <!-- Meta-data about the model -->
+    <description>Test CMIS Item relations model</description>
+    <author>SSergey</author>
+    <version>1.0</version>
+
+    <!--
+        Imports are required to allow references to definitions in other
+        models
+    -->
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0"
+            prefix="d" />
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+    </imports>
+
+    <!-- Sites Namespace -->
+    <namespaces>
+        <namespace uri="http://scTestCMISModel/1.0/"
+            prefix="sctst" />
+    </namespaces>
+
+    <types>
+        <type name="sctst:client">
+            <title>Someco Test Client</title>
+            <parent>sys:base</parent>
+            <properties>
+                <property name="sctst:clientName">
+                    <type>d:text</type>
+                </property>
+                <property name="sctst:clientId">
+                    <type>d:text</type>
+                </property>
+            </properties>
+        </type>
+    </types>
+    
+    <aspects>
+        <aspect name="sctst:clientRelated">
+            <title>Someco Test Client Related</title>
+            <associations>
+                <association name="sctst:relatedClients">
+                    <title>Related Clients</title>
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>sctst:client</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+            </associations>
+        </aspect>
+    </aspects>
+
+</model>

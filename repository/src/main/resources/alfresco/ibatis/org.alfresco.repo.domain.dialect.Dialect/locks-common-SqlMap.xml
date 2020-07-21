@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.lock">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result_LockResource" type="LockResource">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+  
+    <resultMap id="result_Lock" type="Lock">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="sharedResourceId" column="shared_resource_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="exclusiveResourceId" column="excl_resource_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="lockToken" column="lock_token" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="startTime" column="start_time" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="expiryTime" column="expiry_time" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter_ExclusiveLockUpdateMap" type="map">
+        <parameter property="newLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="newStartTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="newExpiryTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="exclusiveLockResourceId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="oldLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_LockResource_AutoIncrement">
+        insert into alf_lock_resource (version, qname_ns_id, qname_localname) 
+        values (#{version}, #{qnameNamespaceId}, #{qnameLocalName})
+    </sql>
+    
+    <sql id="insert_LockResource_Sequence">
+        insert into alf_lock_resource (id, version, qname_ns_id, qname_localname) 
+        values (#{id}, #{version}, #{qnameNamespaceId}, #{qnameLocalName})
+    </sql>
+    
+    <sql id="insert_Lock_AutoIncrement">
+        insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
+        values (#{version}, #{sharedResourceId}, #{exclusiveResourceId}, #{lockToken}, #{startTime}, #{expiryTime})
+    </sql>
+    
+    <sql id="insert_Lock_Sequence">
+        insert into alf_lock (id, version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
+        values (#{id}, #{version}, #{sharedResourceId}, #{exclusiveResourceId}, #{lockToken}, #{startTime}, #{expiryTime})
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <!-- Get the lock resource entity by qualified name -->
+    <select id="select_LockResourceByQName" parameterType="LockResource" resultMap="result_LockResource">
+        select
+            *
+        from
+            alf_lock_resource
+        where
+            qname_ns_id = #{qnameNamespaceId} and
+            qname_localname = #{qnameLocalName}
+    </select>
+
+    <!-- Get a lock based on the ID -->
+    <select id="select_LockByID" parameterType="Lock" resultMap="result_Lock">
+        select
+            *
+        from
+            alf_lock
+        where
+            id = #{id}
+    </select>
+    
+    <!-- Get a lock based on the unique key (shared and exclusive lock IDs) -->
+    <select id="select_LockByKey" parameterType="Lock" resultMap="result_Lock">
+        select
+            *
+        from
+            alf_lock
+        where
+            shared_resource_id = #{sharedResourceId} and
+            excl_resource_id = #{exclusiveResourceId}
+    </select>
+    
+    <!-- Get all locks for a given list of resource IDs -->
+    <select id="select_LockBySharedIds" resultMap="result_Lock">
+        select
+            *
+        from
+            alf_lock
+        where
+            shared_resource_id in 
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    
+    <!-- Optimistic update of the lock -->
+    <update id="update_Lock" parameterType="Lock">
+        update
+            alf_lock
+        set
+            version = #{version},
+            lock_token = #{lockToken},
+            start_time = #{startTime},
+            expiry_time = #{expiryTime}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <!-- Update locks for a given exclusive lock -->
+    <update id="update_ExclusiveLock" parameterMap="parameter_ExclusiveLockUpdateMap">
+        update
+            alf_lock
+        set
+            version = version + 1,
+            lock_token = ?,
+            start_time = ?,
+            expiry_time = ?
+        where
+            excl_resource_id = ? and
+            lock_token = ?
+    </update>
+
+</mapper>

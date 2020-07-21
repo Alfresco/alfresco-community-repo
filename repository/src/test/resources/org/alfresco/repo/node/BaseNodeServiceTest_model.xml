@@ -1,0 +1,494 @@
+<model name="test:nodeservice" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Test Model for NodeService tests</description>
+   <author>Alfresco</author>
+   <published>2005-06-05</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/BaseNodeServiceTest" prefix="test"/>
+   </namespaces>
+   
+   <types>
+      <type name="test:content">
+         <title>Content</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:content">
+               <type>d:content</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="test:contains">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+            <association name="test:next">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:content</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>test:titled</aspect>
+         </mandatory-aspects>
+      </type>
+      
+       <type name="test:extendedcontent">
+         <title>Extended Content</title>
+         <parent>test:content</parent>
+         <properties>
+            <property name="test:prop1">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <default>defaultValue</default>
+            </property>
+         </properties>
+   	  </type>
+      
+       <type name="test:multiple-tester">
+         <title>Type with ANY props</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:stringprop-single">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="test:stringprop-multiple">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+            <property name="test:anyprop-single">
+               <type>d:any</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="test:anyprop-multiple">
+               <type>d:any</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+   	  </type>
+      
+      <type name="test:multiprop">
+         <title>MultiProp</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:string0">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content0">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string1">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content1">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string2">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content2">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string3">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content3">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string4">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content4">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string5">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content5">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string6">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content6">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string7">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content7">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string8">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content8">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:string9">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="test:content9">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="test:child">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>
+
+      <type name="test:many-properties">
+         <title>Busy</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:booleanValue">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:integerValue">
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:longValue">
+               <type>d:long</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:floatValue">
+               <type>d:float</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:doubleValue">
+               <type>d:double</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:stringValue">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:mlTextValue">
+               <type>d:mltext</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:dateValue">
+               <type>d:date</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:serializableValue">
+               <type>d:any</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:nodeRefValue">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:qnameValue">
+               <type>d:qname</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:contentValue">
+               <type>d:content</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:pathValue">
+               <type>d:path</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:categoryValue">
+               <type>d:category</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:localeValue">
+               <type>d:locale</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:nullValue">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:multiValue">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="test:many-ml-properties">
+         <title>Busy2</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:multiMLValue">
+               <type>d:mltext</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </type>
+
+      <type name="test:rendition-page">
+         <title>Rendition Page</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:rendition-page-content">
+               <type>d:content</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+   	  </type>
+
+   </types>
+   
+   <aspects>
+   
+      <aspect name="test:titled">
+         <title>Titled</title>
+         <properties>
+            <property name="test:title">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="test:description">
+               <type>d:text</type>
+            </property>
+         </properties>         
+         <mandatory-aspects>
+            <aspect>test:mandatoryaspect</aspect>
+         </mandatory-aspects>
+      </aspect>
+      
+      <aspect name="test:marker">
+         <title>Marker Aspect</title>     
+         <properties>
+            <property name="test:markerProp">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>test:marker2</aspect>
+         </mandatory-aspects>
+      </aspect>
+      
+      <aspect name="test:marker2">
+         <title>Marker Aspect 2</title>
+      </aspect>
+      
+      <aspect name="test:mandatoryaspect">
+         <title>Mandatory Aspect</title>
+      </aspect>
+      
+      <aspect name="test:withDefaultValue">
+         <title>Marker Aspect</title>
+         <properties>
+            <property name="test:prop2">
+               <type>d:text</type>
+               <default>defaultValue</default>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="test:withAssociations">
+         <title>Aspect with Associations</title>
+         <associations>
+            <child-association name="test:aspect-child-assoc">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <association name="test:aspect-normal-assoc">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <aspect name="test:withAssociationsExtra">
+         <title>Aspect with Associations</title>
+         <associations>
+            <child-association name="test:aspect-child-assoc-01">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="test:aspect-child-assoc-02">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <association name="test:aspect-normal-assoc-01">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="test:aspect-normal-assoc-02">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <!-- ano1 aspect - happens to be the same name as a child assoc name -->
+      <aspect name="test:aspect-child-assoc">
+         <title>Aspect ANO1</title>
+      </aspect>
+      
+      <!-- ano2 aspect - happens to be the same name as a peer assoc name -->
+      <aspect name="test:aspect-normal-assoc">
+         <title>Aspect ANO2</title>
+      </aspect>
+
+      <aspect name="test:rendered">
+         <title>Aspect for Hanging Renditions Off</title>
+         <associations>
+            <child-association name="test:rendition-page">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:rendition-page</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="test:withEncrypted">
+         <title>Aspect with encrypted properties</title>
+         <properties>
+            <property name="test:encryptedValue">
+               <type>d:encrypted</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+            
+      <aspect name="test:Thread-0-0" />
+      <aspect name="test:Thread-0-1" />
+      <aspect name="test:Thread-0-2" />
+      <aspect name="test:Thread-0-3" />
+      <aspect name="test:Thread-0-4" />
+      <aspect name="test:Thread-0-5" />
+      <aspect name="test:Thread-0-6" />
+      <aspect name="test:Thread-0-7" />
+      <aspect name="test:Thread-0-8" />
+      <aspect name="test:Thread-0-9" />
+      <aspect name="test:Thread-1-0" />
+      <aspect name="test:Thread-1-1" />
+      <aspect name="test:Thread-1-2" />
+      <aspect name="test:Thread-1-3" />
+      <aspect name="test:Thread-1-4" />
+      <aspect name="test:Thread-1-5" />
+      <aspect name="test:Thread-1-6" />
+      <aspect name="test:Thread-1-7" />
+      <aspect name="test:Thread-1-8" />
+      <aspect name="test:Thread-1-9" />
+            
+   </aspects>
+
+</model>

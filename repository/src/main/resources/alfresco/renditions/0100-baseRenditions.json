@@ -1,0 +1,75 @@
+{
+  "renditions": [
+    {
+      "renditionName": "medium",
+      "targetMediaType": "image/jpeg",
+      "options": [
+        {"name": "resizeWidth", "value": 100},
+        {"name": "resizeHeight", "value": 100},
+        {"name": "allowEnlargement", "value": true},
+        {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
+        {"name": "thumbnail", "value": true}
+      ]
+    },
+    {
+      "renditionName": "doclib",
+      "targetMediaType": "image/png",
+      "options": [
+        {"name": "resizeWidth", "value": 100},
+        {"name": "resizeHeight", "value": 100},
+        {"name": "allowEnlargement", "value": false},
+        {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
+        {"name": "thumbnail", "value": true}
+      ]
+    },
+    {
+      "renditionName": "imgpreview",
+      "targetMediaType": "image/jpeg",
+      "options": [
+        {"name": "resizeWidth", "value": 960},
+        {"name": "resizeHeight", "value": 960},
+        {"name": "allowEnlargement", "value": false},
+        {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
+        {"name": "thumbnail", "value": true}
+      ]
+    },
+    {
+      "renditionName": "avatar",
+      "targetMediaType": "image/png",
+      "options": [
+        {"name": "resizeWidth", "value": 64},
+        {"name": "resizeHeight", "value": 64},
+        {"name": "allowEnlargement", "value": false},
+        {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
+        {"name": "thumbnail", "value": true}
+      ]
+    },
+    {
+      "renditionName": "avatar32",
+      "targetMediaType": "image/png",
+      "options": [
+        {"name": "resizeWidth", "value": 32},
+        {"name": "resizeHeight", "value": 32},
+        {"name": "allowEnlargement", "value": false},
+        {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
+        {"name": "thumbnail", "value": true}
+      ]
+    },
+    {
+      "renditionName": "webpreview",
+      "targetMediaType": "application/x-shockwave-flash",
+      "options": [
+        {"name": "flashVersion", "value": 9}
+      ]
+    },
+    {
+      "renditionName": "pdf",
+      "targetMediaType": "application/pdf"
+    }
+  ]
+}

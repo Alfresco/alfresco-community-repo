@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Audit xmlns="http://www.alfresco.org/repo/audit/model/3.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd">
+
+    <DataExtractors>
+        <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue" />
+    </DataExtractors>
+
+    <PathMappings>
+        <PathMap source="/alfresco-api/post/FileFolderService/create" target="/test-mnt-10767/FileFolderService/create" />
+    </PathMappings>
+
+    <Application name="Test MNT-10767" key="test-mnt-10767">
+
+        <AuditPath key="FileFolderService">
+            <AuditPath key="create">
+                <RecordValue key="parentNodeRef" dataSource="/test-mnt-10767/FileFolderService/create/args/parentNodeRef"
+                    dataTrigger="/test-mnt-10767/FileFolderService/create/no-error" dataExtractor="simpleValue" />
+                <!-- Dummy path to trick around oddities in the AuditComponent "do we need to audit?" logic -->
+                <AuditPath key="no-error" />
+            </AuditPath>
+        </AuditPath>
+    </Application>
+</Audit>
+    

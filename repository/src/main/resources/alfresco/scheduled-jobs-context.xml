@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--                 -->
+    <!-- Scheduled tasks -->
+    <!--                 -->
+
+    <!--  note: Activities (feed) jobs have moved to Activities subsystem (since 3.5) -->
+
+    <bean id="schedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <ref bean="tempFileCleanerTrigger"/>
+                <ref bean="webscripts.tempFileCleanerTrigger"/>
+                <ref bean="contentStoreCleanerTrigger"/>
+                <ref bean="patchSharedFolderTrigger"/>
+                <ref bean="maxStringLengthJobTrigger"/>
+                <ref bean="nodeServiceCleanupTrigger"/>
+                <ref bean="userUsageCollapseJob"/>
+                <ref bean="taggingStartupTrigger"/>
+                <ref bean="ticketCleanupTrigger"/>
+                <ref bean="patchSurfConfigFolderTrigger"/>
+                <ref bean="upgradePasswordHashJobTrigger"/>
+                <ref bean="patchAddUnmovableAspectTrigger"/>
+                <ref bean="fixedAclUpdaterTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="tempFileCleanerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="0 30 * * * ?" /> <!-- Repeat hourly on the half hour -->
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.util.TempFileProvider$TempFileCleanerJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="protectHours" value="1"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="webscripts.tempFileCleanerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="0 0 * * * ?" /> <!-- Repeat hourly on the start hour -->
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.util.TempFileProvider$TempFileCleanerJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="protectHours" value="1"/>
+                        <entry key="directoryName" value="${webscripts.tempDirectoryName}"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="contentStoreCleanerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.content.orphanCleanup.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.content.cleanup.ContentStoreCleanupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="contentStoreCleaner" value-ref="contentStoreCleaner"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="patchSharedFolderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.patch.sharedFolder.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.admin.patch.impl.SharedFolderPatch$SharedFolderPatchJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="sharedFolderPatch" value="patch.sharedFolder"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="maxStringLengthJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.maximumStringLength.jobCronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.node.db.NodeStringLengthWorker$NodeStringLengthJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="nodeStringLengthWorker" value-ref="nodeStringLengthWorker"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="nodeServiceCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="0 0 21 * * ?"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.node.cleanup.NodeCleanupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="nodeCleanupWorker" value-ref="nodeCleanupRegistry"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="userUsageCollapseJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="0 0/5 * * * ?"/> <!-- run every 5 minutes -->
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.usage.UserUsageCollapseJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="userUsageTrackingComponent" value-ref="userUsageTrackingComponent"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <!-- Tagging Service Scope Updates -->
+    <!-- (Catches any updates queued but not executed around repo shutdown -->
+    <bean id="taggingStartupTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+        <property name="repeatInterval" value="3600000"/> <!-- 60 minutes -->
+        <property name="startDelay" value="120"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.tagging.UpdateTagScopesQuartzJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="updateTagsAction" value-ref="update-tagscope"/>
+                        <entry key="actionService" value-ref="ActionService"/>
+                        <entry key="transactionService" value-ref="transactionService"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <!-- Ticket cleanup -->
+    <bean id="ticketCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${ticket.cleanup.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.security.authentication.TicketCleanupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="abstractAuthenticationService" value-ref="authenticationService"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean id="patchSurfConfigFolderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.patch.surfConfigFolder.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="asynchronousPatch" value-ref="patch.surfConfigFolder"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <!-- Definition for the upgrade password hash job -->
+    <bean id="upgradePasswordHashJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.upgradePasswordHash.jobCronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="upgradePasswordHashWorker" value-ref="upgradePasswordHashWorker"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <!-- Add Unmovable aspect to site patch -->
+    <bean id="patchAddUnmovableAspectTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.patch.addUnmovableAspect.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="asynchronousPatch" value-ref="patch.addUnmovableAspect"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <!-- Fixed ACL Updater -->
+    <bean id="fixedAclUpdaterTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.fixedACLsUpdater.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.domain.permissions.FixedAclUpdaterJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="fixedAclUpdater" value-ref="fixedAclUpdater"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="ia:CalendarEventModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Optional meta-data about the model -->   
+   <description>Calendar Event Model</description>
+   <author>Snig Bhaumik</author>
+   <version>1.0</version>
+
+   <imports>
+   	<!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <!-- Introduction of new namespaces defined by this model -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/calendar" prefix="ia"/>
+   </namespaces>
+
+   <types>
+      <type name="ia:ignoreEvent">
+         <title>Separate Ignored Recurring Event</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="ia:date">
+               <type>d:datetime</type>
+            </property>
+         </properties>       
+      </type>
+      <type name="ia:updateEvent">
+         <title>Separate Updated Recurring Event</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="ia:updatedDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:newWhatEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:newStart">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:newEnd">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:newWhereEvent">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="ia:calendarEvent">
+         <title>Calendar Event</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="ia:whatEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:fromDate">
+               <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="ia:toDate">
+               <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="ia:whereEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:descriptionEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:colorEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:recurrenceRule">
+               <type>d:text</type>
+            </property>
+            <property name="ia:recurrenceLastMeeting">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:isOutlook">
+               <type>d:boolean</type>
+            </property>
+            <property name="ia:outlookUID">
+               <title>Outlook UID</title>
+               <type>d:text</type>               
+               <mandatory>false</mandatory>               
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>			               
+            </property>
+         </properties>
+         <associations>
+            <child-association name="ia:ignoreEventList">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>ia:ignoreEvent</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="ia:updatedEventList">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>ia:updateEvent</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+      
+      <type name="ia:calendar">
+         <title>Calendar Space</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="ia:whatEventDefault">
+               <type>d:text</type>
+            </property>
+            <property name="ia:fromDateDefault">
+               <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="ia:toDateDefault">
+               <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="ia:whereEventDefault">
+               <type>d:text</type>
+            </property>
+            <property name="ia:colorEventDefault">
+               <type>d:text</type>
+            </property>
+		   </properties>
+         <associations>
+   			<association name="ia:subscribedCalendarList">
+   				<source>
+   					<mandatory>false</mandatory>
+   					<many>true</many>
+   				</source>
+   				<target>
+   					<class>ia:calendar</class>
+   					<mandatory>false</mandatory>
+   					<many>true</many>
+   				</target>
+   			</association>
+   		</associations>
+      </type>
+   </types>
+   
+   <aspects>
+      <aspect name="ia:docFoldered">
+         <title>Doc folder</title>
+         <properties>
+            <property name="ia:docFolder">
+               <title>DocFolder</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+   
+</model>

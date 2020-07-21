@@ -1,0 +1,28 @@
+MIME-Version: 1.0
+Received: by 10.000.0.000 with HTTP; Thu, 16 Aug 2012 08:13:29 -0700 (PDT)
+Date: Thu, 16 Aug 2012 16:13:29 +0100
+Delivered-To: jane.doe@alfresco.com
+Message-ID: <CAL0uq1f9vPczLRinL3xB5U_oSSd5U0ob=408nBgosCY0OVFyBw@mail.alfresco.com>
+Subject: Attachment test
+From: <john.doe@alfresco.com>
+To: <jane.doe@alfresco.com>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0005_01D06C6A.DBA98EC0"
+
+This is a multipart message in MIME format.
+
+------=_NextPart_000_0005_01D06C6A.DBA98EC0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+html special characters
+
+------=_NextPart_000_0005_01D06C6A.DBA98EC0
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">html&nbsp;special&nbsp;characters</div>
+
+------=_NextPart_000_0005_01D06C6A.DBA98EC0--

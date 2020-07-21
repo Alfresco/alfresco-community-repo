@@ -1,0 +1,19 @@
+<alfresco-config>
+   
+   <config replace="true">
+      <global-item>The replaced global value</global-item>
+      <children-replace>
+         <child-custom>child custom value</child-custom>
+      </children-replace>
+   </config>
+   
+   <config evaluator="string-compare" condition="Replace Test" replace="true">
+      <first-item>the replaced first value</first-item>
+      <fourth-item>new fourth value</fourth-item>
+      <children>
+         <child-two>child two value</child-two>
+         <child-three>child three value</child-three>
+      </children>
+   </config>
+
+</alfresco-config>

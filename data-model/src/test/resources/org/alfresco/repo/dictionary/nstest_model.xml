@@ -1,0 +1,31 @@
+<model name="test:anothermodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Test of namespace clashes</description>
+    <author>Alfresco</author>
+    <published>2015-03-02</published>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/test/ns-clash-test/1.0" prefix="test"/>
+    </namespaces>
+
+    <types>
+        <type name="test:mytype">
+            <title>MyType</title>
+            <description>A Type</description>
+            <parent></parent>
+
+            <properties>
+                <property name="test:myprop1">
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <default></default>
+                </property>
+            </properties>
+        </type>
+    </types>
+</model>

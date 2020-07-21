@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Set activity user feed control</shortname>
+  <description>Set activity feed control (opt-out) for currently logged in user.</description>
+  <url>/api/activities/feed/control</url>
+  <url>/api/activities/feed/control?format=json</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

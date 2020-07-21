@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="abstractBlogWebScript" parent="webscript" abstract="true">
+       <property name="repository" ref="repositoryHelper"/>
+       <property name="blogService" ref="BlogService"/>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="siteService" ref="SiteService"/>
+       <property name="serviceRegistry" ref="ServiceRegistry"/>
+       <property name="activityService" ref="activityService"/>
+    </bean>
+
+    <!-- repository/blogs/blog -->
+    <bean id="webscript.org.alfresco.repository.blogs.blog.blog.get"
+          class="org.alfresco.repo.web.scripts.blogs.blog.BlogGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.blog.blog.put"
+          class="org.alfresco.repo.web.scripts.blogs.blog.BlogPut"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    
+    <!-- repository/blogs/post -->
+    <bean id="webscript.org.alfresco.repository.blogs.post.blog-post.delete"
+          class="org.alfresco.repo.web.scripts.blogs.post.BlogPostDelete"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.post.blog-post.get"
+          class="org.alfresco.repo.web.scripts.blogs.post.BlogPostGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    
+    <!-- repository/blogs/posts -->
+    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts.get"
+          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts-mydrafts.get"
+          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsMyDraftsGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts-mypublished.get"
+          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsMyPublishedGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts-new.get"
+          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsNewGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts-per-month.get"
+          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsPerMonthGet"
+          parent="abstractBlogWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts.post"
+          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsPost"
+          parent="abstractBlogWebScript">
+        <property name="taggingService" ref="TaggingService"/>
+    </bean>
+</beans>

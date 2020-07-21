@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Followers</shortname>
+  <description>Returns followers</description>
+  <url>/api/subscriptions/{userid}/followers</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

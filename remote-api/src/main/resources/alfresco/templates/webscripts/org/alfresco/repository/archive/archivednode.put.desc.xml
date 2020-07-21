@@ -1,0 +1,31 @@
+<webscript>
+   <shortname>PUT a restore request to an archived NodeRef</shortname>
+   <description><![CDATA[
+   Puts a request to restore the specified archived node.<br/>
+   The body of the post should be in the form, e.g.<br/>
+   {<br/>
+   &nbsp;&nbsp;&nbsp;"restoreLocation": ""<br/>
+   }<br/>
+   The restoreLocation parameter is not currently used, but may in future support restoration to somewhere other than the node's original location.<br/>
+   <br/>
+   The response will be of the form, e.g.<br/>
+   {<br/>
+   &nbsp;&nbsp;&nbsp;"data":<br/>
+   &nbsp;&nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"restoredNode":<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"archivedNodeRef": "archive://SpacesStore/74aed939-acce-4cb1-8067-4e912eb0b4f7",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"status": "SUCCESS",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"restoredNodeRef": "workspace://SpacesStore/74aed939-acce-4cb1-8067-4e912eb0b4f7",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"success": true<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+   &nbsp;&nbsp;&nbsp;}<br/>
+   }<br/>
+   ]]>
+   </description>
+   <url>/api/archive/{store_type}/{store_id}/{id}</url>
+   <format default="json" />
+   <authentication runas="admin">user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

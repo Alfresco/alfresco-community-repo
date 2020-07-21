@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get action constraint</shortname>
+  <description>Gets an action constraint resource.,</description>
+  <url>/api/actionConstraints/{name}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

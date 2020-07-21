@@ -1,0 +1,28 @@
+<webscript>
+  <shortname>Alfresco audit service clear</shortname>
+  <description>Delete audit entries for a given application and time range</description>
+  <url>/api/audit/clear/{application}?fromTime={fromTime}&amp;toTime={toTime}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+  <family>Audit</family>
+  <lifecycle>internal</lifecycle>
+  <args>
+    <arg>
+      <name>application</name>
+      <description>Name of the audit application (mandatory)</description>
+    </arg> 
+    <arg>
+      <name>fromTime</name>
+      <description>Time, in milliseconds, of the oldest audit entry to delete (omit to assume oldest)</description>
+    </arg> 
+    <arg>
+      <name>toTime</name>
+      <description>Time, in milleseconds, of the youngest audit entry to delete (omit to assume current time)</description>
+    </arg>
+ </args>
+  
+  <!--  turn off the multipart formdata processing -->
+  <formdata multipart-processing="false" />
+
+</webscript>

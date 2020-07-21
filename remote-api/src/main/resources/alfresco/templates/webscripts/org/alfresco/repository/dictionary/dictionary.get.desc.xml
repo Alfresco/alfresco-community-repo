@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Get remote dictionary definitions</shortname>
+   <description>Gets all aspect and class definitions that form the dictionary - to enable a lightweight remote dictionary.</description>
+   <url>/api/dictionary</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

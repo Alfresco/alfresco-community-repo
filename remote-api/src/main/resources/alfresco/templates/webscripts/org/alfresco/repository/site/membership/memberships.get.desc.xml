@@ -1,0 +1,21 @@
+<webscript>
+  <shortname>List Web site memberships</shortname>
+  <description> <![CDATA[
+  Get a colleciton of a Web site memberships.
+   <br />
+  'shortname' is the shortname of the Web site
+  <br />
+  Parameters:
+  <ul>
+  <li>nf, Optional, namefilter</li>
+  <li>rf, Optional, rolefilter</li>
+  <li>size, Optional,  page size</li>
+  <li>authorityType, Optional, returns either GROUP or USER authorities.  If not specified returns all authorities.</li> 
+  </ul>
+  ]]></description>
+  <url>/api/sites/{shortname}/memberships?nf={namefilter?}&amp;rf={rolefilter?}&amp;size={pagesize?}&amp;pos={position?}&amp;authorityType={authorityType?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

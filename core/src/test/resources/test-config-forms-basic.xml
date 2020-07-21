@@ -1,0 +1,172 @@
+<alfresco-config>
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="forms" class="org.alfresco.web.config.forms.FormsElementReader"/>
+      </element-readers>
+   </plug-ins>
+
+   <config>
+      <forms>
+	      <default-controls>
+	         <type name="d:long" template="/form-controls/mytextfield.ftl" />
+	         <type name="d:text" template="/form-controls/mytextfield.ftl" >
+	            <control-param name="size">50</control-param>
+	         </type>
+	         <type name="d:test" template="/form-controls/test.ftl">
+	            <control-param name="a">Hello</control-param>
+	            <control-param name="b"></control-param>
+	         </type>
+	         <type name="d:boolean" template="/form-controls/checkbox.ftl" />
+	         <type name="association" template="/form-controls/association-picker.ftl" />
+	         <type name="abc" template="/form-controls/abc.ftl">
+	            <control-param name="a">1</control-param>
+	            <control-param name="b">Hello</control-param>
+	            <control-param name="c">For ever and ever.</control-param>
+	            <control-param name="d"></control-param>
+	         </type>
+	      </default-controls>
+	      <constraint-handlers>
+	         <constraint type="MANDATORY" validation-handler="Alfresco.forms.validation.mandatory" event="blur" />
+	         <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
+	         <constraint type="NUMERIC" validation-handler="Alfresco.forms.validation.numericMatch"
+	                     message="Test Message" message-id="regex_error" />
+	      </constraint-handlers>
+          <!-- These dependencies are CSS, JS resources needed by the controls. -->
+          <dependencies>
+              <css src="/css/path/1" />
+              <css src="/css/path/2" />
+              <js src="/js/path/1" />
+              <js src="/js/path/2" />
+          </dependencies>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="my:example">
+      <forms>
+          <form submission-url="submit/default/form">
+             <field-visibility>
+                <show id="cm:name"/>
+                <show id="my:text" />
+                <show id="my:mltext" />
+                <show id="my:date" />
+                <show id="my:duplicate" />
+                <show id="my:int" />
+                <show id="my:broken" />
+             </field-visibility>
+             <appearance>
+                <field id="cm:name">
+                   <control template="/form-controls/mytextfield.ftl" />
+                   <constraint-handlers>
+                       <constraint type="REGEX" message="You can't have these characters in a name: /*"
+                                       validation-handler="Alfresco.forms.validation.regexMatch"/>
+                       <constraint type="NUMERIC" message="Numeric message" />
+                   </constraint-handlers>
+                </field>
+                <field id="my:text" label="Custom Text" description="This is a custom model text field">
+                   <control>
+                      <control-param name="width">500px</control-param>
+                   </control>
+                   <constraint-handlers>
+                       <constraint type="REGEX" message-id="custom_msg" />
+                   </constraint-handlers>
+                </field>
+                <field id="my:mltext" label="Custom ML Text" description="This is a custom model multilingual text field">
+                   <control>
+                      <control-param name="rows">10</control-param>
+                      <control-param name="width">500px</control-param>
+                   </control>
+                </field>
+                <field id="my:duplicate" label="Duplicate" read-only="true" help="This is a test for duplicate props and assocs" />
+                <field id="my:date" label="Custom Date" description-id="form.field.dateformat" />
+                <field id="my:dateTime" label="Custom Date Time" description-id="form.field.dateformat" />
+                <field id="my:mandatory" label="Force Mandatory Field" mandatory="true" />
+             </appearance>
+          </form>
+
+          <form id="id" submission-url="submit/id/form">
+          </form>
+	  </forms>
+   </config>
+
+   <config evaluator="string-compare" condition="no-appearance">
+      <forms>
+          <form submission-url="submission/url">
+             <view-form template="/view/template"/>
+             <edit-form template="/edit/template" />
+             <create-form template="/create/template" />
+             <field-visibility>
+                <show id="cm:name" force="true"/>
+                <show id="cm:title" for-mode="view, create"/>
+                <show id="cm:description" />
+                <show id="cm:content" />
+                <show id="my:text" />
+                <show id="my:mltext" />
+                <show id="my:date" />
+             </field-visibility>
+          </form>
+      </forms>
+   </config>
+
+   <config evaluator="string-compare" condition="no-visibility">
+      <forms>
+          <form>
+             <appearance>
+                <field id="cm:name" label="Name From Config" />
+                <field id="xx:irrelevant" label="label-text" set="optional" />
+             </appearance>
+          </form>
+      </forms>
+   </config>
+
+   <config evaluator="string-compare" condition="no-default-form">
+      <forms>
+          <form id="form_id">
+             <appearance>
+                <field id="cm:name" label="Name From Config" />
+             </appearance>
+          </form>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="combiningFormsAcrossXmlFiles">
+      <forms>
+         <form>
+            <field-visibility>
+               <show id="cm:name" />
+            </field-visibility>
+         </form>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="hidden-fields">
+      <forms>
+          <form>
+             <field-visibility>
+               <hide id="custom:first" />
+               <hide id="custom:second" />
+               <hide id="sys:dbid" for-mode="edit, create" />
+            </field-visibility>
+            <appearance>
+                <field id="custom:name" set="main" />
+             </appearance>
+          </form>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="custom-form-templates">
+      <forms>
+         <form>
+            <field-visibility>
+               <show id="cm:name" />
+               <show id="cm:title" />
+               <show id="cm:description" />
+            </field-visibility>
+            <view-form template="/path/to/my/template.ftl" />
+            <create-form template="/path/to/my/template.ftl" />
+            <edit-form template="/path/to/my/template.ftl" />
+         </form>
+      </forms>
+   </config>
+   
+   
+</alfresco-config>

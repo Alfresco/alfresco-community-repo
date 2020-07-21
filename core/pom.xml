@@ -1,0 +1,201 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>   
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-super-pom</artifactId>
+      <version>12</version>
+   </parent>   
+   <artifactId>alfresco-core</artifactId>
+   <version>8.40-SNAPSHOT</version>
+   <name>Alfresco Core</name>
+   <description>Alfresco core libraries and utils</description>
+
+   <scm>
+      <connection>scm:git:https://github.com/Alfresco/alfresco-core.git</connection>
+      <developerConnection>scm:git:https://github.com/Alfresco/alfresco-core.git</developerConnection>
+      <url>https://github.com/Alfresco/alfresco-core</url>
+      <tag>HEAD</tag>
+  </scm>
+
+   <distributionManagement>
+      <repository>
+          <id>alfresco-public</id>
+          <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+      </repository>
+   </distributionManagement>
+   
+   <properties>
+      <dependency.spring.version>5.2.7.RELEASE</dependency.spring.version>
+      <dependency.surf.version>8.5</dependency.surf.version>
+      <maven.build.sourceVersion>11</maven.build.sourceVersion>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>commons-codec</groupId>
+         <artifactId>commons-codec</artifactId>
+         <version>1.14</version>
+      </dependency>
+      <dependency>
+         <groupId>commons-httpclient</groupId>
+         <artifactId>commons-httpclient</artifactId>
+         <version>3.1-HTTPCLIENT-1265</version>
+      </dependency>
+      <dependency>
+         <groupId>commons-logging</groupId>
+         <artifactId>commons-logging</artifactId>
+         <version>1.2</version>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+         <version>2.7</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.commons</groupId>
+         <artifactId>commons-math3</artifactId>
+         <version>3.6.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.safehaus.jug</groupId>
+         <artifactId>jug</artifactId>
+         <version>2.0.0</version>
+         <classifier>asl</classifier>
+      </dependency>
+      <dependency>
+         <groupId>log4j</groupId>
+         <artifactId>log4j</artifactId>
+         <version>1.2.17</version>
+      </dependency>
+      <dependency>
+         <groupId>org.json</groupId>
+         <artifactId>json</artifactId>
+         <version>20160212</version>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-orm</artifactId>
+         <version>${dependency.spring.version}</version>
+         <!-- exclude spring-jcl which is brought in by spring-core -->
+         <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
+         <exclusions>
+            <exclusion>
+               <groupId>org.springframework</groupId>
+               <artifactId>spring-jcl</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-context</artifactId>
+         <version>${dependency.spring.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.quartz-scheduler</groupId>
+         <artifactId>quartz</artifactId>
+         <version>2.3.2</version>
+         <!-- exclude c3p0 -->
+         <!-- see https://issues.alfresco.com/jira/browse/REPO-3447 -->
+         <exclusions>
+            <exclusion>
+               <groupId>com.mchange</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.surf</groupId>
+         <artifactId>spring-surf-core-configservice</artifactId>
+         <version>${dependency.surf.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <version>2.3.3</version>
+      </dependency>
+      <dependency>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-core</artifactId>
+         <version>2.3.0.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.guessencoding</groupId>
+         <artifactId>guessencoding</artifactId>
+         <version>1.4</version>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.transaction</groupId>
+         <artifactId>jakarta.transaction-api</artifactId>
+         <version>1.3.3</version>
+      </dependency>
+      <dependency>
+         <groupId>joda-time</groupId>
+         <artifactId>joda-time</artifactId>
+         <version>2.10.6</version>
+      </dependency>
+
+      <!-- provided dependencies -->
+      <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>javax.servlet-api</artifactId>
+         <version>3.0.1</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <!-- Test only dependencies, as popped up while running mvn test -->
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-log4j12</artifactId>
+         <version>1.7.30</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>4.13</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-core</artifactId>
+         <version>3.4.4</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>commons-dbcp</groupId>
+         <artifactId>commons-dbcp</artifactId>
+         <version>1.4-DBCP330</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <artifactId>maven-release-plugin</artifactId>
+               <configuration>
+                  <autoVersionSubmodules>true</autoVersionSubmodules>
+                  <tagNameFormat>@{project.version}</tagNameFormat>
+               </configuration>        
+            </plugin>
+         </plugins>
+      </pluginManagement>
+
+      <plugins>
+         <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>test-jar</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+</project>

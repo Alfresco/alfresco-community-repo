@@ -1,0 +1,36 @@
+<alfresco-config>
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="forms" class="org.alfresco.web.config.forms.FormsElementReader"/>
+      </element-readers>
+   </plug-ins>
+
+   <config>
+      <forms>
+	      <default-controls>
+	         <type name="d:text" template="org/alfresco/forms/controls/textfield.ftl">
+	         </type>
+	      </default-controls>
+	      <constraint-handlers>
+	         <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
+	      </constraint-handlers>
+      </forms>
+   </config>
+   
+   <!-- The evaluator would normally be node-type, but that makes testing difficult -->
+   <config evaluator="string-compare" condition="content">
+      <forms>
+	      <form>
+	        <field-visibility>
+	        </field-visibility>
+	        <appearance>
+               <!-- It is illegal to declare a set which has a non-existent parent -->
+	           <set id="root" />
+	           <set id="leaf" parent="root" appearance="panel" />
+	           <set id="illegal" parent="definedTooLate" appearance="panel" />
+	           <set id="definedTooLate" />
+	        </appearance>
+	     </form>
+      </forms>
+   </config>
+</alfresco-config>

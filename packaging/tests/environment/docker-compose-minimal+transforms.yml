@@ -7,7 +7,7 @@ version: "3"
 
 services:
   alfresco:
-    image: alfresco/alfresco-content-repository-community:latest
+    image: alfresco/alfresco-community-repo-base:latest
     environment:
       CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
       # Some properties are built in Dockerfile because of cron expressions
@@ -43,6 +43,11 @@ services:
         -Dftp.port=1221
         -Dcors.enabled=true
         -Dcors.allowed.origins=http://localhost:4200,http://localhost:8080
+
+        -Dmetadata-keystore.password=mp6yc0UD9e
+        -Dmetadata-keystore.aliases=metadata
+        -Dmetadata-keystore.metadata.password=mp6yc0UD9e
+        -Dmetadata-keystore.metadata.algorithm=AES
         "
     ports:
       - 8082:8080

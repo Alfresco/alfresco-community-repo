@@ -99,7 +99,7 @@ public class UpdatePropertiesTests extends CmisTest
             .createFile(testFile).assertThat().existsInRepo()
                 .then().updateProperty("cmis:fakeProp", propertyNameValue);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify that deleted user is not able to update properties with CMIS")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
@@ -113,6 +113,10 @@ public class UpdatePropertiesTests extends CmisTest
             .usingResource(shared)
                 .createFile(testFile).and().assertThat().existsInRepo();
         dataUser.deleteUser(toBeDeleted);
+        // Token will still be valid right after this call
+        // Just wait for it to expire
+        Thread.sleep(120 * 1000);
+        
         cmisApi.updateProperty("cmis:name", propertyNameValue);
     }
     

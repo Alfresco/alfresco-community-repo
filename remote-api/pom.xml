@@ -2,14 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-remote-api</artifactId>
     <name>Alfresco Remote API</name>
-    <version>8.213-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>12</version>
-    </parent>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>8.300-SNAPSHOT</version>
+     </parent>
 
     <scm>
         <connection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</connection>
@@ -32,112 +31,20 @@
     <properties>
         <licenseName>community</licenseName>
 
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
-
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <dependency.alfresco-repository.version>8.243</dependency.alfresco-repository.version>
-        <dependency.alfresco-data-model.version>8.135</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>8.37</dependency.alfresco-core.version>
-
-        <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
-        <dependency.jackson.version>2.11.1</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
-
-        <dependency.webscripts.version>8.5</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.spring.version>5.2.7.RELEASE</dependency.spring.version>
-        <dependency.postgresql.version>42.2.14</dependency.postgresql.version>
-        <dependency.cxf.version>3.3.7</dependency.cxf.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Newer cxf libs, see REPO-3131 -->
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-rs-client</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>com.github.junrar</groupId>
-                <artifactId>junrar</artifactId>
-                <version>4.0.0</version>
-            </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>org.jsoup</groupId>
-                <artifactId>jsoup</artifactId>
-                <version>1.13.1</version>
-            </dependency>
-            <!-- update dependency from opencmis-extension -->
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1-HTTPCLIENT-1265</version>
-            </dependency>
-            <!-- newer dependency from camel-jackson -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-jaxb-annotations</artifactId>
-                <version>${dependency.jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.5.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <version>4.4.13</version>
-            </dependency>
-            <!-- REPO-4986, REPO-4987 -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-jms</artifactId>
-                <version>${dependency.spring.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
-            <version>${dependency.alfresco-data-model.version}</version>
             <exclusions>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>
@@ -169,28 +76,23 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${dependency.jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${dependency.jackson-databind.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${dependency.jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.santuario</groupId>
@@ -201,7 +103,6 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml</groupId>
@@ -240,32 +141,27 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.4.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${dependency.spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
@@ -284,14 +180,12 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${dependency.postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

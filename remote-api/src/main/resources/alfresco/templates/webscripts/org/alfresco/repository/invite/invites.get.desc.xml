@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Get invites</shortname>
+   <description>Returns pending invites filtered by Inviter user name, Invitee user name &amp; Site short name</description>
+   <url>/api/invites?inviterUserName={inviterUserName?}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName?}</url>
+   <url>/api/invites?inviteId={inviteId}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>deprecated</lifecycle>
+</webscript>

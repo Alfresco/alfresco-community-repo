@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>List search engines</shortname>
+  <description>Lists the "search engines" registered with this Alfresco repository.</description>
+  <url>/api/search/engines?type={type?}</url>
+  <url>/search/engines?type={type?}</url>
+  <url>/api/search/engines.atom?type={type?}</url>
+  <url>/search/engines.atom?type={type?}</url>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

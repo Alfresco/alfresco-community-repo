@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>List persisted replication definitions</shortname>
+  <description>
+  Returns a simple representation of all persisted replication definitions.
+  </description>
+  <url>/api/replication-definitions?sort={sort?}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

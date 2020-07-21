@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Form Persistence</shortname>
+  <description>Handles the submission of a form, data can be POSTed as JSON, multipart/form-data or x-www-form-urlencoded.</description>
+  <url>/api/{item_kind}/{item_id}/formprocessor</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,0 +1,25 @@
+<webscript>
+  <shortname>Get audit status</shortname>
+  <description>Get audit status for a given application and path</description>
+  <url>/api/audit/control</url>
+  <url>/api/audit/control/{application}/{path}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <family>Audit</family>
+  <lifecycle>internal</lifecycle>
+  <args>
+    <arg>
+      <name>application</name>
+      <description>Name of the audit application (omit to assume all applications)</description>
+    </arg> 
+    <arg>
+      <name>path</name>
+      <description>Path within the application (the root key of the application at least)</description>
+    </arg> 
+ </args>
+  
+  <!--  turn off the multipart formdata processing -->
+  <formdata multipart-processing="false" />
+
+</webscript>

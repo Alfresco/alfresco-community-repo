@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"               
+       xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 ../../../../webapps/alfresco/WEB-INF/classes/alfresco/model/modelSchema.xsd"      
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" name="wbpm:AssigneeTest">
+
+  <description>BPM Assignee Test Model</description>
+  <author>Workdesk</author>
+  <version>1.0</version>
+  <imports>
+     <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+     <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+	 <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+  </imports>
+  <namespaces>
+     <namespace uri="workdesk.alf.bpm" prefix="wbpm"/>
+  </namespaces>
+  <constraints>
+   <constraint name="wbpm:listDelegation" type="LIST">
+     <parameter name="allowedValues">
+     	<list>
+     	<value>Expression</value>
+     	<value>OnCreate</value>
+     	<value>Other</value>
+     	</list>
+     </parameter>
+   </constraint>
+  </constraints>  
+  <types>   
+     <type name="wbpm:DelegateTask">
+        <title>Delegation Task (Assignee)</title>
+        <parent>bpm:workflowTask</parent>
+        <properties>
+         <property name="wbpm:nextStep">
+         	<title>Next Step</title>
+         	<type>d:text</type>
+         	<protected>false</protected>
+         	<mandatory>false</mandatory>
+         	<multiple>false</multiple>
+         	<default>Expression</default>
+         	<constraints>
+         	 <constraint ref="wbpm:listDelegation" />
+         	</constraints>
+         </property>
+        </properties>
+		<associations>
+		 <association name="wbpm:delegatee">
+		 	<title>Responsible person</title>
+		 	<source>
+		 	 <mandatory>false</mandatory>
+		 	 <many>false</many>
+		 	</source>
+		 	<target>
+		 	 <class>cm:person</class>
+		 	 <mandatory>true</mandatory>
+		 	 <many>false</many>
+		 	</target>
+		 </association>
+		</associations>
+     </type>
+      <type name="wbpm:expressionTask">
+        <title>Expression Task (Assignee)</title>
+        <parent>bpm:workflowTask</parent>
+		<mandatory-aspects>
+			<aspect>wbpm:CommentAspect</aspect>
+		</mandatory-aspects>
+     </type>
+     <type name="wbpm:onCreateTask">
+        <title>On Create (Assignee)</title>
+        <parent>bpm:workflowTask</parent>
+		<mandatory-aspects>
+			<aspect>wbpm:CommentAspect</aspect>
+		</mandatory-aspects>
+     </type>
+     <type name="wbpm:otherTask">
+        <title>Other Task (Assignee)</title>
+        <parent>bpm:workflowTask</parent>
+		<mandatory-aspects>
+			<aspect>wbpm:CommentAspect</aspect>
+		</mandatory-aspects>
+     </type>
+   </types>
+   <aspects>
+   	<aspect name="wbpm:CommentAspect">
+   	  <title>Step Comment</title>
+         <properties>
+            <property name="wbpm:comment">
+               <title>Comment</title>
+         		<type>d:text</type>
+         		<protected>false</protected>
+         		<mandatory>false</mandatory>
+         		<multiple>true</multiple>
+            </property>
+         </properties>
+   	</aspect>
+   </aspects>
+</model>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Runas Admin Test</shortname>
+  <description>Runas Admin Test</description>
+  <url>/test/runasadmin</url>
+  <format default="html">argument</format>
+  <authentication runas="admin">user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,20 @@
+<webscript>
+  <shortname>Add tag</shortname>
+  <description>  <![CDATA[
+  Add one or more tags to the node.
+  <br />Input: 
+  <br />(mandatory) array of String
+  
+  <br />Returns the array of tags
+  
+  <br />Return STATUS_OK (200).
+  
+  ]]></description>
+  <url>/api/node/{store_type}/{store_id}/{id}/tags</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/tags</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+    <family>Tagging</family>
+</webscript>

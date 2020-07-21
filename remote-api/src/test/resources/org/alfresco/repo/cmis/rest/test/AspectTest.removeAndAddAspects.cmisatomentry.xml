@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
+    xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
+    <id>urn:uuid:00000000-0000-0000-0000-000000000000</id>
+    <title>Aspect Test</title>
+    <updated>2010-01-01T00:00:00Z</updated>
+    <author>admin</author>
+    <summary>Aspect Test (summary)</summary>
+    <content type="text">Content</content>
+    <cmisra:object>
+        <cmis:properties>
+            <cmis:propertyId propertyDefinitionId="cmis:objectTypeId">
+                <cmis:value>cmis:document</cmis:value>
+            </cmis:propertyId>
+            <alf:setAspects xmlns:alf="http://www.alfresco.org">
+                <alf:aspectsToAdd>P:cm:countable</alf:aspectsToAdd>
+                <alf:aspectsToRemove>P:cm:author</alf:aspectsToRemove>
+                <alf:properties>
+                    <cmis:propertyString propertyDefinitionId="cm:summary">
+                        <cmis:value>Aspect Test (new summary)</cmis:value>
+                    </cmis:propertyString>
+                </alf:properties>
+            </alf:setAspects>
+        </cmis:properties>
+    </cmisra:object>
+</entry>

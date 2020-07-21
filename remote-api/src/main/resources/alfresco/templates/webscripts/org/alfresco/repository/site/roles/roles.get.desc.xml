@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get roles</shortname>
+  <description>Get the authority roles of a site.</description>
+  <url>/api/sites/{shortname}/roles</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

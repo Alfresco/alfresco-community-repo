@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get workflow definition</shortname>
+  <description>
+  Returns a detailed representation of the workflow definitions.
+  </description>
+  <url>/api/workflow-definitions/{workflowDefinitionId}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

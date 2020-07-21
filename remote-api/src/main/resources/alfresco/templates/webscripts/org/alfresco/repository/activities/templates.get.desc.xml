@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>Activity template paths</shortname>
+  <description>Get a collection of the template paths.</description>
+  <url>/api/activities/templates</url>
+  <url>/api/activities/templates?format=json</url>
+  <url>/api/activities/templates/{path}</url>
+  <url>/api/activities/templates/{path}?format=json</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

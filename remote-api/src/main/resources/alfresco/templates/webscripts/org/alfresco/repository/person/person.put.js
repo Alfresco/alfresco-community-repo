@@ -1,0 +1,1 @@
+throw "Content type is incorrect";

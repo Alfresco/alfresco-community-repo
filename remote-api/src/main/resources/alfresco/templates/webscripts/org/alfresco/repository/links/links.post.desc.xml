@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>post</shortname>
+  <description>post</description>
+  <url>/api/links/site/{site}/{container}/posts</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

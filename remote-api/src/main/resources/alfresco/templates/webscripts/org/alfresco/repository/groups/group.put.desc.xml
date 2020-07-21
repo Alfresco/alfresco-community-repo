@@ -1,0 +1,19 @@
+<webscript>
+   <shortname>Update the details of a group</shortname>
+   <description><![CDATA[
+      Updates the details of a group.
+      <br />
+      You must have "administrator" privileges to change the name of a group.
+      </br /> 
+      The following properties may be updated:-
+      <dl>
+      <dt>displayName</dt><dd>The display name</dd>
+      </dl>
+   ]]>
+   </description>
+   <url>/api/groups/{shortName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

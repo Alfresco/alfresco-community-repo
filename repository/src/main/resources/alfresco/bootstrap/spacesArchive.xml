@@ -1,0 +1,10 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+    <view:reference view:pathref="/">
+        <!-- No permissions for root of archived store -->
+    </view:reference>
+
+</view:view>

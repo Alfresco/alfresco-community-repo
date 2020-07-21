@@ -1,0 +1,24 @@
+<p>Please translate me!</p>
+<h1>Web Scripts</h1>
+<p>
+<p>Web Scripts allow you to bind new Alfresco based functionality to a HTTP method and custom URL. A library of URLs may be built up to provide a complete API accessible via HTTP.&nbsp; They are ideal for building data access &amp; update APIs and simple UI components such as Portlets.&nbsp; Development of Web Scripts may be performed within Alfresco.&nbsp; Knowledge of Java is <em><strong>not</strong></em> required.<br/>
+</p>
+<p>
+For example, you could create the following API for your particular application... 
+</p>
+<dl><dt><strong>Execute a search</strong> </dt></dl>
+<p>
+GET http://&lt;host&gt;:&lt;port&gt;/alfresco/service/blog/category/{category}
+</p>
+<dl><dt><strong>Retrieve meta-data for an item in the repository</strong> </dt></dl> 
+<p>
+GET http://&lt;host&gt;:&lt;port&gt;/alfresco/service/blog/2007/03/04/new-release
+</p> 
+<dl><dt><strong>Update meta-data for an item in the repository</strong> </dt></dl> 
+<p>
+POST http://&lt;host&gt;:&lt;port&gt;/alfresco/service/blog/2007/03/04/new-release?status=Draft
+</p>
+<dl><dt><strong>Delete an item in the repository</strong></dt></dl> 
+<p>
+DELETE http://&lt;host&gt;:&lt;port&gt;/alfresco/service/blog/2007/03/04/new-release
+</p>    

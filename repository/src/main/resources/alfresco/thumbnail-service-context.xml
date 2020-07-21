@@ -1,0 +1,387 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+               http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- Thumbnail service bean -->
+    <bean id="ThumbnailService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.thumbnail.ThumbnailService</value>
+        </property>
+        <property name="target">
+            <ref bean="thumbnailService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="ThumbnailService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="ThumbnailService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Thumbnail service transaction bean -->
+    <bean id="ThumbnailService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService" ref="TransactionService" />
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="getThumbnailRegistry">${server.transaction.mode.readOnly}</prop>
+                <prop key="getThumbnailByName">${server.transaction.mode.readOnly}</prop>
+                <prop key="getThumbnails">${server.transaction.mode.readOnly}</prop>
+                <prop key="getFailedThumbnails">${server.transaction.mode.readOnly}</prop>
+                <prop key="getThumbnailsEnabled">${server.transaction.mode.readOnly}</prop>
+                <!-- It is read-only intentionally, see MNT-9964 -->
+                <prop key="createThumbnail">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- Thumbnail service security bean -->
+    <bean id="ThumbnailService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <!-- Thumbnail service implementation bean -->
+    <bean id="thumbnailService" class="org.alfresco.repo.thumbnail.ThumbnailServiceImpl" init-method="init">
+        <property name="nodeService" ref="nodeService"/>
+        <property name="renditionService" ref="renditionService" />
+        <property name="thumbnailRegistry" ref="thumbnailRegistry" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService"/>
+        <property name="transactionService" ref="TransactionService" />
+        <!-- Generate thumbnails at all? A false value turns generation off regardless of mimetype -->
+        <property name="thumbnailsEnabled">
+            <value>${system.thumbnail.generate}</value>
+        </property>
+    </bean>
+    
+    <!-- This bean is responsible for the conversion of thumbnail definitions to
+     rendition definitions and vice versa -->
+    <bean id ="thumbnailRenditionConvertor" class="org.alfresco.repo.thumbnail.ThumbnailRenditionConvertor" >
+        <property name="renditionService" ref="renditionService" />
+    </bean>
+    
+    <bean id="baseThumbnailDefinition"
+        class="org.alfresco.repo.thumbnail.ThumbnailDefinition"
+        abstract="true"
+        init-method="register">
+        <property name="thumbnailRegistry">
+            <ref bean="thumbnailRegistry" />
+        </property>
+    </bean>
+    
+    <bean id="defaultImageResizeOptions" 
+        class="org.alfresco.repo.content.transform.magick.ImageResizeOptions" 
+        abstract="true">
+        <property name="maintainAspectRatio" value="true"/>
+        <property name="resizeToThumbnail" value="true" />
+    </bean>
+    
+    <bean id="defaultImageTransformationOptions" 
+        class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions"
+        abstract="true">
+        <property name="timeoutMs" value="${system.thumbnail.definition.default.timeoutMs}" />
+        <property name="readLimitTimeMs" value="${system.thumbnail.definition.default.readLimitTimeMs}" />
+        <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
+        <property name="readLimitKBytes" value="${system.thumbnail.definition.default.readLimitKBytes}" />
+        <property name="pageLimit" value="${system.thumbnail.definition.default.pageLimit}" />
+        <property name="maxPages" value="${system.thumbnail.definition.default.maxPages}" />
+    </bean>
+    
+    <!-- Small image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionMedium" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="medium" />
+        <property name="mimetype" value="image/jpeg"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="100"/>
+                        <property name="height" value="100"/>
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_medium.jpg" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- Slingshot Document Library image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionDoclib" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="doclib" />
+        <property name="mimetype" value="image/png"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="100"/>
+                        <property name="height" value="100"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib.png" />
+        <property name="mimeAwarePlaceHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib{0}.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- Image preview thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionImgpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="imgpreview" />
+        <property name="mimetype" value="image/jpeg"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="960"/>
+                        <property name="height" value="960"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_256.png" />
+        <property name="mimeAwarePlaceHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_256{0}.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- User avatar 64x64 image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionAvatar" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="avatar" />
+        <property name="mimetype" value="image/png"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="64"/>
+                        <property name="height" value="64"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- User avatar 32x32 image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionAvatar32" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="avatar32" />
+        <property name="mimetype" value="image/png"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="32"/>
+                        <property name="height" value="32"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar32.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- Web Preview thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionWebpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="webpreview" />
+        <property name="mimetype" value="application/x-shockwave-flash"/>
+        <property name="transformationOptions">
+            <bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
+                <property name="flashVersion" value="9"/>
+            </bean>
+        </property>
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- PDF Preview -->
+    <bean id="thumbnailDefinitionPDFpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="pdf" />
+        <property name="mimetype" value="application/pdf" />
+        <property name="transformationOptions">
+            <!-- The thumbnail definition have transformationOptions mandatory -->
+            <!-- But there are none for pdf, so use SWFTransformationsOptions as a dummy -->
+            <bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
+                <property name="flashVersion" value="9" />
+            </bean>
+        </property>
+    </bean>
+    
+    <!-- Thumbnail Register -->
+    <bean id="thumbnailRegistry" parent="baseThumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry" />
+    
+    <bean id="baseThumbnailRegistry" abstract="true">
+        <property name="renditionService" ref="renditionService" />
+        <property name="transactionService" ref="TransactionService" />
+        <property name="tenantAdminService" ref="tenantAdminService" />
+        <property name="jobLockService" ref="jobLockService" />
+        <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+        <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
+        <property name="converter" ref="transformOptionsConverter" />
+        <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
+        <property name="redeployStaticDefsOnStartup" value="${system.thumbnail.redeployStaticDefsOnStartup}" />
+        <property name="thumbnailDefinitions">
+            <list>
+                <ref bean="thumbnailDefinitionMedium" />
+                <ref bean="thumbnailDefinitionDoclib" />
+                <ref bean="thumbnailDefinitionImgpreview" />
+                <ref bean="thumbnailDefinitionAvatar" />
+                <ref bean="thumbnailDefinitionAvatar32" />
+                <ref bean="thumbnailDefinitionPDFpreview" />
+                <ref bean="thumbnailDefinitionWebpreview" />
+            </list>
+        </property>
+        <property name="thumbnailRenditionConvertor" ref="thumbnailRenditionConvertor" />
+    </bean>
+    
+    <bean id="standardFailureOptions" class="org.alfresco.repo.thumbnail.FailureHandlingOptions">
+       <property name="retryPeriod" value="${system.thumbnail.retryPeriod}"/>
+       <property name="retryCount" value="${system.thumbnail.retryCount}"/>
+       <property name="quietPeriod" value="${system.thumbnail.quietPeriod}"/>
+       <property name="quietPeriodRetriesEnabled" value="${system.thumbnail.quietPeriodRetriesEnabled}"/>
+    </bean>
+    
+    <!-- Create Thumbnail Action -->
+    <bean id="create-thumbnail" class="org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="thumbnailService">
+            <ref bean="ThumbnailService" />
+        </property>
+      <property name="mimetypeMaxSourceSizeKBytes">
+          <ref bean="mimetypeMaxSourceSizeKBytes" />
+      </property>
+    </bean> 
+    
+    <!-- Update Thumbnail Action -->
+    <bean id="update-thumbnail" class="org.alfresco.repo.thumbnail.UpdateThumbnailActionExecuter" parent="action-executer">
+        <property name="publicAction">
+           <value>false</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="renditionService">
+            <ref bean="RenditionService" />
+        </property>
+        <property name="thumbnailService">
+            <ref bean="ThumbnailService" />
+        </property>
+      <property name="mimetypeMaxSourceSizeKBytes">
+          <ref bean="mimetypeMaxSourceSizeKBytes" />
+      </property>
+    </bean> 
+    
+    <!-- Size limits (KBytes) by mimetype of original source content after which thumbnails
+         are not created. If the mimetype is not specified or the value is less than zero,
+         a thumbnail will be generated regardless of size. -->
+    <util:map id="mimetypeMaxSourceSizeKBytes" 
+        map-class="java.util.HashMap" 
+        key-type="java.lang.String" 
+        value-type="java.lang.String">
+        <entry key="application/pdf" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.pdf}</value>
+        </entry>
+        <entry key="text/plain" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.txt}</value>
+        </entry>
+        <entry key="application/vnd.openxmlformats-officedocument.wordprocessingml.document" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.docx}</value>
+        </entry>
+        <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.xlsx}</value>
+        </entry>
+        <entry key="application/vnd.openxmlformats-officedocument.presentationml.presentation" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.pptx}</value>
+        </entry>
+        <entry key="application/vnd.oasis.opendocument.text" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.odt}</value>
+        </entry>
+        <entry key="application/vnd.oasis.opendocument.spreadsheet" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.ods}</value>
+        </entry>
+        <entry key="application/vnd.oasis.opendocument.presentation" >
+             <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.odp}</value>
+        </entry>
+    </util:map>
+
+    <!-- Thumbnail service script API -->    
+    <bean id="thumbnailServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.thumbnail.script.ScriptThumbnailService">
+        <property name="extensionName">
+            <value>thumbnailService</value>
+        </property>
+        <!-- Creates ScriptNodes which require the ServiceRegistry -->
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+    
+    <!-- This action filter bean prevents multiple equivalent create-thumbnail actions from executing
+         simultaneously in the Asynchronous Action Execution Service -->
+    <bean id="createThumbnailActionFilter" class="org.alfresco.repo.action.CreateThumbnailActionFilter" parent="baseActionFilter">
+       <property name="name">
+           <value>preventMultipleCreateThumbnailActions</value>
+       </property>
+       <!-- The action-definition-name against which this bean will be registered. -->
+       <property name="actionDefinitionName">
+           <value>create-thumbnail</value>
+       </property>
+   </bean>
+   
+   
+   <bean id="add-failed-thumbnail" class="org.alfresco.repo.thumbnail.AddFailedThumbnailActionExecuter" parent="action-executer">
+       <property name="publicAction">
+           <value>false</value>
+       </property>
+       <property name="nodeService">
+           <ref bean="NodeService" />
+       </property>
+       <property name="thumbnailService">
+           <ref bean="ThumbnailService" />
+       </property>
+       <property name="behaviourFilter">
+          <ref bean="policyBehaviourFilter"/>
+       </property>
+   </bean>
+
+   <bean id="node-eligible-for-rethumbnailing-evaluator" class="org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluator" parent="action-condition-evaluator">
+       <property name="publicCondition">
+           <value>false</value>
+       </property>
+      <property name="nodeService" ref="nodeService" />
+      <property name="thumbnailService" ref="thumbnailService" />
+   </bean>
+   
+   <bean id="failedThumbnailAspect" class="org.alfresco.repo.thumbnail.FailedThumbnailSourceAspect" init-method="init">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="lockService" ref="LockService"/>
+       <property name="thumbnailService" ref="ThumbnailService"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+   </bean>
+   
+    
+</beans>

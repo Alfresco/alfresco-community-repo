@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="schedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="searchSchedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <ref bean="search.alfrescoCoreBackupTrigger"/>
+                <ref bean="search.archiveCoreBackupTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- workspace://SpacesStore - alfresco -->
+
+    <bean id="search.alfrescoCoreBackupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${solr.backup.alfresco.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.search.impl.solr.SolrBackupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="solrBackupClient" value-ref="search.alfrescoCoreSolrBackupClient"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="search.alfrescoCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="remoteBackupLocation">
+            <value>${solr.backup.alfresco.remoteBackupLocation}</value>
+        </property>
+        <property name="numberToKeep">
+            <value>${solr.backup.alfresco.numberToKeep}</value>
+        </property>
+        <property name="core">
+            <value>alfresco</value>
+        </property>
+        <property name="solrAdminClient">
+            <ref bean="solrAdminClient" />
+        </property>
+        <property name="fixNumberToKeepOffByOneError">
+            <value>true</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+    
+    <!--  archive://SpacesStore - archive -->
+
+    <bean id="search.archiveCoreBackupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${solr.backup.archive.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean id="search.archiveCoreBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.search.impl.solr.SolrBackupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="solrBackupClient" value-ref="search.archiveCoreSolrBackupClient"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="search.archiveCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="remoteBackupLocation">
+            <value>${solr.backup.archive.remoteBackupLocation}</value>
+        </property>
+         <property name="numberToKeep">
+            <value>${solr.backup.archive.numberToKeep}</value>
+        </property>
+        <property name="core">
+            <value>archive</value>
+        </property>
+        <property name="solrAdminClient">
+            <ref bean="solrAdminClient" />
+        </property>
+        <property name="fixNumberToKeepOffByOneError">
+            <value>true</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+   
+</beans>

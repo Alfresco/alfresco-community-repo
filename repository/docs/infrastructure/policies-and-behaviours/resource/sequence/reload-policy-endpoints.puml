@@ -1,0 +1,48 @@
+@startuml
+
+Title: Policies: Reload Policy Endpoints (V5.2 Proposal)
+
+skinparam componentStyle uml2
+
+participant "Quartz"
+participant "PolicyCheckJob" as PCJ
+participant "PolicyEndpointRegistry" as PER
+participant "QueuedBehaviour" as QB
+participant "PolicyEndpointDAO" as DAO
+database DB
+participant "PolicyComponent" as PC
+database AMQ
+
+== Static Route Initialization ==
+
+activate PER
+PER -> QB: new
+activate PER
+PER -> PER: from("direct:policy")
+PER -> PER: dynamicRouter(method(PolicyEndpointRegistry.class, "slip"))
+deactivate PER
+deactivate PER
+
+== Quartz ==
+
+note over DAO,DB
+    UNIQUE : policy,typeOrAspect,endpoint
+    OTHER  : active, modified
+    SORT   : modified
+end note
+
+Quartz -> PCJ
+PCJ -> PER : reload(fromTime)
+PER -> DAO : getPolicyEndpoints(fromTime)
+DAO -> DB: SELECT(fromTime)
+DAO <-- DB
+PER <-- DAO
+loop each policy endpoint registration change
+    PER -> PER: updateRegistrations(PolicyEndpoint)
+    PER -> PC: bindClassBehaviour(policy,typeOrAspect, behaviour)
+end
+PCJ <-- PER : success
+Quartz <-- PCJ : success
+
+
+@enduml

@@ -1,0 +1,107 @@
+@startuml
+
+Title: Autoversion on Property Update - Versioning Flow
+
+participant "CMIS Client" as C
+participant "Repository" as R
+participant "Version Service" as V
+participant "workspace://SpacesStore" as SS
+participant "workspace://version2Store" as VS
+participant "File System" as FS
+database "Database" as DB
+
+C->R:HTTP POST
+activate R
+group "transaction"
+R->V
+activate V
+
+V->SS: create node
+activate SS
+SS->DB: create node
+activate DB
+DB->SS: OK
+deactivate DB
+SS->V: OK
+deactivate SS
+note right of SS
+workspace://SpacesStore/6060b6b6-2928-4092-ab66-659a7e68c0f6
+cm:autoVersionOnUpdateProps=true
+cm:name=foo.txt
+cm:versionLabel=1.0
+end note
+V->VS: create version history node with one child node
+activate VS
+VS->DB: create nodes
+activate DB
+DB->VS: OK
+deactivate DB
+VS->V: OK
+deactivate VS
+note right of VS
+One Version History Node with one child ...
+
+workspace://version2Store/62de48fa-6adc-4228-8667-df62584f98de
+cm:autoVersionOnUpdateProps=true
+cm:name=foo.txt
+cm:versionLabel=null
+ver2:versionLabel=1.0
+ver2:versionDescription=Initial Version
+
+end note
+end
+V->R: OK
+deactivate V
+R->C: 200 OK
+deactivate R
+
+C->R:HTTP PUT (cm:name=bar.txt)
+activate R
+group "transaction"
+R->V
+V->SS: update node
+activate V
+activate SS
+SS->DB: update node
+activate DB
+DB->SS: OK
+deactivate DB
+SS->V: OK
+deactivate SS
+note right of SS
+workspace://SpacesStore/6060b6b6-2928-4092-ab66-659a7e68c0f6
+cm:autoVersionOnUpdateProps=true
+cm:name=bar.txt
+cm:versionLabel=1.1
+end note
+
+V->VS: create a new child of the version history node
+activate VS
+VS->DB: create node
+activate DB
+DB->VS: OK
+deactivate DB
+VS->V: OK
+deactivate VS
+note right of VS
+One Version History Node with two children...
+
+workspace://version2Store/62de48fa-6adc-4228-8667-df62584f98de
+cm:autoVersionOnUpdateProps=true
+cm:name=foo.txt
+cm:versionLabel=null
+ver2:versionLabel=1.0
+ver2:versionDescription=Initial Version
+
+NEW CHILD:
+workspace://version2Store/64d5fd85-40d3-4a44-b644-d871cb3a1030
+cm:autoVersionOnUpdateProps=true
+cm:name=bar.txt
+cm:versionLabel=1.0
+ver2:versionLabel=1.1
+ver2:versionDescription=Update Name
+
+end note
+
+end
+@enduml

@@ -1,0 +1,17 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0"
+    xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0">
+
+    <cm:folder view:childName="${spaces.smartfolders.childname}">
+        <view:acl view:inherit="false">
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Contributor</view:permission>
+            </view:ace>
+        </view:acl>
+        <app:uifacets />
+        <cm:name>${spaces.smartfoldertemplates.name}</cm:name>
+        <app:icon>space-icon-default</app:icon>
+        <cm:title>${spaces.smartfoldertemplates.name}</cm:title>
+        <cm:description>${spaces.smartfoldertemplates.description}</cm:description>
+    </cm:folder>
+</view:view>

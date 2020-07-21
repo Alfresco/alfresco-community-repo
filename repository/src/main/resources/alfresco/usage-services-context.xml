@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Beans pertinent to content usage / quota service -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <bean id="usageService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="target">
+         <ref bean="usageServiceImpl" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>multiTNodeServiceInterceptor</value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="usageServiceImpl" class="org.alfresco.repo.usage.UsageServiceImpl">
+      <property name="usageDAO" ref="usageDAO"/>
+   </bean>
+   
+   <bean id="contentUsageImpl" class="org.alfresco.repo.usage.ContentUsageImpl" init-method="init">
+      <property name="personService" ref="personService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="usageService" ref="usageService"/>
+      <property name="authenticationContext" ref="authenticationContext"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="enabled">
+         <value>${system.usages.enabled}</value>
+      </property>
+      <property name="stores">
+         <list>
+            <value>workspace://SpacesStore</value>
+         </list>
+      </property>
+      <property name="excludedTypes">
+          <list>
+              <value>{http://www.alfresco.org/model/download/1.0}download</value>
+          </list>
+      </property>
+   </bean>
+   
+   <bean id="usageQuotaProtector" class="org.alfresco.repo.usage.UsageQuotaProtector" init-method="init">
+      <property name="authorityService" ref="authorityService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="contentUsageService" ref="contentUsageImpl"/>
+   </bean>
+   
+   <bean id="repoUsageComponent" class="org.alfresco.repo.usage.RepoUsageComponentImpl" init-method="init">
+      <property name="transactionService" ref="transactionService"/>
+      <property name="authorityService" ref="authorityService"/>
+      <property name="attributeService" ref="attributeService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+   
+   <bean id="repoUsageMonitor" class="org.alfresco.repo.usage.RepoUsageMonitor" init-method="init">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="transactionService" ref="transactionService"/>
+      <property name="repoUsageComponent" ref="repoUsageComponent"/>
+      <property name="jobLockService" ref="jobLockService"/>
+   </bean>
+   
+</beans>

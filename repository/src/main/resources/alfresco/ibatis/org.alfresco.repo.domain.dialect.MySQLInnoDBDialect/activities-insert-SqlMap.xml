@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.activities.insert">
+
+   <insert id="insert_activity_feedcontrol" parameterType="FeedControl" useGeneratedKeys="true" keyProperty="id">
+      <include refid="alfresco.activities.insert_ActivityFeedControl_AutoIncrement"/>
+      
+   </insert>
+   
+   <insert id="insert_activity_feed" parameterType="ActivityFeed" useGeneratedKeys="true" keyProperty="id">
+      <include refid="alfresco.activities.insert_ActivityFeed_AutoIncrement"/>
+      
+   </insert>
+   
+   <insert id="insert_activity_post" parameterType="ActivityPost" useGeneratedKeys="true" keyProperty="id">
+      <include refid="alfresco.activities.insert_ActivityPost_AutoIncrement"/>
+      
+   </insert>
+   
+</mapper>

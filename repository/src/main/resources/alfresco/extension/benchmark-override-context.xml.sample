@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!-- Disable indexing.  This is not normally recommended -->
+    <!--
+    <bean id="nodeIndexer" class="java.util.ArrayList" />
+    -->
+   
+   <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker">
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="enabled">
+         <value>false</value>  <!-- on/off switch -->
+      </property>
+      <property name="traceOn">
+         <value>false</value>  <!-- use only to trace problems -->
+      </property>
+      <property name="failOnViolation" >
+         <value>false</value>  <!-- set to true to generate runtime exceptions upon violation -->
+      </property>
+      <property name="maxErrorsPerTransaction" >
+         <value>5</value>  <!-- limit output (exception and log) to the first N violation messages -->
+      </property>
+   </bean>
+
+   <bean id="incompleteNodeTagger" class="org.alfresco.repo.node.integrity.IncompleteNodeTagger" >
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+   </bean>
+
+   <bean id="actionsAspect" class="org.alfresco.repo.action.ActionsAspect">
+      <property name="nodeService">
+	     <ref bean="nodeService"/>
+	  </property>	   
+	  <property name="policyComponent">
+	     <ref bean="policyComponent"/>
+	  </property>	  	   
+	  <property name="ruleService">
+	     <ref bean="ruleService"/>
+	  </property>
+   </bean>   
+   <bean id="rulesAspect" class="org.alfresco.repo.rule.RulesAspect">
+      <property name="nodeService">
+	     <ref bean="nodeService"/>
+	  </property>	   
+	  <property name="policyComponent">
+	     <ref bean="policyComponent"/>
+	  </property>	  	   
+	  <property name="ruleService">
+	     <ref bean="ruleService"/>
+	  </property>
+   </bean> 
+   <bean id="rule-trigger-base" abstract="true">
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponent"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService"/>
+      </property>
+   </bean>
+
+</beans>

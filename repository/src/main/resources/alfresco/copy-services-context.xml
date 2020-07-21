@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Core and miscellaneous bean definitions -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="copyServiceCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+
+    <bean name="copyCannedQueryFactoryBase" abstract="true">
+        <property name="registry" ref="copyServiceCannedQueryRegistry"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+    </bean>
+   
+    <bean   name="getCopiesCannedQueryFactory"
+            class="org.alfresco.repo.copy.query.GetCopiesCannedQueryFactory"
+            parent="copyCannedQueryFactoryBase">
+        <property name="methodSecurity" ref="CopyService_security_getCopies" />
+    </bean>
+   
+    <bean   name="getCopiedCannedQueryFactory"
+            class="org.alfresco.repo.copy.query.GetCopiesCannedQueryFactory"
+            parent="copyCannedQueryFactoryBase">
+    </bean>
+   
+    <!--                 -->
+    <!-- Copy Service    -->
+    <!--                 -->
+
+   <bean id="abstractBaseCopyService" class="org.alfresco.repo.copy.AbstractBaseCopyService" abstract="true">
+      <property name="systemNamespaces">
+         <list>
+            <value>http://www.alfresco.org/model/application/1.0</value>
+            <value>http://www.alfresco.org/model/site/1.0</value>
+         </list>
+      </property>
+   </bean>
+
+    <!-- Note this uses the node service that enforces permissions so you can only copy what you can see -->
+
+    <bean id="copyService" class="org.alfresco.repo.copy.CopyServiceImpl" parent="abstractBaseCopyService" init-method="init">
+        <property name="cannedQueryRegistry" ref="copyServiceCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="permissionService" ref="permissionService" />
+        <property name="publicServiceAccessService" ref="publicServiceAccessService" />
+        <property name="internalNodeService" ref="mlAwareNodeService" />
+    </bean>
+    
+</beans>

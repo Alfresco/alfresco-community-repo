@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+   This file is used to register period providers
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="period.none" class="org.alfresco.repo.dictionary.types.period.NoPeriod" />
+	<bean id="period.immediately" class="org.alfresco.repo.dictionary.types.period.Immediately" />
+	<bean id="period.days" class="org.alfresco.repo.dictionary.types.period.Days" />
+	<bean id="period.weeks" class="org.alfresco.repo.dictionary.types.period.Weeks" />
+	<bean id="period.months" class="org.alfresco.repo.dictionary.types.period.Months" />
+	<bean id="period.quarters" class="org.alfresco.repo.dictionary.types.period.Quarters" />
+	<bean id="period.years" class="org.alfresco.repo.dictionary.types.period.Years" />
+	
+	<bean id="period.end.of.month" class="org.alfresco.repo.dictionary.types.period.EndOfMonth" />
+	<bean id="period.end.of.quarter" class="org.alfresco.repo.dictionary.types.period.EndOfQuarter" />
+	<bean id="period.end.of.year" class="org.alfresco.repo.dictionary.types.period.EndOfYear" />
+	
+	<bean id="period.end.of.financial.month" class="org.alfresco.repo.dictionary.types.period.EndOfFinancialMonth" >
+		<property name="startDayOfMonth">
+            <value>1</value>
+        </property>
+		<property name="startMonth">
+            <value>9</value>
+        </property>
+	</bean>
+	<bean id="period.end.of.financial.quarter" class="org.alfresco.repo.dictionary.types.period.EndOfFinancialQuarter" >
+		<property name="startDayOfMonth">
+            <value>1</value>
+        </property>
+		<property name="startMonth">
+            <value>9</value>
+        </property>
+	</bean>
+	<bean id="period.end.of.financial.year" class="org.alfresco.repo.dictionary.types.period.EndOfFinancialYear" >
+		<property name="startDayOfMonth">
+            <value>1</value>
+        </property>
+		<property name="startMonth">
+            <value>9</value>
+        </property>
+	</bean>
+	
+	<bean id="period.cron" class="org.alfresco.repo.dictionary.types.period.Cron" />
+	<bean id="period.xml.duration" class="org.alfresco.repo.dictionary.types.period.XMLDuration" />
+	
+</beans>

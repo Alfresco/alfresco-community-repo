@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <cm:folder xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:custom="custom.model" xmlns="" 
+             view:childName="app:messages">
+    <view:aspects>
+      <app:uifacets></app:uifacets>
+    </view:aspects>
+    <view:properties>
+      <cm:description>${spaces.messages.description}</cm:description>
+      <app:icon>space-icon-default</app:icon>
+      <cm:title>${spaces.messages.title}</cm:title>
+      <cm:name>${spaces.messages.name}</cm:name>
+    </view:properties>
+  </cm:folder>
+</view:view>

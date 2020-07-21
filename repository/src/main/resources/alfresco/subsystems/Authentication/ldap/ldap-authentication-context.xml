@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <!--
+      The bean definitions for this subsystem are shared by the ldap and ldap-ad subsystems with different property
+      defaults
+   -->
+   <import resource="../common-ldap-context.xml" />
+
+   <!-- LDAP User Account Status Interpreter -->
+   <bean id="ldapUserAccountStatusInterpreter" class="org.alfresco.repo.security.sync.ldap.LDAPUserAccountStatusInterpreter"> 
+      <property name="disabledAccountPropertyValue">
+         <value>${ldap.synchronization.disabledAccountPropertyValue}</value>
+      </property>
+      <property name="acceptNullArgument">
+         <value>${ldap.synchronization.disabledAccountPropertyValueCanBeNull}</value>
+      </property>
+   </bean>
+</beans>

@@ -1,0 +1,692 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Importer and Exporter Components -->
+
+    <bean id="viewParser" class="org.alfresco.repo.importer.view.ViewParser">
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+    </bean>
+
+    <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent">
+        <!-- For now, hard-wire the view parser -->
+        <property name="namespaceService">
+            <ref bean="NamespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="RuleService" />
+        </property>
+        <property name="permissionService">
+           <ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+           <ref bean="AuthorityService" />
+        </property>
+        <property name="viewParser">
+            <ref bean="viewParser" />
+        </property>
+        <property name="behaviourFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="ownableService">
+           <ref bean="ownableService" />
+        </property>
+        <property name="versionService">
+           <ref bean="versionService" />
+        </property>
+        <property name="dbNodeService">
+            <ref bean="mtAwareNodeService" />
+        </property>
+        <property name="hiddenAspect">
+            <ref bean="hiddenAspect" />
+        </property>
+        <property name="contentUsageImpl">
+            <ref bean="contentUsageImpl"/>
+        </property>
+    </bean>
+    
+    
+      <bean id="importerComponentWithBehaviour" class="org.alfresco.repo.importer.ImporterComponent">
+        <!-- For now, hard-wire the view parser -->
+        <property name="namespaceService">
+            <ref bean="NamespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="RuleService" />
+        </property>
+        <property name="permissionService">
+           <ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+           <ref bean="AuthorityService" />
+        </property>
+        <property name="viewParser">
+            <ref bean="viewParser" />
+        </property>
+        <property name="behaviourFilter">
+            <ref bean="unboundPolicyBehaviourFilter" />
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="ownableService">
+           <ref bean="ownableService" />
+        </property>
+    </bean>
+
+    <bean id="exporterComponent" class="org.alfresco.repo.exporter.ExporterComponent">
+        <property name="namespaceService">
+            <ref bean="NamespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="descriptorService">
+            <ref bean="DescriptorService" />
+        </property>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="PermissionService" />
+        </property>
+    </bean>
+
+   <bean id="repositoryExporterComponent" class="org.alfresco.repo.exporter.RepositoryExporterComponent">
+      <property name="exporterService">
+         <ref bean="ExporterService" />
+      </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="FileFolderService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+        <property name="systemExporter">
+            <ref bean="systemExporterImporter" />
+        </property>
+      <property name="stores">
+            <list>
+                <props>
+                    <prop key="storeRef">system://system</prop>
+                    <prop key="packageName">system</prop>
+                </props>
+                <props>
+                    <prop key="storeRef">${alfresco_user_store.store}</prop>
+                    <prop key="packageName">users</prop>
+                </props>
+                <props>
+                    <prop key="storeRef">${spaces.store}</prop>
+                    <prop key="packageName">models</prop>
+                    <prop key="includedPaths">/app:company_home/app:dictionary/app:models</prop>
+                </props>
+                <props>
+                    <prop key="storeRef">${spaces.store}</prop>
+                    <prop key="packageName">spaces</prop>
+                </props>
+                <props>
+                    <prop key="storeRef">${spaces.archive.store}</prop>
+                    <prop key="packageName">spaces_archive</prop>
+                </props>
+                <props>
+                    <prop key="storeRef">${version.store.version2Store}</prop>
+                    <prop key="packageName">versions2</prop>
+                </props>
+            </list>
+      </property>
+   </bean>
+
+    <bean id="systemExporterImporter" class="org.alfresco.repo.importer.system.SystemExporterImporter">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="appliedPatchDAO">
+         <ref bean="appliedPatchDAO" />
+      </property>
+    </bean>
+    
+    <!-- System Info Importer -->
+    
+    <bean id="systemInfoImporter" class="org.alfresco.repo.importer.system.SystemInfoBootstrap" abstract="true">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
+        </property>
+        <property name="systemImporter">
+            <ref bean="systemExporterImporter" />
+        </property>
+        <property name="mustNotExistStoreUrls">
+            <list>
+                <value>${system.store}</value>
+            </list>
+        </property>
+    </bean>
+
+   <!-- General Repository Store Importer -->
+
+    <bean id="storeImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="storeImporterTransactionHelper"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="importerService">
+            <ref bean="importerComponent"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
+        </property>
+        <property name="allowWrite">
+            <value>${server.transaction.allow-writes}</value>
+        </property>
+        <!-- To specify a locale other than the system default, uncomment the following
+        <property name="locale">
+            <value>en_GB</value>
+        </property>
+        -->
+   </bean>
+
+    <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
+    </bean>
+
+    <!-- This retrying transaction helper is tuned for longer-running transactions on initial setup  -->
+    <bean id="storeImporterTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="maxRetries">
+            <value>${server.setup.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.setup.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.setup.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.setup.transaction.wait-increment-ms}</value>
+        </property>
+    </bean>
+
+   <!--  -->
+   <!--  Store specific Importers -->
+   <!--  -->
+   
+    <bean id="userStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${alfresco_user_store.store}</value>
+        </property>
+        <property name="configuration">
+            <props>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
+                <prop key="alfresco_user_store.adminpassword">${alfresco_user_store.adminpassword}</prop>
+                <prop key="alfresco_user_store.adminsalt">${alfresco_user_store.adminsalt}</prop>
+                <prop key="alfresco_user_store.adminpassword2">${alfresco_user_store.adminpassword2}</prop>
+                <prop key="alfresco_user_store.system_container.childname">${alfresco_user_store.system_container.childname}</prop>
+                <prop key="alfresco_user_store.user_container.childname">${alfresco_user_store.user_container.childname}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="systemStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${system.store}</value>
+        </property>
+        <property name="mustNotExistStoreUrls">
+            <list>
+                <value>${spaces.store}</value>
+            </list>
+        </property>
+        <property name="configuration">
+            <props>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>         
+                <prop key="version.major">${version.major}</prop>
+                <prop key="version.minor">${version.minor}</prop>
+                <prop key="version.revision">${version.revision}</prop>
+                <prop key="version.build">${version.build}</prop>
+                <prop key="version.label">${version.label}</prop>
+                <prop key="version.schema">${version.schema}</prop>
+                <prop key="version.edition">${version.edition}</prop>
+                <prop key="system.descriptor.childname">${system.descriptor.childname}</prop>
+                <prop key="system.descriptor.current.childname">${system.descriptor.current.childname}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="spacesArchiveStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${spaces.archive.store}</value>
+        </property>
+        <property name="mustNotExistStoreUrls">
+            <list>
+                <value>${spaces.archive.store}</value>
+            </list>
+        </property>
+<!--        
+        <property name="configuration">
+            <props>
+            </props>
+        </property>
+-->
+    </bean>
+
+    <bean id="spacesStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="configuration">
+            <props>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
+                <prop key="alfresco_user_store.guestusername">${alfresco_user_store.guestusername}</prop>               
+                <prop key="spaces.company_home.childname">${spaces.company_home.childname}</prop>
+                <prop key="spaces.guest_home.childname">${spaces.guest_home.childname}</prop>
+                <prop key="system.system_container.childname">${system.system_container.childname}</prop>
+                <prop key="system.authorities_container.childname">${system.authorities_container.childname}</prop>
+                <prop key="system.zones_container.childname">${system.zones_container.childname}</prop>
+                <prop key="system.people_container.childname">${system.people_container.childname}</prop>
+                <prop key="system.workflow_container.childname">${system.workflow_container.childname}</prop>
+                <prop key="spaces.dictionary.childname">${spaces.dictionary.childname}</prop>
+                <prop key="spaces.templates.childname">${spaces.templates.childname}</prop>
+                <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
+                <prop key="spaces.templates.email.childname">${spaces.templates.email.childname}</prop>
+                <prop key="spaces.templates.rss.childname">${spaces.templates.rss.childname}</prop>
+                <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
+                <prop key="spaces.scripts.childname">${spaces.scripts.childname}</prop>
+                <prop key="spaces.content_forms.childname">${spaces.content_forms.childname}</prop>
+                <prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
+                <prop key="spaces.sites.childname">${spaces.sites.childname}</prop>
+                <prop key="spaces.templates.email.invite.childname">${spaces.templates.email.invite.childname}</prop>
+                <prop key="spaces.templates.email.invite1.childname">${spaces.templates.email.invite1.childname}</prop>
+                <prop key="spaces.templates.email.notify.childname">${spaces.templates.email.notify.childname}</prop>
+                <prop key="spaces.templates.email.activities.childname">${spaces.templates.email.activities.childname}</prop>
+                <prop key="spaces.imapConfig.childname">${spaces.imapConfig.childname}</prop>
+                <prop key="spaces.transfers.childname">${spaces.transfers.childname}</prop>
+                <prop key="spaces.transfer_groups.childname">${spaces.transfer_groups.childname}</prop>
+                <prop key="spaces.transfer_temp.childname">${spaces.transfer_temp.childname}</prop>
+                <prop key="spaces.inbound_transfer_records.childname">${spaces.inbound_transfer_records.childname}</prop>
+                <prop key="spaces.imap_attachments.childname">${spaces.imap_attachments.childname}</prop>
+                <prop key="spaces.imap_home.childname">${spaces.imap_home.childname}</prop>
+                <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
+                <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
+                <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>
+                <prop key="spaces.scheduled_actions.childname">${spaces.scheduled_actions.childname}</prop>
+                <prop key="spaces.rendition.rendering_actions.childname">${spaces.rendition.rendering_actions.childname}</prop>
+                <prop key="spaces.replication.replication_actions.childname">${spaces.replication.replication_actions.childname}</prop>
+                <prop key="spaces.nodetemplates.childname">${spaces.nodetemplates.childname}</prop>
+                <prop key="spaces.shared.childname">${spaces.shared.childname}</prop>
+                <prop key="system.remote_credentials_container.childname">${system.remote_credentials_container.childname}</prop>
+                <prop key="system.syncset_definition_container.childname">${system.syncset_definition_container.childname}</prop>
+                <prop key="system.downloads_container.childname">${system.downloads_container.childname}</prop>
+                <prop key="system.certificate_container.childname">${system.certificate_container.childname}</prop>
+                <prop key="spaces.solr_facets.root.childname">${spaces.solr_facets.root.childname}</prop>
+                <prop key="spaces.smartfolders.childname">${spaces.smartfolders.childname}</prop>
+                <prop key="spaces.smartdownloads.childname">${spaces.smartdownloads.childname}</prop>
+                <prop key="spaces.quickshare.link_expiry_actions.childname">${spaces.quickshare.link_expiry_actions.childname}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="versionStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${version.store.deprecated.lightWeightVersionStore}</value>
+        </property>
+    </bean>
+    
+    <bean id="version2StoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${version.store.version2Store}</value>
+        </property>
+    </bean>
+    
+    <!--
+        Abstract bootstrap beans.
+        These define the bootstrap beans, but will not be instantiated.  Alfresco will, on startup,
+        use concrete derivations of these beans as singletons.  The MultiTAdminService creates prototype
+        instances for its internal use.
+     -->
+    <bean id="systemInfoBootstrap-base" parent="systemInfoImporter" abstract="true" />
+
+    <bean id="userBootstrap-base" parent="userStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="systemBootstrap-base" parent="systemStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/descriptor.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/systemRegistry.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="versionBootstrap-base" parent="versionStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/lightWeightVersionStore.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="version2Bootstrap-base" parent="version2StoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/version2Store.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="spacesArchiveBootstrap-base" parent="spacesArchiveStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/spacesArchive.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="spacesBootstrap-base" parent="spacesStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/spaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/system.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/categories.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-messages</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/multilingualRoot.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
+                    <prop key="location">alfresco/templates/software_engineering_project.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-templates</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
+                    <prop key="location">alfresco/templates/content_template_examples.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
+                    <prop key="location">alfresco/templates/readme_template.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-readme-template</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/email_templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/activities-email-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/following-email-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/notification/workflow-email-notification.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</prop>
+                    <prop key="location">alfresco/templates/rss_templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/example_javascripts.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-example-javascripts</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/webScripts.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-webScripts</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/webScriptsExtensions.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-webScriptsExtensions</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/webScriptsReadme.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customModelsSpace.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customMessagesSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customWebClientExtensionSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/cm:categoryRoot</prop>
+                    <prop key="location">alfresco/bootstrap/tagRootCategory.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/sitesSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoAuthorityStoreDefaultMembers.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/remoteCredentialsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/syncSetDefinitionsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/imapSpaces.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>      
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/transferSpaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>       
+                </props>    
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/renderingActionSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/replicationActionSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default</prop>
+                    <prop key="location">alfresco/bootstrap/transferTargetRuleFolder.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default/rule:ruleFolder</prop>
+                    <prop key="location">alfresco/bootstrap/transferTargetRule.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/scheduledActionsFolder.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/new-user-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/invite-email-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/invite-add-direct-email-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+               
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/invite-moderated-email-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.notify.childname}</prop>
+                    <prop key="location">alfresco/templates/notify_email_templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <!-- imapSpacesTemplates.xml depends on the above imapSpaces.acp being bootstrapped as it imports
+                    into folders defined in that acp.  -->
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/imapSpacesTemplates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/downloadsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/example_smartfoldertemplates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-example-smartfoldertemplates</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+</beans>

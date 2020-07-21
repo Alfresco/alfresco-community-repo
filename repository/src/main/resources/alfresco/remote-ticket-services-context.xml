@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+   <!-- Remote Connector Service -->
+   <!--  For now, takes no services, so no public/private split -->
+   <alias alias="RemoteConnectorService" name="remoteConnectorService" />
+   <bean id="remoteConnectorService" class="org.alfresco.repo.remoteconnector.RemoteConnectorServiceImpl" />
+
+   <!-- Remote Alfresco Ticket Service -->
+   <bean id="RemoteAlfrescoTicketService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService</value>
+      </property>
+      <property name="target">
+         <ref bean="remoteAlfrescoTicketService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="remoteAlfrescoTicketServiceReadTxnAdvisor" />
+            <idref bean="remoteAlfrescoTicketServiceWriteTxnAdvisor" />
+            <!-- <idref bean="AuditMethodInterceptor" /> -->
+            <idref bean="exceptionTranslator" />
+            <idref bean="remoteAlfrescoTicketService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Transaction Interceptors for the Remote AlfrescoTicket Service -->
+   <bean id="remoteAlfrescoTicketServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getRemoteCredentials</value>
+                <value>registerRemoteSystem</value>
+
+                <!-- These create their own write transaction internally if recording problems -->
+                <value>getAlfrescoTicket</value>
+                <value>refetchAlfrescoTicket</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="remoteAlfrescoTicketServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>storeRemoteCredentials</value>
+                <value>deleteRemoteCredentials</value>
+            </list>
+        </property>
+   </bean>
+
+   <!-- Remote Alfresco Ticket Security -->
+   <bean id="remoteAlfrescoTicketService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.getRemoteCredentials=ACL_ALLOW
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.storeRemoteCredentials=ACL_ALLOW
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.deleteRemoteCredentials=ACL_ALLOW
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.getAlfrescoTicket=ACL_ALLOW
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.refetchAlfrescoTicket=ACL_ALLOW
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.registerRemoteSystem=ACL_METHOD.ROLE_ADMINISTRATOR
+               org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+
+
+   <!-- Remote Alfresco Ticket Service base bean -->
+	<bean id="remoteAlfrescoTicketService" class="org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceImpl">
+        <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+        <property name="remoteCredentialsService" ref="RemoteCredentialsService"/>
+        <property name="remoteConnectorService" ref="RemoteConnectorService" />
+        <property name="ticketsCache" ref="remoteAlfrescoTicketService.ticketsCache" />
+	</bean>
+</beans>

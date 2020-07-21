@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <bean id="testsubsystem" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+        <property name="typeName">
+            <value>testType</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+               <entry key="subsystems.test.beanProp">
+                   <value>org.alfresco.repo.management.subsystems.test.TestBean</value>
+               </entry>
+            </map>
+        </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="test1.port" value-ref="testPortEarlyChecker1" />
+                <entry key="test2.port" value-ref="testPortEarlyChecker1" />
+                <entry key="test3.port" value-ref="testPortEarlyChecker1" />
+                <entry key="test4.port" value-ref="testPortEarlyChecker1" />
+                <entry key="test5.port" value-ref="testPortEarlyChecker1" />
+                <entry key="test_with_host.port" value-ref="testPortEarlyChecker2" />
+            </map>
+        </property>
+    </bean>
+    <bean id="testPortEarlyChecker1" class="org.alfresco.repo.management.subsystems.test.TestPortEarlyPropertyChecker">
+        <constructor-arg value="TestSubsystem" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
+        <property name="blockedPort">
+            <ref bean="testPortNumber" />
+        </property>
+    </bean>
+    <bean id="testPortEarlyChecker2" class="org.alfresco.repo.management.subsystems.test.TestPortEarlyPropertyChecker">
+        <constructor-arg value="TestSubsystem" />
+        <constructor-arg value="test.subsystem.host" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
+        <property name="wrongHost">
+            <ref bean="testHost" />
+        </property>
+    </bean>
+    
+    <bean id="sampleService" class="org.alfresco.repo.management.subsystems.test.SampleService">
+    </bean>    
+    
+    <bean id="testPortNumber" class="java.lang.Integer">
+        <constructor-arg>
+            <value>65534</value>
+        </constructor-arg> 
+    </bean>
+
+    <bean id="testHost" class="java.lang.String">
+        <constructor-arg type="java.lang.String" value="testHost"/>
+    </bean>
+
+</beans>

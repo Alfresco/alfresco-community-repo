@@ -1,0 +1,1365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Core and miscellaneous bean definitions -->
+
+    <!--                    -->
+    <!--  PERSISTENCE       -->
+    <!--                    -->
+
+    <!-- Load runtime-dependent properties (e.g.: alfresco.jmx.dir).     -->
+    <!-- Note:  This bean relies on PropertyPlaceholderConfigurer (should be ordered before "shared-properties") -->
+    <bean id="runtimeProperties"  class="org.alfresco.util.RuntimeSystemPropertiesSetter">
+        <property name="order">
+            <value>5</value>
+        </property>
+    </bean>
+
+    <!-- Ensure backward compatibility with installations that control custom properties through repository-properties -->
+    <bean id="legacyConfigPostProcessor" class="org.alfresco.repo.management.subsystems.LegacyConfigPostProcessor"/>
+
+    <!-- Global properties used in property expansion throughout the container, overridable via JNDI or System properties -->
+    <bean id="global-properties" class="org.alfresco.config.JndiPropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/repository.properties</value>
+                <value>classpath:alfresco/domain/transaction.properties</value>
+                <value>classpath:alfresco/caches.properties</value>
+                <!-- Defaults for "decomposed" non-enterprise projects, e.g. alfresco-remote-api -->
+                <value>classpath*:alfresco/project-*.properties</value>
+                <!-- Enterprise defaults -->
+                <!--  Overrides supplied if this is an enterprise install (none exist for community) -->
+                <value>classpath*:alfresco/enterprise/caches.properties</value>
+                <value>classpath*:alfresco/enterprise/repository.properties</value>
+                <!-- <value>classpath:alfresco/jndi.properties</value> -->
+                <!--  Overrides supplied by modules -->
+                <value>classpath*:alfresco/module/*/alfresco-global.properties</value>
+                <!--  Installer or user-provided defaults -->
+                <value>classpath*:alfresco-global.properties</value>
+            </list>
+        </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+        </property>
+        <!-- Extra properties that have no defaults that we allow to be defined through JNDI or System properties -->
+        <property name="systemProperties">
+            <list>
+                <value>hibernate.dialect</value>
+                <value>hibernate.query.substitutions</value>
+                <value>hibernate.jdbc.use_get_generated_keys</value>
+                <value>hibernate.default_schema</value>
+            </list>
+        </property>
+        <property name="propertiesPersister">
+        	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
+        </property>
+    </bean>
+
+    <bean id="common-placeholder-configurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" abstract="true">
+    <!-- Note: If you change these settings you may also want to change them in the LegacyConfigPostProcessor as well. -->
+        <property name="valueSeparator">
+            <null/>
+        </property>
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
+        <property name="propertiesPersister">
+        	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
+        </property>
+    </bean>
+
+    <!-- Expand global properties and version information in bean definitions -->
+    <bean id="repository-properties" parent="common-placeholder-configurer">
+        <property name="locations">
+            <list>
+                <!--  Non-overridable version information -->
+                <value>classpath:alfresco/version.properties</value>
+            </list>
+        </property>
+        <property name="properties">
+            <ref bean="global-properties"/>
+        </property>
+        <!--  Do not allow version information to be overriden -->
+        <property name="localOverride">
+            <value>false</value>
+        </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_NEVER</value>
+        </property>
+        <!-- Order before shared-properties to give you a chance to override its parameters here -->
+        <property name="order">
+            <value>6</value>
+        </property>
+    </bean>
+
+
+    <!-- Load properties that must be shared between the        -->
+    <!-- Alfresco server and its remote clients.                -->
+    <!--                                                        -->
+    <!-- Note:  This is done in a separate bean to make it      -->
+    <!--        for users who have already overridden their     -->
+    <!--        "repository-properties" in a dev-context.xml    -->
+    <!--        or custom-db-and-data-context.xml file.         -->
+
+    <!-- Custom MBeanServer -->
+    <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="${mbean.server.locateExistingServerIfPossible}" />
+    </bean>
+
+    <bean id="dynamicExporter" class="org.alfresco.repo.management.DynamicMBeanExporter">
+       <property name="server" ref="alfrescoMBeanServer"/>
+    </bean>
+
+    <bean id="managedResource" class="org.alfresco.repo.management.DummyManagedResource">
+    </bean>
+
+  
+
+    <bean id="propertyBackedBeanRegistry" class="org.alfresco.repo.management.subsystems.DefaultPropertyBackedBeanRegistry"/>
+
+    <bean id="abstractPropertyBackedBean" class="org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean"
+        abstract="true">
+        <property name="registry">
+            <ref bean="propertyBackedBeanRegistry" />
+        </property>
+        <!-- Ensure that child application contexts propagate global default values -->
+        <property name="propertyDefaults">
+            <ref bean="global-properties" />
+        </property>
+        
+        <property name="encryptedPropertyDefaults">
+            <ref bean="encrypted-properties" />
+        </property>
+    </bean>
+
+    <!--
+         http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module#log4j.properties
+    -->
+    <import resource="classpath:alfresco/logging-context.xml" />
+
+
+    <bean id="RepoServerMgmt" class="org.alfresco.repo.admin.RepoServerMgmt">
+        <property name="transactionService"><ref bean="transactionService"/></property>
+        <property name="authenticationService"><ref bean="authenticationService"/></property>
+    </bean>
+
+    <!-- from Thor -->
+    <bean id="defaultDataSource" parent="baseDefaultDataSource" />
+
+    <!-- Datasource bean -->
+    <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" abstract="true">
+        <property name="driverClassName">
+            <value>${db.driver}</value>
+        </property>
+        <property name="url">
+            <value>${db.url}</value>
+        </property>
+        <property name="username">
+            <value>${db.username}</value>
+        </property>
+        <property name="password">
+            <value>${db.password}</value>
+        </property>
+        <property name="initialSize" >
+            <value>${db.pool.initial}</value>
+        </property>
+        <property name="maxActive" >
+            <value>${db.pool.max}</value>
+        </property>
+        <property name="minIdle" >
+            <value>${db.pool.min}</value>
+        </property>
+        <property name="maxIdle" >
+            <value>${db.pool.idle}</value>
+        </property>
+        <property name="defaultAutoCommit" >
+            <value>false</value>
+        </property>
+        <property name="defaultTransactionIsolation" >
+            <value>${db.txn.isolation}</value>
+        </property>
+        <property name="maxWait" >
+            <value>${db.pool.wait.max}</value>
+        </property>
+        <property name="validationQuery" >
+            <value>${db.pool.validate.query}</value>
+        </property>
+        <property name="timeBetweenEvictionRunsMillis" >
+            <value>${db.pool.evict.interval}</value>
+        </property>
+        <property name="minEvictableIdleTimeMillis" >
+            <value>${db.pool.evict.idle.min}</value>
+        </property>
+        <property name="numTestsPerEvictionRun" >
+            <value>${db.pool.evict.num.tests}</value>
+        </property>
+        <property name="testOnBorrow" >
+            <value>${db.pool.validate.borrow}</value>
+        </property>
+        <property name="testOnReturn" >
+            <value>${db.pool.validate.return}</value>
+        </property>
+        <property name="testWhileIdle" >
+            <value>${db.pool.evict.validate}</value>
+        </property>
+        <property name="removeAbandoned" >
+            <value>${db.pool.abandoned.detect}</value>
+        </property>
+        <property name="removeAbandonedTimeout" >
+            <value>${db.pool.abandoned.time}</value>
+        </property>
+        <property name="poolPreparedStatements" >
+            <value>${db.pool.statements.enable}</value>
+        </property>
+        <property name="maxOpenPreparedStatements" >
+            <value>${db.pool.statements.max}</value>
+        </property>
+        <property name="logAbandoned" >
+            <value>${db.pool.abandoned.log}</value>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="org.alfresco.config.JndiObjectFactoryBean">
+        <property name="jndiName">
+            <value>java:comp/env/jdbc/dataSource</value>
+        </property>
+        <property name="defaultObject">
+            <ref bean="defaultDataSource" />
+        </property>
+    </bean>
+
+    <bean id="dialect" class="org.alfresco.repo.domain.dialect.DialectFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="transactionSynchronizationName" value="SYNCHRONIZATION_ALWAYS"/>
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="dataSourceCheck" class="org.alfresco.repo.domain.schema.DataSourceCheck" init-method="init" depends-on="resourceBundles">
+        <property name="dbUrl">
+            <value>${db.url}</value>
+        </property>
+        <property name="dbUsername">
+            <value>${db.username}</value>
+        </property>
+        <property name="transactionIsolation" >
+            <value>${db.txn.isolation}</value>
+        </property>
+        <property name="dataSource">
+            <ref bean="dataSource"/>
+        </property>
+    </bean>
+
+    <!-- transaction service -->
+    <alias name="transactionService" alias="transactionComponent"/>
+    <bean id="transactionService" class="org.alfresco.repo.transaction.TransactionServiceImpl">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="allowWrite">
+            <value>${server.transaction.allow-writes}</value>
+        </property>
+        <property name="maxRetries">
+            <value>${server.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.transaction.wait-increment-ms}</value>
+        </property>
+    </bean>
+
+    <bean id="retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="maxRetries">
+            <value>${server.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.transaction.wait-increment-ms}</value>
+        </property>
+    </bean>
+
+    <!--
+        A special time-limited retrying transaction helper that will keep request times below
+        server.web.transaction.max-duration-ms
+    -->
+    <bean id="web.retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="extraExceptions">
+            <list>
+                <value>org.alfresco.service.cmr.repository.InvalidNodeRefException</value>
+            </list>
+        </property>
+        <property name="maxRetries">
+            <value>${server.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.transaction.wait-increment-ms}</value>
+        </property>
+        <property name="maxExecutionMs">
+            <value>${server.web.transaction.max-duration-ms}</value>
+        </property>
+    </bean>
+
+    <bean id="retryingWriteTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
+        <property name="txnHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="readOnly">
+            <value>false</value>
+        </property>
+        <property name="requiresNew">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="retryingReadTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
+        <property name="txnHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="readOnly">
+            <value>true</value>
+        </property>
+        <property name="requiresNew">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="checkTxnAdvice" class="org.alfresco.repo.transaction.CheckTransactionAdvice" />
+
+    <!--
+      General-purpose registry for CannedQueryFactory instances.
+         Normally you would keep a registry per application area.
+    -->
+    <bean id="cannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+
+    <!--                        -->
+    <!-- I18N                   -->
+    <!--                        -->
+
+    <bean id="resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.system-messages</value>
+                <value>alfresco.messages.module-messages</value>
+                <value>alfresco.messages.dictionary-messages</value>
+                <value>alfresco.messages.version-service</value>
+                <value>alfresco.messages.permissions-service</value>
+                <value>alfresco.messages.content-service</value>
+                <value>alfresco.messages.coci-service</value>
+                <value>alfresco.messages.discussion-messages</value>
+                <value>alfresco.messages.template-service</value>
+                <value>alfresco.messages.templates-messages</value>
+                <value>alfresco.messages.lock-service</value>
+                <value>alfresco.messages.patch-service</value>
+                <value>alfresco.messages.period-provider</value>
+                <value>alfresco.messages.schema-update</value>
+                <value>alfresco.messages.webdav-messages</value>
+                <value>alfresco.messages.copy-service</value>
+                <value>alfresco.messages.content-filter-languages</value>
+                <value>alfresco.messages.activiti-engine-messages</value>
+                <value>alfresco.messages.subscription-service</value>
+                <value>alfresco.messages.replication</value>
+                <value>alfresco.messages.categories</value>
+                <value>alfresco.messages.authentication</value>
+                <value>alfresco.messages.file-folder-service</value>
+                <value>alfresco.messages.custommodel-service</value>
+                <value>alfresco.messages.doclink-service</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Repo-based Message Service (based on Core I18NUtil) -->
+
+    <bean id="messageService" class="org.alfresco.repo.i18n.MessageServiceImpl">
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService"/>
+        </property>
+        <property name="resourceBundleBaseNamesCache">
+            <ref bean="resourceBundleBaseNamesCache"/>
+        </property>
+        <property name="loadedResourceBundlesCache">
+            <ref bean="loadedResourceBundlesCache"/>
+        </property>
+         <property name="messagesCache">
+             <ref bean="messagesCache"/>
+        </property>
+        <property name="tryLockTimeout">
+            <value>${system.lockTryTimeout.MessageServiceImpl}</value>
+        </property>
+    </bean>
+
+    <!--                               -->
+    <!--  Lock Service           -->
+    <!--                               -->
+
+    <bean id="lockStoreFactory" class="org.alfresco.repo.lock.mem.DefaultLockStoreFactory"/>
+
+    <bean id="lockStore" factory-bean="lockStoreFactory" factory-method="createLockStore"/>
+
+    <bean id="lockableAspectInterceptor" class="org.alfresco.repo.lock.mem.LockableAspectInterceptor" init-method="init">
+        <property name="nodeService" ref="dbNodeService"/>
+        <property name="lockService" ref="lockService"/>
+        <property name="lockStore" ref="lockStore"/>
+        <property name="authenticationService" ref="authenticationService"/>
+    </bean>
+
+    <bean id="lockService" class="org.alfresco.repo.lock.LockServiceImpl" init-method="init">
+        <property name="nodeService" ref="nodeService" />
+        <property name="tenantService" ref="tenantService" />
+        <property name="lockStore" ref="lockStore" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="lockableAspectInterceptor" ref="lockableAspectInterceptor" />
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="searchService" ref="admSearchService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ephemeralExpiryThreshold" value="${alfresco.ephemeralLock.expiryThresh}"/>
+    </bean>
+
+    <!--                               -->
+    <!--  Version Service   -->
+    <!--                               -->
+
+
+    <bean id="versionService" class="org.alfresco.repo.version.Version2ServiceImpl" init-method="initialise">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="dbNodeService">
+            <ref bean="mtAwareNodeService" />
+        </property>
+        <property name="searcher">
+            <ref bean="versionSearchService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="policyBehaviourFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+        <property name="versionComparatorClass">
+            <value>${version.store.versionComparatorClass}</value>
+        </property>
+    </bean>
+
+    <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
+        <property name="contentDataDAO">
+            <ref bean="contentDataDAO" />
+        </property>
+        <property name="dbNodeService">
+            <ref bean="mtAwareNodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+
+    <bean id="serialVersionLabelPolicy" class="org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy" >
+    </bean>
+
+    <bean id="registerContentWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register">
+       <property name="versionService">
+            <ref bean="versionService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="typeQName">
+            <value>cm:content</value>
+        </property>
+        <property name="policy">
+             <ref bean="serialVersionLabelPolicy" />
+        </property>
+    </bean>
+
+    <bean id="registerMLContainerWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register">
+       <property name="versionService">
+            <ref bean="versionService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="typeQName">
+            <value>cm:mlContainer</value>
+        </property>
+        <property name="policy">
+             <ref bean="serialVersionLabelPolicy" />
+        </property>
+    </bean>
+
+    <bean id="versionableAspect" class="org.alfresco.repo.version.VersionableAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="versionService">
+            <ref bean="versionService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="lockService" ref="lockService" />
+        <property name="dictionaryDAO">
+            <ref bean="dictionaryDAO"/>
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService"/>
+        </property>
+        <property name="excludedOnUpdateProps">
+            <list>
+                <value>webdav:opaquelocktoken</value>
+                <value>webdav:sharedLockTokens</value>
+                <value>webdav:lockDepth</value>
+                <value>webdav:lockScope</value>
+                <value>webdav:deadproperties</value>
+                <value>cm:likesRatingSchemeTotal</value>
+                <value>cm:likesRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeTotal</value>
+                <!-- ALF-12205 - do not version on comments -->
+                <value>fm:commentCount</value>
+                <value>cm:expiryDate</value>
+                <!-- MNT-181 -->
+                <value>sys:clientVisibilityMask</value>
+                <value>cm:lastThumbnailModification</value>
+                <value>cm:likesRatingSchemeTotal</value>
+                <value>cm:likesRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeTotal</value>
+                <!-- ALF-12205 - do not version on comments -->
+                <value>fm:commentCount</value>
+                <!-- MNT-9688 -->
+                <value>cm:storeName</value>
+                <value>cm:content</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--                 -->
+    <!-- Data Dictionary -->
+    <!--                 -->
+
+    <!-- Constraint Registry -->
+    <bean id="cm:constraintRegistry" class="org.alfresco.repo.dictionary.constraint.ConstraintRegistry" />
+
+    <!-- A constraint that does nothing -->
+    <bean id="noop.storeSelectorConstraint" class="org.alfresco.repo.dictionary.constraint.NoOpConstraint" init-method="initialize" >
+       <property name="shortName">
+           <value>defaultStoreSelector</value>
+       </property>
+       <property name="registry">
+           <ref bean="cm:constraintRegistry" />
+       </property>
+    </bean>
+
+    <alias name="dictionaryDAO" alias="namespaceDAO"/>
+
+    <bean id="modelValidator" class="org.alfresco.repo.dictionary.ModelValidatorImpl">
+        <property name="dictionaryDAO" ref="dictionaryDAO"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="workflowService" ref="WorkflowService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="enforceTenantInNamespace" value="${models.enforceTenantInNamespace}"/>
+    </bean>
+
+    <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryRegistryCache">
+            <ref bean="compiledModelsCache"/>
+        </property>
+        <property name="defaultAnalyserResourceBundleName">
+            <value>${lucene.defaultAnalyserResourceBundleName}</value>
+        </property>
+    </bean>
+
+    <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="dictionaryBootstrap">
+        <property name="dictionaryDAO">
+            <ref bean="dictionaryDAO" />
+        </property>
+        <property name="messageLookup">
+            <bean class="org.springframework.aop.framework.ProxyFactoryBean" >
+                <!-- Lazy init to avoid circular dependencies -->
+                <property name="targetSource">
+                    <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                        <property name="targetBeanName">
+                            <idref bean="messageService" />
+                        </property>
+                        <property name="targetClass">
+                            <value>org.alfresco.repo.i18n.MessageService</value>
+                        </property>
+                    </bean>
+                </property>
+                <property name="proxyInterfaces">
+                    <list>
+                        <value>org.alfresco.service.cmr.i18n.MessageLookup</value>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="namespaceService" class="org.alfresco.repo.dictionary.DictionaryNamespaceComponent"
+        depends-on="dictionaryDAO">
+        <property name="namespaceDAO">
+            <ref bean="namespaceDAO" />
+        </property>
+    </bean>
+
+    <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
+        <property name="dictionaryDAO"><ref bean="dictionaryDAO"/></property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="globalProperties" ref="global-properties"/>
+    </bean>
+
+    <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
+        <property name="models">
+            <list>
+                <!-- System models  -->
+                <value>alfresco/model/dictionaryModel.xml</value>
+                <value>alfresco/model/systemModel.xml</value>
+                <value>org/alfresco/repo/security/authentication/userModel.xml</value>
+
+                <!-- Content models -->
+                <value>alfresco/model/contentModel.xml</value>
+                <value>alfresco/model/bpmModel.xml</value>
+                <value>alfresco/model/forumModel.xml</value>
+                <value>alfresco/model/imapModel.xml</value>
+                <value>alfresco/model/transferModel.xml</value>
+                <value>alfresco/model/solrFacetModel.xml</value>
+                <value>alfresco/model/customModelManagementModel.xml</value>
+
+                <!-- Content models -->
+                <value>alfresco/model/applicationModel.xml</value>
+
+                <!-- Implementation models -->
+                <value>org/alfresco/repo/action/actionModel.xml</value>
+                <value>org/alfresco/repo/rule/ruleModel.xml</value>
+
+                <!--  Version models -->
+                <value>org/alfresco/repo/version/version_model.xml</value> <!-- deprecated -->
+                <value>org/alfresco/repo/version/version2_model.xml</value>
+
+                <!-- Email model -->
+                <value>alfresco/model/emailServerModel.xml</value>
+
+                <!-- Calendar model -->
+                <value>alfresco/model/calendarModel.xml</value>
+
+                <!-- Blog Integration model -->
+                <value>alfresco/model/deprecated/blogIntegrationModel.xml</value>
+
+                <!-- Links model -->
+                <value>alfresco/model/linksModel.xml</value>
+
+                <!-- Remote Credentials model -->
+                <value>alfresco/model/remoteCredentialsModel.xml</value>
+
+                <!-- QuickShare (aka PublicView) -->
+                <value>alfresco/model/quickShareModel.xml</value>
+
+                <!-- Surf model -->
+                <value>alfresco/model/surfModel.xml</value>
+
+                <!-- Site model -->
+                <value>alfresco/model/siteModel.xml</value>
+
+                <!-- Smart Folders model -->
+                <value>alfresco/model/smartfolder-model.xml</value>
+
+            </list>
+        </property>
+        <property name="labels">
+            <list>
+                <value>alfresco/messages/system-model</value>
+                <value>alfresco/messages/dictionary-model</value>
+                <value>alfresco/messages/content-model</value>
+                <value>alfresco/messages/bpm-messages</value>
+                <value>alfresco/messages/application-model</value>
+                <value>alfresco/messages/forum-model</value>
+                <value>alfresco/messages/email-server-model</value>
+                <value>alfresco/messages/transfer-model</value>
+                <value>alfresco/messages/site-model</value>
+                <value>alfresco/messages/smartfolder-model</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- TODO - deprecate and replace with mechanism that does not rely on init-method (see AR-2207) -->
+    <bean id="extension.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/defaultCustomModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--                           -->
+    <!-- CheckOut/CheckIn Service  -->
+    <!--                           -->
+
+    <bean id="checkOutCheckInService" class="org.alfresco.repo.coci.CheckOutCheckInServiceImpl" init-method="init">
+        <property name="nodeService" ref="nodeService" />
+        <property name="versionService" ref="versionService" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="lockService" ref="LockService" />
+        <property name="ownableService" ref="OwnableService" />
+        <property name="copyService" ref="CopyService" />
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="policyComponent" ref="policyComponent" />
+         <property name="behaviourFilter" ref="policyBehaviourFilter" />
+    </bean>
+
+    <bean id="workingCopyAspect" class="org.alfresco.repo.coci.WorkingCopyAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="lockService" ref="LockService" />
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
+		<property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
+    </bean>
+
+    <bean id="checkedOutAspect" class="org.alfresco.repo.coci.CheckedOutAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>
+
+    <!-- Multilingual Document-->
+    <bean id="multilingualDocumentAspect" class="org.alfresco.repo.model.ml.MultilingualDocumentAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="multilingualContentService">
+            <ref bean="multilingualContentService" />
+        </property>
+    </bean>
+
+    <!-- Empty translation -->
+    <bean id="emptyTranslationAspect" class="org.alfresco.repo.model.ml.EmptyTranslationAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+    </bean>
+
+    <!-- Multilingual Container -->
+    <bean id="mlContainerType" class="org.alfresco.repo.model.ml.MLContainerType" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="multilingualContentService">
+            <ref bean="multilingualContentService" />
+        </property>
+    </bean>
+
+    <!-- Referenceable -->
+    <bean id="referenceableAspect" class="org.alfresco.repo.node.ReferenceableAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>
+
+    <!-- Temporary Aspect -->
+    <bean id="temporaryAspect" class="org.alfresco.repo.node.TemporaryAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>
+
+    <!-- Temporary Aspect -->
+    <bean id="pendingDeleteAspect" class="org.alfresco.repo.node.PendingDeleteAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>
+
+    <!-- Configurable service -->
+    <bean id="configurableService" class="org.alfresco.repo.configuration.ConfigurableServiceImpl">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+    </bean>
+
+    <!-- Registry service -->
+    <bean id="registryService" class="org.alfresco.repo.admin.registry.RegistryServiceImpl" init-method="init">
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <!-- Root properties -->
+        <property name="registryStore">
+            <value>system://system</value>
+        </property>
+        <property name="registryRootPath">
+            <value>/sys:system-registry</value>
+        </property>
+    </bean>
+
+    <bean id="serverMode" class="org.alfresco.repo.mode.ServerModeImpl" >
+        <property name="serverModeAsString">
+            <value>${system.serverMode}</value>
+        </property>
+    </bean>
+
+    <bean id="serverDescriptorDAO" class="org.alfresco.repo.descriptor.ServerDescriptorDAOImpl">
+        <property name="repositoryName">
+            <value>${repository.name}</value>
+        </property>
+        <property name="resource">
+            <list>
+                <value>classpath:alfresco/version.properties</value>
+                <value>classpath:alfresco/repository.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="currentRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">
+       <property name="name">
+           <value>system.descriptor.current.childname</value>
+       </property>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="contentService">
+           <ref bean="contentService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+    </bean>
+
+    <bean id="installedRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">
+       <property name="name">
+           <value>system.descriptor.childname</value>
+       </property>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="contentService">
+           <ref bean="contentService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+    </bean>
+
+    <!-- Clustered (DB) locking Service -->
+    <bean id="jobLockService" class="org.alfresco.repo.lock.JobLockServiceImpl" destroy-method="shutdown">
+        <property name="retryingTransactionHelper">
+            <bean class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+                <property name="transactionService">
+                    <ref bean="transactionService"/>
+                </property>
+                <property name="maxRetries">
+                    <value>10</value>
+                </property>
+                <property name="minRetryWaitMs">
+                    <value>10</value>
+                </property>
+                <property name="maxRetryWaitMs">
+                    <value>10</value>
+                </property>
+                <property name="retryWaitIncrementMs">
+                    <value>1</value>
+                </property>
+                <property name="forceWritable">
+                    <value>true</value>
+                </property>
+            </bean>
+        </property>
+        <property name="lockDAO" ref="lockDAO" />
+        <property name="defaultRetryCount"><value>10</value></property>
+        <property name="defaultRetryWait"><value>20</value></property>
+    </bean>
+
+    <bean id="licenseResourceComponent" class="org.alfresco.repo.descriptor.LicenseResourceComponent">
+       <property name="externalLicenseLocation">
+           <value>${location.license.external}</value>
+       </property>
+       <property name="sharedLicenseLocation">
+           <value>${location.license.shared}</value>
+       </property>
+       <property name="embeddedLicenseLocation">
+           <value>${location.license.embedded}</value>
+       </property>
+    </bean>
+
+    <!-- Import the sys admin params from the sysAdmin subsystem -->
+    <bean id="sysAdminParams" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="sysAdmin" />
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.admin.SysAdminParams</value>
+           </list>
+        </property>
+    </bean>
+
+    <!-- Replacement for Spring's multicaster, that queues up events until the application is started -->
+    <bean id="applicationEventMulticaster" class="org.alfresco.repo.management.SafeApplicationEventMulticaster"/>
+
+   <bean id="repositoryState" class="org.alfresco.repo.admin.RepositoryState" />
+
+   <!-- Alfresco Events Publisher -->
+   <bean id="eventPublisher" class="org.alfresco.sync.repo.events.DelegatingEventPublisher" />
+
+   <!-- index subsystem proxies -->
+
+    <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="sourceBeanName">
+            <value>${index.subsystem.name}</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>manager</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="solr" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="solr.store.mappings">
+                    <value>org.alfresco.repo.search.impl.solr.SolrStoreMapping</value>
+                </entry>
+            </map>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="typeName">
+            <value>solr</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>solr</value>
+            </list>
+        </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="solr.port" value-ref="solrPortEarlyChecker" />
+                <entry key="solr.port.ssl" value-ref="solrSSLPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="solrPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>
+    <bean id="solrSSLPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr SSL" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>
+    <bean id="solr6" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="solr6.store.mappings">
+                    <value>org.alfresco.repo.search.impl.solr.SolrStoreMapping</value>
+                </entry>
+            </map>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="typeName">
+            <value>solr6</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>solr6</value>
+            </list>
+        </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="solr.port" value-ref="solr4PortEarlyChecker" />
+                <entry key="solr.port.ssl" value-ref="solr4SSLPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="solr4" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="solr4.store.mappings">
+                    <value>org.alfresco.repo.search.impl.solr.SolrStoreMapping</value>
+                </entry>
+            </map>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="typeName">
+            <value>solr4</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>solr4</value>
+            </list>
+        </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="solr.port" value-ref="solr4PortEarlyChecker" />
+                <entry key="solr.port.ssl" value-ref="solr4SSLPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="solr4PortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>
+    <bean id="solr4SSLPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr SSL" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>
+
+    <bean id="noindex" class="org.alfresco.repo.management.subsystems.NoIndexChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="typeName">
+            <value>noindex</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>noindex</value>
+            </list>
+        </property>
+    </bean>
+
+   <bean id="indexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.indexerAndSearcherFactory</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="admSearchService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.admSearchService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.SearchService</value>
+         </list>
+      </property>
+   </bean>
+
+    <bean id="versionSearchService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.versionSearchService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.SearchService</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="searchService" class="org.alfresco.repo.search.impl.SearchServiceSubSystemDelegator">
+      <property name="subSystem" ref ="searchServiceSubsystemProxy" />
+      <property name="nodeService" ref="mlAwareNodeService" />
+      <property name="dictionaryService" ref="dictionaryService" />
+   </bean>
+
+   <bean id="searchServiceSubsystemProxy" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.searchService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.SearchService</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="admLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory" depends-on="Search" >
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.admLuceneIndexerAndSearcherFactory</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+            <value>org.alfresco.repo.search.impl.lucene.LuceneConfig</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="admLuceneUnIndexedIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.admLuceneUnIndexedIndexerAndSearcherFactory</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+            <value>org.alfresco.repo.search.impl.lucene.LuceneConfig</value>
+         </list>
+      </property>
+   </bean>
+
+
+   <bean id="indexerComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.indexerComponent</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.search.Indexer</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="queryRegisterComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.queryRegisterComponent</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.search.QueryRegisterComponent</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="categoryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.categoryService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.CategoryService</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="adm.luceneQueryEngineImpl" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.adm.luceneQueryEngineImpl</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="statsService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.statsService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.StatsService</value>
+         </list>
+      </property>
+   </bean>
+
+    <bean id="solrTrackingComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.solrTrackingComponent</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.solr.SOLRTrackingComponent</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="defaultImageResolver" class="org.alfresco.util.DefaultImageResolver" />
+
+   <bean id="nameChecker" class="org.alfresco.repo.dictionary.constraint.NameChecker">
+      <property name="dictionaryService" ref="dictionaryService" />
+      <!--
+      <property name="constraintLocalName">
+          <value>userNameConstraint</value>
+      </property>
+      <property name="namespaceURI">
+          <value>http://www.alfresco.org/model/content/1.0</value>
+      </property>
+      -->
+   </bean>
+   
+   <bean id="suggesterService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.suggesterService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.SuggesterService</value>
+         </list>
+      </property>
+   </bean>
+
+   <!-- Custom property editors -->
+   <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+      <property name="propertyEditorRegistrars">
+         <list>
+            <ref bean="customPropertyEditorRegistrar"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="customPropertyEditorRegistrar"
+      class="org.alfresco.util.CustomPropertyEditorRegistrar">
+      <property name="namespaceService" ref="NamespaceService"/>
+   </bean>
+
+   <!--  Annotated behaviour bean post processor -->
+   <bean id="annotatedBehaviourBeanPostProcessor" class="org.alfresco.repo.policy.annotation.AnnotatedBehaviourPostProcessor">
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
+
+   <bean id="deploymentMethodProvider" class="org.alfresco.repo.deployment.DeploymentMethodProviderImpl" >
+       <property name="deploymentMethod">
+           <value>${deployment.method}</value>
+       </property>
+   </bean>
+
+    <bean id="dbMetricsReporter" class="org.alfresco.metrics.db.DBMetricsReporterProxy"/>
+
+    <bean id="restMetricsReporter" class="org.alfresco.metrics.rest.RestMetricsReporterProxy"/>
+</beans>

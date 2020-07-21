@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    ** This configuraton is for tests only. **
+    Applications or services should create specific 'query-xxx-common-SqlMap.xml' files to define
+    queries required.
+
+    The namespace must start 'alfresco.query.' and then contain the reference to the app using it.
+    In this case, the application is 'test' so the filename is 'query-test-...' and the
+    namespace is 'alfresco.query.test'.
+    
+    Select statements are prefixed 'select_' in Alfresco's config.  The underscore is important to
+    prevent confusion (at a code level) between namespaces and the type of SQL statement.
+    
+    Hints:
+        Do not use 'parameterMap' or 'resultMap' as these are deprecated in MyBatis (when last we checked).
+        
+        Ensure that all 'types' (see 'typeAlias') have concise toString methods to aid debugging.
+        
+        We are using SQL, so it is OK to embed '%' in wildcard strings.  It becomes unwieldy to assume
+        that the client code always wants to match a prefix or suffix in 'like' clauses.  However, it
+        is up to the application logic as to whether the '%' is embedded in the SQL or in the code.
+    
+    See class CannedQueryDAOTest for a demonstration.
+-->
+<mapper namespace="alfresco.query.test">
+
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_CountMimetypes" parameterType="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams" resultType="Long">
+        select
+            count(*)
+        from
+            alf_mimetype
+        <if test="mimetypeMatch != null">
+        where
+            <if test="exact == true">mimetype_str = #{mimetypeMatch}</if>
+            <if test="exact == false">mimetype_str like #{mimetypeMatch} <include refid="alfresco.util.escape"/> </if>
+        </if>
+        <if test="forceFail == true">JUNKED</if>
+    </select>
+
+    <select id="select_Mimetypes" parameterType="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams" resultType="String">
+        select
+            mimetype_str
+        from
+            alf_mimetype
+        <if test="mimetypeMatch != null">
+            where
+                <if test="exact == true">mimetype_str = #{mimetypeMatch}</if>
+                <if test="exact == false">mimetype_str like #{mimetypeMatch} <include refid="alfresco.util.escape"/></if>
+        </if>
+        <if test="forceFail == true">JUNKED</if>
+    </select>
+    
+    <select id="select_NodeServiceTest_testConcurrentLinkToDeletedNode_GetChildNodesWithDeletedParentNodeCannedQuery" parameterType="org.alfresco.repo.domain.node.NodeEntity" resultType="Long" >
+        select
+            ca.child_node_id
+        from
+            alf_node n
+            join alf_child_assoc ca on (ca.parent_node_id = n.id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            n.id > #{id}
+        order by
+            ca.parent_node_id
+    </select>
+    
+    <select id="select_NodeServiceTest_testForceNonRootNodeWithNoParentNode_GetChildNodesWithNoParentNodeCannedQuery" parameterType="org.alfresco.repo.domain.node.NodeEntity" resultType="Long" >
+        <![CDATA[
+        select
+            n.id
+        from
+            alf_node n
+            left join alf_child_assoc ca on (ca.child_node_id = n.id)
+        where
+            n.type_qname_id <> #{typeQNameId} and
+            ca.parent_node_id is null
+        order by
+            n.id
+        ]]>
+    </select>
+
+    <select id="select_NodeServiceTest_testLinkToDeletedNodeRecovery_GetDeletedChildrenCannedQuery" parameterType="org.alfresco.repo.domain.node.NodeEntity" resultType="Long" >
+        select
+            ca.child_node_id
+        from
+            alf_node n
+            join alf_child_assoc ca on (ca.child_node_id = n.id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            n.id > #{id}
+        order by
+            ca.child_node_id
+    </select>
+
+</mapper>

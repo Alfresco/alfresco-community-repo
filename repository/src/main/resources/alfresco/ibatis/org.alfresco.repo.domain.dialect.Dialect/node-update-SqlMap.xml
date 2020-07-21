@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.update">
+    
+    <!--
+        The ANSI form requires a subselect.  This is not compatible with MySQL.
+    -->
+    <update id="update_PrimaryChildrenSharedAcl" parameterType="PrimaryChildrenAclUpdate">
+        update
+            alf_node
+        set
+            acl_id = #{newSharedAclId},
+            version = version + 1,
+            transaction_id = #{txnId}
+        where id in
+        (
+            select n.id
+            from
+                alf_node n
+                join alf_child_assoc ca on (n.id = ca.child_node_id and ca.is_primary = #{isPrimary})
+            where
+                ca.parent_node_id = #{primaryParentNodeId}
+                and
+                (
+                    n.acl_id is null 
+                    <if test="optionalOldSharedAclIdInAdditionToNull != null"> OR n.acl_id = #{optionalOldSharedAclIdInAdditionToNull}</if>
+                )
+        )
+    </update>
+    
+    <!--
+        Use ANSI subselect.  This is not performant on MySQL. 
+    -->
+    <update id="update_ChildrenTxns" parameterType="ChildAssoc">
+        update
+            alf_node
+        set
+            version = version + 1,
+            n.transaction_id = #{parent.transaction.id}
+        where id in
+        (
+            select
+                ca.child_node_id
+            from
+                alf_child_assoc ca
+            where
+                ca.parent_node_id = #{parent.id}
+                <if test="isPrimary == true">and ca.is_primary = #{isPrimary}</if>
+        )
+    </update>
+
+</mapper>

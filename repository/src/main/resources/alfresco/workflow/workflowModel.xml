@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="wf:workflowmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/workflow/1.0" prefix="wf"/>
+   </namespaces>
+      
+   <types>
+
+      <!--                               -->
+      <!--  Basic Review & Approve Tasks -->               
+      <!--                               -->
+      
+      <type name="wf:submitReviewTask">
+         <parent>bpm:startTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="wf:submitConcurrentReviewTask">
+         <parent>bpm:startTask</parent>
+         <properties>
+            <property name="wf:requiredApprovePercent">
+                <type>d:int</type>
+                <mandatory>true</mandatory>
+                <default>50</default>
+                <constraints>
+                    <constraint type="MINMAX">
+                        <parameter name="minValue"><value>1</value></parameter>
+                        <parameter name="maxValue"><value>100</value></parameter>
+                    </constraint>
+                </constraints>
+            </property>
+         </properties>
+      </type>
+
+      <!--  Submit review to multiple people (explicit list) -->
+      <type name="wf:submitParallelReviewTask">
+         <parent>wf:submitConcurrentReviewTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignees</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!--  Submit review to multiple people (as included in a group) -->
+      <type name="wf:submitGroupReviewTask">
+         <parent>wf:submitConcurrentReviewTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:groupAssignee</aspect>
+         </mandatory-aspects>
+      </type>
+
+        <type name="wf:activitiReviewTask">
+            <parent>bpm:activitiOutcomeTask</parent>
+            <properties>
+                <property name="wf:reviewOutcome">
+                    <type>d:text</type>
+                    <default>Reject</default>
+                    <constraints>
+                        <constraint name="wf:reviewOutcomeOptions" type="LIST">
+                            <parameter name="allowedValues">
+                                <list>
+                                    <value>Approve</value>
+                                    <value>Reject</value>
+                                </list>
+                            </parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+            <overrides>
+                <property name="bpm:packageItemActionGroup">
+                    <default>edit_package_item_actions</default>
+                </property>
+                <property name="bpm:outcomePropertyName">
+                    <default>{http://www.alfresco.org/model/workflow/1.0}reviewOutcome</default>
+                </property>
+            </overrides>
+        </type>
+
+      <type name="wf:approvedTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+      <type name="wf:rejectedTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+      <type name="wf:rejectedParallelTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>wf:parallelReviewStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="wf:approvedParallelTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>wf:parallelReviewStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+
+      <!--                               -->
+      <!--  Adhoc Tasks -->               
+      <!--                               -->
+      
+      <type name="wf:submitAdhocTask">
+         <parent>bpm:startTask</parent>
+         <properties>
+            <property name="wf:notifyMe">
+               <type>d:boolean</type>
+               <default>false</default>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="wf:adhocTask">
+         <parent>bpm:workflowTask</parent>
+         <overrides>
+            <property name="bpm:packageActionGroup">
+               <default>add_package_item_actions</default>
+            </property>
+            <property name="bpm:packageItemActionGroup">
+               <default>edit_package_item_actions</default>
+            </property>
+         </overrides>
+      </type>
+
+      <type name="wf:completedAdhocTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+   
+   <aspects>
+   
+      <aspect name="wf:parallelReviewStats">
+         <properties>
+            <property name="wf:reviewerCount">
+               <type>d:int</type>
+            </property>
+            <property name="wf:requiredPercent">
+               <type>d:int</type>
+            </property>
+            <property name="wf:approveCount">
+               <type>d:int</type>
+            </property>
+            <property name="wf:actualPercent">
+               <type>d:int</type>
+            </property>
+         </properties> 
+      </aspect>
+   
+   </aspects>
+
+</model>

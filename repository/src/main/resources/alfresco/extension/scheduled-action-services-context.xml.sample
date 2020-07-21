@@ -1,0 +1,448 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--
+    Define the model factory used to generate object models suitable for use with freemarker templates. 
+    -->
+    <bean id="templateActionModelFactory" class="org.alfresco.repo.action.scheduled.FreeMarkerWithLuceneExtensionsModelFactory">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <!--
+    An example action template that defines an action to add the generalclassifiable aspect to all nodes that do not have
+    and add a category defined by path.    
+    -->
+    <bean id="addClassifiableAspectAction" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="actionName">
+            <value>add-features</value>
+        </property>
+        <property name="parameterTemplates">
+            <map>
+                <entry>
+                    <key>
+                        <value>aspect-name</value>
+                    </key>
+                    <value>{http://www.alfresco.org/model/content/1.0}generalclassifiable</value>
+                </entry>
+                
+                <entry>
+                    <key>
+                        <value>{http://www.alfresco.org/model/content/1.0}categories</value>
+                    </key>
+                    <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
+                    <value>\$\{selectSingleNode('workspace://SpacesStore', 'lucene', 'PATH:"/cm:generalclassifiable/cm:Languages/cm:English"' )\}</value>
+                </entry>
+            </map>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
+    <!--
+    An example action template that removes an aspect from all those nodes that have the aspect.
+    -->
+    <bean id="removeClassifiableAspectAction" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="actionName">
+            <value>remove-features</value>
+        </property>
+        <property name="parameterTemplates">
+            <map>
+                <entry>
+                    <key>
+                        <value>aspect-name</value>
+                    </key>
+                    <value>{http://www.alfresco.org/model/content/1.0}generalclassifiable</value>
+                </entry>
+            </map>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
+    <!--
+    An example that copies the tutorial node into the company home space
+    -->
+    <bean id="copyAction" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="actionName">
+            <value>copy</value>
+        </property>
+        <property name="parameterTemplates">
+            <map>
+                <entry>
+                    <key>
+                        <value>destination-folder</value>
+                    </key>
+                    <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
+                    <value>\$\{selectSingleNode('workspace://SpacesStore', 'lucene', 'PATH:"/app:company_home"' )\}</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>assoc-type</value>
+                    </key>
+                    <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
+                    <value>\$\{node.primaryParentAssoc.typeQName\}</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>assoc-name</value>
+                    </key>
+                    <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
+                    <value>\$\{node.primaryParentAssoc.QName\}</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>deep-copy</value>
+                    </key>
+                    <value>false</value>
+                </entry>
+            </map>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
+    <!--
+    An example that sets the created date to now
+    -->
+    <bean id="setCreatedDateAction" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="actionName">
+            <value>set-property-value</value>
+        </property>
+        <property name="parameterTemplates">
+            <map>
+                <entry>
+                    <key>
+                        <value>property</value>
+                    </key>
+                    <value>{http://www.alfresco.org/model/content/1.0}created</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>value</value>
+                    </key>
+                    <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
+                    <value>\$\{today?string("yyyy-MM-dd'T'HH:mm:ss.sss'Z'")\}</value>
+                </entry>
+            </map>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
+    <!--
+    Compound action example ...
+    -->
+    
+    <bean id="compositeAction" class="org.alfresco.repo.action.scheduled.CompositeTemplateActionDefinition">
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+        <property name="templateActionDefinitions">
+            <list>
+                <ref bean="copyAction"/>
+                <ref bean="setCreatedDateAction"/>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- ONE_TRANSACTION    ISOLATED_TRANSACTIONS      UNTIL_FIRST_FAILURE -->
+    
+    <!--
+    Define a job for adding the classified aspect to nodes.
+    -->
+    <bean id="addClassifiableAspectEveryTenMinutes" class="org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinition">
+        <property name="transactionMode">
+            <value>UNTIL_FIRST_FAILURE</value>
+        </property>
+        <property name="compensatingActionMode">
+            <value>IGNORE</value>
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
+        </property>
+        <property name="stores">
+            <list>
+                <value>workspace://SpacesStore</value>
+            </list>
+        </property>
+        <!-- Find all nodes that do not have the aspect -->
+        <property name="queryTemplate">
+            <value>PATH:"//\*" -ASPECT:"{http://www.alfresco.org/model/content/1.0}generalclassifiable"</value>
+        </property>
+        <property name="cronExpression">
+            <value>0 50 * * * ?</value>
+        </property>
+        <property name="jobName">
+            <value>jobA</value>
+        </property>
+        <property name="jobGroup">
+            <value>jobGroup</value>
+        </property>
+        <property name="triggerName">
+            <value>triggerA</value>
+        </property>
+        <property name="triggerGroup">
+            <value>triggerGroup</value>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="templateActionDefinition">
+            <ref bean="addClassifiableAspectAction"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="runAsUser">
+            <value>System</value>
+        </property>
+    </bean>
+    
+    <!--
+    Define a job to remove an aspect.
+    -->
+    <bean id="removeClassifiableAspectEveryTenMinutes" class="org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinition">
+        <property name="transactionMode">
+            <value>UNTIL_FIRST_FAILURE</value>
+        </property>
+        <property name="compensatingActionMode">
+            <value>IGNORE</value>
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
+        </property>
+        <property name="stores">
+            <list>
+                <value>workspace://SpacesStore</value>
+            </list>
+        </property>
+        <property name="queryTemplate">
+            <value>ASPECT:"{http://www.alfresco.org/model/content/1.0}generalclassifiable"</value>
+        </property>
+        <property name="cronExpression">
+            <value>0 55 * * * ?</value>
+        </property>
+        <property name="jobName">
+            <value>jobB</value>
+        </property>
+        <property name="jobGroup">
+            <value>jobGroup</value>
+        </property>
+        <property name="triggerName">
+            <value>triggerB</value>
+        </property>
+        <property name="triggerGroup">
+            <value>triggerGroup</value>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="templateActionDefinition">
+            <ref bean="removeClassifiableAspectAction"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="runAsUser">
+            <value>System</value>
+        </property>
+    </bean>
+    
+    <!--
+    Define a job to remove an aspect.
+    -->
+    <bean id="copyTutorialEveryTenMinutes" class="org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinition">
+        <property name="transactionMode">
+            <value>UNTIL_FIRST_FAILURE</value>
+        </property>
+        <property name="compensatingActionMode">
+            <value>IGNORE</value>
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
+        </property>
+        <property name="stores">
+            <list>
+                <value>workspace://SpacesStore</value>
+            </list>
+        </property>
+        <property name="queryTemplate">
+            <value>+PATH:"/app:company_home/*//*" +TEXT:"tutorial"</value>
+        </property>
+        <property name="cronExpression">
+            <value>0 40 * * * ?</value>
+        </property>
+        <property name="jobName">
+            <value>jobC</value>
+        </property>
+        <property name="jobGroup">
+            <value>jobGroup</value>
+        </property>
+        <property name="triggerName">
+            <value>triggerC</value>
+        </property>
+        <property name="triggerGroup">
+            <value>triggerGroup</value>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="templateActionDefinition">
+            <ref bean="copyAction"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="runAsUser">
+            <value>System</value>
+        </property>
+    </bean>
+    
+    <!--
+    Find content created yesterday in the previous 10 years:-
+    set the created date to today and copy to the company home  
+    -->
+    <bean id="makeStuffCreatedRecentlyCreatedNow" class="org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinition">
+        <property name="transactionMode">
+            <value>UNTIL_FIRST_FAILURE</value>
+        </property>
+        <property name="compensatingActionMode">
+            <value>IGNORE</value>
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
+        </property>
+        <property name="stores">
+            <list>
+                <value>workspace://SpacesStore</value>
+            </list>
+        </property>
+        <property name="queryTemplate">
+            <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
+            <value>@cm\:created:\$\{luceneDateRange(yesterday, "-P10Y")\}</value>
+        </property>
+        <property name="cronExpression">
+            <value>0 0/1 * * * ?</value>
+        </property>
+        <property name="jobName">
+            <value>jobD</value>
+        </property>
+        <property name="jobGroup">
+            <value>jobGroup</value>
+        </property>
+        <property name="triggerName">
+            <value>triggerD</value>
+        </property>
+        <property name="triggerGroup">
+            <value>triggerGroup</value>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="templateActionDefinition">
+            <ref bean="compositeAction"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="runAsUser">
+            <value>System</value>
+        </property>
+    </bean>
+    
+</beans>

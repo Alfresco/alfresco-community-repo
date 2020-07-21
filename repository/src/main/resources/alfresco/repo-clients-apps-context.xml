@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="clientAppDefaultProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath*:alfresco/client/config/repo-clients-apps.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="clientAppConfig" class="org.alfresco.repo.client.config.ClientAppConfig" init-method="init">
+        <property name="defaultProperties" ref="clientAppDefaultProperties"/>
+        <property name="globalProperties" ref="global-properties"/>
+    </bean>
+
+    <bean id="emailHelper" class="org.alfresco.util.EmailHelper" init-method="init">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="preferenceService" ref="preferenceService" />
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="companyHomeChildName" value="${spaces.company_home.childname}" />
+    </bean>
+</beans>

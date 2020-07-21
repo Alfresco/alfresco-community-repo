@@ -1,0 +1,44 @@
+{
+  "response" : {
+    "start" : 0,
+    "docs" : [{
+      "score" : 0.2150091,
+      "DBID" : 870
+    }, {
+      "score" : 0.2150091,
+      "DBID" : 877
+    }
+    ],
+    "maxScore" : 0.2150091,
+    "numFound" : 2
+  },
+  "processedDenies" : true,
+  "spellcheck" : {
+    "suggestions" : ["london", {
+      "endOffset" : 6,
+      "suggestion" : ["london1", "londn"],
+      "numFound" : 2,
+      "startOffset" : 0
+    }],
+    "collations":["collation", {
+      "hits" : 1,
+      "collationQueryString" : "london1",
+      "collationQuery" : "(london1  AND (+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\")) AND -TYPE:\"cm:thumbnail\" AND -TYPE:\"cm:failedThumbnail\" AND -TYPE:\"cm:rating\" AND -TYPE:\"st:site\" AND -ASPECT:\"st:siteContainer\" AND -ASPECT:\"sys:hidden\" AND -cm:creator:system AND -QNAME:comment\\-*",
+      "misspellingsAndCorrections" : ["london", "london1"]
+    }
+    ]
+  },
+  "responseHeader" : {
+    "status" : 0,
+    "QTime" : 44
+  },
+  "_pivot_mappings_" : {},
+  "_original_parameters_" : "org.apache.solr.common.params.DefaultSolrParams:{params(spellcheck=true&df=keywords&fl=DBID,score&start=0&alternativeDic=DEFAULT_DICTIONARY&spellcheck.q=london&locale=en&wt=json&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=251),defaults(spellcheck=false&spellcheck.maxResultsForSuggest=5&spellcheck.collateExtendedResults=true&spellcheck.extendedResults=false&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.count=5&spellcheck.collate=true&spellcheck.alternativeTermCount=2&defType=afts)}",
+  "_stats_facet_mappings_" : {},
+  "_stats_field_mappings_" : {},
+  "_range_mappings_" : {},
+  "_field_mappings_" : {},
+  "_date_mappings_" : {},
+  "_interval_mappings_" : {}
+
+}

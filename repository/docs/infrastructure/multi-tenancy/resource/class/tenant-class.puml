@@ -1,0 +1,51 @@
+@startuml
+
+title Tenant Component (nosql)
+
+skinparam linetype ortho
+
+interface ApiConstants
+interface TenantService
+interface TenantServiceSPI
+
+class AbstractRestResource {
+#switchTenant()
+}
+class AbstractServiceClient
+class An2ApiException
+class CreateTenantPojo
+class Cx1TenantService
+class GetTenantPojo
+class InitializingBean
+class NoSuchTenantException
+class TenantExistsException
+class TenantService
+class TenantServiceClient
+class TenantServiceImpl
+class TenantServiceIT
+class TenantServiceRestV1
+class VersionCheckException
+
+
+AbstractRestResource <|-- TenantServiceRestV1 : extends
+AbstractServiceClient <|-- TenantServiceClient : extends
+An2ApiException <|-- NoSuchTenantException : extends
+An2ApiException <|-- TenantExistsException : extends
+An2ApiException <|-- VersionCheckException : extends
+ApiConstants <|.. TenantServiceImpl : uses
+CreateTenantPojo <.. TenantServiceClient : uses
+CreateTenantPojo <.. TenantServiceRestV1 : uses
+GetTenantPojo <.. TenantServiceClient : uses
+GetTenantPojo <.. TenantServiceRestV1 : uses
+InitializingBean <|.. TenantServiceImpl : implements
+NoSuchTenantException <.. AbstractRestResource : uses
+TenantService <.. AbstractRestResource : uses
+TenantService <|.. TenantServiceClient : implements
+TenantService <|.. TenantServiceImpl : implements
+TenantService <|.. TenantServiceRestV1 : uses
+TenantServiceClient <.. TenantServiceIT : uses
+TenantServiceSPI <.. Cx1TenantService : implements
+TenantServiceSPI <.. TenantServiceImpl : uses
+
+
+@enduml

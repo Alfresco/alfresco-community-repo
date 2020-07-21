@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Overriding test properties to point to custom properties -->
+   <bean id="test-properties"
+      class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="ignoreUnresolvablePlaceholders" value="true" />
+      <property name="location" value="classpath:alfresco/repository.properties" />
+      <property name="properties">
+         <props>
+            <prop key="db.testname">${db.name}_test</prop>
+            <prop key="db.testurl">${db.url}_test</prop>
+         </props>
+      </property>
+      <property name="searchSystemEnvironment">
+          <value>false</value>
+      </property>
+   </bean>
+
+   <import resource="classpath*:alfresco/extension/dev-context.xml" />
+
+</beans>

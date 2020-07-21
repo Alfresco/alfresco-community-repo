@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="avmExpiredContentTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean id="avmExpiredContentJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.avm.AVMExpiredContentJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                       <entry key="expiredContentProcessor">
+                           <ref bean="avmExpiredContentProcessor" />
+                       </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- trigger at 3:30am each day -->
+        <property name="cronExpression">
+            <value>0 0/2 * * * ?</value>
+        </property>
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
+    </bean>
+</beans>

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <import resource="classpath:alfresco/application-context.xml" />
+    
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
+
+    <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
+        <property name="memoryStore" ref="cachingContentStoreCache"/>
+        <property name="cacheRoot" value="${dir.cachedcontent}"/>
+    </bean>
+
+    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore">
+        <property name="backingStore" ref="backingStore"/>
+        <property name="cache" ref="contentCache"/>
+        <property name="cacheOnInbound" value="true"/>
+    </bean>
+    
+    <!-- Override the backing store bean for the cleaner tests -->
+    <bean id="backingStore" class="org.alfresco.repo.content.caching.test.SlowContentStore">
+        <!-- set pauseMillis to 0 since we're not really after a SLOW backing store -->
+        <property name="pauseMillis" value="0"/>
+    </bean>
+    
+    <bean id="cachedContentCleaner"
+        class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner"
+        init-method="init">
+        <property name="maxDeleteWatchCount" value="1"/>
+        <property name="cache" ref="contentCache"/>
+    </bean>
+    
+</beans>

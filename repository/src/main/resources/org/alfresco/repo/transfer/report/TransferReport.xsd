@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema targetNamespace="http://www.alfresco.org/model/transferReport/1.0"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:report="http://www.alfresco.org/model/transferReport/1.0"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+   <!-- XML Schema for the client side transferReport owned by the 
+   alfresco transferService -->
+   
+   <xs:element name="transferReport" type="report:transferReport">
+   <xs:annotation>
+       <xs:documentation>This is an Alfresco client side transfer report</xs:documentation>
+   </xs:annotation>
+   </xs:element>
+   
+   <xs:complexType name="transferReport">
+      <xs:annotation>
+         <xs:documentation>
+         The Alfresco client side transfer report
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="target" type="report:target" maxOccurs="1"
+                  minOccurs="1">
+         </xs:element>
+         <xs:element name="definition" type="report:definition"
+                  maxOccurs="1" minOccurs="1">
+         </xs:element>
+         <xs:sequence maxOccurs="unbounded" minOccurs="0">
+           <xs:element name="node" type="report:node">
+         </xs:element>
+         </xs:sequence>
+         <xs:element name="exception" type="report:exception" maxOccurs="1"
+                  minOccurs="0">
+         </xs:element>
+         <xs:element name="events" type="report:events">
+       </xs:element>
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="target">
+      <xs:annotation>
+         <xs:documentation>
+            The destination of the transfer
+         </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="name" type="string"></xs:attribute>
+      <xs:attribute name="endpointPort" type="int"></xs:attribute>
+      <xs:attribute name="endpointHost" type="string"></xs:attribute>
+   </xs:complexType>
+
+   <xs:complexType name="definition">
+   </xs:complexType>
+
+   <xs:complexType name="node">
+         <xs:annotation>
+         <xs:documentation>
+            The nodes being transferred
+         </xs:documentation>
+         </xs:annotation>
+
+        <xs:sequence>
+          <xs:element name="primaryParent" maxOccurs="1"
+                  minOccurs="0" type="report:primaryParent">
+          </xs:element>
+        </xs:sequence>
+
+        <xs:attribute name="nodeRef" type="string"></xs:attribute>
+        
+   </xs:complexType>
+
+   <xs:complexType name="events">
+      <xs:sequence maxOccurs="unbounded" minOccurs="0">
+         <xs:element name="event" type="report:event"></xs:element>
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="event" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="exception">
+   
+   </xs:complexType>
+
+   <xs:complexType name="primaryParent">
+      <xs:sequence>
+        <xs:element name="parentAssoc" type="report:parentAssoc"/>
+        <xs:element name="primaryPath" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+
+
+   <xs:complexType name="parentAssoc" mixed="true">
+      <xs:attribute name="from" use="required" type="xs:string"/>
+      <xs:attribute name="isPrimary" use="required" type="xs:boolean"/>
+      <xs:attribute name="type" use="required"/>
+   </xs:complexType>
+     
+
+</xs:schema>

@@ -1,0 +1,62 @@
+{
+    "name":"Test",
+    "filing":{
+        
+    },
+    "nodes":[
+        {
+            "id":"1",
+            "name":"Node1",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"=cm:description:'Node1'"
+            },
+            "filing":{
+                "path":"%ACTUAL_PATH%",
+                "classification":{
+                    "type":"cm:content"
+                },
+                "properties":{
+                    "cm:description":"Node1"
+                }
+            }
+        },
+        {
+            "id":"2",
+            "name":"Node2",
+            "description":"The2ndNode",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"=cm:description:'Node2'"
+            },
+            "properties":{
+                "cm:modifier":"%CURRENT_USER%",
+                "cm:description":"<cm:description>",
+                "sys:node-dbid":"34567"
+            }
+        },
+        {
+            "id":"3",
+            "name":"Node3",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"=cm:description:'Node2'"
+            },
+            "filing":{
+                
+            }
+        },
+        {
+            "id":"4",
+            "name":"Node4",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"=cm:description:'Node4'"
+            },
+            "filing":{
+                "readonly":"true"
+            }
+            
+        }
+    ]
+}

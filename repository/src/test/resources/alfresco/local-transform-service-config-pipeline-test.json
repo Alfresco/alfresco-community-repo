@@ -1,0 +1,79 @@
+{
+  "transformOptions": {
+    "imageMagickOptions": [
+      {"value": {"name": "alphaRemove"}},
+      {"value": {"name": "autoOrient"}},
+      {"value": {"name": "startPage"}},
+      {"value": {"name": "endPage"}},
+      {"group": {"transformOptions": [
+        {"value": {"required": "true", "name": "cropGravity"}},
+        {"value": {"name": "cropWidth"}},
+        {"value": {"name": "cropHeight"}},
+        {"value": {"name": "cropPercentage"}},
+        {"value": {"name": "cropXOffset"}},
+        {"value": {"name": "cropYOffset"}}
+      ]}},
+      {"group": {"transformOptions": [
+        {"value": {"name": "thumbnail"}},
+        {"value": {"name": "resizeHeight"}},
+        {"value": {"name": "resizeWidth"}},
+        {"value": {"name": "resizePercentage"}},
+        {"value": {"name": "allowEnlargement"}},
+        {"value": {"name": "maintainAspectRatio"}}
+      ]}}
+    ],
+    "pdfRendererOptions": [
+      {"value": {"name": "page"}},
+      {"value": {"name": "width"}},
+      {"value": {"name": "height"}},
+      {"value": {"name": "allowPdfEnlargement"}},
+      {"value": {"name": "maintainPdfAspectRatio"}}
+    ]
+  },
+  "transformers": [
+    {
+      "transformerName": "imagemagick",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+      ],
+      "transformOptions": [
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "pdfrenderer",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
+      ],
+      "transformOptions": [
+        "pdfRendererOptions"
+      ]
+    },
+    {
+      "transformerName": "libreoffice",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                                                "targetMediaType": "application/pdf"}
+      ]
+    },
+    {
+      "transformerName": "officeToImageViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfrenderer", "targetMediaType": "image/png"},
+        {"transformerName": "imagemagick"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    }
+  ]
+}

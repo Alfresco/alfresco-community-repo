@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+   Select statements that require proper size limiting on the DB side
+   Dialect: Generic
+-->
+<mapper namespace="alfresco.activities.select">
+
+    <!--                -->
+    <!-- Selects        -->
+    <!--                -->
+    
+   <!-- user feed - all sites - everyone -->
+   <select id="select_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+   
+   <!-- user feed - all sites - others (not me) -->
+   <select id="select_activity_feed_for_feeduser_others" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+       <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+
+   <!-- user feed - all sites - me only (not others) -->
+   <select id="select_activity_feed_for_feeduser_me" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+   
+   <!-- user feed - given site - everyone -->
+   <select id="select_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+
+   <!-- user feed - given site - others (not me) -->
+   <select id="select_activity_feed_for_feeduser_others_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and site_network = #{siteNetwork}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+   
+   <!-- user feed - given site - me only (not others) -->
+   <select id="select_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+
+   <!-- site feed - given site -->
+   <select id="select_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{nullValue}
+      and site_network = #{siteNetwork}
+      order by post_date desc
+      ]]>
+   </select>
+   
+</mapper>

@@ -1,0 +1,154 @@
+
+<!-- Note: The import will be performed relative to a specific path specified at import
+           time -->
+   
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0">
+
+   <view:metadata>
+      <view:exportBy>unknown</view:exportBy>
+      <view:exportDate>2005-10-19T19:18:01.387+01:00</view:exportDate>
+      <view:exporterVersion>1.0.0 (rc1b)</view:exporterVersion>
+      <view:exportOf>/system</view:exportOf>
+   </view:metadata>
+      
+   <cm:systemfolder view:childName="system" view:id="the root system folder">
+      <cm:name>System</cm:name>
+      <cm:contains>
+         
+         <cm:systemfolder view:childName="cm:people folder">
+            <view:aspects>
+            	<cm:auditable/>
+            </view:aspects>
+            <view:properties>
+                <sys:node-uuid>05efa5db-2817-4ada-a0dc-657db2b2a0ac</sys:node-uuid>
+            	<cm:name>`Â¬Â¦!Â£$%^&amp;()-_=+tnu0000[]{};'#@~,</cm:name>
+            	<cm:creator>testuser</cm:creator>
+            	<cm:modifier>testuser</cm:modifier>
+            	<cm:notinmodel>
+            	    <view:value view:datatype="d:text">dfsdfsdf</view:value>
+            	</cm:notinmodel>
+            </view:properties>
+            <view:associations>
+            <cm:contains>
+               <cm:person view:childName="cm:fredb" view:id="fred">
+                  <view:aspects/>
+                  <view:properties>
+	                  <cm:userName>${username}</cm:userName>
+	                  <cm:firstName>Fred</cm:firstName>
+	                  <cm:lastName>Bloggs</cm:lastName>
+	                  <cm:homeFolder>../../cm:people_x0020_folder</cm:homeFolder>
+                  </view:properties>
+               </cm:person>
+            </cm:contains>
+            </view:associations>
+         </cm:systemfolder>
+
+		 <cm:systemfolder view:childName="cm:people shortcut">
+		    <cm:contains>
+		        <!-- create a secondary child link using a reference -->
+		        <view:reference view:idref="fred" view:childName="fred shortcut">
+		            <!-- Note: references can be updated/appended by specifying the usual property,
+		                 association and aspect sub-elements -->
+		            <view:properties>
+		            	<cm:middleName>Raymond</cm:middleName>
+		            </view:properties>
+		        </view:reference>
+			</cm:contains>
+		 </cm:systemfolder>		 
+         
+         <!-- note: if no explicit view:childName, take from name if one exists -->
+         <cm:cmobject>
+            <cm:translatable/>
+            <cm:generalclassifiable/>
+            <cm:name>Categorised Content</cm:name>
+            <cm:categories>
+                <view:value>../cm:people_x0020_folder</view:value>
+                <view:value>../cm:people_x0020_folder</view:value>
+            </cm:categories>
+         </cm:cmobject>
+
+      </cm:contains>
+      
+   </cm:systemfolder>
+   
+   <cm:content view:id="some content">
+      <cm:name>Some content</cm:name>
+      <cm:content>contentUrl=classpath:org/alfresco/repo/importer/importercomponent_testfile.txt|mimetype=text|size=|encoding=</cm:content>
+   </cm:content>
+   
+   <cm:folder view:childName="cm:SpaceWithAuditable">
+      <view:aspects>
+         <cm:auditable/>
+      </view:aspects>
+      <cm:name>SpaceWithAuditable</cm:name>
+      <cm:created>2009-05-01T00:00:00.000+01:00</cm:created>
+      <cm:creator>Import Creator</cm:creator>
+      <cm:modified>2009-05-02T00:00:00.000+01:00</cm:modified>
+      <cm:modifier>Import Modifier</cm:modifier>
+   </cm:folder>
+   
+   <cm:folder view:childName="cm:SpaceWithPartialAuditable">
+      <view:aspects>
+         <cm:auditable/>
+      </view:aspects>
+      <cm:name>SpaceWithPartialAuditable"</cm:name>
+      <cm:created>2009-05-01T00:00:00.000+01:00</cm:created>
+      <cm:creator>Import Creator</cm:creator>
+   </cm:folder>
+   
+   <cm:folder view:id="ML Text">
+      <view:aspects>
+         <cm:auditable/>
+      </view:aspects>
+      <view:properties>
+         <cm:name>ML Text</cm:name>
+         <cm:title>
+            <view:mlvalue view:locale="fr_FR">FR_TITLE</view:mlvalue>
+            <view:mlvalue view:locale="de_DE">GE_TITLE</view:mlvalue>
+            <view:mlvalue view:locale="en_US">ENG_TITLE</view:mlvalue>
+         </cm:title>
+         <cm:description>
+            <view:mlvalue view:locale="fr_FR">FR_DESCRIPTION</view:mlvalue>
+            <view:mlvalue view:locale="de_DE">GE_DESCRIPTION</view:mlvalue>
+            <view:mlvalue view:locale="en_US">ENG_DESCRIPTION</view:mlvalue>
+         </cm:description>
+      </view:properties>
+   </cm:folder>
+
+   <cm:folder view:childName="cm:Version Containing Folder">
+      <view:aspects>
+      </view:aspects>
+      <view:properties>
+         <cm:name>Version Containing Folder</cm:name>
+      </view:properties>
+      <view:associations>
+         <cm:contains>
+            <cm:content view:childName="cm:Versioned Node">
+               <view:aspects>
+                  <cm:versionable></cm:versionable>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>Versioned Node</cm:name>
+                  <cm:autoVersionOnUpdateProps>true</cm:autoVersionOnUpdateProps>
+                  <cm:autoVersion>true</cm:autoVersion>
+                  <cm:versionLabel>1.15</cm:versionLabel>
+                  <cm:initialVersion>true</cm:initialVersion>
+               </view:properties>
+            </cm:content>
+         </cm:contains>
+      </view:associations>
+   </cm:folder>
+   
+
+   <view:reference view:idref="the root system folder">
+       <view:associations>
+           <cm:contains>
+               <view:reference view:idref="some content" view:childName="link to some content"/>
+               <view:reference view:idref="ML Text" view:childName="link to ML Text"/>
+           </cm:contains>
+       </view:associations>
+   </view:reference>
+
+</view:view>

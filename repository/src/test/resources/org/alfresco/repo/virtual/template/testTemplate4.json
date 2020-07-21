@@ -1,0 +1,18 @@
+{
+    "name":"Test",
+    "filing":{
+        
+    },
+    "nodes":[
+        {
+        "id":"1",
+        "name":"All My Content",
+			"description":"My documents in this virtualized folder",
+			"search":{
+				"language":"fts-alfresco",
+				"query":"=cm:name:'Company Home'"
+			}
+			
+		}
+	]
+}

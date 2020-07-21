@@ -1,0 +1,155 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:usr="http://www.alfresco.org/model/user/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+    <sys:container view:childName="${system.authorities_container.childname}">
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
+        <view:associations>
+            <sys:children>
+                <cm:authorityContainer view:childName="cm:GROUP_ALFRESCO_ADMINISTRATORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>GROUP_ALFRESCO_ADMINISTRATORS</sys:node-uuid>
+                        <cm:name>GROUP_ALFRESCO_ADMINISTRATORS</cm:name>
+                        <cm:authorityName>GROUP_ALFRESCO_ADMINISTRATORS</cm:authorityName>
+                    </view:properties>
+                </cm:authorityContainer>
+                <cm:authorityContainer view:childName="cm:GROUP_EMAIL_CONTRIBUTORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <cm:name>GROUP_EMAIL_CONTRIBUTORS</cm:name>
+                        <sys:node-uuid>GROUP_EMAIL_CONTRIBUTORS</sys:node-uuid>
+                        <cm:authorityName>GROUP_EMAIL_CONTRIBUTORS</cm:authorityName>
+                    </view:properties>
+                </cm:authorityContainer>
+                <cm:authorityContainer view:childName="cm:GROUP_SITE_ADMINISTRATORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>GROUP_SITE_ADMINISTRATORS</sys:node-uuid>
+                        <cm:name>GROUP_SITE_ADMINISTRATORS</cm:name>
+                        <cm:authorityName>GROUP_SITE_ADMINISTRATORS</cm:authorityName>
+                    </view:properties>
+                </cm:authorityContainer>
+                <cm:authorityContainer view:childName="cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>GROUP_ALFRESCO_SEARCH_ADMINISTRATORS</sys:node-uuid>
+                        <cm:name>GROUP_ALFRESCO_SEARCH_ADMINISTRATORS</cm:name>
+                        <cm:authorityName>GROUP_ALFRESCO_SEARCH_ADMINISTRATORS</cm:authorityName>
+                    </view:properties>
+                </cm:authorityContainer>
+                <cm:authorityContainer view:childName="cm:GROUP_ALFRESCO_MODEL_ADMINISTRATORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</sys:node-uuid>
+                        <cm:name>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</cm:name>
+                        <cm:authorityName>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</cm:authorityName>
+                    </view:properties>
+                </cm:authorityContainer>
+            </sys:children>
+        </view:associations>
+    </sys:container>
+
+    <sys:container view:childName="${system.zones_container.childname}">
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
+		 <view:associations>
+            <sys:children>
+                <cm:zone view:childName="cm:AUTH.ALF">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>AUTH.ALF</sys:node-uuid>
+                        <cm:name>AUTH.ALF</cm:name>
+                    </view:properties>
+                    <view:associations>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_ADMINISTRATORS" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_EMAIL_CONTRIBUTORS"
+                                view:childName="cm:GROUP_EMAIL_CONTRIBUTORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_SITE_ADMINISTRATORS"
+                                view:childName="cm:GROUP_SITE_ADMINISTRATORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_MODEL_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_MODEL_ADMINISTRATORS" />
+                        </cm:inZone>
+                    </view:associations>
+                </cm:zone>
+                <cm:zone view:childName="cm:APP.DEFAULT">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>APP.DEFAULT</sys:node-uuid>
+                        <cm:name>APP.DEFAULT</cm:name>
+                    </view:properties>
+                    <view:associations>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_ADMINISTRATORS" />
+                        </cm:inZone>
+						<cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_EMAIL_CONTRIBUTORS"
+                                view:childName="cm:GROUP_EMAIL_CONTRIBUTORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_SITE_ADMINISTRATORS"
+                                view:childName="cm:GROUP_SITE_ADMINISTRATORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_MODEL_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_MODEL_ADMINISTRATORS" />
+                        </cm:inZone>
+                    </view:associations>
+                </cm:zone>
+            </sys:children>
+        </view:associations>
+    </sys:container>
+           
+</view:view>

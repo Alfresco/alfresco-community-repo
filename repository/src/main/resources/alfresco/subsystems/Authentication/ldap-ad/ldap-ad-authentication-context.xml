@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <!--
+      The bean definitions for this subsystem are shared by the ldap and ldap-ad subsystems with different property
+      defaults
+   -->
+   <import resource="../common-ldap-context.xml" />
+
+   <!-- LDAP-AD User Account Status Interpreter -->
+   <bean id="ldapadUserAccountStatusInterpreter" class="org.alfresco.repo.security.sync.ldap_ad.LDAPADUserAccountStatusInterpreter"> 
+   </bean>
+</beans>

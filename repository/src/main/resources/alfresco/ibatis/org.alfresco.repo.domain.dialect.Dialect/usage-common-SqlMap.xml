@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.usage">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_UsageDelta" type="UsageDelta">
+        <result property="deltaCount" column="delta_count" jdbcType="INTEGER" javaType="int"/>
+        <result property="deltaSize" column="delta_size" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <resultMap id="result_UsernameUUID" type="HashMap">
+        <result property="username" column="username" jdbcType="VARCHAR" javaType="string"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    
+    <resultMap id="result_UserContentUrl" type="HashMap">
+        <result property="owner" column="owner" jdbcType="VARCHAR" javaType="string"/>
+        <result property="creator" column="creator" jdbcType="VARCHAR" javaType="string"/>
+        <result property="contentUrl" column="contentUrl" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    
+    <resultMap id="result_UserContentSize" type="HashMap">
+        <result property="owner" column="owner" jdbcType="VARCHAR" javaType="string"/>
+        <result property="creator" column="creator" jdbcType="VARCHAR" javaType="string"/>
+        <result property="contentSize" column="contentSize" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+    
+    
+    <parameterMap id="parameter_IdMap" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_Selector1Map" type="map">
+        <parameter property="personTypeQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="usernamePropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="sizeCurrentPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="storeProtocol" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_Selector2Map" type="map">
+        <parameter property="contentTypeQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="ownerPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="contentPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="storeProtocol" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_Selector3Map" type="map">
+        <parameter property="personTypeQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="sizeCurrentPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="storeProtocol" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="isDeleted" jdbcType="BIT" javaType="boolean"/>
+    </parameterMap>
+    
+	<parameterMap id="parameter_SelectorMapUserContentSize" type="map">
+        <parameter property="contentTypeQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="ownerPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="contentPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="storeProtocol" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="userName" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="userName2" jdbcType="VARCHAR" javaType="string"/>
+    </parameterMap>
+    
+    <!--                         -->
+    <!-- SQL Snippets / Inserts  -->
+    <!--                         -->
+    
+    <sql id="insert_UsageDelta_AutoIncrement">
+        insert into alf_usage_delta
+            (version, node_id, delta_size)
+        values
+            (#{version}, #{nodeId}, #{deltaSize})
+    </sql>
+    
+    <sql id="insert_UsageDelta_Sequence">
+        insert into alf_usage_delta
+            (id, version, node_id, delta_size)
+        values
+            (#{id}, #{version}, #{nodeId}, #{deltaSize})
+    </sql>
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <!--                -->
+    <!-- Selects        -->
+    <!--                -->
+    
+    <!-- Get total usage delta for a node -->
+    <select id="select_GetTotalDeltaSizeByNodeId" parameterMap="parameter_IdMap" resultMap="result_UsageDelta">
+        select
+            count(delta_size) as delta_count,
+            sum(delta_size) as delta_size
+        from
+            alf_usage_delta
+        where
+            node_id = ?
+    </select>
+    
+    <!-- Get nodes with usage deltas -->
+    <select id="select_GetUsageDeltaNodes" resultType="long">
+        select 
+            distinct(node_id)
+        from
+            alf_usage_delta
+    </select>
+    
+    <select id="select_GetUsersWithoutUsage" parameterMap="parameter_Selector1Map" resultMap="result_UsernameUUID">
+        select
+            p1.string_value as username,
+            n.uuid as uuid
+        from
+            alf_node n
+            join alf_store s on (s.id = n.store_id and n.type_qname_id = ?)
+            join alf_node_properties p1 on (p1.node_id = n.id and p1.qname_id = ?)
+            join alf_node_properties p2 on (p2.node_id = n.id and p2.qname_id = ?)
+        where
+            s.protocol = ? and
+            s.identifier = ? and
+            p2.persisted_type_n = 0 and
+   <![CDATA[p1.string_value <> 'System']]>
+    </select>
+    
+    <select id="select_GetUsersWithUsage" parameterMap="parameter_Selector1Map" resultMap="result_UsernameUUID">
+        select
+            p1.string_value as username,
+            n.uuid as uuid
+        from
+            alf_node n
+            join alf_store s on (s.id = n.store_id and n.type_qname_id = ?)
+            join alf_node_properties p1 on (p1.node_id = n.id and p1.qname_id = ?)
+            join alf_node_properties p2 on (p2.node_id = n.id and p2.qname_id = ?)
+        where
+            s.protocol = ? and
+            s.identifier = ? and
+   <![CDATA[p2.persisted_type_n <> 0 and
+            p1.string_value <> 'System']]>
+    </select>
+    
+    <!-- Query for the 'new' style content properties stored in the 'content_url' table -->
+    <select id="select_GetContentSizesForStoreNew" parameterMap="parameter_Selector2Map" resultMap="result_UserContentSize">
+        select
+            p1.string_value as owner,
+            n.audit_creator as creator,
+            sum(cu.content_size) as contentSize
+        from
+            alf_node n
+            join alf_store s on (s.id = n.store_id and n.type_qname_id = ?)
+            left join alf_node_properties p1 on (p1.node_id = n.id and p1.qname_id = ?)
+            join alf_node_properties p2 on (p2.node_id = n.id and p2.qname_id = ?)
+            join alf_content_data cd on (p2.long_value = cd.id)
+            join alf_content_url cu on (cd.content_url_id = cu.id)
+        where
+            s.protocol = ? and
+            s.identifier = ? and
+  <![CDATA[(p1.string_value <> 'System' or
+               (p1.string_value is null and n.audit_creator <> 'System'))]]>
+        group by 
+            p1.string_value, n.audit_creator
+    </select>
+    
+    <!-- Query for the 'new' user -->
+    <select id="select_GetContentSizeForStoreForUser" parameterMap="parameter_SelectorMapUserContentSize" resultType="Long">
+        select
+            sum(cu.content_size) as contentSize
+        from
+            alf_node n
+            join alf_store s on (s.id = n.store_id and n.type_qname_id = ?)
+            left join alf_node_properties p1 on (p1.node_id = n.id and p1.qname_id = ?)
+            join alf_node_properties p2 on (p2.node_id = n.id and p2.qname_id = ?)
+            join alf_content_data cd on (p2.long_value = cd.id)
+            join alf_content_url cu on (cd.content_url_id = cu.id)
+        where
+            s.protocol = ? and
+            s.identifier = ? and
+            (p1.string_value = ? or
+            (p1.string_value is null and n.audit_creator = ?))
+    </select>
+    
+    <!--                -->
+    <!-- Deletes        -->
+    <!--                -->
+    
+    <delete id="delete_UsageDeltasByNodeId" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_usage_delta
+        where
+            node_id = ?
+    </delete>
+    
+</mapper>

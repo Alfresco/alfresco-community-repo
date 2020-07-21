@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<view:view 
+    xmlns:view="http://www.alfresco.org/view/repository/1.0"
+	 xmlns:cm="http://www.alfresco.org/model/content/1.0"
+	 xmlns:app="http://www.alfresco.org/model/application/1.0"
+    xmlns:trx="http://www.alfresco.org/model/transfer/1.0"> 
+    
+    <cm:folder view:childName="${spaces.transfers.childname}">    
+       <view:aspects>
+       </view:aspects>
+       <view:properties>
+         <cm:description>${spaces.transfers.description}</cm:description>
+         <app:icon>space-icon-default</app:icon>
+         <cm:title>${spaces.transfers.title}</cm:title>
+         <cm:name>${spaces.transfers.name}</cm:name>
+        </view:properties>
+        <cm:contains>
+            <cm:folder view:childName="${spaces.transfer_groups.childname}">
+               <view:aspects>
+               </view:aspects>
+               <view:properties>
+                  <cm:description>${spaces.transfer_groups.description}</cm:description>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.transfer_groups.title}</cm:title>
+                  <cm:name>${spaces.transfer_groups.name}</cm:name>
+               </view:properties>
+               <cm:contains>
+					<trx:transferGroup view:childName="cm:default">
+					   <view:aspects>
+					   </view:aspects>
+					   <view:properties>
+					      <cm:description>${spaces.transfer_groups_default.description}</cm:description>
+					      <app:icon>space-icon-default</app:icon>
+					      <cm:title>${spaces.transfer_groups_default.title}</cm:title>
+					      <cm:name>${spaces.transfer_groups_default.name}</cm:name>
+					   </view:properties>
+					</trx:transferGroup>
+			   </cm:contains>
+            </cm:folder>
+            <cm:folder view:childName="${spaces.inbound_transfer_records.childname}">
+               <view:aspects>
+               </view:aspects>
+               <view:properties>
+                  <cm:description>${spaces.inbound_transfer_records.description}</cm:description>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.inbound_transfer_records.title}</cm:title>
+                  <cm:name>${spaces.inbound_transfer_records.name}</cm:name>
+               </view:properties>
+            </cm:folder>
+            <cm:folder view:childName="${spaces.transfer_temp.childname}">
+               <view:aspects>
+               </view:aspects>
+               <view:properties>
+                  <cm:description>${spaces.transfer_temp.description}</cm:description>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.transfer_temp.title}</cm:title>
+                  <cm:name>${spaces.transfer_temp.name}</cm:name>
+               </view:properties>
+            </cm:folder>
+        </cm:contains>
+        
+        
+    </cm:folder>
+</view:view>

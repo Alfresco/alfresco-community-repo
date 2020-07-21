@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- Transaction Interceptors for the Calendar Service -->
+   <bean id="quickShareServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>canDownloadAnonymously</value>
+                <value>getMetaData</value>
+                <value>getTenantNodeRefFromSharedId</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="quickShareServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>shareContent</value>
+                <value>update</value>
+                <value>unshareContent</value>
+            </list>
+        </property>
+    </bean>
+
+
+   <!-- Calendar Service -->
+   <bean id="QuickShareService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.quickshare.QuickShareService</value>
+      </property>
+      <property name="target">
+         <ref bean="quickShareService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="quickShareServiceReadTxnAdvisor" />
+            <idref bean="quickShareServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="CalendarService_security" />
+         </list>
+      </property>
+   </bean>
+
+    <!-- QuickShare Service base bean -->
+    <bean id="quickShareService" class="org.alfresco.repo.quickshare.QuickShareServiceImpl" init-method="init">
+        <property name="attributeService" ref="AttributeService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="enabled" value="${system.quickshare.enabled}" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="permissionService" ref="permissionService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="thumbnailService" ref="ThumbnailService"/>
+        <property name="eventPublisher" ref="eventPublisher" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="actionService" ref="ActionService" />
+        <property name="defaultEmailSender" value="${system.quickshare.email.from.default}" />
+        <property name="clientAppConfig" ref="clientAppConfig" />
+        <property name="searchService" ref="SearchService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="authorityService" ref="AuthorityService" />
+        <property name="emailHelper" ref="emailHelper" />
+        <property name="sysAdminParams" ref="sysAdminParams"/>
+        <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
+        <property name="quickShareLinkExpiryActionPersister" ref="quickShareLinkExpiryActionPersister" />
+        <property name="expiryDatePeriod" value="${system.quickshare.expiry_date.enforce.minimum.period}" />
+    </bean>
+
+    <bean id="quickShareResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.quickshare-service</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="quickShareLinkExpiryActionExecutor" parent="action-executer"
+          class="org.alfresco.repo.quickshare.QuickShareLinkExpiryActionExecutor">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+        <property name="quickShareService" ref="quickShareService"/>
+    </bean>
+
+    <bean id="quickShareLinkExpiryActionPersister" class="org.alfresco.repo.quickshare.QuickShareLinkExpiryActionPersisterImpl" >
+        <property name="nodeService" ref="nodeService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="runtimeActionService" ref="actionService" />
+        <!-- Properties for bootstrapping the Link Expiry Actions root folder -->
+        <property name="importerBootstrap" ref="spacesBootstrap" />
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/quickShareLinkExpiryActionSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+</beans>

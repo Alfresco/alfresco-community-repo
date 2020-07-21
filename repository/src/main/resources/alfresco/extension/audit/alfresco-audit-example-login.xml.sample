@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+   An example of how user login details can be captured.
+-->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+
+    <DataGenerators>
+       <DataGenerator name="personFullName" registeredName="auditModel.generator.personFullName"/>
+    </DataGenerators>
+
+    <PathMappings>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate" target="/auditexamplelogin1/login"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/no-error" target="/auditexamplelogin2/login"/>
+    </PathMappings>
+
+    <Application name="AuditExampleLogin1" key="auditexamplelogin1">
+        <AuditPath key="login">
+            <AuditPath key="no-error">
+                <RecordValue key="user" dataExtractor="simpleValue" dataSource="/auditexamplelogin1/login/args/userName"/>
+            </AuditPath>
+            <AuditPath key="error">
+                <RecordValue key="user" dataExtractor="simpleValue" dataSource="/auditexamplelogin1/login/args/userName"/>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+    <Application name="AuditExampleLogin2" key="auditexamplelogin2">
+        <AuditPath key="login">
+            <GenerateValue key="user" dataGenerator="personFullName"/>
+        </AuditPath>
+    </Application>
+
+</Audit>

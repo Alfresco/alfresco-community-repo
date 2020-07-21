@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.alfresco.org/repo/audit/model/3.2" elementFormDefault="qualified" xml:lang="EN" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:a="http://www.alfresco.org/repo/audit/model/3.2">
+    
+    <xs:annotation>
+        <xs:documentation xml:lang="EN"> Schema to define audit configuration (V3.2). </xs:documentation>
+    </xs:annotation>
+    
+    <!-- Root element is the Audit element -->
+    <xs:element name="Audit" type="a:Audit"/>
+    
+    
+    
+    <!--                 -->
+    <!-- Define Elements -->
+    <!--                 -->
+
+    <xs:complexType name="Audit">
+        <xs:sequence>
+            <xs:element name="DataExtractors" type="a:DataExtractors" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="DataGenerators" type="a:DataGenerators" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="PathMappings" type="a:PathMappings" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="Application" type="a:Application" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>    
+    
+    <xs:complexType name="DataExtractors">
+        <xs:sequence>
+            <xs:element name="DataExtractor" type="a:DataExtractor" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="DataExtractor">
+        <xs:attribute name="name" type="a:NameAttribute" use="required"/>
+        <xs:attribute name="registeredName" type="a:NameAttribute"/>
+        <xs:attribute name="class" type="a:ClassAttribute"/>
+    </xs:complexType>
+    
+    <xs:complexType name="DataGenerators">
+        <xs:sequence>
+            <xs:element name="DataGenerator" type="a:DataGenerator" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="DataGenerator">
+        <xs:attribute name="name" type="a:NameAttribute" use="required"/>
+        <xs:attribute name="registeredName" type="a:NameAttribute"/>
+        <xs:attribute name="class" type="a:ClassAttribute"/>
+    </xs:complexType>
+    
+    <xs:complexType name="Application">
+        <xs:complexContent>
+            <xs:extension base="a:AuditPath">
+                <xs:sequence>
+                    <xs:element name="PathMappings" type="a:PathMappings" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="name" type="a:NameAttribute" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="PathMappings">
+        <xs:sequence>
+            <xs:element name="PathMap" type="a:PathMap" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="PathMap">
+        <xs:attribute name="source" type="a:PathAttribute" use="required"/>
+        <xs:attribute name="target" type="a:PathAttribute" use="required"/>
+    </xs:complexType>
+    
+    <xs:complexType name="AuditPath">
+        <xs:complexContent>
+            <xs:extension base="a:KeyedAuditDefinition">
+                <xs:sequence>
+                    <xs:element name="RecordValue" type="a:RecordValue" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="GenerateValue" type="a:GenerateValue" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="AuditPath" type="a:AuditPath" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RecordValue">
+        <xs:complexContent>
+            <xs:extension base="a:KeyedAuditDefinition">
+                <xs:attribute name="dataExtractor" type="a:NameAttribute" use="required" />
+                <xs:attribute name="dataSource" type="a:PathAttribute" use="optional" />
+                <xs:attribute name="dataTrigger" type="a:PathAttribute" use="optional" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="GenerateValue">
+        <xs:complexContent>
+            <xs:extension base="a:KeyedAuditDefinition">
+                <xs:attribute name="dataGenerator" type="a:NameAttribute" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!--              -->
+    <!-- Define types -->
+    <!--              -->
+            
+    <xs:complexType name="KeyedAuditDefinition">
+        <xs:attribute name="key" type="a:KeyAttribute" use="required"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="NameAttribute">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\_|\.|\ )*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="KeyAttribute">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+            <xs:pattern value="([a-z]|[A-Z]|[0-9]|\-|\_|\.|:)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PathAttribute">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+            <xs:pattern value="(/([a-z]|[A-Z]|[0-9]|\-|\_|\.|:)+)+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ClassAttribute">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

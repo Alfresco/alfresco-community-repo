@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.insert">
+
+    <insert id="insert_Server" parameterType="Server" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.node.insert_Server_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_Store" parameterType="Store" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.node.insert_Store_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_Node" parameterType="Node" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.node.insert_Node_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_Transaction" parameterType="Transaction" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.node.insert_Transaction_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_NodeAssoc" parameterType="NodeAssoc" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.node.insert_NodeAssoc_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_ChildAssoc" parameterType="ChildAssoc" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.node.insert_ChildAssoc_AutoIncrement"/>
+    </insert>
+
+</mapper>

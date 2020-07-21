@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.permissions">
+
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_Acl" type="Acl">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="aclId" column="acl_id" jdbcType="VARCHAR" javaType="string"/>
+        <result property="latest" column="latest" jdbcType="BIT" javaType="boolean"/>
+        <result property="aclVersion" column="acl_version" jdbcType="BIGINT" javaType="long"/>
+        <result property="inherits" column="inherits" jdbcType="BIT" javaType="boolean"/>
+        <result property="inheritsFrom" column="inherits_from" jdbcType="BIGINT" javaType="long"/>
+        <result property="type" column="type" jdbcType="INTEGER" javaType="int"/>
+        <result property="inheritedAcl" column="inherited_acl" jdbcType="BIGINT" javaType="long"/>
+        <result property="isVersioned" column="is_versioned" jdbcType="BIT" javaType="boolean"/>
+        <result property="requiresVersion" column="requires_version" jdbcType="BIT" javaType="boolean"/>
+        <result property="aclChangeSet" column="acl_change_set" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <resultMap id="result_AclMember" type="AclMember">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="aceId" column="ace_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="pos" column="pos" jdbcType="INTEGER" javaType="int"/>
+    </resultMap>
+    
+    <resultMap id="result_AclChangeSet" type="AclChangeSet">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <resultMap id="result_Ace" type="Ace">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="permissionId" column="permission_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="authorityId" column="authority_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="allowed" column="allowed" jdbcType="BIT" javaType="boolean"/>
+        <result property="applies" column="applies" jdbcType="INTEGER" javaType="int"/>
+        <result property="contextId" column="context_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <resultMap id="result_AceContext" type="AceContext">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="classContext" column="class_context" jdbcType="VARCHAR" javaType="string"/>
+        <result property="propertyContext" column="property_context" jdbcType="VARCHAR" javaType="string"/>
+        <result property="kvpContext" column="kvp_context" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    
+    <resultMap id="result_Permission" type="Permission">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="typeQnameId" column="type_qname_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    
+    <resultMap id="result_Authority" type="Authority">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="authority" column="authority" jdbcType="VARCHAR" javaType="string"/>
+        <result property="crc" column="crc" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <resultMap id="result_AuthorityAlias" type="AuthorityAlias">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
+        <result property="authId" column="auth_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="aliasId" column="alias_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <resultMap id="result_AceAndAuthority" type="HashMap">
+        <result property="allowed" column="allowed" jdbcType="BIT" javaType="boolean"/>
+        <result property="applies" column="applies" jdbcType="INTEGER" javaType="int"/>
+        <result property="authority" column="authority" jdbcType="VARCHAR" javaType="string"/>
+        <result property="permissionId" column="permission_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="pos" column="pos" jdbcType="INTEGER" javaType="int"/>
+        <result property="aclmemId" column="aclmem_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+    
+    
+    <parameterMap id="parameter_IdMap" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_CommitTimeMap" type="map">
+        <parameter property="commit_time_ms" jdbcType="BIGINT" javaType="long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_NameMap" type="map">
+        <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_IdNameMap" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_IdBoolMap" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="bool" jdbcType="BIT" javaType="boolean"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_NameBoolMap" type="map">
+        <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="bool" jdbcType="BIT" javaType="boolean"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_IdIdIntBoolMap" type="map">
+        <parameter property="id1" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="id2" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="bool" jdbcType="BIT" javaType="boolean"/>
+        <parameter property="int" jdbcType="INTEGER" javaType="int"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_IdIdIntMap" type="map">
+        <parameter property="id1" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="id2" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="int" jdbcType="INTEGER" javaType="int"/>
+    </parameterMap>
+    
+    <!--                         -->
+    <!-- SQL Snippets / Inserts  -->
+    <!--                         -->
+    
+    <sql id="insert_Acl_AutoIncrement">
+        insert into alf_access_control_list
+            (version, acl_id, latest, acl_version, inherits, inherits_from,
+             type, inherited_acl, is_versioned, requires_version, acl_change_set)
+        values
+            (#{version}, #{aclId}, #{latest}, #{aclVersion}, #{inherits}, #{inheritsFrom},
+             #{type}, #{inheritedAcl}, #{isVersioned}, #{requiresVersion}, #{aclChangeSet})
+    </sql>
+    
+    <sql id="insert_Acl_Sequence">
+        insert into alf_access_control_list
+            (id, version, acl_id, latest, acl_version, inherits, inherits_from,
+             type, inherited_acl, is_versioned, requires_version, acl_change_set)
+        values
+            (#{id}, #{version}, #{aclId}, #{latest}, #{aclVersion}, #{inherits}, #{inheritsFrom},
+             #{type}, #{inheritedAcl}, #{isVersioned}, #{requiresVersion}, #{aclChangeSet})
+    </sql>
+    
+    <sql id="insert_AclMember_AutoIncrement">
+        insert into alf_acl_member
+            (version, acl_id, ace_id, pos)
+        values
+            (#{version}, #{aclId}, #{aceId}, #{pos})
+    </sql>
+    
+    <sql id="insert_AclMember_Sequence">
+        insert into alf_acl_member
+            (id, version, acl_id, ace_id, pos)
+        values
+            (#{id}, #{version}, #{aclId}, #{aceId}, #{pos})
+    </sql>
+    
+    <sql id="insert_AclChangeSet_AutoIncrement">
+        insert into alf_acl_change_set
+            (commit_time_ms)
+        values
+            (null)
+    </sql>
+    
+    <sql id="insert_AclChangeSet_Sequence">
+        insert into alf_acl_change_set
+            (id, commit_time_ms)
+        values
+            (#{id}, null)
+    </sql>
+    
+    <sql id="insert_Ace_AutoIncrement">
+        insert into alf_access_control_entry
+            (version, permission_id, authority_id, allowed, applies, context_id)
+        values
+            (#{version}, #{permissionId}, #{authorityId}, #{allowed}, #{applies}, #{contextId})
+    </sql>
+    
+    <sql id="insert_Ace_Sequence">
+        insert into alf_access_control_entry
+            (id, version, permission_id, authority_id, allowed, applies, context_id)
+        values
+            (#{id}, #{version}, #{permissionId}, #{authorityId}, #{allowed}, #{applies}, #{contextId})
+    </sql>
+    
+    <sql id="insert_AceContext_AutoIncrement">
+        insert into alf_ace_context
+            (version, class_context, property_context, kvp_context)
+        values
+            (#{version}, #{classContext}, #{propertyContext}, #{kvpContext})
+    </sql>
+    
+    <sql id="insert_AceContext_Sequence">
+        insert into alf_ace_context
+            (id, version, class_context, property_context, kvp_context)
+        values
+            (#{id}, #{version}, #{classContext}, #{propertyContext}, #{kvpContext})
+    </sql>
+    
+    <sql id="insert_Permission_AutoIncrement">
+        insert into alf_permission
+            (version, type_qname_id, name)
+        values
+            (#{version}, #{typeQnameId}, #{name})
+    </sql>
+    
+    <sql id="insert_Permission_Sequence">
+        insert into alf_permission
+            (id, version, type_qname_id, name)
+        values
+            (#{id}, #{version}, #{typeQnameId}, #{name})
+    </sql>
+    
+    <sql id="insert_Authority_AutoIncrement">
+        insert into alf_authority
+            (version, authority, crc)
+        values
+            (#{version}, #{authority}, #{crc})
+    </sql>
+    
+    <sql id="insert_Authority_Sequence">
+        insert into alf_authority
+            (id, version, authority, crc)
+        values
+            (#{id}, #{version}, #{authority}, #{crc})
+    </sql>
+    
+    <sql id="insert_AuthorityAlias_AutoIncrement">
+        insert into alf_authority_alias
+            (version, auth_id, alias_id)
+        values
+            (#{version}, #{authId}, #{aliasId})
+    </sql>
+    
+    <sql id="insert_AuthorityAlias_Sequence">
+        insert into alf_authority_alias
+            (id, version, auth_id, alias_id)
+        values
+            (#{id}, #{version}, #{authId}, #{aliasId})
+    </sql>
+    
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <!-- MyBatis #224 -->
+    <!-- Optimistic update of the acl -->
+    <update id="update_Acl" parameterType="Acl">
+        update
+            alf_access_control_list
+        set
+            acl_id = #{aclId},
+            latest = #{latest},
+            acl_version = #{aclVersion},
+            inherits = #{inherits},
+            inherits_from = #{inheritsFrom,jdbcType=BIGINT},
+            type = #{type},
+            inherited_acl = #{inheritedAcl,jdbcType=BIGINT},
+            is_versioned = #{isVersioned},
+            requires_version = #{requiresVersion},
+            acl_change_set = #{aclChangeSet,jdbcType=BIGINT},
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <!-- Update of the change set -->
+    <update id="update_AclChangeSet" parameterType="AclChangeSet">
+        update
+            alf_acl_change_set
+        set
+            commit_time_ms = #{commitTimeMs,jdbcType=BIGINT}
+        where
+            id = #{id}
+    </update>
+    
+    <!-- Optimistic update of the acl member -->
+    <update id="update_AclMember" parameterType="AclMember">
+        update
+            alf_acl_member
+        set
+            acl_id = #{aclId},
+            ace_id = #{aceId},
+            pos = #{pos},
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <!-- Optimistic update of the authority -->
+    <update id="update_Authority" parameterType="Authority">
+        update
+            alf_authority
+        set
+            authority = #{authority},
+            crc = #{crc},
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <!-- Optimistic update of the ace -->
+    <update id="update_Ace" parameterType="Ace">
+        update
+            alf_access_control_entry
+        set
+            permission_id = #{permissionId},
+            authority_id = #{authorityId},
+            allowed = #{allowed},
+            applies = #{applies},
+            context_id = #{contextId,jdbcType=BIGINT},
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <!-- Optimistic update of the permission -->
+    <update id="update_Permission" parameterType="Permission">
+        update
+            alf_permission
+        set
+            type_qname_id = #{typeQnameId},
+            name = #{name},
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <!--                -->
+    <!-- Selects        -->
+    <!--                -->
+    
+    <select id="select_AclById" parameterMap="parameter_IdMap" resultMap="result_Acl">
+        select
+            *
+        from
+            alf_access_control_list
+        where
+            id = ?
+    </select>
+    
+    <select id="select_AclsThatInheritFromAcl" parameterMap="parameter_IdBoolMap" resultType="long">
+        select
+            acl.id
+        from
+            alf_access_control_list acl
+        where
+            acl.inherits_from = ? and acl.inherits = ?
+    </select>
+    
+    <select id="select_LatestAclByGuid" parameterMap="parameter_NameBoolMap" resultType="long">
+        select
+            acl.id
+        from
+            alf_access_control_list acl
+        where
+            acl.acl_id = ? and acl.latest = ?
+    </select>
+    
+    <select id="select_ADMNodesByAclId" parameterMap="parameter_IdMap" resultType="long">
+        select
+            id
+        from
+            alf_node
+        where
+            acl_id = ?
+    </select>
+    
+    <select id="select_AclMembersByAclId" parameterMap="parameter_IdMap" resultMap="result_AclMember">
+        select
+            *
+        from
+            alf_acl_member
+        where
+            acl_id = ?
+    </select>
+    
+    <select id="select_AclMembersByAuthorityName" parameterMap="parameter_NameMap" resultMap="result_AclMember">
+        select
+            aclmem.*
+        from
+            alf_acl_member aclmem
+            join alf_access_control_entry ace on (aclmem.ace_id = ace.id)
+            join alf_authority authority on (ace.authority_id = authority.id)
+        where
+            authority.authority = ?
+    </select>
+    
+    <select id="select_AclMember" parameterMap="parameter_IdIdIntMap" resultMap="result_AclMember">
+        select
+            aclmem.*
+        from
+            alf_acl_member aclmem
+        where
+            aclmem.acl_id = ? and
+            aclmem.ace_id = ? and
+            aclmem.pos = ?
+    </select>
+    
+    <select id="select_AclChangeSetById" parameterMap="parameter_IdMap" resultMap="result_AclChangeSet">
+        select
+            *
+        from
+            alf_acl_change_set
+        where
+            id = ?
+    </select>
+    
+    <select id="select_AceById" parameterMap="parameter_IdMap" resultMap="result_Ace">
+        select
+            *
+        from
+            alf_access_control_entry
+        where
+            id = ?
+    </select>
+    
+    <select id="select_AceContextById" parameterMap="parameter_IdMap" resultMap="result_AceContext">
+        select
+            *
+        from
+            alf_ace_context
+        where
+            id = ?
+    </select>
+    
+    <select id="select_AceWithNoContext" parameterMap="parameter_IdIdIntBoolMap" resultMap="result_Ace">
+        select
+            *
+        from
+            alf_access_control_entry ace
+        where
+            ace.permission_id = ? and
+            ace.authority_id = ? and
+            ace.allowed = ? and
+            ace.applies = ? and
+            ace.context_id is null
+    </select>
+    
+    <select id="select_AcesAndAuthoritiesByAclId" parameterMap="parameter_IdMap" resultMap="result_AceAndAuthority">
+        select
+            ace.allowed, ace.applies, authority.authority, ace.permission_id, aclmem.pos, aclmem.id as aclmem_id
+        from
+            alf_acl_member aclmem
+            join alf_access_control_list acl on (aclmem.acl_id = acl.id)
+            join alf_access_control_entry ace on (aclmem.ace_id = ace.id)
+            join alf_authority authority on (ace.authority_id = authority.id)
+        where
+            acl.id = ?
+    </select>
+    
+    <select id="select_AcesByAuthorityId" parameterMap="parameter_IdMap" resultMap="result_Ace">
+        select
+            *
+        from
+            alf_access_control_entry
+        where
+            authority_id = ?
+    </select>
+    
+    <select id="select_PermissionById" parameterMap="parameter_IdMap" resultMap="result_Permission">
+        select
+            *
+        from
+            alf_permission
+        where
+            id = ?
+    </select>
+    
+    <select id="select_PermissionByTypeAndName" parameterMap="parameter_IdNameMap" resultMap="result_Permission">
+        select
+            *
+        from
+            alf_permission
+        where
+            type_qname_id = ? and
+            name = ?
+    </select>
+    
+    <select id="select_AuthorityById" parameterMap="parameter_IdMap" resultMap="result_Authority">
+        select
+            *
+        from
+            alf_authority
+        where
+            id = ?
+    </select>
+    
+    <select id="select_AuthorityByName" parameterMap="parameter_NameMap" resultMap="result_Authority">
+        select
+            *
+        from
+            alf_authority
+        where
+            authority = ?
+    </select>
+    
+    <select id="select_ChangeSetLast" parameterMap="parameter_CommitTimeMap" resultType="long">
+        select
+            acs.id 
+        from
+            alf_acl_change_set acs
+        where
+            acs.commit_time_ms =
+            (
+                select max(commit_time_ms) from alf_acl_change_set
+                where commit_time_ms &lt;= ?
+            )
+    </select>
+    
+    <select id="select_ChangeSetMaxCommitTime" resultType="java.lang.Long">
+        select
+            max(commit_time_ms)
+        from
+            alf_acl_change_set
+    </select>
+    
+    <!--                -->
+    <!-- Deletes        -->
+    <!--                -->
+    
+    <delete id="delete_Acl" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_access_control_list
+        where
+            id = ?
+    </delete>
+    
+    <!-- for patch -->
+    <delete id="delete_AclList" parameterType="list">
+        delete
+        from
+            alf_access_control_list
+        where
+            id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    
+    <delete id="delete_AcesList" parameterType="list">
+        delete
+        from
+            alf_access_control_entry
+        where
+            id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    
+    <!-- for patch -->
+    <delete id="delete_UnusedAces">
+        delete
+        from
+            alf_access_control_entry
+        where
+            id not in
+            (
+            select
+               distinct(m.ace_id)
+            from
+                alf_acl_member m
+            )
+    </delete>
+    
+    <delete id="delete_AclMembersList" parameterType="list">
+        delete
+        from
+            alf_acl_member
+        where
+            id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    
+    <delete id="delete_AclMembersByAclId" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_acl_member
+        where
+            acl_id = ?
+    </delete>
+    
+    <!-- for patch -->
+    <delete id="delete_AclMembersForAclList" parameterType="list">
+        delete
+        from
+            alf_acl_member
+        where
+            acl_id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    
+    <delete id="delete_AclChangeSet" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_acl_change_set
+        where
+            id = ?
+    </delete>
+    
+    <delete id="delete_AceContext" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_ace_context
+        where
+            id = ?
+    </delete>
+    
+    <delete id="delete_Authority" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_authority
+        where
+            id = ?
+    </delete>
+    
+    <delete id="delete_AuthorityAlias" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_authority_alias
+        where
+            id = ?
+    </delete>
+    
+    <delete id="delete_Permission" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_permission
+        where
+            id = ?
+    </delete>
+    
+</mapper>

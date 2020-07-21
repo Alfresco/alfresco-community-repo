@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.query.auditable">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result_NodeBackedEntity" type="NodeBackedEntity">
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+    </resultMap>
+    
+    <resultMap id="result_NodeWithTargetsEntity" type="NodeWithTargetsEntity">
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+        <collection property="targets" javaType="ArrayList" ofType="org.alfresco.repo.query.NodeWithTargetsEntity$TargetAndTypeId">
+           <constructor>
+              <idArg column="target_node_id" javaType="Long" jdbcType="BIGINT"/>
+              <idArg column="target_assoc_type_id" javaType="Long" jdbcType="BIGINT"/>
+           </constructor>
+        </collection>
+    </resultMap>
+    
+
+    <!-- GetChildrenAuditable Canned Query (model-specific) - note: date properties are stored as ISO 8061 string -->
+    
+    <select id="select_GetChildrenAuditableCannedQuery" parameterType="NodeBackedEntity" resultMap="result_NodeBackedEntity">
+       select
+            childNode.id               as id,
+            childStore.protocol        as protocol,
+            childStore.identifier      as identifier,
+            childNode.uuid             as uuid,
+            childNode.audit_created    as audit_created,
+            childNode.audit_creator    as audit_creator,
+            childNode.audit_modified   as audit_modified,
+            childNode.audit_modifier   as audit_modifier,
+            prop_name.string_value     as name
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_node_properties prop_name on (prop_name.node_id = childNode.id and prop_name.qname_id = #{nameQNameId})
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            and childNode.type_qname_id = #{contentTypeQNameId}
+    </select>
+    
+
+    <!-- GetChildrenWithTargetAssocsAuditable Canned Query (model-specific) - note: date properties are stored as ISO 8061 string -->
+    
+    <select id="select_GetChildrenWithTargetAssocsAuditableCannedQuery" parameterType="NodeWithTargetsEntity" resultMap="result_NodeWithTargetsEntity">
+       select
+            childNode.id               as id,
+            childStore.protocol        as protocol,
+            childStore.identifier      as identifier,
+            childNode.uuid             as uuid,
+            childNode.audit_created    as audit_created,
+            childNode.audit_creator    as audit_creator,
+            childNode.audit_modified   as audit_modified,
+            childNode.audit_modifier   as audit_modifier,
+            prop_name.string_value     as name,
+            targetAssoc.target_node_id as target_node_id,
+            targetAssoc.type_qname_id  as target_assoc_type_id
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_node_properties prop_name on (prop_name.node_id = childNode.id and prop_name.qname_id = #{nameQNameId})
+            left join alf_node_assoc targetAssoc on (
+                childNode.id = targetAssoc.source_node_id
+              <if test="assocTypeId != null">
+                and targetAssoc.type_qname_id = #{assocTypeId}
+             </if>
+            )
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            and childNode.type_qname_id = #{contentTypeQNameId}
+    </select>
+</mapper>

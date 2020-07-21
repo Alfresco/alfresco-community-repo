@@ -1,0 +1,39 @@
+@startuml
+
+title Tenant Service (nosql)
+
+skinparam linetype ortho
+
+node "Service\nClient" as SC #E0F2F1
+
+node "API Gateway" as APIG  #EEEEEE {
+
+  node "/tenants Resource" as TR #EFEBE9 {
+     node "method POST" as POST #FBE9E7 {
+         node "POST \nbody mapping template" #DCEDC8
+     }
+     node "method PUT" as PUT #FBE9E7{
+         node "PUT \nbody mapping template" #DCEDC8
+     }
+     node "method GET" as GET #FBE9E7
+     node "method DELETE" As DELETE #FBE9E7
+  }
+}
+node "Tenant Service \nLambda Function" as L #FFD54F
+
+database "DynamoDB Database\nalf-data-tenants" as DB #80D8FF
+
+node "DynamoDB\nClient" As DDBC #B3E5FC
+
+node "DynamoDB" As DDB #B2EBF2
+
+SC->TR:https
+POST->L:JSON
+PUT->L:JSON
+GET->L:URL {tenant-id}
+DELETE->L:URL {tenant-id}
+L->DDBC
+DDBC->DDB:reads/writes
+DDB->DB:reads/writes
+
+@enduml

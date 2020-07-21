@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Start Activtities Feed subsystem -->
+    <bean id="ActivitiesFeed" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <!--  Import activityService bean from the ActivitiesFeed subsystem -->
+    <bean id="activityService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="ActivitiesFeed"/>
+        </property>
+        <property name="sourceBeanName">
+            <value>activityService</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.service.cmr.activities.ActivityService</value>
+            </list>
+        </property>
+    </bean>
+       
+    <bean id="activitiesPoster" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="ActivitiesFeed"/>
+        </property>
+        <property name="sourceBeanName">
+            <value>ffActivitiesPoster</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.service.cmr.activities.ActivityPoster</value>
+            </list>
+        </property>
+    </bean>
+</beans>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="fm:forummodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Forum Model</description>
+   <author></author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+   	  <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/forum/1.0" prefix="fm"/>
+   </namespaces>
+   
+   <types>
+      <type name="fm:forums">
+         <parent>cm:folder</parent>
+      </type>
+      
+      <type name="fm:forum">
+         <parent>cm:folder</parent>
+      </type>
+      
+      <type name="fm:topic">
+         <parent>cm:folder</parent>
+      </type>
+      
+      <type name="fm:post">
+         <parent>cm:content</parent>
+         <archive>false</archive>
+      </type>
+    </types>
+    
+    <aspects>
+      <aspect name="fm:discussable">
+         <associations>
+            <child-association name="fm:discussion">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>fm:forum</class>
+                  <mandatory enforced="true">true</mandatory>
+                  <many>false</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="fm:commentsRollup">
+         <properties>
+            <property name="fm:commentCount">
+               <title>Comment count rollup for this node</title>
+               <type>d:int</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+   
+</model>

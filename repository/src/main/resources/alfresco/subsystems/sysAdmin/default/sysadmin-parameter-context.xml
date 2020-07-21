@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="sysAdminParams" class="org.alfresco.repo.admin.SysAdminParamsImpl">
+      <property name="maxUsers">
+         <value>${server.maxusers}</value>
+      </property>
+      <property name="allowedUsers">
+         <value>${server.allowedusers}</value>
+      </property>
+      <property name="allowWrite">
+         <value>${server.allowWrite}</value>
+      </property>
+      <property name="alfrescoContext">
+         <value>${alfresco.context}</value>
+      </property>
+      <property name="alfrescoHost">
+         <value>${alfresco.host}</value>
+      </property>
+      <property name="alfrescoPort">
+         <value>${alfresco.port}</value>
+      </property>
+      <property name="alfrescoProtocol">
+         <value>${alfresco.protocol}</value>
+      </property>
+	  
+      <property name="shareContext">
+         <value>${share.context}</value>
+      </property>
+      <property name="shareHost">
+         <value>${share.host}</value>
+      </property>
+      <property name="sharePort">
+         <value>${share.port}</value>
+      </property>
+      <property name="shareProtocol">
+         <value>${share.protocol}</value>
+      </property>
+      
+      <property name="sitePublicGroup" value="${site.public.group}" />
+   </bean>
+
+</beans>

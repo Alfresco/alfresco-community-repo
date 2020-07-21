@@ -1,0 +1,86 @@
+@startuml
+
+Title Tenant Deployment\nDesign Options 
+
+skinparam nodeBorderColor black
+
+left to right direction
+
+node "AWS" as 2G #EEEEEE {
+  node "Tenant\nService" as 2T #white
+  node "Alfresco\nControl Architecture" as 2CA #white 
+  node "Customer A" as 2C1 #FFCDD2 {
+    node "Alfresco 5.1" as 2A1 #E6EE9C {
+      node "Tenant" as 2T1    
+      }
+  }
+  node "Customer B" as 2C2 #FFCDD2{
+    node "Alfresco 5.1" as 2A2 #E6EE9C {
+      node "Tenant" as 2T2
+      }
+  }
+  node "Customer C" as 2C3 #FFCDD2{
+    node "Alfresco 5.1" as 2A3 #E6EE9C {
+      node "Tenant" as 2T3
+      } 
+  } 
+  node "Customers D and E" as CDE #FFCDD2{
+      node "Repository Next" as 2B  #B3E5FC
+      node "Tenant\n(Customer D)" as 2CD  
+      node "Tenant\n(Customer E)" as 2CE     
+  }
+}
+
+2CA=>2C1
+2CA=>2C2
+2CA=>2C3
+2CA=>CDE
+2CA=>2T
+2T=>2CD
+2T=>2CE
+2B=>2T
+
+node "AWS" as G #EEEEEE {
+  node "Alfresco\nControl Architecture" as CA #white 
+  node "Customer A" as C1 #FFCDD2 {
+    node "Alfresco 5.1" as A1 #E6EE9C {
+      node "Tenant" as T1    
+      }
+    }
+  node "Customer B" as C2 #FFCDD2{
+    node "Alfresco 5.1" as A2 #E6EE9C {
+      node "Tenant" as T2
+      }
+    }
+  node "Customer C" as C3 #FFCDD2{
+    node "Alfresco 5.1" as A3 #E6EE9C {
+      node "Tenant" as T3
+      } 
+    }
+  node "Customer D" as C4 #FFCDD2 {
+    node "Tenant\nService" as TC1 #white 
+    node "Tenant" as T5 
+    node "Repository Next" as B1 #B3E5FC
+  }
+   node "Customer E" as C5 #FFCDD2 {
+    node "Tenant\nService" as TC2 #white 
+    node "Tenant" as T6 
+    node "Tenant" as T7 
+    node "Tenant" as T8  
+    node "Repository Next" as B2 #B3E5FC
+  }
+}
+
+TC1=>T5
+TC2=>T6
+TC2=>T7
+TC2=>T8
+CA=>C1
+CA=>C2
+CA=>C3
+CA=>C4
+CA=>C5
+B2=>TC2
+B1=>TC1
+
+@enduml

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+      Test data used by the XMLToSchemaTest junit test class. 
+  -->
+<schema
+    xmlns="http://www.alfresco.org/repo/db-schema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd"
+    name="alfresco"
+    dbprefix="myprefix_"
+    version="325"
+    tablecolumnorder="true">
+  <objects>
+    <table name="node">
+      <columns>
+        <column name="id" order="1">
+          <type>NUMBER(10)</type>
+          <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
+        </column>
+        <column name="nodeRef" order="3">
+          <type>VARCHAR2(200)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="name" order="2">
+          <type>VARCHAR2(150)</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="pk_node">
+        <columnnames>
+          <columnname order="1">id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_node_noderef">
+          <localcolumn>nodeRef</localcolumn>
+          <targettable>node</targettable>
+          <targetcolumn>nodeRef</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_node_by_id" unique="true">
+          <columnnames>
+            <columnname>id</columnname>
+            <columnname>nodeRef</columnname>
+          </columnnames>
+          <validators>
+            <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
+              <properties>
+                <property name="pattern">idx_.+</property>
+              </properties>
+            </validator>
+          </validators>
+        </index>
+      </indexes>
+    </table>
+    <sequence name="node_seq"/>
+    <sequence name="person_seq"/>
+    <sequence name="content_seq"/>    
+  </objects>
+</schema>

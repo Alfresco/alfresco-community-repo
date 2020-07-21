@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="fm:forummodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Forum Model</description>
+   <author>Gavin Cornwell</author>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/forum/1.0" prefix="fm"/>
+   </namespaces>
+   
+   <types>
+      <type name="fm:forums">
+         <parent>cm:folder</parent>
+      </type>
+      
+   </types>
+   
+</model>

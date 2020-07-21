@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <bean id="transformer.worker.subsys.alfresco-pdf-renderer" class="org.alfresco.repo.content.transform.pdfrenderer.AlfrescoPdfRendererContentTransformerWorker">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="remoteTransformerClient">
+         <bean class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+            <constructor-arg>
+               <value>Alfresco-PDF-Renderer</value>
+            </constructor-arg>
+            <constructor-arg>
+               <value>${alfresco-pdf-renderer.url}</value>
+            </constructor-arg>
+            <property name="startupRetryPeriodSeconds">
+               <value>${alfresco-pdf-renderer.startupRetryPeriodSeconds}</value>
+            </property>
+         </bean>
+      </property>
+      <property name="executer">
+         <bean name="transformer.alfresco-pdf-renderer.command" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${alfresco-pdf-renderer.exe}</value>
+                        <value>SPLIT:${options}</value>
+                        <value>${source}</value>
+                        <value>${target}</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesWindows' : 'transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesUnix'}" />
+            <property name="defaultProperties">
+               <props>
+                  <prop key="options"></prop>
+               </props>
+            </property>
+            <property name="errorCodes" >
+               <value>1</value>
+            </property>
+         </bean>
+      </property>
+      <property name="checkCommand">
+         <bean name="transformer.Pdfium.CheckCommand" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${alfresco-pdf-renderer.exe}</value>
+                        <value>--version</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+   <bean id="transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap"> 
+         <map>
+            <entry key="ALFRESCO-PDF-RENDERER_HOME">
+               <value>${alfresco-pdf-renderer.root}</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap">
+         <map>
+            <entry key="ALFRESCO-PDF-RENDERER_HOME">
+               <value>${alfresco-pdf-renderer.root}</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+</beans>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="emailserver:emailserverModel"
+	xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+	<!-- Optional meta-data about the model -->
+	<description>Emailserver Model</description>
+	<author>UTL</author>
+	<version>1.0</version>
+
+	<!-- Imports are required to allow references to definitions in other models -->
+	<imports>
+		<!-- Import Alfresco Dictionary Definitions -->
+		<import uri="http://www.alfresco.org/model/dictionary/1.0"
+			prefix="d" />
+		<!-- Import Alfresco Content Domain Model Definitions -->
+		<import uri="http://www.alfresco.org/model/content/1.0"
+			prefix="cm" />
+	</imports>
+
+	<!-- Introduction of new namespaces defined by this model -->
+	<!-- NOTE: The following namespace my.new.model should be changed to reflect your own namespace -->
+	<namespaces>
+		<namespace uri="http://www.alfresco.org/model/emailserver/1.0"
+			prefix="emailserver" />
+	</namespaces>
+
+   <constraints>
+      <constraint name="emailserver:alias" type="REGEX">
+         <parameter name="expression"><value><![CDATA[[a-zA-Z0-9.\-]*]]></value></parameter>
+         <parameter name="requiresMatch"><value>true</value></parameter>
+      </constraint>
+   </constraints>
+   
+	<aspects>
+
+		<aspect name="emailserver:emailed">
+			<title>Emailed</title>
+			<parent>cm:emailed</parent>
+		</aspect>
+
+		<aspect name="emailserver:aliasable">
+			<title>Email Alias</title>
+			<properties>
+				<property name="emailserver:alias">
+					<title>Alias</title>
+					<type>d:text</type>
+					<mandatory>false</mandatory>
+               <constraints>
+                  <constraint ref="emailserver:alias" />
+               </constraints>
+				</property>
+			</properties>
+		</aspect>
+
+
+        <!--             -->
+        <!--  DEPRECATED -->
+        <!--             -->
+
+        <aspect name="emailserver:attached">
+            <title>Attached</title>
+            <associations>
+                <association name="emailserver:attachment">
+                    <title>Attachment</title>
+                    <source>    
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>cm:content</class>                       
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+        </aspect>
+
+        <!--                      -->
+        <!--  DEPRECATED (end of) -->
+        <!--                      -->
+
+	</aspects>
+</model>

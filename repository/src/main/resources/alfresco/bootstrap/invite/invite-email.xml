@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+    xmlns:app="http://www.alfresco.org/model/application/1.0"
+    xmlns:cm="http://www.alfresco.org/model/content/1.0"> 
+    <cm:folder view:childName="cm:invite">
+        <view:aspects>
+            <app:uifacets></app:uifacets>
+        </view:aspects>
+        <view:properties>
+            <cm:description>${spaces.templates.email.invite.description}</cm:description>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.templates.email.invite.name}</cm:title>
+            <cm:name>${spaces.templates.email.invite.name}</cm:name>
+        </view:properties>
+    </cm:folder>
+</view:view>

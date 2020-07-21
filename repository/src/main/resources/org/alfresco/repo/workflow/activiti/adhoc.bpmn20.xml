@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="adhoc-definitions"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://activiti.org/bpmn20" 
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn">
+
+    <process isExecutable="true" id="adhoc" name="Adhoc Process">
+
+        <startEvent id="start"
+            activiti:formKey="adhocStart.form" />
+
+        <sequenceFlow id='flow1' 
+            sourceRef='start'
+            targetRef='adhocTask' />
+
+        <userTask id="adhocTask" name="Adhoc Task"
+            activiti:formKey="adhocTask.form" >
+            <documentation>
+                Perform some arbitrary human task.
+            </documentation>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${taskAssignee}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+
+        <sequenceFlow id='flow2' 
+        sourceRef='adhocTask'
+            targetRef='verifyTaskDone' />
+
+        <userTask id="verifyTaskDone" name="Verify Adhoc Task Completed."
+            activiti:formKey="adhocDone.form" >
+            <documentation>
+                Verify the arbitrary task was completed.
+            </documentation>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+
+        <sequenceFlow id='flow3' sourceRef='verifyTaskDone'
+            targetRef='theEnd' />
+
+        <endEvent id="theEnd" />
+
+    </process>
+
+</definitions>

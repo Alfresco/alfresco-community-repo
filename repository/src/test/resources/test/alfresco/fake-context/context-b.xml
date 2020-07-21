@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Defines some beans, some of which are used by A, some of which are -->
+<!--  used by C, and some of which reference C -->
+<beans>
+   <bean id="FromBRefNoneNum1" class="java.lang.String">
+      <constructor-arg type="String"><value>654321</value></constructor-arg>
+   </bean>
+   <bean id="FromBRefNoneNum2" class="java.lang.Long">
+      <constructor-arg type="String"><value>87654321</value></constructor-arg>
+   </bean>
+   <bean id="FromBRefNoneNum3" class="java.lang.String">
+      <constructor-arg type="String"><value>The Quick Brown Dog</value></constructor-arg>
+   </bean>
+
+   <bean id="FromBRefCNum1" class="java.util.Date">
+      <property name="time">
+         <ref bean="FromCRefNoneNum1" />
+      </property>
+   </bean>
+   <bean id="FromBRefCNum2" class="java.lang.String">
+      <constructor-arg type="String"><ref bean="FromCRefNoneNum2" /></constructor-arg>
+   </bean>
+</beans>

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Deprecated models for backwards compatibility -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/deprecated/publishingModel.xml</value>
+                <value>alfresco/model/deprecated/facebookPublishingModel.xml</value>
+                <value>alfresco/model/deprecated/flickrPublishingModel.xml</value>
+                <value>alfresco/model/deprecated/linkedInPublishingModel.xml</value>
+                <value>alfresco/model/deprecated/slidesharePublishingModel.xml</value>
+                <value>alfresco/model/deprecated/twitterPublishingModel.xml</value>
+                <value>alfresco/model/deprecated/youtubePublishingModel.xml</value>
+            </list>
+        </property>
+    </bean>
+</beans>

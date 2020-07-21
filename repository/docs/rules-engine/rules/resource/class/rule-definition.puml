@@ -1,0 +1,63 @@
+@startuml
+class RuleType {
+	String name
+	String displayLabel
+}
+
+class Rule {
+	NodeRef nodeRef
+	String title
+	String description
+	boolean ruleDisabled
+	boolean executeAsynchronously
+	boolean isAppliedToChildren
+}
+
+class Action
+
+class RuleTrigger
+
+
+Rule --> "1..*" RuleType
+Rule --> "1" Action
+
+RuleType --> "*" RuleTrigger
+
+note left of RuleType
+	There are three rule types defined by default:
+	- inbound
+	- outbound
+	- update
+end note
+
+together {
+	class BeforeDeleteChildAssociationRuleTrigger
+	class CreateNodeRuleTrigger 
+	class OnCreateChildAssociationRuleTrigger
+	class OnMoveNodeRuleTrigger 
+	class OnPropertyUpdateRuleTrigger
+	class RestoreNodeRuleTrigger 
+	class SingleAssocRefPolicyRuleTrigger
+	class SingleNodeRefPolicyRuleTrigger
+}
+
+CreateNodeRuleTrigger -[hidden]--> BeforeDeleteChildAssociationRuleTrigger
+OnMoveNodeRuleTrigger -[hidden]--> OnCreateChildAssociationRuleTrigger
+OnPropertyUpdateRuleTrigger -[hidden]--> RestoreNodeRuleTrigger
+SingleAssocRefPolicyRuleTrigger -[hidden]--> SingleNodeRefPolicyRuleTrigger
+
+RuleTrigger <|-- BeforeDeleteChildAssociationRuleTrigger
+RuleTrigger <|-- CreateNodeRuleTrigger 
+RuleTrigger <|-- OnCreateChildAssociationRuleTrigger
+RuleTrigger <|-- OnMoveNodeRuleTrigger 
+RuleTrigger <|-- OnPropertyUpdateRuleTrigger
+RuleTrigger <|-- RestoreNodeRuleTrigger 
+RuleTrigger <|-- SingleAssocRefPolicyRuleTrigger
+RuleTrigger <|-- SingleNodeRefPolicyRuleTrigger
+
+
+note right of Action
+	See separate diagram for info about Actions
+end note
+
+@enduml

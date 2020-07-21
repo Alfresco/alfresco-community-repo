@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <!-- The authentication component.                                      -->
+
+   <!-- Jass authentication - most of the config goes somewhere else       -->
+
+   <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent"
+      parent="authenticationComponentBase">
+      <property name="realm">
+         <value>${kerberos.authentication.realm}</value>
+      </property>
+      <property name="jaasConfigEntryName">
+         <value>${kerberos.authentication.user.configEntryName}</value>
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="defaultAdministratorUserNameList">
+         <value>${kerberos.authentication.defaultAdministratorUserNames}</value>
+      </property>
+   </bean>
+
+   <!-- Wrapped version to be used within subsystem -->
+   <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+      </property>
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="target">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Authenticaton service for chaining -->
+   <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+      <property name="ticketComponent">
+         <ref bean="ticketComponent" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="sysAdminParams">
+         <ref bean="sysAdminParams" />
+      </property>
+      <property name="protectedUsersCache">
+         <ref bean="protectedUsersCache" />
+      </property>
+      <property name="protectionEnabled">
+         <value>${authentication.protection.enabled}</value>
+      </property>
+      <property name="protectionLimit">
+         <value>${authentication.protection.limit}</value>
+      </property>
+      <property name="protectionPeriodSeconds">
+         <value>${authentication.protection.periodSeconds}</value>
+      </property>
+   </bean>
+
+   <!-- CIFS authentication -->
+   <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator" parent="cifsAuthenticatorBase">
+      <property name="active">
+         <value>${kerberos.authentication.authenticateCIFS}</value>
+      </property>
+      <property name="realm">
+         <value>${kerberos.authentication.realm}</value>
+      </property>
+      <property name="password">
+         <value>${kerberos.authentication.cifs.password}</value>
+      </property>
+      <property name="jaasConfigEntryName">
+         <value>${kerberos.authentication.cifs.configEntryName}</value>
+      </property>
+      <property name="disableNTLM">
+         <value>true</value>
+      </property>
+      <property name="enableTicketCracking">
+         <value>${kerberos.authentication.cifs.enableTicketCracking}</value>
+      </property>
+      <property name="stripKerberosUsernameSuffix">
+         <value>${kerberos.authentication.stripUsernameSuffix}</value>
+      </property>
+   </bean>
+
+   <!-- FTP authentication -->
+   <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase">
+      <property name="active">
+         <value>${kerberos.authentication.authenticateFTP}</value>
+      </property>
+   </bean>
+
+</beans>

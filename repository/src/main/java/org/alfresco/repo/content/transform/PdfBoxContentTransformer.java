@@ -1,0 +1,81 @@
+/*
+ * #%L
+ * Alfresco Repository
+ * %%
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+package org.alfresco.repo.content.transform;
+
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.pdf.PDFParser;
+import org.apache.tika.parser.pdf.PDFParserConfig;
+
+/**
+ * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
+ *  <a href="@link http://pdfbox.apache.org/">Apache PDFBox</a> to perform
+ *  conversions from PDF documents.
+ * 
+ * @author Nick Burch
+ * @author Derek Hulley
+ */
+public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
+{
+    protected PDFParserConfig pdfParserConfig;
+    
+    public PdfBoxContentTransformer() {
+       super(new String[] {
+             MimetypeMap.MIMETYPE_PDF
+       });
+    }
+
+    @Override
+    protected Parser getParser() {
+       return new PDFParser();
+    }
+    
+    /**
+     * Sets the PDFParserConfig for inclusion in the ParseContext sent to the PDFBox parser,
+     * useful for setting config like spacingTolerance.
+     * 
+     * @param pdfParserConfig
+     */
+    public void setPdfParserConfig(PDFParserConfig pdfParserConfig)
+    {
+        this.pdfParserConfig = pdfParserConfig;
+    }
+
+    @Override
+    protected ParseContext buildParseContext(Metadata metadata, String targetMimeType, TransformationOptions options)
+    {
+        ParseContext context = super.buildParseContext(metadata, targetMimeType, options);
+        if (pdfParserConfig != null)
+        {
+            context.set(PDFParserConfig.class, pdfParserConfig);
+        }
+        // TODO: Possibly extend TransformationOptions to allow for per-transform PDFParserConfig?
+        return context;
+    }
+}

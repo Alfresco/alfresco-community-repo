@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+   <!--                        -->
+   <!-- MAIL SERVICE           -->
+   <!--                        -->
+    <import resource="classpath:alfresco/subsystems/email/OutboundSMTP/mail-template-services-context.xml"/>
+   
+    <bean id="mailService" class="org.alfresco.repo.mail.AlfrescoJavaMailSender">
+      <property name="host">
+         <value>${mail.host}</value>
+      </property>
+      <property name="port">
+         <value>${mail.port}</value>
+      </property>
+		<property name="protocol">
+         <value>${mail.protocol}</value>
+      </property>
+      <property name="username">
+         <value>${mail.username}</value>
+      </property>
+      <property name="password">
+         <value>${mail.password}</value>
+      </property>
+      <property name="defaultEncoding">
+         <value>${mail.encoding}</value>
+      </property>
+		<property name="javaMailProperties">
+        <props>
+	            <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+	            <prop key="mail.smtp.debug">${mail.smtp.debug}</prop>
+	            <prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
+	            <prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
+            
+	            <prop key="mail.smtps.auth">${mail.smtps.auth}</prop>
+	            <prop key="mail.smtps.starttls.enable">${mail.smtps.starttls.enable}</prop>
+        </props>
+    </property>
+        <property name="maxActive" value="${mail.transports.maxActive}"/>
+        <property name="maxIdle" value="${mail.transports.maxIdle}"/>
+        <property name="maxWait" value="${mail.tranports.maxWait}"/>
+        <property name="minEvictableIdleTime" value="${mail.tranports.minEvictableIdleTime}"/>
+        <property name="timeBetweenEvictionRuns" value="${mail.tranports.timeBetweenEvictionRuns}"/>
+   </bean>
+   
+   <bean id="mail" class="org.alfresco.repo.action.executer.MailActionExecuter" parent="action-executer">
+        <property name="queueName" value="outboundMail"/>
+        <property name="mailService">
+            <ref bean="mailService"></ref>
+        </property>
+        <property name="templateService">
+            <ref bean="mailTemplateService"></ref>
+        </property>
+        <property name="personService">
+            <ref bean="personService"></ref>
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService"></ref>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"></ref>
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"></ref>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService"></ref>
+        </property>
+        <property name="preferenceService">
+            <ref bean="preferenceService"></ref>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"></ref>
+        </property>
+        <property name="imageResolver" ref="defaultImageResolver" />
+        <property name="headerEncoding">
+            <value>${mail.header}</value>
+        </property>
+        <property name="validateAddresses">
+            <value>${mail.validate.addresses}</value>
+		</property>
+		<property name="fromAddress">
+			<value>${mail.from.default}</value>
+		</property>
+		<property name="fromEnabled">
+         <value>${mail.from.enabled}</value>
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams"></ref>
+		</property>
+      <property name="sendTestMessage">
+         <value>${mail.testmessage.send}</value>
+      </property>
+      <property name="testMessageTo">
+         <value>${mail.testmessage.to}</value>
+      </property>
+      <property name="testMessageSubject">
+         <value>${mail.testmessage.subject}</value>
+      </property>
+      <property name="testMessageText">
+         <value>${mail.testmessage.text}</value>
+      </property>
+        
+        <!-- For dev/test only - emails sent to test email, irrespective of intended recipient -->
+        <property name="testModeRecipient" value="${dev.email.recipient.address}"/>
+        
+        <!-- For dev/test only - if true, emails are not actually sent -->
+        <property name="testMode" value="${dev.email.not.sent}"/>
+        
+	</bean>
+    <!--  Put analytics actions on a dedicated asynchronous queue to ensure that they will not block
+          any other ongoing asynchronous events in the system. -->
+    <bean id="mailAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>mailAsyncAction</value>
+        </property>
+        <property name="corePoolSize">
+            <value>${mail.service.corePoolSize}</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>${mail.service.maximumPoolSize}</value>
+        </property>
+    </bean>
+    
+    <bean id="mailAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
+      <property name="actionServiceImpl" ref="actionService"/>
+      <property name="threadPoolExecutor">
+         <ref bean="mailAsyncThreadPool"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService"/>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="id" value="outboundMail"/>
+    </bean>
+    
+	<bean id="monitor" class="org.alfresco.repo.action.executer.MailActionExecuterMonitor" >
+        <property name="mailActionExecuter">
+            <ref bean="mail"></ref>
+        </property>
+    </bean>
+    
+</beans>

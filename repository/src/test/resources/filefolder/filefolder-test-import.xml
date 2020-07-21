@@ -1,0 +1,58 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+    <!-- L0 files -->
+    <cm:content>
+        <cm:name>L0- File A</cm:name>
+        <cm:content>contentUrl=classpath:quick/quick.txt|mimetype=text/plain|size=|encoding=</cm:content>
+    </cm:content>
+    <cm:content>
+        <cm:name>L0- File B</cm:name>
+        <cm:content>contentUrl=classpath:quick/quick.pdf|mimetype=application/pdf|size=|encoding=</cm:content>
+    </cm:content>
+    <!-- L0 folders -->
+	<cm:folder>
+		<cm:name>L0- Folder A</cm:name>
+		<cm:contains>
+            <!-- L1 files -->
+			<cm:content>
+				<cm:name>L1- File A</cm:name>
+				<cm:content>contentUrl=classpath:quick/quick.txt|mimetype=text/plain|size=|encoding=</cm:content>
+			</cm:content>
+			<cm:content>
+				<cm:name>L1- File B</cm:name>
+				<cm:content>contentUrl=classpath:quick/quick.pdf|mimetype=application/pdf|size=|encoding=</cm:content>
+			</cm:content>
+			<cm:content>
+				<cm:name>L1- File C (%_)</cm:name>
+				<cm:content>contentUrl=classpath:quick/quick.html|mimetype=text/html|size=|encoding=</cm:content>
+			</cm:content>
+            <!-- L2 folders -->
+            <cm:folder>
+                <cm:name>L1- Folder A</cm:name>
+            </cm:folder>
+            <cm:folder>
+                <cm:name>L1- Folder B</cm:name>
+            </cm:folder>
+		</cm:contains>
+	</cm:folder>
+	<cm:folder>
+		<cm:name>L0- Folder B</cm:name>
+	</cm:folder>
+	<cm:folder>
+		<cm:name>L0- Folder C</cm:name>
+		<cm:contains>
+         <!-- L1 files -->
+			<cm:content>
+				<cm:name>CHECK_FILE</cm:name>
+				<cm:content>contentUrl=classpath:quick/quick.txt|mimetype=text/plain|size=|encoding=</cm:content>
+			</cm:content>
+         <!-- L2 folders -->
+         <cm:folder>
+             <cm:name>CHECK_FOLDER</cm:name>
+         </cm:folder>
+		</cm:contains>
+	</cm:folder>
+
+</view:view>

@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <!-- This bean, which should only be used during Unit Tests, overrides the "mail" bean such that
+        it sets the testMode to true. -->
+    <bean id="mail" class="org.alfresco.util.email.ExtendedMailActionExecutor" parent="action-executer">
+        <property name="queueName" value="outboundMail"/>
+        <property name="mailService">
+            <ref bean="mailService"></ref>
+        </property>
+        <property name="templateService">
+            <ref bean="mailTemplateService"></ref>
+        </property>
+        <property name="personService">
+            <ref bean="personService"></ref>
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService"></ref>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"></ref>
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"></ref>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService"></ref>
+        </property>
+        <property name="preferenceService">
+            <ref bean="preferenceService"></ref>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"></ref>
+        </property>
+        <property name="imageResolver" ref="defaultImageResolver" />
+        <property name="headerEncoding">
+            <value>${mail.header}</value>
+        </property>
+        <property name="validateAddresses">
+            <value>${mail.validate.addresses}</value>
+        </property>
+        <property name="fromAddress">
+            <value>${mail.from.default}</value>
+        </property>
+        <property name="fromEnabled">
+            <value>${mail.from.enabled}</value>
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams"></ref>
+        </property>
+        <property name="sendTestMessage">
+            <value>${mail.testmessage.send}</value>
+        </property>
+        <property name="testMessageTo">
+            <value>${mail.testmessage.to}</value>
+        </property>
+        <property name="testMessageSubject">
+            <value>${mail.testmessage.subject}</value>
+        </property>
+        <property name="testMessageText">
+            <value>${mail.testmessage.text}</value>
+        </property>
+        <!-- For dev/test only - emails sent to test email, irrespective of intended recipient -->
+        <property name="testModeRecipient" value="${dev.email.recipient.address}"/>
+        <!-- For dev/test only - if true, emails are not actually sent -->
+        <property name="testMode" value="${dev.email.not.sent}"/>
+    </bean>
+
+</beans>

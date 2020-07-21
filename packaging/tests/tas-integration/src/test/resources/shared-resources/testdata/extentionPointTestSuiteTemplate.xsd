@@ -1,0 +1,30 @@
+<xs:schema attributeFormDefault="unqualified"
+	elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="ExtensionPointTestSuite">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element type="xs:string" name="name" />
+				<xs:element type="xs:string" name="description" />
+				<xs:element name="TestCases">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="testcase" maxOccurs="unbounded"
+								minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element type="xs:string" name="description" />
+										<xs:element type="xs:int" name="duration" />
+										<xs:element type="xs:string" name="actualValue" />
+										<xs:element type="xs:string" name="expectedValue" />
+										<xs:element type="xs:string" name="stackTrace" />
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

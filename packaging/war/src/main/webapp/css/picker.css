@@ -1,0 +1,255 @@
+.pickerSelectedItems
+{
+   padding-left: 6px;
+   vertical-align: top;
+}
+
+.pickerSelectedItemsFocus
+{
+   background-color: #faf7ce;
+}
+
+.pickerSelectedItemsActions div
+{
+   padding: 4px;
+}
+
+.pickerSelectedItemsActions div img
+{
+   vertical-align: -4px;
+}
+
+div.pickerSelectedItem
+{
+   background-repeat: no-repeat;
+   background-position: 2px 2px;
+   margin: 2px;
+   padding: 2px;
+   border: 1px dashed #e7e7e7;
+   height: 16px;
+}
+
+span.pickerSelectedItemText
+{
+   float: left;
+   margin-left: 18px;
+}
+
+span.pickerSelectedItemAction
+{
+   float: right;
+}
+
+img.pickerSelectedIcon
+{
+   margin-left: 4px;
+   vertical-align: -4px;
+   cursor: pointer;
+}
+
+div.pickerSelector
+{
+   width: 300px;
+   border: 1px solid #e7e7e7;
+   background-color: #DFE6ED;
+   padding: 4px;
+   margin-top: 5px;
+   display: none;
+}
+
+div.pickerResultsList
+{
+   *width: 300px;
+   height: 168px;
+   overflow: auto;
+   clear: both;
+}
+
+div.pickerResults
+{
+   background-color: white;
+   border: 1px solid #e7e7e7;
+   padding: 3px 3px 5px 3px;
+   margin-bottom: 4px;
+   -moz-border-radius: 8px;
+}
+
+div.pickerResultsHeader
+{
+   margin-bottom: 2px;
+   float: left;
+}
+
+div.pickerAjaxWait
+{
+   background-image: url(../images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   background-position: 50% 65%;
+   width: 292px;
+   height: 168px;
+   overflow: hidden;
+   display: none;
+   position: absolute;
+}
+
+.pickerNavControls
+{
+   float: left;
+   border-bottom: 1px solid #b2b2b2;
+   width: 292px;
+}
+
+.pickerNavControls a img, .pickerNavControls input
+{
+   outline: none;
+}
+
+img.pickerActionButton
+{
+   margin-left: 2px;
+}
+
+div.pickerResultsRow
+{
+   clear: left;
+   padding: 4px;
+   height: auto;
+}
+
+.pickerResultsOddRow
+{
+   background-color: #f1f1f1;
+}
+
+.pickerResultsEvenRow
+{
+   background-color: #ffffff;
+}
+   
+.pickerResultIcon
+{
+   float: left;
+   margin-top: -2px;
+}
+
+.pickerResultName
+{
+   margin-left: 6px;
+   padding-top: 2px;
+}
+
+.pickerResultActions
+{
+   float: right;
+}
+
+div.pickerButtons
+{
+   margin: 0 auto;
+   width: 60px;
+   padding: 3px;
+   background-color: #f1f1f1;
+   border: 1px solid #cccccc;
+   text-align: center;
+}
+
+div.pickerFinishControls
+{
+   text-align: center;
+   padding: 0px 64px 0px 64px;
+   height: 2em;
+}
+
+.pickerNavBreadcrumb
+{
+   float: left;
+   margin-left: 10px;
+}
+
+.pickerNavBreadcrumb img
+{
+   vertical-align: -7px;
+   padding-left: 2px;
+}
+
+div.pickerNavBreadcrumbPanel
+{
+   position: absolute;
+   max-width: 250px;
+   padding: 2px;
+   margin-top: 20px;
+   background-color: #f1f1f1;
+   border: 1px solid #cccccc;
+   display: none;
+}
+
+.pickerNavBreadcrumbText
+{
+   float: left;
+   height: 16px;
+   padding: 3px 0px;
+}
+
+div.pickerNavBreadcrumbItem
+{
+   padding: 2px;
+}
+
+.pickerNavUp
+{
+   float: right;
+   margin-top: 2px;
+   margin-right: 15px;
+   text-align: right;
+}
+
+.pickerNavUp img
+{
+   vertical-align: -4px;
+}
+
+.pickerNavAddTag
+{
+   float: right;
+}
+
+.pickerAddTagIcon
+{
+   background: url("../images/office/new_tag.gif") no-repeat;
+   float: left;
+   height: 16px;
+   width: 16px;
+   margin: 2px 4px;
+}
+
+.pickerAddTagLinkContainer
+{
+   float: left;
+   height: 16px;
+   margin: 3px 0px;
+}
+
+.pickerAddTagFormContainer
+{
+   display: none;
+   float: left;
+}
+
+.pickerAddTagBox
+{
+   border: 1px solid #cccccc;
+   height: 16px;
+   margin: 0px;
+   padding: 1px;
+   color: #0073e6;
+   font-family: tahoma, sans-serif;
+   font-size: 12px;
+}
+
+.pickerAddTagImage
+{
+   cursor: pointer;
+   margin: 0px 0px -2px;
+   outline: none;
+}

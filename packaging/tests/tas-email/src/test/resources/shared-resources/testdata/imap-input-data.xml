@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inputtestdata>
+	<sites>
+		<site id="11" name="site1" />
+		<site id="12" name="test2" />
+		<site id="13" name="test3" />
+	</sites>
+
+
+	<folders>
+		<folder id="11" name="folderA" />
+		<folder id="111" name="folder1">
+			<path>/Sites/site1/documentLibrary</path>
+			<file name="file1" />
+		</folder>
+		<folder id="112" name="folder2" />
+		<folder id="113" name="folder3" />
+	</folders>
+
+	<files>
+		<file id="11" name="file1" />
+		<file id="115" name="file2" />
+		<file id="116" name="file3" />
+	</files>
+
+	<sites>
+		<site id="221" name="site1" />
+		<file id="222" name="test2" />
+		<file id="223" name="test3" />
+	</sites>
+
+	<users>
+		<user id="331" name="user1" />
+		<user id="332" name="user2" />
+		<user id="333" name="1~#a" />
+	</users>
+
+</inputtestdata>

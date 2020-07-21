@@ -1,0 +1,10 @@
+JSTextReader - Workaround for wmode=transparent text input bug
+
+Modifications and conversion to AS3:
+Mike Almond, MadeByPi
+
+Original author:
+astgtciv@analogcode.com - http://analogcode.com/p/JSTextReader/
+
+This work is licenced under a Creative Commons Attribution 3.0 License
+http://creativecommons.org/licenses/by/3.0/

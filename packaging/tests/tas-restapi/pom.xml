@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.alfresco.tas</groupId>
+    <artifactId>content-repository-community-restapi-test</artifactId>
+    <name>content-repository-community-restapi-test</name>
+    <version>6.2.2-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>content-repository-community-tas-tests-parent</artifactId>
+        <version>6.2.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <developers>
+        <developer>
+            <name>Paul Brodner</name>
+            <roles>
+                <role>Test Automation Architect</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <properties>
+        <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>run-restapi-part1</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part1-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>run-restapi-part2</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part2-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>run-restapi-part3</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part3-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>restapi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <argLine>
+                        --illegal-access=warn
+                    </argLine>
+                </configuration>
+            </plugin>
+            <!-- Build only test jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

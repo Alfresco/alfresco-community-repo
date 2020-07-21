@@ -1,0 +1,24 @@
+<webscript>
+  <shortname>Get nodes for tag</shortname>
+  <description><![CDATA[
+  Get the nodes which have a given tag.
+  <br />
+  Return content
+  <br />
+  Array of
+  <ul>
+  <li>nodeRef</li>
+  <li>url</li>
+  </ul>
+       
+  <br />
+  Return status: STATUS_OK, 200
+  
+  ]]></description>
+  <url>/api/tags/{store_type}/{store_id}/{tag}/nodes</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <family>Tagging</family>
+</webscript>

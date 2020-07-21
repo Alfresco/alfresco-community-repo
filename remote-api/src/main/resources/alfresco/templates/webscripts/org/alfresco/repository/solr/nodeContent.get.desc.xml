@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get node property content as text</shortname>
+  <description>Get the content for the node property as text.</description>
+  <url>/api/solr/textContent?nodeId={nodeId}&amp;propertyQName={propertyQName?}</url>
+  <format default="json">argument</format>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+</webscript>

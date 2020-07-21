@@ -1,0 +1,15 @@
+<webscript>
+  <shortname>Get node tags</shortname>
+  <description><![CDATA[
+  Get all the tags for a node.
+  <br> Returns STATUS_OK (200)
+  ]]>
+  </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/tags</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/tags</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <family>Tagging</family>
+</webscript>

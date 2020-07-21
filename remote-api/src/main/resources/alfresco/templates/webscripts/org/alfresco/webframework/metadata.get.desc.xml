@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Content Metadata Retrieval Service</shortname>
+  <description>Content Metadata Retrieval Service</description>
+  <url>/webframework/content/metadata</url>
+
+  <!-- This webscript really returns JSON, but for backwards compatibility -->
+  <!--  and to match existing documentation, we have to pretend we're HTML -->
+  <format default="html">argument</format>
+
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

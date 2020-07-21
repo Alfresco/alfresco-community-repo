@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get forum posts</shortname>
+  <description>Gets the forum posts.</description>
+  <url>/api/forum/site/{site}/{container}/{path}/posts</url>
+  <url>/api/forum/site/{site}/{container}/posts</url>
+  <url>/api/forum/node/{store_type}/{store_id}/{id}/posts</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

@@ -1,0 +1,13 @@
+<webscript>
+   <shortname>Admin Console - Community Summary</shortname>
+   <description><![CDATA[Admin Console WebScript that displays the Community Summary page.]]></description>
+   <url>/admin/admin-communitysummary</url>
+   <family>AdminConsole</family>
+   <family>AdminConsole:Index:0</family>
+   <!-- COMMUNITY ONLY -->
+   <family>AdminConsole:Edition:Community</family>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction allow="readonly">required</transaction>
+</webscript>

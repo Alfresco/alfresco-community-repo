@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Create Calendar Event</shortname> 
+   <description>Creates a Calendar Event</description> 
+   <url>/calendar/create</url> 
+   <format default="html">extension</format> 
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

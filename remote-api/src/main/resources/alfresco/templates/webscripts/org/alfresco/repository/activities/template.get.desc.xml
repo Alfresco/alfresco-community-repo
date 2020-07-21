@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Activity type template</shortname>
+  <description>Get the activity type template.</description>
+  <url>/api/activities/template/{path}</url>
+  <url>/api/activities/template/{path}?format=text</url>
+  <format default="text">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

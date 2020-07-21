@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>deleteevent</shortname>
+  <description>Event Action - Delete event</description>
+  <url>/calendar/event/{siteid}/{eventname}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

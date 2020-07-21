@@ -1,0 +1,20 @@
+<webscript>
+   <shortname>Custom Model Upload</shortname>
+   <description>
+   <![CDATA[
+   Upload custom model and its associated share extension module as a zip file
+
+   http://<host>:<port>/alfresco/service/api/cmm/upload
+
+   <br />
+   Notes:
+   - user must be an Admin or a member of the ALFRESCO_MODEL_ADMINISTRATORS group
+
+   ]]>
+   </description>
+   <url>/api/cmm/upload</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

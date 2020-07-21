@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.alfresco.tas</groupId>
+    <artifactId>content-repository-community-integration-test</artifactId>
+    <name>content-repository-community-integration-test</name>
+    <version>6.2.2-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>content-repository-community-tas-tests-parent</artifactId>
+        <version>6.2.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <developers>
+        <developer>
+            <name>Paul Brodner</name>
+            <roles>
+                <role>Test Automation Architect</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <properties>
+        <suiteXmlFile>${project.basedir}/src/test/resources/integration-suite.xml</suiteXmlFile>
+        <dependency.groovy.version>2.5.9</dependency.groovy.version>
+        <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>utility</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>javax.mail-api</artifactId>
+            <version>${dependency.javax.mail.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>${dependency.javax.mail.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>${dependency.groovy.version}</version>
+        </dependency>
+
+        <!-- FTP -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>ftp</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- REST API -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>restapi</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- CMIS -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>cmis</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- EMAIL: IMAP & SMTP -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>email</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- WebDAV -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>webdav</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <argLine>
+                        --illegal-access=warn
+                    </argLine>
+                </configuration>
+            </plugin>
+            <!-- Build only test jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,188 @@
+<alfresco-config>
+
+   <!--
+      CSRF filter config to mitigate CSRF/Seasurfing/XSRF attacks
+
+      To disable the CSRF filter override the <filter> to not contain any values, for example:
+         <config evaluator="string-compare" condition="CSRFPolicy" replace="true">
+            <filter/>
+         </config>
+      
+      @since 5.2
+   -->
+   <config evaluator="string-compare" condition="CSRFPolicy">
+      
+      <!--
+         Force creation of a Session when the filter matches a path - this should only be used when you are
+         confident the filtered part of the web application is using an authentication mechanism that will avoid
+         protected pages being accessed until the user is authenticated. Otherwise this would be a route to
+         a Session fixation attack.
+      -->
+      <session>true</session>
+
+      <!--
+         Properties that may be used inside the rest of the CSRFPolicy config to avoid repetition but
+         also making it possible to provide different values in different environments.
+         I.e. Different "Referer" & "Origin" properties for test & production etc.
+         Reference a property using "{propertyName}".
+      -->
+      <properties>
+
+         <!-- There is normally no need to override this property -->
+         <token>alf-csrftoken</token>
+
+         <!--
+            Override and set this property with a regexp that if you have placed Alfresco behind a proxy that
+            does not rewrite the Referer header.
+         -->
+         <referer></referer>
+
+         <!--
+            Override and set this property with a regexp that if you have placed Alfresco behind a proxy that
+            does not rewrite the Origin header.
+         -->
+         <origin></origin>
+      </properties>
+
+      <!--
+        Will be used and exposed to the client side code in Admin.CSRF
+        Use the Admin.CSRF.getHeader() or Admin.CSRF.getParameter() with Admin.CSRF.getToken()
+        to set the token in custom 3rd party code.
+      -->
+      <client>
+         <cookie>{token}</cookie>
+         <header>{token}</header>
+         <parameter>{token}</parameter>
+      </client>
+
+      <!-- The first rule with a matching request will get its action invoked, the remaining rules will be ignored. -->
+      <filter>
+
+         <!-- Refresh token on each new page visit -->
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/service/enterprise/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/s/enterprise/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcservice/enterprise/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcs/enterprise/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/service/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/s/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcservice/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcs/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+
+         <!--
+            Verify multipart requests contain the token as a parameter
+            and also correct referer & origin header if available
+         -->
+         <rule>
+            <request>
+               <method>POST</method>
+               <header name="Content-Type">multipart/.+</header>
+            </request>
+            <action name="assertToken">
+               <param name="session">{token}</param>
+               <param name="parameter">{token}</param>
+            </action>
+            <action name="assertReferer">
+               <param name="referer">{referer}</param>
+            </action>
+            <action name="assertOrigin">
+               <param name="origin">{origin}</param>
+            </action>
+         </rule>
+
+         <!--
+            Verify that all remaining state changing requests contain a token in the header and correct referer & origin headers
+            if available. We "catch" all content types since just setting it to "application/json.*" since a webscript that doesn't
+            require a json request body otherwise would be successfully executed using i.e."text/plain".
+         -->
+         <rule>
+            <request>
+               <method>POST|PUT|DELETE</method>
+            </request>
+            <action name="assertToken">
+               <param name="session">{token}</param>
+               <param name="header">{token}</param>
+            </action>
+            <action name="assertReferer">
+               <param name="referer">{referer}</param>
+            </action>
+            <action name="assertOrigin">
+               <param name="origin">{origin}</param>
+            </action>
+         </rule>
+      </filter>
+
+   </config>
+
+</alfresco-config>

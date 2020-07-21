@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<!-- Top-level imports of XML configuration -->
+<beans>
+   <import resource="classpath:alfresco/application-context.xml" />
+   <import resource="classpath:alfresco/web-scripts-application-context.xml" />
+   <import resource="classpath*:alfresco/enterprise-web-scripts-application-context.xml" />
+   <!--
+       To give final control over the tuning of the custom environment, the custom-web-context.xml file is processed
+       last (note: custom-web-context.xml isn't part of the source tree itself).
+   -->
+   <import resource="classpath*:alfresco/extension/custom-web-context.xml" />
+
+   <!-- Apply web-client-security-config.xml to web/webscript config sources -->
+   <bean id="webscripts.configsource" class="org.springframework.extensions.config.source.UrlConfigSource">
+      <constructor-arg>
+         <list>
+            <value>classpath:alfresco/web-scripts-config.xml</value>
+            <value>classpath:alfresco/web-client-security-config.xml</value>
+            <value>classpath:alfresco/extension/web-scripts-config-custom.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+
+   <bean id="web.config" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
+      <constructor-arg>
+         <ref bean="webscripts.configsource" />
+      </constructor-arg>
+   </bean>
+</beans>

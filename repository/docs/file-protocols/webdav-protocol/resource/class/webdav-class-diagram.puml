@@ -1,0 +1,1590 @@
+@startuml
+
+' Generated using https://github.com/juanmf/Java2PlantUML
+
+left to right direction
+' Participants 
+
+interface org.alfresco.repo.webdav.LockInfo {
+--
++  addSharedLockToken(c String)  : void
++  getDepth()  :  String
++  getExclusiveLockToken()  :  String
++  getExpires()  :  Date
++  getOwner()  :  String
++  getRemainingTimeoutSeconds()  : long
++  getScope()  :  String
++  getSharedLockTokens()  :  Set
++  isExclusive()  : boolean
++  isExpired()  : boolean
++  isLocked()  : boolean
++  isShared()  : boolean
++  setDepth(c String)  : void
++  setExclusiveLockToken(c String)  : void
++  setExpires(c Date)  : void
++  setOwner(c String)  : void
++  setScope(c String)  : void
++  setSharedLockTokens( Set< String>)  : void
++  setTimeoutMinutes(int)  : void
++  setTimeoutSeconds(int)  : void
++  toJSON()  :  String
+
+}
+class org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter {
+-  httpServletRequestAuthHeaderName : c String
+-  logger : i Log
+-  m_authComponent : i AuthenticationComponent
+-  m_authPattern : c Pattern
+-  m_authPatternString : c String
+-  m_context : i ServletContext
+--
++   HTTPRequestAuthenticationFilter() 
+#  getLogger()  :  Log
++  destroy()  : void
++  doFilter(i ServletRequest, i ServletResponse, i FilterChain)  : void
++  init(i FilterConfig)  : void
+-  reject(i HttpServletRequest, i HttpServletResponse)  : void
+
+}
+class org.alfresco.repo.webdav.MkcolMethod {
+-  activityPoster : i WebDAVActivityPoster
+--
++   MkcolMethod() 
+#  executeImpl()  : void
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
++  setActivityPoster(i WebDAVActivityPoster)  : void
+-  postActivity(i FileInfo)  : void
+
+}
+class javax.servlet.http.HttpServletRequestWrapper {
+--
++   HttpServletRequestWrapper(i HttpServletRequest) 
++  authenticate(i HttpServletResponse)  : boolean
++  getAuthType()  :  String
++  getContextPath()  :  String
++  getCookies()  :  Cookie;
++  getDateHeader(c String)  : long
++  getHeader(c String)  :  String
++  getHeaderNames()  :  Enumeration
++  getHeaders(c String)  :  Enumeration
++  getIntHeader(c String)  : int
++  getMethod()  :  String
++  getPart(c String)  :  Part
++  getParts()  :  Collection
++  getPathInfo()  :  String
++  getPathTranslated()  :  String
++  getQueryString()  :  String
++  getRemoteUser()  :  String
++  getRequestURI()  :  String
++  getRequestURL()  :  StringBuffer
++  getRequestedSessionId()  :  String
++  getServletPath()  :  String
++  getSession()  :  HttpSession
++  getSession(boolean)  :  HttpSession
++  getUserPrincipal()  :  Principal
++  isRequestedSessionIdFromCookie()  : boolean
++  isRequestedSessionIdFromURL()  : boolean
++  isRequestedSessionIdFromUrl()  : boolean
++  isRequestedSessionIdValid()  : boolean
++  isUserInRole(c String)  : boolean
++  login(c String, c String)  : void
++  logout()  : void
+-  _getHttpServletRequest()  :  HttpServletRequest
+
+}
+class org.alfresco.repo.webdav.auth.WebDAVUser {
+-  m_homeNode : c NodeRef
+-  m_ticket : c String
+-  m_userName : c String
+-  serialVersionUID : long
+--
++   WebDAVUser(c String, c String, c NodeRef) 
+#  setHomeNode(c NodeRef)  : void
++  getHomeNode()  :  NodeRef
++  getTicket()  :  String
++  getUserName()  :  String
++  hasHomeNode()  : boolean
++  toString()  :  String
+
+}
+class org.alfresco.repo.webdav.PropFindMethod {
+#  FIND_PROPS : int
+#  GET_ALL_PROPS : int
+#  GET_NAMED_PROPS : int
+#  m_mode : int
+#  m_namespaces :  HashMap< String, String>
+#  m_properties :  ArrayList< WebDAVProperty>
+--
++   PropFindMethod() 
+#  createProperty(i Node)  :  WebDAVProperty
+#  executeImpl()  : void
+#  generateAllPropertiesResponse(c XMLWriter, i FileInfo, boolean)  : void
+#  generateFindPropertiesResponse(c XMLWriter, i FileInfo, boolean)  : void
+#  generateLockDiscoveryResponse(c XMLWriter, i FileInfo, boolean)  : void
+#  generateResponseForNode(c XMLWriter, i FileInfo, c String)  : void
+#  getXMLOutputFormat()  :  OutputFormat
+#  isReadOnly()  : boolean
+#  loadDeadProperties(c NodeRef)  :  Map
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  persistDeadProperties(c NodeRef,  Map< QName, String>)  : void
+#  writeLockTypes(c XMLWriter)  : void
++  getMode()  : int
+-  generateNamedPropertiesResponse(c XMLWriter, i FileInfo, boolean)  : void
+-  getNamespaceName(c String)  :  String
+-  writeLock(c XMLWriter, c String)  : void
+
+}
+interface org.alfresco.repo.webdav.auth.SharepointConstants {
++  USER_SESSION_ATTRIBUTE : c String
+--
+
+}
+interface javax.servlet.http.HttpSessionListener {
+--
++  sessionCreated(c HttpSessionEvent)  : void
++  sessionDestroyed(c HttpSessionEvent)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAVServerException {
+-  m_cause : c Throwable
+-  m_httpStatusCode : int
+-  serialVersionUID : long
+--
++   WebDAVServerException(int) 
++   WebDAVServerException(int, c Throwable) 
++  getCause()  :  Throwable
++  getHttpStatusCode()  : int
++  toString()  :  String
+
+}
+class org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter {
+-  logger : i Log
+--
++   KerberosAuthenticationFilter() 
+#  checkLoginPage(i HttpServletRequest, i HttpServletResponse)  : boolean
+#  getLogger()  :  Log
+#  onValidateFailed(i ServletContext, i HttpServletRequest, i HttpServletResponse, i HttpSession, i WebCredentials)  : void
+#  writeLoginPageLink(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
+
+}
+class org.alfresco.repo.webdav.auth.AuthenticationFilter {
+-  ENCODINGS : c String;
+-  PPT_EXTN : c String
+-  logger : i Log
+--
++   AuthenticationFilter() 
+#  getLogger()  :  Log
++  destroy()  : void
++  doFilter(i ServletContext, i ServletRequest, i ServletResponse, i FilterChain)  : void
+
+}
+class javax.servlet.ServletInputStream {
+--
+#   ServletInputStream() 
++  readLine(class [B, int, int)  : int
+
+}
+class org.alfresco.repo.webdav.DeleteMethod {
+-  activityPoster : i WebDAVActivityPoster
+-  deleteDelayTimer : c Timer
+--
++   DeleteMethod() 
+#  executeImpl()  : void
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  postActivity(i FileInfo, i FileInfo, c String)  : void
++  setActivityPoster(i WebDAVActivityPoster)  : void
+
+}
+interface org.springframework.context.ApplicationListener <E extends c ApplicationEvent> {
+--
++  onApplicationEvent(E)  : void
+
+}
+interface javax.security.auth.callback.CallbackHandler {
+--
++  handle(c Callback;)  : void
+
+}
+class org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter {
+-  httpServletRequestAuthHeaderName : c String
+-  userName : c String
+--
++   HTTPRequestAuthenticationFilterTestFilter() 
++  destroy()  : void
++  doFilter(i ServletRequest, i ServletResponse, i FilterChain)  : void
++  init(i FilterConfig)  : void
+-  getProxy(i HttpServletRequest)  :  HttpServletRequest
+
+}
+class org.alfresco.repo.webdav.PostMethod {
+--
++   PostMethod() 
+
+}
+interface org.springframework.beans.factory.Aware {
+--
+
+}
+interface javax.servlet.ServletRequest {
+--
++  getAsyncContext()  :  AsyncContext
++  getAttribute(c String)  :  Object
++  getAttributeNames()  :  Enumeration
++  getCharacterEncoding()  :  String
++  getContentLength()  : int
++  getContentType()  :  String
++  getDispatcherType()  :  DispatcherType
++  getInputStream()  :  ServletInputStream
++  getLocalAddr()  :  String
++  getLocalName()  :  String
++  getLocalPort()  : int
++  getLocale()  :  Locale
++  getLocales()  :  Enumeration
++  getParameter(c String)  :  String
++  getParameterMap()  :  Map
++  getParameterNames()  :  Enumeration
++  getParameterValues(c String)  :  String;
++  getProtocol()  :  String
++  getReader()  :  BufferedReader
++  getRealPath(c String)  :  String
++  getRemoteAddr()  :  String
++  getRemoteHost()  :  String
++  getRemotePort()  : int
++  getRequestDispatcher(c String)  :  RequestDispatcher
++  getScheme()  :  String
++  getServerName()  :  String
++  getServerPort()  : int
++  getServletContext()  :  ServletContext
++  isAsyncStarted()  : boolean
++  isAsyncSupported()  : boolean
++  isSecure()  : boolean
++  removeAttribute(c String)  : void
++  setAttribute(c String, c Object)  : void
++  setCharacterEncoding(c String)  : void
++  startAsync()  :  AsyncContext
++  startAsync(i ServletRequest, i ServletResponse)  :  AsyncContext
+
+}
+class org.springframework.extensions.surf.util.AbstractLifecycleBean {
+#  log : i Log
+-  applicationContext : i ApplicationContext
+--
++   AbstractLifecycleBean() 
+#  getApplicationContext()  :  ApplicationContext
+#  onBootstrap(c ApplicationEvent)  : void
+#  onShutdown(c ApplicationEvent)  : void
++  onApplicationEvent(c ApplicationEvent)  : void
++  setApplicationContext(i ApplicationContext)  : void
+
+}
+interface org.alfresco.service.cmr.webdav.WebDavService {
+--
++  activitiesEnabled()  : boolean
++  getEnabled()  : boolean
++  getWebdavUrl(c NodeRef)  :  String
+
+}
+class org.alfresco.repo.webdav.ExceptionHandler {
+-  e : c Throwable
+-  logger : i Log
+-  request : i HttpServletRequest
+-  response : i HttpServletResponse
+--
++   ExceptionHandler(c Throwable, i HttpServletRequest, i HttpServletResponse) 
++  handle()  : void
+
+}
+interface org.alfresco.repo.webdav.WebDAVLockService {
++  BEAN_NAME : c String
+--
++  getLockInfo(c NodeRef)  :  LockInfo
++  isLockedAndReadOnly(c NodeRef)  : boolean
++  lock(c NodeRef, c String, int)  : void
++  lock(c NodeRef, i LockInfo)  : void
++  sessionDestroyed()  : void
++  setCurrentSession(i HttpSession)  : void
++  unlock(c NodeRef)  : void
+
+}
+interface javax.servlet.Filter {
+--
++  destroy()  : void
++  doFilter(i ServletRequest, i ServletResponse, i FilterChain)  : void
++  init(i FilterConfig)  : void
+
+}
+class javax.servlet.ServletRequestWrapper {
+-  request : i ServletRequest
+--
++   ServletRequestWrapper(i ServletRequest) 
++  getAsyncContext()  :  AsyncContext
++  getAttribute(c String)  :  Object
++  getAttributeNames()  :  Enumeration
++  getCharacterEncoding()  :  String
++  getContentLength()  : int
++  getContentType()  :  String
++  getDispatcherType()  :  DispatcherType
++  getInputStream()  :  ServletInputStream
++  getLocalAddr()  :  String
++  getLocalName()  :  String
++  getLocalPort()  : int
++  getLocale()  :  Locale
++  getLocales()  :  Enumeration
++  getParameter(c String)  :  String
++  getParameterMap()  :  Map
++  getParameterNames()  :  Enumeration
++  getParameterValues(c String)  :  String;
++  getProtocol()  :  String
++  getReader()  :  BufferedReader
++  getRealPath(c String)  :  String
++  getRemoteAddr()  :  String
++  getRemoteHost()  :  String
++  getRemotePort()  : int
++  getRequest()  :  ServletRequest
++  getRequestDispatcher(c String)  :  RequestDispatcher
++  getScheme()  :  String
++  getServerName()  :  String
++  getServerPort()  : int
++  getServletContext()  :  ServletContext
++  isAsyncStarted()  : boolean
++  isAsyncSupported()  : boolean
++  isSecure()  : boolean
++  isWrapperFor(c Class)  : boolean
++  isWrapperFor(i ServletRequest)  : boolean
++  removeAttribute(c String)  : void
++  setAttribute(c String, c Object)  : void
++  setCharacterEncoding(c String)  : void
++  setRequest(i ServletRequest)  : void
++  startAsync()  :  AsyncContext
++  startAsync(i ServletRequest, i ServletResponse)  :  AsyncContext
+
+}
+interface org.alfresco.repo.management.subsystems.ActivateableBean {
+--
++  isActive()  : boolean
+
+}
+class org.alfresco.repo.webdav.UnlockMethod {
+-  m_strLockToken : c String
+--
++   UnlockMethod() 
+#  attemptUnlock()  : void
+#  executeImpl()  : void
+#  getLockToken()  :  String
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+-  removeNoContentAspect(c NodeRef)  : void
+
+}
+interface java.util.EventListener {
+--
+
+}
+class org.alfresco.repo.webdav.HierarchicalMethod {
+#  m_overwrite : boolean
+#  m_strDestinationPath : c String
+--
++   HierarchicalMethod() 
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
++  getDestinationPath()  :  String
++  hasOverWrite()  : boolean
+
+}
+class org.alfresco.repo.webdav.WebDAVServlet$WebDAVInitParameters {
+-  enabled : boolean
+-  rootPath : c String
+-  storeName : c String
+-  urlPathPrefix : c String
+--
++   WebDAVServlet$WebDAVInitParameters() 
++  getEnabled()  : boolean
++  getRootPath()  :  String
++  getStoreName()  :  String
++  getUrlPathPrefix()  :  String
++  setEnabled(boolean)  : void
++  setRootPath(c String)  : void
++  setStoreName(c String)  : void
++  setUrlPathPrefix(c String)  : void
+
+}
+interface org.alfresco.repo.transaction.RetryingTransactionHelper$RetryingTransactionCallback <Result extends c Object> {
+--
++  execute()  :  Object
+
+}
+class org.alfresco.repo.webdav.MTNodesCache2 {
+-  defaultNode : c NodeRef
+-  enabled : boolean
+-  namespaceService : i NamespaceService
+-  nodeService : i NodeService
+-  nodesCache :  Map< String, NodeRef>
+-  rootPath : c String
+-  searchService : i SearchService
+-  storeName : c String
+-  tenantService : i TenantService
+--
++   MTNodesCache2() 
++  getEnabled()  : boolean
++  getNamespaceService()  :  NamespaceService
++  getNodeForCurrentTenant()  :  NodeRef
++  getNodeService()  :  NodeService
++  getRootPath()  :  String
++  getSearchService()  :  SearchService
++  getStoreName()  :  String
++  getTenantService()  :  TenantService
++  init()  : void
++  onBootstrap()  : void
++  setEnabled(boolean)  : void
++  setNamespaceService(i NamespaceService)  : void
++  setNodeService(i NodeService)  : void
++  setRootPath(c String)  : void
++  setSearchService(i SearchService)  : void
++  setStoreName(c String)  : void
++  setTenantService(i TenantService)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAVProperty {
+-  m_strName : c String
+-  m_strNamespaceName : c String
+-  m_strNamespaceUri : c String
+-  m_strValue : c String
+--
++   WebDAVProperty(c String) 
++   WebDAVProperty(c String, c String, c String) 
++   WebDAVProperty(c String, c String, c String, c String) 
++  createQName()  :  QName
++  getName()  :  String
++  getNamespaceName()  :  String
++  getNamespaceUri()  :  String
++  getValue()  :  String
++  hasNamespaceName()  : boolean
++  isProtected()  : boolean
++  setValue(c String)  : void
++  toString()  :  String
+
+}
+interface org.springframework.context.ApplicationContextAware {
+--
++  setApplicationContext(i ApplicationContext)  : void
+
+}
+class org.alfresco.repo.webdav.LockMethod {
+#  createExclusive : boolean
+#  lockInfo : i LockInfo
+#  lockToken : c String
+#  m_timeoutDuration : int
++  EMPTY_NS : c String
+-  timer : c Timer
+--
++   LockMethod() 
+#  attemptLock()  : void
+#  createLock(i FileInfo, c String)  : void
+#  createNode(c NodeRef, c String, c QName)  :  FileInfo
+#  executeImpl()  : void
+#  generateNamespaceDeclarations( HashMap< String, String>)  :  String
+#  generateResponse(i FileInfo, c String)  : void
+#  getLockTimeout()  : int
+#  hasLockToken()  : boolean
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  refreshLock(i FileInfo, c String)  : void
+
+}
+class org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter {
+-  LoginConfigEntry : c String
+-  m_accountName : c String
+-  m_krbRealm : c String
+-  m_loginContext : c LoginContext
+-  m_loginEntryName : c String
+-  m_password : c String
+-  m_stripKerberosUsernameSuffix : boolean
+--
++   BaseKerberosAuthenticationFilter() 
+#  checkLoginPage(i HttpServletRequest, i HttpServletResponse)  : boolean
+#  init()  : void
++  authenticateRequest(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
++  handle(c Callback;)  : void
++  logonStartAgain(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
++  restartLoginChallenge(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
++  setJaasConfigEntryName(c String)  : void
++  setPassword(c String)  : void
++  setRealm(c String)  : void
++  setStripKerberosUsernameSuffix(boolean)  : void
+-  doKerberosLogon(c NegTokenInit, i HttpServletRequest, i HttpServletResponse, i HttpSession)  :  NegTokenTarg
+-  logonStartAgain(i ServletContext, i HttpServletRequest, i HttpServletResponse, boolean)  : void
+
+}
+class javax.servlet.http.HttpServlet {
+-  HEADER_IFMODSINCE : c String
+-  HEADER_LASTMOD : c String
+-  LSTRING_FILE : c String
+-  METHOD_DELETE : c String
+-  METHOD_GET : c String
+-  METHOD_HEAD : c String
+-  METHOD_OPTIONS : c String
+-  METHOD_POST : c String
+-  METHOD_PUT : c String
+-  METHOD_TRACE : c String
+-  lStrings : c ResourceBundle
+--
++   HttpServlet() 
+#  doDelete(i HttpServletRequest, i HttpServletResponse)  : void
+#  doGet(i HttpServletRequest, i HttpServletResponse)  : void
+#  doHead(i HttpServletRequest, i HttpServletResponse)  : void
+#  doOptions(i HttpServletRequest, i HttpServletResponse)  : void
+#  doPost(i HttpServletRequest, i HttpServletResponse)  : void
+#  doPut(i HttpServletRequest, i HttpServletResponse)  : void
+#  doTrace(i HttpServletRequest, i HttpServletResponse)  : void
+#  getLastModified(i HttpServletRequest)  : long
+#  service(i HttpServletRequest, i HttpServletResponse)  : void
++  service(i ServletRequest, i ServletResponse)  : void
+-  getAllDeclaredMethods( Class<?>)  :  Method;
+-  maybeSetLastModified(i HttpServletResponse, long)  : void
+
+}
+class org.alfresco.repo.webdav.LockInfoImpl {
++  ADDINFO_WEBDAV_MARKER : c String
+-  depth : c String
+-  exclusiveLockToken : c String
+-  expires : c Date
+-  owner : c String
+-  scope : c String
+-  serialVersionUID : long
+-  sharedLockTokens :  Set< String>
+--
++   LockInfoImpl() 
++   LockInfoImpl(c String, c String, c String) 
+#  dateNow()  :  Date
++  addSharedLockToken(c String)  : void
++  fromJSON(c String)  :  LockInfo
++  getDepth()  :  String
++  getExclusiveLockToken()  :  String
++  getExpires()  :  Date
++  getOwner()  :  String
++  getRemainingTimeoutSeconds()  : long
++  getScope()  :  String
++  getSharedLockTokens()  :  Set
++  isExclusive()  : boolean
++  isExpired()  : boolean
++  isLocked()  : boolean
++  isShared()  : boolean
++  setDepth(c String)  : void
++  setExclusiveLockToken(c String)  : void
++  setExpires(c Date)  : void
++  setOwner(c String)  : void
++  setScope(c String)  : void
++  setSharedLockTokens( Set< String>)  : void
++  setTimeoutMinutes(int)  : void
++  setTimeoutSeconds(int)  : void
++  toJSON()  :  String
++  toString()  :  String
+
+}
+interface javax.servlet.Servlet {
+--
++  destroy()  : void
++  getServletConfig()  :  ServletConfig
++  getServletInfo()  :  String
++  init(i ServletConfig)  : void
++  service(i ServletRequest, i ServletResponse)  : void
+
+}
+class org.alfresco.repo.webdav.WebDavBootstrap {
+-  rootNode : c MTNodesCache2
+--
++   WebDavBootstrap() 
+#  onBootstrap(c ApplicationEvent)  : void
+#  onShutdown(c ApplicationEvent)  : void
++  getRootNode()  :  MTNodesCache2
++  init()  : void
++  setRootNode(c MTNodesCache2)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAVLockServiceImpl {
+-  LOCKED_RESOURCES : c String
+-  checkOutCheckInService : i CheckOutCheckInService
+-  currentSession :  ThreadLocal< HttpSession>
+-  lockService : i LockService
+-  logger : i Log
+-  nodeService : i NodeService
+-  transactionService : i TransactionService
+--
++   WebDAVLockServiceImpl() 
++  getLockInfo(c NodeRef)  :  LockInfo
++  isLockedAndReadOnly(c NodeRef)  : boolean
++  lock(c NodeRef, c String, int)  : void
++  lock(c NodeRef, i LockInfo)  : void
++  sessionDestroyed()  : void
++  setCheckOutCheckInService(i CheckOutCheckInService)  : void
++  setCurrentSession(i HttpSession)  : void
++  setLockService(i LockService)  : void
++  setNodeService(i NodeService)  : void
++  setTransactionService(i TransactionService)  : void
++  unlock(c NodeRef)  : void
+-  createLock(c NodeRef, c String, boolean, int)  :  LockInfo
+-  removeObjectFromSessionList(i HttpSession, c String, c Object)  : boolean
+-  storeObjectInSessionList(i HttpSession, c String, c Object)  : void
+
+}
+interface javax.servlet.ServletContextListener {
+--
++  contextDestroyed(c ServletContextEvent)  : void
++  contextInitialized(c ServletContextEvent)  : void
+
+}
+class org.alfresco.repo.webdav.PropPatchMethod$PropertyAction {
++  REMOVE : int
++  SET : int
+-  action : int
+-  property : c WebDAVProperty
+-  statusCode : int
+-  statusCodeDescription : c String
+--
++   PropPatchMethod$PropertyAction(c PropPatchMethod, int, c WebDAVProperty) 
++  getAction()  : int
++  getProperty()  :  WebDAVProperty
++  getStatusCode()  : int
++  getStatusCodeDescription()  :  String
++  setResult(int, c String)  : void
++  toString()  :  String
+
+}
+class org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter$Handler {
+~  httpReq : i HttpServletRequest
+--
+~   HTTPRequestAuthenticationFilterTestFilter$Handler(c HTTPRequestAuthenticationFilterTestFilter, i HttpServletRequest) 
++  invoke(c Object, c Method, c Object;)  :  Object
+
+}
+class org.alfresco.repo.webdav.WebDAVMethod$Condition {
+-  eTagsMatch :  LinkedList< String>
+-  eTagsNotMatch :  LinkedList< String>
+-  lockTokensMatch :  LinkedList< String>
+-  lockTokensNotMatch :  LinkedList< String>
+--
++   WebDAVMethod$Condition(c WebDAVMethod) 
++  addETag(c String, boolean)  : void
++  addLockTocken(c String, boolean)  : void
++  getETagsMatch()  :  LinkedList
++  getETagsNotMatch()  :  LinkedList
++  getLockTokensMatch()  :  LinkedList
++  getLockTokensNotMatch()  :  LinkedList
+
+}
+interface org.alfresco.repo.webdav.WebDAVActivityPoster {
+--
++  postFileFolderAdded(c String, c String, c String, i FileInfo)  : void
++  postFileFolderDeleted(c String, c String, c String, i FileInfo, i FileInfo)  : void
++  postFileFolderUpdated(c String, c String, i FileInfo)  : void
+
+}
+interface javax.servlet.ServletConfig {
+--
++  getInitParameter(c String)  :  String
++  getInitParameterNames()  :  Enumeration
++  getServletContext()  :  ServletContext
++  getServletName()  :  String
+
+}
+interface org.alfresco.sync.repo.events.EventPreparator {
+--
++  prepareEvent(c String, c String, c String)  :  Event
+
+}
+class org.alfresco.repo.webdav.CopyMethod {
+--
++   CopyMethod() 
+#  isMove()  : boolean
+
+}
+class org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter {
+#  MIME_HTML_TEXT : c String
+-  fallbackDelegate : i AuthenticationDriver
+-  m_isActive : boolean
+-  m_isFallbackEnabled : boolean
+-  m_lastConfiguredServerName : c String
+-  m_lastResolvedServerName : c String
+-  m_loginPage : c String
+-  m_ticketLogons : boolean
+-  serverConfiguration : i ExtendedServerConfigurationAccessor
+--
++   BaseSSOAuthenticationFilter() 
+#  allowsTicketLogons()  : boolean
+#  checkForTicketParameter(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
+#  getLoginPage()  :  String
+#  getSecurityConfigSection()  :  SecurityConfigSection
+#  getServerName()  :  String
+#  hasLoginPage()  : boolean
+#  includeFallbackAuth(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
+#  init()  : void
+#  isNTLMSSPBlob(class [B, int)  : boolean
+#  mapClientAddressToDomain(c String)  :  String
+#  onLoginComplete(i ServletContext, i HttpServletRequest, i HttpServletResponse, boolean)  : boolean
+#  onValidate(i ServletContext, i HttpServletRequest, i HttpServletResponse, i WebCredentials)  : void
+#  onValidateFailed(i ServletContext, i HttpServletRequest, i HttpServletResponse, i HttpSession, i WebCredentials)  : void
+#  performFallbackAuthentication(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
+#  redirectToLoginPage(i HttpServletRequest, i HttpServletResponse)  : void
+#  setLoginPage(c String)  : void
+#  writeLoginPageLink(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
++  afterPropertiesSet()  : void
++  doFilter(i ServletContext, i ServletRequest, i ServletResponse, i FilterChain)  : void
++  isActive()  : boolean
++  isFallbackEnabled()  : boolean
++  setActive(boolean)  : void
++  setFallback(i AuthenticationDriver)  : void
++  setFallbackEnabled(boolean)  : void
++  setServerConfiguration(i ExtendedServerConfigurationAccessor)  : void
++  setTicketLogons(boolean)  : void
+
+}
+interface org.alfresco.repo.security.authentication.AuthenticationUtil$RunAsWork <Result extends c Object> {
+--
++  doWork()  :  Object
+
+}
+class org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver {
+-  authenticationService : i AuthenticationService
+-  logger : i Log
+-  nodeService : i NodeService
+-  personService : i PersonService
+-  transactionService : i TransactionService
+-  userAttributeName : c String
+--
++   SSOFallbackBasicAuthenticationDriver() 
++  authenticateRequest(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
++  restartLoginChallenge(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
++  setAuthenticationService(i AuthenticationService)  : void
++  setNodeService(i NodeService)  : void
++  setPersonService(i PersonService)  : void
++  setTransactionService(i TransactionService)  : void
++  setUserAttributeName(c String)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAVHelper {
+#  logger : i Log
++  BEAN_NAME : c String
++  EMPTY_SITE_ID : c String
++  PathSeperator : c String
++  PathSeperatorChar : char
+-  HTTPS_SCHEME : c String
+-  HTTP_SCHEME : c String
+-  eventPublisher : i EventPublisher
+-  m_actionService : i ActionService
+-  m_authService : i AuthenticationService
+-  m_dictionaryService : i DictionaryService
+-  m_fileFolderService : i FileFolderService
+-  m_hiddenAspect : c HiddenAspect
+-  m_lockService : i WebDAVLockService
+-  m_mimetypeService : i MimetypeService
+-  m_namespaceService : i NamespaceService
+-  m_nodeService : i NodeService
+-  m_nullAttribs : c AttributesImpl
+-  m_permissionService : i PermissionService
+-  m_policyBehaviourFilter : i BehaviourFilter
+-  m_renameShufflePattern : c Pattern
+-  m_searchService : i SearchService
+-  m_serviceRegistry : i ServiceRegistry
+-  m_tenantService : i TenantService
+-  m_urlPathPrefix : c String
+-  poster : i ActivityPoster
+-  sizeLimit : long
+--
++   WebDAVHelper() 
+#  makeETagString(i FileInfo, c StringBuilder)  : void
+#  publishReadEvent(i FileInfo, c String, c Long, c String, c String)  : void
++  checkDestinationURL(i HttpServletRequest, c String)  : void
++  createFile(i FileInfo, c String)  :  FileInfo
++  decodeURL(c String)  :  String
++  determineSiteId(c NodeRef, c String)  :  String
++  determineSiteId(c WebDAVMethod)  :  String
++  determineTenantDomain()  :  String
++  determineTenantDomain(c WebDAVMethod)  :  String
++  encodeHTML(c String)  :  String
++  encodeURL(c String)  :  String
++  encodeURL(c String, c String)  :  String
++  encodeUrlReservedSymbols(c String)  :  String
++  getActionService()  :  ActionService
++  getAuthenticationService()  :  AuthenticationService
++  getChildren(i FileInfo)  :  List
++  getCopyService()  :  CopyService
++  getDestinationPath(c String, c String, c String)  :  String
++  getDictionaryService()  :  DictionaryService
++  getFileFolderService()  :  FileFolderService
++  getHiddenAspect()  :  HiddenAspect
++  getLockService()  :  WebDAVLockService
++  getMimetypeService()  :  MimetypeService
++  getNamespaceService()  :  NamespaceService
++  getNodeForPath(c NodeRef, c String)  :  FileInfo
++  getNodeService()  :  NodeService
++  getNullAttributes()  :  AttributesImpl
++  getParentNodeForPath(c NodeRef, c String)  :  FileInfo
++  getPathFromNode(c NodeRef, c NodeRef)  :  String
++  getPermissionService()  :  PermissionService
++  getPolicyBehaviourFilter()  :  BehaviourFilter
++  getRepositoryPath(i HttpServletRequest)  :  String
++  getSearchService()  :  SearchService
++  getServiceRegistry()  :  ServiceRegistry
++  getSizeLimit()  : long
++  getTenantService()  :  TenantService
++  getURLForPath(i HttpServletRequest, c String, boolean)  :  String
++  getURLForPath(i HttpServletRequest, c String, boolean, c String)  :  String
++  getUrlPathPrefix(i HttpServletRequest)  :  String
++  isLockedAndReadOnly(c NodeRef)  : boolean
++  isRenameShuffle(c String)  : boolean
++  isRootPath(c String, c String)  : boolean
++  makeETag(i FileInfo)  :  String
++  makeQuotedETag(i FileInfo)  :  String
++  setActionService(i ActionService)  : void
++  setAuthenticationService(i AuthenticationService)  : void
++  setDictionaryService(i DictionaryService)  : void
++  setEventPublisher(i EventPublisher)  : void
++  setFileFolderService(i FileFolderService)  : void
++  setHiddenAspect(c HiddenAspect)  : void
++  setLockService(i WebDAVLockService)  : void
++  setMimetypeService(i MimetypeService)  : void
++  setNamespaceService(i NamespaceService)  : void
++  setNodeService(i NodeService)  : void
++  setPermissionService(i PermissionService)  : void
++  setPolicyBehaviourFilter(i BehaviourFilter)  : void
++  setPoster(i ActivityPoster)  : void
++  setRenameShufflePattern(c Pattern)  : void
++  setSearchService(i SearchService)  : void
++  setServiceRegistry(i ServiceRegistry)  : void
++  setSizeLimitString(c String)  : void
++  setTenantService(i TenantService)  : void
++  setUrlPathPrefix(c String)  : void
++  splitAllPaths(c String)  :  List
++  splitPath(c String)  :  String;
+
+}
+class org.alfresco.repo.webdav.PutMethod {
+-  activityPoster : i WebDAVActivityPoster
+-  contentNodeInfo : i FileInfo
+-  created : boolean
+-  fileSize : long
+-  m_expectHeaderPresent : boolean
+-  m_strContentType : c String
+-  noContent : boolean
+--
++   PutMethod() 
+#  executeImpl()  : void
+#  isCreated()  : boolean
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  postActivity()  : void
++  getContentNodeInfo()  :  FileInfo
++  getContentType()  :  String
++  getFileSize()  : long
++  setActivityPoster(i WebDAVActivityPoster)  : void
+
+}
+class org.alfresco.repo.webdav.WebDavServiceImpl {
++  WEBDAV_PREFIX : c String
+-  activitiesEnabled : boolean
+-  dictionaryService : i DictionaryService
+-  enabled : boolean
+-  fileFolderService : i FileFolderService
+-  nodeService : i NodeService
+-  rootNode : c MTNodesCache2
+--
++   WebDavServiceImpl() 
++  activitiesEnabled()  : boolean
++  getDictionaryService()  :  DictionaryService
++  getEnabled()  : boolean
++  getFileFolderService()  :  FileFolderService
++  getNodeService()  :  NodeService
++  getRootNode()  :  MTNodesCache2
++  getWebdavUrl(c NodeRef)  :  String
++  init()  : void
++  setActivitiesEnabled(boolean)  : void
++  setDictionaryService(i DictionaryService)  : void
++  setEnabled(boolean)  : void
++  setFileFolderService(i FileFolderService)  : void
++  setNodeService(i NodeService)  : void
++  setRootNode(c MTNodesCache2)  : void
+-  getIsContainer(c QName)  : boolean
+-  getIsDocument(c QName)  : boolean
+
+}
+interface javax.servlet.http.HttpServletRequest {
++  BASIC_AUTH : c String
++  CLIENT_CERT_AUTH : c String
++  DIGEST_AUTH : c String
++  FORM_AUTH : c String
+--
++  authenticate(i HttpServletResponse)  : boolean
++  getAuthType()  :  String
++  getContextPath()  :  String
++  getCookies()  :  Cookie;
++  getDateHeader(c String)  : long
++  getHeader(c String)  :  String
++  getHeaderNames()  :  Enumeration
++  getHeaders(c String)  :  Enumeration
++  getIntHeader(c String)  : int
++  getMethod()  :  String
++  getPart(c String)  :  Part
++  getParts()  :  Collection
++  getPathInfo()  :  String
++  getPathTranslated()  :  String
++  getQueryString()  :  String
++  getRemoteUser()  :  String
++  getRequestURI()  :  String
++  getRequestURL()  :  StringBuffer
++  getRequestedSessionId()  :  String
++  getServletPath()  :  String
++  getSession()  :  HttpSession
++  getSession(boolean)  :  HttpSession
++  getUserPrincipal()  :  Principal
++  isRequestedSessionIdFromCookie()  : boolean
++  isRequestedSessionIdFromURL()  : boolean
++  isRequestedSessionIdFromUrl()  : boolean
++  isRequestedSessionIdValid()  : boolean
++  isUserInRole(c String)  : boolean
++  login(c String, c String)  : void
++  logout()  : void
+
+}
+class org.alfresco.repo.webdav.ActivityPosterImpl {
+#  logger : i Log
+-  appTool : c String
+-  poster : i ActivityPoster
+--
++   ActivityPosterImpl() 
++   ActivityPosterImpl(c String, i ActivityPoster) 
++  postFileFolderAdded(c String, c String, c String, i FileInfo)  : void
++  postFileFolderDeleted(c String, c String, c String, i FileInfo, i FileInfo)  : void
++  postFileFolderUpdated(c String, c String, i FileInfo)  : void
++  setAppTool(c String)  : void
++  setPoster(i ActivityPoster)  : void
+-  postFileFolderActivity(c String, c String, c String, c String, c NodeRef, i FileInfo)  : void
+
+}
+interface org.alfresco.repo.webdav.ActivityPostProducer {
+--
++  setActivityPoster(i WebDAVActivityPoster)  : void
+
+}
+class javax.servlet.GenericServlet {
+-  LSTRING_FILE : c String
+-  config : i ServletConfig
+-  lStrings : c ResourceBundle
+--
++   GenericServlet() 
++  destroy()  : void
++  getInitParameter(c String)  :  String
++  getInitParameterNames()  :  Enumeration
++  getServletConfig()  :  ServletConfig
++  getServletContext()  :  ServletContext
++  getServletInfo()  :  String
++  getServletName()  :  String
++  init()  : void
++  init(i ServletConfig)  : void
++  log(c String)  : void
++  log(c String, c Throwable)  : void
++  service(i ServletRequest, i ServletResponse)  : void
+
+}
+class org.alfresco.repo.webdav.PropPatchMethod {
+#  m_propertyActions :  ArrayList< PropPatchMethod$PropertyAction>
+-  basePath : c String
+-  failedProperty : c WebDAVProperty
+-  strHRef : c String
+--
++   PropPatchMethod() 
+#  createProperty(i Node)  :  WebDAVProperty
+#  executeImpl()  : void
+#  generateError(c XMLWriter)  : void
+#  generatePropertyResponse(c XMLWriter, c WebDAVProperty, int, c String)  : void
+#  generateResponseImpl()  : void
+#  isReadOnly()  : boolean
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  patchProperties(i FileInfo, c String)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAVMethod {
+#  logger : i Log
+#  m_childToParent :  Map< NodeRef, NodeRef>
+#  m_conditions :  LinkedList< WebDAVMethod$Condition>
+#  m_davHelper : c WebDAVHelper
+#  m_depth : int
+#  m_parentLockInfo :  Map< NodeRef, LockInfo>
+#  m_request : i HttpServletRequest
+#  m_resourceTag : c String
+#  m_response : i HttpServletResponse
+#  m_rootNodeRef : c NodeRef
+#  m_strPath : c String
+#  m_userAgent : c String
+-  VERSION_NUM_PATTERN : c String
+-  XMLPrettyPrint : boolean
+-  accessDeniedStatusCodes :  Map< String, Integer>
+-  m_inputStream : c ServletInputStream
+-  m_reader : c BufferedReader
+-  m_requestBody : c File
+-  m_xmlWriter : c CharArrayWriter
+-  siteId : c String
+-  tenantDomain : c String
+--
++   WebDAVMethod() 
+#  checkNode(i FileInfo)  :  LockInfo
+#  checkNode(i FileInfo, boolean, boolean)  :  LockInfo
+#  createXMLWriter()  :  XMLWriter
+#  executeImpl()  : void
+#  flushXML(c XMLWriter)  : void
+#  generateLockDiscoveryXML(c XMLWriter, i FileInfo, boolean, c String, c String, c String, c String, c Date)  : void
+#  generateLockDiscoveryXML(c XMLWriter, i FileInfo, i LockInfo)  : void
+#  generateNamespaceDeclarations( HashMap< String, String>)  :  String
+#  generateResponseImpl()  : void
+#  getActionService()  :  ActionService
+#  getAuthenticationService()  :  AuthenticationService
+#  getContentService()  :  ContentService
+#  getContextPath()  :  String
+#  getDAVHelper()  :  WebDAVHelper
+#  getDAVLockService()  :  WebDAVLockService
+#  getFileFolderService()  :  FileFolderService
+#  getMimetypeService()  :  MimetypeService
+#  getNamespaceService()  :  NamespaceService
+#  getNodeForPath(c NodeRef, c String)  :  FileInfo
+#  getNodeLockInfo(i FileInfo)  :  LockInfo
+#  getNodeService()  :  NodeService
+#  getPermissionService()  :  PermissionService
+#  getRequestBodyAsDocument()  :  Document
+#  getRootNodeRef()  :  NodeRef
+#  getSearchService()  :  SearchService
+#  getServiceRegistry()  :  ServiceRegistry
+#  getServletPath()  :  String
+#  getSiteId()  :  String
+#  getStatusForAccessDeniedException()  : int
+#  getTenantDomain()  :  String
+#  getTransactionService()  :  TransactionService
+#  getURLForPath(i HttpServletRequest, c String, boolean)  :  String
+#  getWorkingCopy(c NodeRef)  :  FileInfo
+#  getXMLOutputFormat()  :  OutputFormat
+#  isReadOnly()  : boolean
+#  parseDepthHeader()  : void
+#  parseIfHeader()  : void
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  shouldFlushXMLWriter()  : boolean
++  execute()  : void
++  getDepth()  : int
++  getPath()  :  String
++  setDetails(i HttpServletRequest, i HttpServletResponse, c WebDAVHelper, c NodeRef)  : void
++  toString()  :  String
+-  checkConditions(c String, c String)  : void
+-  checkLockToken(i LockInfo, boolean, boolean)  : void
+-  cleanUp()  : void
+-  getNodeLockInfoDirect(i FileInfo)  :  LockInfo
+-  getNodeLockInfoImpl(i FileInfo)  :  LockInfo
+-  getNodeLockInfoIndirect(c NodeRef)  :  LockInfo
+-  getRequestBodyAsFile(i HttpServletRequest)  :  File
+
+}
+class org.alfresco.repo.webdav.WebDAVSessionListener {
+-  logger : i Log
+-  webDAVLockService : i WebDAVLockService
+--
++   WebDAVSessionListener() 
++  contextDestroyed(c ServletContextEvent)  : void
++  contextInitialized(c ServletContextEvent)  : void
++  sessionCreated(c HttpSessionEvent)  : void
++  sessionDestroyed(c HttpSessionEvent)  : void
++  setWebDAVLockService(i WebDAVLockService)  : void
+
+}
+class java.util.TimerTask {
+~  CANCELLED : int
+~  EXECUTED : int
+~  SCHEDULED : int
+~  VIRGIN : int
+~  lock : c Object
+~  nextExecutionTime : long
+~  period : long
+~  state : int
+--
+#   TimerTask() 
++  cancel()  : boolean
++  run()  : void
++  scheduledExecutionTime()  : long
+
+}
+interface org.springframework.beans.factory.InitializingBean {
+--
++  afterPropertiesSet()  : void
+
+}
+interface org.alfresco.repo.webdav.auth.AuthenticationDriver {
++  AUTHENTICATION_USER : c String
+--
++  authenticateRequest(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
++  restartLoginChallenge(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
+
+}
+interface org.alfresco.repo.SessionUser {
+--
++  getTicket()  :  String
++  getUserName()  :  String
+
+}
+class org.alfresco.repo.webdav.GetMethod {
+#  m_returnContent : boolean
+-  MAX_RECURSE_ERROR_STACK : int
+-  RANGE_HEADER_UNIT_SPECIFIER : c String
+-  byteRanges : c String
+-  ifMatchTags :  ArrayList< String>
+-  ifNoneMatchTags :  ArrayList< String>
+-  m_ifModifiedSince : c Date
+-  m_ifUnModifiedSince : c Date
+--
++   GetMethod() 
+#  attemptReadContent(i FileInfo, i ContentReader)  : void
+#  executeImpl()  : void
+#  isReadOnly()  : boolean
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+#  readContent(i FileInfo, i ContentReader)  : void
+-  checkPreConditions(i FileInfo)  : void
+-  formatSize(c String)  :  String
+-  generateDirectoryListing(i FileInfo)  : void
+-  parentFolder(c String)  :  String
+-  parseETags(c String)  :  ArrayList
+
+}
+class org.alfresco.repo.webdav.OptionsMethod {
+-  ALLOW_HEADER : c String
+-  COLLECTION_METHODS : c String
+-  DAV_HEADER : c String
+-  DAV_HEADER_CONTENT : c String
+-  FILE_METHODS : c String
+-  MS_HEADER : c String
+--
++   OptionsMethod() 
+#  executeImpl()  : void
+#  isReadOnly()  : boolean
+#  parseRequestBody()  : void
+#  parseRequestHeaders()  : void
+
+}
+class org.alfresco.repo.webdav.auth.BaseAuthenticationFilter {
+#  ARG_TICKET : c String
+#  NO_AUTH_REQUIRED : c String
+#  authenticationComponent : i AuthenticationComponent
+#  authenticationListener : i AuthenticationListener
+#  authenticationService : i AuthenticationService
+#  nodeService : i NodeService
+#  personService : i PersonService
+#  remoteUserMapper : i RemoteUserMapper
+#  transactionService : i TransactionService
++  AUTHENTICATION_USER : c String
+-  LOGIN_EXTERNAL_AUTH : c String
+-  userAttributeName : c String
+--
++   BaseAuthenticationFilter() 
+#  createUserEnvironment(i HttpSession, c String)  :  SessionUser
+#  createUserEnvironment(i HttpSession, c String, c String, boolean)  :  SessionUser
+#  createUserObject(c String, c String, c NodeRef, c NodeRef)  :  SessionUser
+#  doInSystemTransaction( RetryingTransactionHelper$RetryingTransactionCallback<T>)  :  Object
+#  getLogger()  :  Log
+#  getSessionUser(i ServletContext, i HttpServletRequest, i HttpServletResponse, boolean)  :  SessionUser
+#  getUserAttributeName()  :  String
+#  handleLoginForm(i HttpServletRequest, i HttpServletResponse)  : boolean
+#  invalidateSession(i HttpServletRequest)  : void
+#  setUserAttributeName(c String)  : void
++  setAuthenticationComponent(i AuthenticationComponent)  : void
++  setAuthenticationListener(i AuthenticationListener)  : void
++  setAuthenticationService(i AuthenticationService)  : void
++  setNodeService(i NodeService)  : void
++  setPersonService(i PersonService)  : void
++  setRemoteUserMapper(i RemoteUserMapper)  : void
++  setTransactionService(i TransactionService)  : void
+-  setExternalAuth(i HttpSession, boolean)  : void
+
+}
+class org.alfresco.repo.webdav.MoveMethod {
+--
++   MoveMethod() 
+#  executeImpl()  : void
+#  isMove()  : boolean
+#  moveOrCopy(c NodeRef, c NodeRef, c NodeRef, c String)  : void
+#  parseRequestHeaders()  : void
+-  copyContentOnly(i FileInfo, i FileInfo, i FileFolderService)  : void
+-  unlock(c NodeRef, i LockInfo)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAVServlet {
+#  m_davMethods :  Hashtable< String, Class<? extends WebDAVMethod>>
++  WEBDAV_PREFIX : c String
+-  BEAN_INIT_PARAMS : c String
+-  KEY_WEBDAV_ROOT_NODEREF : c String
+-  activityPoster : i WebDAVActivityPoster
+-  defaultRootNode : c NodeRef
+-  initParams : c WebDAVServlet$WebDAVInitParameters
+-  logger : i Log
+-  m_davHelper : c WebDAVHelper
+-  namespaceService : i NamespaceService
+-  nodeService : i NodeService
+-  rootPath : c String
+-  searchService : i SearchService
+-  serialVersionUID : long
+-  serviceRegistry : i ServiceRegistry
+-  singletonCache :  SimpleCache< String, NodeRef>
+-  tenantService : i TenantService
+-  transactionService : i TransactionService
+--
++   WebDAVServlet() 
+#  createMethod(i HttpServletRequest, i HttpServletResponse)  :  WebDAVMethod
+#  getDAVHelper()  :  WebDAVHelper
+#  service(i HttpServletRequest, i HttpServletResponse)  : void
++  getWebdavRootNode()  :  NodeRef
++  init(i ServletConfig)  : void
+-  getRootNodeRef()  :  NodeRef
+-  initializeRootNode(c String, c String, i WebApplicationContext, i NodeService, i SearchService, i NamespaceService, i TenantService, i TransactionService)  : void
+
+}
+interface org.alfresco.repo.web.filter.beans.DependencyInjectedFilter {
+--
++  doFilter(i ServletContext, i ServletRequest, i ServletResponse, i FilterChain)  : void
+
+}
+class org.alfresco.repo.webdav.WebDAV {
++  AGENT_INTERNET_EXPLORER : c String
++  AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV : c String
++  ASTERISK : c String
++  DAV_NS : c String
++  DAV_NS_PREFIX : c String
++  DEFAULT_NAMESPACE_URI : c String
++  DEPTH_0 : int
++  DEPTH_1 : int
++  DEPTH_INFINITY : int
++  F : c String
++  FAKE_TOKEN : c String
++  HEADER_CONTENT_LENGTH : c String
++  HEADER_CONTENT_TYPE : c String
++  HEADER_DEPTH : c String
++  HEADER_DESTINATION : c String
++  HEADER_ETAG : c String
++  HEADER_EXPECT : c String
++  HEADER_EXPECT_CONTENT : c String
++  HEADER_IF : c String
++  HEADER_IF_DATE_FORMAT : c String
++  HEADER_IF_MATCH : c String
++  HEADER_IF_MODIFIED_SINCE : c String
++  HEADER_IF_NONE_MATCH : c String
++  HEADER_IF_RANGE : c String
++  HEADER_IF_UNMODIFIED_SINCE : c String
++  HEADER_KEY_NOT : c String
++  HEADER_LAST_MODIFIED : c String
++  HEADER_LOCK_TOKEN : c String
++  HEADER_OVERWRITE : c String
++  HEADER_RANGE : c String
++  HEADER_TIMEOUT : c String
++  HEADER_USER_AGENT : c String
++  HEADER_VALUE_SEPARATOR : c String
++  HTTP1_1 : c String
++  INFINITE : c String
++  INFINITY : c String
++  LOCK_TOKEN_SEPERATOR : c String
++  METHOD_COPY : c String
++  METHOD_DELETE : c String
++  METHOD_GET : c String
++  METHOD_HEAD : c String
++  METHOD_LOCK : c String
++  METHOD_MKCOL : c String
++  METHOD_MOVE : c String
++  METHOD_OPTIONS : c String
++  METHOD_POST : c String
++  METHOD_PROPFIND : c String
++  METHOD_PROPPATCH : c String
++  METHOD_PUT : c String
++  METHOD_UNLOCK : c String
++  NAMESPACE_SEPARATOR : c String
++  ONE : c String
++  OPAQUE_LOCK_TOKEN : c String
++  PathSeperator : c String
++  PathSeperatorChar : char
++  RootPath : c String
++  SC_FORBIDDEN_DESC : c String
++  SC_NOT_FOUND_DESC : c String
++  SC_OK_DESC : c String
++  SECOND : c String
++  TIMEOUT_24_HOURS : int
++  TIMEOUT_INFINITY : short
++  WEBDAV_SC_FAILED_DEPENDENCY : int
++  WEBDAV_SC_FAILED_DEPENDENCY_DESC : c String
++  WEBDAV_SC_LOCKED : int
++  WEBDAV_SC_MULTI_STATUS : int
++  XML_ACTIVE_LOCK : c String
++  XML_ALF_AUTHTICKET : c String
++  XML_ALLPROP : c String
++  XML_COLLECTION : c String
++  XML_CONTENT_TYPE : c String
++  XML_CREATION_DATE : c String
++  XML_DEPTH : c String
++  XML_DISPLAYNAME : c String
++  XML_ERROR : c String
++  XML_EXCLUSIVE : c String
++  XML_GET_CONTENT_LANGUAGE : c String
++  XML_GET_CONTENT_LENGTH : c String
++  XML_GET_CONTENT_TYPE : c String
++  XML_GET_ETAG : c String
++  XML_GET_LAST_MODIFIED : c String
++  XML_HREF : c String
++  XML_LOCK_DISCOVERY : c String
++  XML_LOCK_ENTRY : c String
++  XML_LOCK_SCOPE : c String
++  XML_LOCK_TOKEN : c String
++  XML_LOCK_TYPE : c String
++  XML_MULTI_STATUS : c String
++  XML_NS : c String
++  XML_NS_ACTIVE_LOCK : c String
++  XML_NS_ALF_AUTHTICKET : c String
++  XML_NS_ALLPROP : c String
++  XML_NS_CANNOT_MODIFY_PROTECTED_PROPERTY : c String
++  XML_NS_COLLECTION : c String
++  XML_NS_CREATION_DATE : c String
++  XML_NS_DEPTH : c String
++  XML_NS_DISPLAYNAME : c String
++  XML_NS_ERROR : c String
++  XML_NS_EXCLUSIVE : c String
++  XML_NS_GET_CONTENT_LANGUAGE : c String
++  XML_NS_GET_CONTENT_LENGTH : c String
++  XML_NS_GET_CONTENT_TYPE : c String
++  XML_NS_GET_ETAG : c String
++  XML_NS_GET_LAST_MODIFIED : c String
++  XML_NS_HREF : c String
++  XML_NS_LOCK_DISCOVERY : c String
++  XML_NS_LOCK_ENTRY : c String
++  XML_NS_LOCK_SCOPE : c String
++  XML_NS_LOCK_TOKEN : c String
++  XML_NS_LOCK_TYPE : c String
++  XML_NS_MULTI_STATUS : c String
++  XML_NS_OWNER : c String
++  XML_NS_PROP : c String
++  XML_NS_PROPNAME : c String
++  XML_NS_PROPSTAT : c String
++  XML_NS_RESOURCE_TYPE : c String
++  XML_NS_RESPONSE : c String
++  XML_NS_SHARED : c String
++  XML_NS_SOURCE : c String
++  XML_NS_STATUS : c String
++  XML_NS_SUPPORTED_LOCK : c String
++  XML_NS_TIMEOUT : c String
++  XML_NS_WRITE : c String
++  XML_OWNER : c String
++  XML_PROP : c String
++  XML_PROPNAME : c String
++  XML_PROPSTAT : c String
++  XML_REMOVE : c String
++  XML_RESOURCE_TYPE : c String
++  XML_RESPONSE : c String
++  XML_SET : c String
++  XML_SHARED : c String
++  XML_SOURCE : c String
++  XML_STATUS : c String
++  XML_SUPPORTED_LOCK : c String
++  XML_TIMEOUT : c String
++  XML_WRITE : c String
++  ZERO : c String
+-  CREATION_DATE_FORMAT : c String
+-  _propertyNameMap :  Hashtable< String, QName>
+-  logger : i Log
+--
++   WebDAV() 
++  decodeURL(c String)  :  String
++  formatCreationDate(c Date)  :  String
++  formatCreationDate(long)  :  String
++  formatHeaderDate(c Date)  :  String
++  formatHeaderDate(long)  :  String
++  formatModifiedDate(c Date)  :  String
++  formatModifiedDate(long)  :  String
++  getDAVPropertyValue( Map< QName, Serializable>, c String)  :  Object
++  getDepthName(int)  :  String
++  makeLockToken(c NodeRef, c String)  :  String
++  parseLockToken(c String)  :  String;
+
+}
+class org.alfresco.repo.webdav.HeadMethod {
+--
++   HeadMethod() 
+
+}
+
+' Relations 
+
+org.alfresco.repo.webdav.ActivityPosterImpl "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.ExceptionHandler "1"  o-left-  "1" javax.servlet.http.HttpServletResponse  : response: i HttpServletResponse
+org.alfresco.repo.webdav.PropPatchMethod$PropertyAction "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVProperty  : property: c WebDAVProperty
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter "1"  o-left-  "1" java.util.regex.Pattern  : m_authPattern: c Pattern
+org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter "1"  o-left-  "1" javax.security.auth.login.LoginContext  : m_loginContext: c LoginContext
+org.alfresco.repo.webdav.PropPatchMethod$PropertyAction "1"  o-left-  "1" org.alfresco.repo.webdav.PropPatchMethod  : this$0: c PropPatchMethod
+org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
+org.alfresco.repo.webdav.PropPatchMethod "1"  o-left-  "*" org.alfresco.repo.webdav.PropPatchMethod$PropertyAction  : m_propertyActions:  ArrayList< PropPatchMethod$PropertyAction>
+org.alfresco.repo.webdav.LockMethod "1"  o-left-  "1" java.util.Timer  : timer: c Timer
+org.alfresco.repo.webdav.WebDavServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.GetMethod "1"  o-left-  "1" java.util.Date  : m_ifModifiedSince: c Date
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.security.authentication.external.RemoteUserMapper  : remoteUserMapper: i RemoteUserMapper
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter "1"  o-left-  "1" javax.servlet.ServletContext  : m_context: i ServletContext
+org.alfresco.repo.webdav.GetMethod "1"  o-left-  "1" java.util.Date  : m_ifUnModifiedSince: c Date
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" javax.servlet.ServletInputStream  : m_inputStream: c ServletInputStream
+org.alfresco.repo.webdav.LockInfoImpl "1"  o-left-  "1" java.util.Date  : expires: c Date
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.action.ActionService  : m_actionService: i ActionService
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" java.util.regex.Pattern  : m_renameShufflePattern: c Pattern
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.service.cmr.security.PersonService  : personService: i PersonService
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.repository.MimetypeService  : m_mimetypeService: i MimetypeService
+org.alfresco.repo.webdav.ActivityPosterImpl "1"  o-left-  "1" org.alfresco.service.cmr.activities.ActivityPoster  : poster: i ActivityPoster
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVHelper  : m_davHelper: c WebDAVHelper
+org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthenticationService  : authenticationService: i AuthenticationService
+org.alfresco.repo.webdav.WebDAVMethod$Condition "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVMethod  : this$0: c WebDAVMethod
+org.alfresco.repo.webdav.LockMethod "1"  o-left-  "1" org.alfresco.repo.webdav.LockInfo  : lockInfo: i LockInfo
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVActivityPoster  : activityPoster: i WebDAVActivityPoster
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" javax.servlet.http.HttpServletResponse  : m_response: i HttpServletResponse
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.cmr.search.SearchService  : searchService: i SearchService
+org.alfresco.repo.webdav.DeleteMethod "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVActivityPoster  : activityPoster: i WebDAVActivityPoster
+org.springframework.extensions.surf.util.AbstractLifecycleBean "1"  o-left-  "1" org.apache.commons.logging.Log  : log: i Log
+org.alfresco.repo.webdav.auth.WebDAVUser "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : m_homeNode: c NodeRef
+org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.repo.tenant.TenantService  : tenantService: i TenantService
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver "1"  o-left-  "1" org.alfresco.service.cmr.security.PersonService  : personService: i PersonService
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.ServiceRegistry  : serviceRegistry: i ServiceRegistry
+org.alfresco.repo.webdav.PropFindMethod "1"  o-left-  "*" org.alfresco.repo.webdav.WebDAVProperty  : m_properties:  ArrayList< WebDAVProperty>
+javax.servlet.ServletRequestWrapper "1"  o-left-  "1" javax.servlet.ServletRequest  : request: i ServletRequest
+org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.lock.LockService  : lockService: i LockService
+org.alfresco.repo.webdav.WebDavBootstrap "1"  o-left-  "1" org.alfresco.repo.webdav.MTNodesCache2  : rootNode: c MTNodesCache2
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : m_nodeService: i NodeService
+org.alfresco.repo.webdav.WebDAV "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : m_rootNodeRef: c NodeRef
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.policy.BehaviourFilter  : m_policyBehaviourFilter: i BehaviourFilter
+org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : defaultNode: c NodeRef
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.sync.repo.events.EventPublisher  : eventPublisher: i EventPublisher
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.ExceptionHandler "1"  o-left-  "1" javax.servlet.http.HttpServletRequest  : request: i HttpServletRequest
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.repo.tenant.TenantService  : tenantService: i TenantService
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "*" org.alfresco.service.cmr.repository.NodeRef  : nodesCache:  Map< String, NodeRef>
+org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.model.FileFolderService  : m_fileFolderService: i FileFolderService
+org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.service.namespace.NamespaceService  : namespaceService: i NamespaceService
+org.alfresco.repo.webdav.WebDavServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.model.FileFolderService  : fileFolderService: i FileFolderService
+org.alfresco.repo.webdav.PropPatchMethod "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVProperty  : failedProperty: c WebDAVProperty
+org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthenticationService  : authenticationService: i AuthenticationService
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVLockService  : m_lockService: i WebDAVLockService
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "*" org.alfresco.service.cmr.repository.NodeRef  : m_parentLockInfo:  Map< NodeRef, LockInfo>
+org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.service.cmr.search.SearchService  : searchService: i SearchService
+org.alfresco.repo.webdav.PutMethod "1"  o-left-  "1" org.alfresco.service.cmr.model.FileInfo  : contentNodeInfo: i FileInfo
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.search.SearchService  : m_searchService: i SearchService
+org.alfresco.repo.webdav.WebDAV "1"  o-left-  "*" org.alfresco.service.namespace.QName  : _propertyNameMap:  Hashtable< String, QName>
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.dictionary.DictionaryService  : m_dictionaryService: i DictionaryService
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "*" org.alfresco.repo.webdav.WebDAVMethod$Condition  : m_conditions:  LinkedList< WebDAVMethod$Condition>
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.namespace.NamespaceService  : m_namespaceService: i NamespaceService
+org.alfresco.repo.webdav.WebDAVSessionListener "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.security.authentication.AuthenticationComponent  : authenticationComponent: i AuthenticationComponent
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter$Handler "1"  o-left-  "1" org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter  : this$0: c HTTPRequestAuthenticationFilterTestFilter
+org.alfresco.repo.webdav.DeleteMethod "1"  o-left-  "1" java.util.Timer  : deleteDelayTimer: c Timer
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.tenant.TenantService  : m_tenantService: i TenantService
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter$Handler "1"  o-left-  "1" javax.servlet.http.HttpServletRequest  : httpReq: i HttpServletRequest
+org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.ServiceRegistry  : m_serviceRegistry: i ServiceRegistry
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+javax.servlet.http.HttpServlet "1"  o-left-  "1" java.util.ResourceBundle  : lStrings: c ResourceBundle
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "*" org.alfresco.service.cmr.repository.NodeRef  : m_childToParent:  Map< NodeRef, NodeRef>
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : defaultRootNode: c NodeRef
+org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
+org.alfresco.repo.webdav.WebDavServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.dictionary.DictionaryService  : dictionaryService: i DictionaryService
+org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.coci.CheckOutCheckInService  : checkOutCheckInService: i CheckOutCheckInService
+org.springframework.extensions.surf.util.AbstractLifecycleBean "1"  o-left-  "1" org.springframework.context.ApplicationContext  : applicationContext: i ApplicationContext
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.security.authentication.AuthenticationComponent  : m_authComponent: i AuthenticationComponent
+org.alfresco.repo.webdav.ExceptionHandler "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" javax.servlet.http.HttpServletRequest  : m_request: i HttpServletRequest
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.namespace.NamespaceService  : namespaceService: i NamespaceService
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.xml.sax.helpers.AttributesImpl  : m_nullAttribs: c AttributesImpl
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.security.PermissionService  : m_permissionService: i PermissionService
+org.alfresco.repo.webdav.WebDAVSessionListener "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVLockService  : webDAVLockService: i WebDAVLockService
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.model.filefolder.HiddenAspect  : m_hiddenAspect: c HiddenAspect
+org.alfresco.repo.webdav.MkcolMethod "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVActivityPoster  : activityPoster: i WebDAVActivityPoster
+org.alfresco.repo.webdav.auth.AuthenticationFilter "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.web.auth.AuthenticationListener  : authenticationListener: i AuthenticationListener
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.webdav.auth.AuthenticationDriver  : fallbackDelegate: i AuthenticationDriver
+org.alfresco.repo.webdav.WebDavServiceImpl "1"  o-left-  "1" org.alfresco.repo.webdav.MTNodesCache2  : rootNode: c MTNodesCache2
+org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVHelper  : m_davHelper: c WebDAVHelper
+javax.servlet.GenericServlet "1"  o-left-  "1" javax.servlet.ServletConfig  : config: i ServletConfig
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVServlet$WebDAVInitParameters  : initParams: c WebDAVServlet$WebDAVInitParameters
+org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.repo.cache.SimpleCache  : singletonCache:  SimpleCache< String, NodeRef>
+org.alfresco.repo.webdav.PutMethod "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVActivityPoster  : activityPoster: i WebDAVActivityPoster
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthenticationService  : m_authService: i AuthenticationService
+javax.servlet.GenericServlet "1"  o-left-  "1" java.util.ResourceBundle  : lStrings: c ResourceBundle
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.cmr.activities.ActivityPoster  : poster: i ActivityPoster
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter "1"  o-left-  "1" org.alfresco.filesys.ExtendedServerConfigurationAccessor  : serverConfiguration: i ExtendedServerConfigurationAccessor
+org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.repo.webdav.MkcolMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+javax.servlet.http.HttpServletRequestWrapper  -up|>  javax.servlet.ServletRequestWrapper
+org.alfresco.repo.webdav.GetMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseAuthenticationFilter
+org.alfresco.repo.webdav.OptionsMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+org.alfresco.repo.webdav.HeadMethod  -up|>  org.alfresco.repo.webdav.GetMethod
+org.alfresco.repo.webdav.WebDAVServlet  -up|>  javax.servlet.http.HttpServlet
+org.alfresco.repo.webdav.MoveMethod  -up|>  org.alfresco.repo.webdav.HierarchicalMethod
+org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter
+org.alfresco.repo.webdav.WebDavBootstrap  -up|>  org.springframework.extensions.surf.util.AbstractLifecycleBean
+org.alfresco.repo.webdav.PostMethod  -up|>  org.alfresco.repo.webdav.PutMethod
+org.alfresco.repo.webdav.DeleteMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+org.alfresco.repo.webdav.PropPatchMethod  -up|>  org.alfresco.repo.webdav.PropFindMethod
+org.alfresco.repo.webdav.CopyMethod  -up|>  org.alfresco.repo.webdav.MoveMethod
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseAuthenticationFilter
+org.alfresco.repo.webdav.LockMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+org.alfresco.repo.webdav.auth.AuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseAuthenticationFilter
+org.alfresco.repo.webdav.UnlockMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter
+org.alfresco.repo.webdav.HierarchicalMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+org.alfresco.repo.webdav.PropFindMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+javax.servlet.http.HttpServlet  -up|>  javax.servlet.GenericServlet
+org.alfresco.repo.webdav.PutMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
+javax.servlet.ServletContextListener  ..up|>  java.util.EventListener
+org.alfresco.repo.webdav.auth.WebDAVUser  ..up|>  org.alfresco.repo.SessionUser
+org.alfresco.repo.webdav.DeleteMethod  ..up|>  org.alfresco.repo.webdav.ActivityPostProducer
+org.alfresco.repo.webdav.WebDAVLockServiceImpl  ..up|>  org.alfresco.repo.webdav.WebDAVLockService
+org.springframework.context.ApplicationListener  ..up|>  java.util.EventListener
+javax.servlet.http.HttpSessionListener  ..up|>  java.util.EventListener
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter  ..up|>  org.alfresco.repo.web.filter.beans.DependencyInjectedFilter
+org.alfresco.repo.webdav.PutMethod  ..up|>  org.alfresco.repo.webdav.ActivityPostProducer
+"org.alfresco.repo.webdav.LockInfoImpl"  -()   Serializable
+"javax.servlet.GenericServlet"  -()   Serializable
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter  ..up|>  javax.servlet.Filter
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter  ..up|>  org.alfresco.repo.webdav.auth.AuthenticationDriver
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter  ..up|>  org.springframework.beans.factory.InitializingBean
+javax.servlet.http.HttpServletRequest  ..up|>  javax.servlet.ServletRequest
+org.alfresco.repo.webdav.MkcolMethod  ..up|>  org.alfresco.repo.webdav.ActivityPostProducer
+org.alfresco.repo.webdav.WebDavServiceImpl  ..up|>  org.alfresco.service.cmr.webdav.WebDavService
+"org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter$Handler"  -()   InvocationHandler
+org.alfresco.repo.webdav.WebDAVSessionListener  ..up|>  javax.servlet.ServletContextListener
+org.alfresco.repo.webdav.auth.AuthenticationFilter  ..up|>  org.alfresco.repo.web.filter.beans.DependencyInjectedFilter
+"java.util.TimerTask"  -()   Runnable
+org.alfresco.repo.webdav.WebDAVSessionListener  ..up|>  javax.servlet.http.HttpSessionListener
+org.alfresco.repo.webdav.LockInfoImpl  ..up|>  org.alfresco.repo.webdav.LockInfo
+javax.servlet.http.HttpServletRequestWrapper  ..up|>  javax.servlet.http.HttpServletRequest
+org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter  ..up|>  javax.servlet.Filter
+javax.servlet.GenericServlet  ..up|>  javax.servlet.Servlet
+"org.alfresco.repo.SessionUser"  -()   Serializable
+org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter  ..up|>  org.alfresco.repo.management.subsystems.ActivateableBean
+org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter  ..up|>  javax.security.auth.callback.CallbackHandler
+javax.servlet.ServletRequestWrapper  ..up|>  javax.servlet.ServletRequest
+org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver  ..up|>  org.alfresco.repo.webdav.auth.AuthenticationDriver
+javax.servlet.GenericServlet  ..up|>  javax.servlet.ServletConfig
+org.springframework.extensions.surf.util.AbstractLifecycleBean  ..up|>  org.springframework.context.ApplicationListener
+org.springframework.context.ApplicationContextAware  ..up|>  org.springframework.beans.factory.Aware
+org.springframework.extensions.surf.util.AbstractLifecycleBean  ..up|>  org.springframework.context.ApplicationContextAware
+org.alfresco.repo.webdav.ActivityPosterImpl  ..up|>  org.alfresco.repo.webdav.WebDAVActivityPoster
+
+' Notes 
+
+@enduml

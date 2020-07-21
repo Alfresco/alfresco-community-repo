@@ -1,0 +1,31 @@
+MIME-Version: 1.0
+Received: by 10.000.0.000 with HTTP; Thu, 16 Aug 2012 08:13:29 -0700 (PDT)
+Date: Thu, 16 Aug 2012 16:13:29 +0100
+Delivered-To: jane.doe@alfresco.com
+Message-ID: <CAL0uq1f9vPczLRinL3xB5U_oSSd5U0ob=408nBgosCY0OVFyBw@mail.alfresco.com>
+Subject: The quick brown fox jumps over the lazy dog
+From: <john.doe@alfresco.com>
+To: <jane.doe@alfresco.com>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0009_01D06BC5.14D754D0"
+
+This is a multipart message in MIME format.
+
+------=_NextPart_000_0009_01D06BC5.14D754D0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+El rápido zorro marrón salta sobre el perro perezoso
+
+
+------=_NextPart_000_0009_01D06BC5.14D754D0
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">El r=C3=A1pido zorro marr=C3=B3n salta sobre el perro =
+perezoso&nbsp;<br></div>
+
+------=_NextPart_000_0009_01D06BC5.14D754D0--
+

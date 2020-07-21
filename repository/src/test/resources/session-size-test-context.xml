@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<!-- Check that the resource interceptor is working -->
+<beans>
+   
+    <import resource="classpath:alfresco/application-context.xml"/>
+
+    <bean id="testSessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >
+        <property name="methodResourceManagers">
+            <list>
+                <ref bean="sessionSizeResourceManager"></ref>
+            </list>
+        </property>
+        <property name="elapsedTimeBeforeActivationMillis">
+            <value>1000</value>
+        </property>
+        <property name="resourceManagerCallFrequencyMillis">
+            <value>5000</value>
+        </property>
+    </bean>
+    
+    <bean id="sessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="writeThreshold">
+            <value>2000</value>
+        </property>
+        <property name="readThreshold">
+            <value>50000</value>
+        </property>
+    </bean>
+
+    <bean id="testSessionSizeDbNodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.repository.NodeService</value>
+        </property>
+        <property name="target">
+            <ref bean="dbNodeService" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>testSessionSizeResourceInterceptor</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Point the IntegrityChecker to the correct NodeService -->
+    <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="testSessionSizeDbNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="enabled">
+            <value>true</value>
+        </property>
+        <property name="traceOn">
+            <value>false</value>
+        </property>
+        <property name="failOnViolation" >
+            <value>true</value>
+        </property>
+        <property name="maxErrorsPerTransaction" >
+            <value>5</value>
+        </property>
+    </bean>
+
+   
+</beans>

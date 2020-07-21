@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- =================================== -->
+<!--         Video Transformation        -->
+<!--                                     -->
+<!-- Uses FFMPEG [http://ffmpeg.org/] to -->
+<!-- turn various video files into flv,  -->
+<!-- which flash can then easily play    -->
+<!-- =================================== -->
+
+<!--
+    THE FOLLOWING alfresco-global.properties MUST ALSO BE SET
+    =========================================================
+
+# ffmpeg.flv
+# ==========
+content.transformer.ffmpeg.flv.priority=50
+content.transformer.ffmpeg.flv.extensions.3g2.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.3gp.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.asf.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.avi.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.avx.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mov.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.movie.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mp4.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mpeg2.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mpg.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.ogv.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.wmv.flv.supported=true
+
+# ffmpeg.mp4
+# ==========
+content.transformer.ffmpeg.mp4.priority=50
+content.transformer.ffmpeg.mp4.extensions.3g2.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.3gp.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.asf.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.avx.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.mov.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.movie.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.mpeg2.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.mpg.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.wmv.mp4.supported=true
+# The avi and ogv to mp4 transformations did not work with ffmpeg 0.8.6
+# Please check the latest ffmpeg documentation for the latest information
+# content.transformer.avi.mp4.extensions.mpg.mp4.supported=true
+# content.transformer.ogv.mp4.extensions.wmv.mp4.supported=true
+
+# ffmpeg.mp3
+# ==========
+content.transformer.ffmpeg.mp3.priority=50
+content.transformer.ffmpeg.mp3.extensions.aiff.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.au.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.m4a.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.oga.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.wav.mp3.supported=true
+
+-->
+
+<beans>
+  <!-- Content Transformations -->
+
+  <!-- Generic FFmpeg transformation worker -->
+  <bean id="transformer.worker.ffmpeg.flv" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+    <property name="checkCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="command">
+          <list>
+            <value>${ffmpeg.exe}</value>
+            <value>-version</value>
+          </list>
+        </property>
+        <property name="errorCodes">
+          <value>127</value>
+        </property>
+      </bean>
+    </property>
+    <property name="transformCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandsAndArguments">
+          <map>
+            <entry key="Windows.*">
+              <list>
+                <value>cmd</value>
+                <value>/C</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i "${source}" ${outfile_opts} "${target}" 2&gt; NUL</value>
+              </list>
+            </entry>
+            <entry key="Linux">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+            <entry key="Mac OS X">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+          </map>
+        </property>
+        <property name="waitForCompletion">
+          <value>true</value>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="opts">-y</prop>
+            <prop key="infile_opts"/>
+            <prop key="outfile_opts">-f flv</prop>
+          </props>
+        </property>
+      </bean>
+    </property>
+    <property name="mimetypeService">
+      <ref bean="mimetypeService"/>
+    </property>
+  </bean>
+
+  <!-- Generic FFmpeg transformation worker -->
+  <bean id="transformer.worker.ffmpeg.mp4" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+    <property name="checkCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="command">
+          <list>
+            <value>${ffmpeg.exe}</value>
+            <value>-version</value>
+          </list>
+        </property>
+        <property name="errorCodes">
+          <value>127</value>
+        </property>
+      </bean>
+    </property>
+    <property name="transformCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandsAndArguments">
+          <map>
+            <entry key="Windows.*">
+              <list>
+                <value>cmd</value>
+                <value>/C</value>
+                <!-- -vpre does not work on Windows - see https://roundup.ffmpeg.org/issue659 -->
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i "${source}" ${outfile_opts} -fpre "${ffmpeg.base}\share\ffmpeg\libx264-${vpre}.ffpreset" "${target}" 2&gt; NUL</value>
+              </list>
+            </entry>
+            <entry key="Linux">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} -vpre ${vpre} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+            <entry key="Mac OS X">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} -vpre ${vpre} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+          </map>
+        </property>
+        <property name="waitForCompletion">
+          <value>true</value>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="opts">-y</prop>
+            <prop key="infile_opts"/>
+            <prop key="outfile_opts">-f mp4 -ar 44100 -ab 96k -vcodec libx264 -crf 25 -g 250 -r 25</prop>
+            <prop key="vpre">medium</prop>
+          </props>
+        </property>
+      </bean>
+    </property>
+    <property name="mimetypeService">
+      <ref bean="mimetypeService"/>
+    </property>
+  </bean>
+
+  <!-- Generic MP3 transformation worker -->
+  <bean id="transformer.worker.ffmpeg.mp3" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+    <property name="checkCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="command">
+          <list>
+            <value>${ffmpeg.exe}</value>
+            <value>-version</value>
+          </list>
+        </property>
+        <property name="errorCodes">
+          <value>127</value>
+        </property>
+      </bean>
+    </property>
+    <property name="transformCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandsAndArguments">
+          <map>
+            <entry key="Windows.*">
+              <list>
+                <value>cmd</value>
+                <value>/C</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i "${source}" ${outfile_opts} "${target}" 2&gt; NUL</value>
+              </list>
+            </entry>
+            <entry key="Linux">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+            <entry key="Mac OS X">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+          </map>
+        </property>
+        <property name="waitForCompletion">
+          <value>true</value>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="opts">-y</prop>
+            <prop key="infile_opts"/>
+            <prop key="outfile_opts">-f mp3</prop>
+          </props>
+        </property>
+      </bean>
+    </property>
+    <property name="mimetypeService">
+      <ref bean="mimetypeService"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.ffmpeg.flv" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.worker.ffmpeg.flv"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.ffmpeg.mp4" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.worker.ffmpeg.mp4"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.ffmpeg.mp3" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.worker.ffmpeg.mp3"/>
+    </property>
+  </bean>
+</beans>

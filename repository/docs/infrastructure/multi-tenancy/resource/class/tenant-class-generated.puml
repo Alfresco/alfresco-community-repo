@@ -1,0 +1,89 @@
+@startuml
+left to right direction
+ 
+
+interface com.alfresco.services.lambda.TenantServiceSPI {
+--
++  createTenant(c String, c String)  :  Tenant
++  deleteTenant(c String)  : boolean
++  getTenant(c String)  :  Tenant
++  getTenantSchema(c String)  :  String
++  updateTenant(c Tenant)  : boolean
+
+}
+interface com.alfresco.services.lambda.TenantService {
+--
++  createTenant(c String, c String)  :  Tenant
++  deleteTenant(c String)  : boolean
++  getTenant(c String)  :  Tenant
++  getTenantSchema(c String)  :  String
++  updateTenant(c Tenant)  : boolean
+
+}
+class com.alfresco.services.lambda.TenantServiceDDBImpl {
+-  regions : c Regions
+-  tableName : c String
+--
++   TenantServiceDDBImpl() 
++  createTenant(c String, c String)  :  Tenant
++  deleteTenant(c String)  : boolean
++  getTenant(c String)  :  Tenant
++  getTenantSchema(c String)  :  String
++  updateTenant(c Tenant)  : boolean
+-  log(c String)  : void
+
+}
+class com.alfresco.services.lambda.TenantServiceLambda {
+--
++   TenantServiceLambda() 
++  handleRequest(c Tenant, i Context)  :  Tenant
+
+}
+class com.alfresco.services.lambda.TenantServiceImpl {
+-  tenantServiceSPI : i TenantServiceSPI
+--
++   TenantServiceImpl(i TenantServiceSPI) 
++  createTenant(c String, c String)  :  Tenant
++  deleteTenant(c String)  : boolean
++  getTenant(c String)  :  Tenant
++  getTenantSchema(c String)  :  String
++  updateTenant(c Tenant)  : boolean
+
+}
+class com.alfresco.services.lambda.Tenant {
+-  method : c String
+-  schema : c String
+-  spiProvider : c String
+-  tenantId : c String
+-  user : c String
+--
++   Tenant() 
++  getMethod()  :  String
++  getSchema()  :  String
++  getSpiProvider()  :  String
++  getTenantId()  :  String
++  getUser()  :  String
++  setMethod(c String)  : void
++  setSchema(c String)  : void
++  setSpiProvider(c String)  : void
++  setTenantId(c String)  : void
++  setUser(c String)  : void
+
+}
+interface com.amazonaws.services.lambda.runtime.RequestHandler <I extends c Object, O extends c Object> {
+--
++  handleRequest(I, i Context)  :  Object
+
+}
+
+' Relations 
+
+com.alfresco.services.lambda.TenantServiceImpl "1"  o-left-  "1" com.alfresco.services.lambda.TenantServiceSPI  : tenantServiceSPI: i TenantServiceSPI
+com.alfresco.services.lambda.TenantServiceDDBImpl "1"  o-left-  "1" com.amazonaws.regions.Regions  : regions: c Regions
+com.alfresco.services.lambda.TenantServiceImpl  ..up|>  com.alfresco.services.lambda.TenantService
+com.alfresco.services.lambda.TenantServiceDDBImpl  ..up|>  com.alfresco.services.lambda.TenantServiceSPI
+com.alfresco.services.lambda.TenantServiceLambda  ..up|>  com.amazonaws.services.lambda.runtime.RequestHandler
+
+' Notes 
+
+@enduml

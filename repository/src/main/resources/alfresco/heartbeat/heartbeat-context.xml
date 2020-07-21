@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <!-- HeartBeat data sender service -->
+    <bean id="hbDataSenderFactory" class="org.alfresco.heartbeat.HBDataSenderServiceFactory">
+        <property name="target" value="${heartbeat.target.url}"></property>
+        <property name="heartbeatEnabled" value="${heartbeat.enabled}"></property>
+        <property name="sendingSchedule" value="${heartbeat.sender.cronExpression}"></property>
+    </bean>
+
+    <bean id="hbDataSenderService" factory-bean="hbDataSenderFactory" factory-method="createInstance">
+    </bean>
+
+    <!-- HeartBeat data collector service -->
+    <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">
+        <constructor-arg value="${heartbeat.enabled}" />
+        <property name="hbDataSenderService" ref="hbDataSenderService" />
+    </bean>
+
+    <!-- HeartBeat template data collector with a default job scheduler-->
+    <bean id="hbBaseDataCollector" abstract="true" init-method="register">
+        <constructor-arg name="hbJobScheduler" ref="hbLockingJobScheduler"/>
+        <property name="hbDataCollectorService" ref="hbDataCollectorService"/>
+    </bean>
+
+    <!-- The default HeartBeat job scheduler, this scheduler schedules jobs which lock execution on collector id.
+    Only one repository node in a cluster will send data for collectors with this type of job -->
+    <bean id="hbLockingJobScheduler" class="org.alfresco.heartbeat.jobs.LockingJobScheduler">
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="hbDataSenderService" ref="hbDataSenderService" />
+        <property name="jobLockService" ref="jobLockService" />
+    </bean>
+
+    <!-- This scheduler schedules jobs which execute without any locking.
+    The scheduler can be added to a collector by setting the hbJobScheduler property -->
+    <bean id="hbNonLockingJobScheduler" class="org.alfresco.heartbeat.jobs.NonLockingJobScheduler">
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="hbDataSenderService" ref="hbDataSenderService" />
+    </bean>
+</beans>

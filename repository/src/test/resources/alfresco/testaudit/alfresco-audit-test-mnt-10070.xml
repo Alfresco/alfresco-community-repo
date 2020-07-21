@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+    
+    <DataGenerators>
+       <DataGenerator name="currentUser" registeredName="auditModel.generator.user"/>
+    </DataGenerators>
+
+    <PathMappings>
+        <PathMap source="/alfresco-access" target="/app1" />
+        <PathMap source="/alfresco-access" target="/app2" />
+        <PathMap source="/alfresco-access" target="/app3" />
+    </PathMappings>
+
+    <Application name="app1" key="app1">
+        <AuditPath key="transaction">
+            <RecordValue key="action" dataExtractor="simpleValue" dataSource="/app1/transaction/action" dataTrigger="/app1/transaction/action" />                          
+        </AuditPath>
+    </Application>
+    
+    <Application name="app2" key="app2">
+        <AuditPath key="transaction"> 
+            <RecordValue key="user" dataExtractor="simpleValue" dataSource="/app2/transaction/user" dataTrigger="/app2/transaction/user" />             
+        </AuditPath>
+    </Application>
+    
+    <Application name="app3" key="app3">
+        <AuditPath key="transaction"> 
+            <RecordValue key="type" dataExtractor="simpleValue" dataSource="/app3/transaction/type" dataTrigger="/app3/transaction/type" />         
+        </AuditPath>
+    </Application>
+
+    
+</Audit>

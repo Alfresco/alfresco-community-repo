@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- Replication global parameters (implemented as a subsystem) -->
+   <!-- NOTE: the replication service as a whole could be converted to a subsystem in the future) -->
+   <bean id="Replication" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+      <property name="autoStart">
+         <value>true</value>
+      </property>
+   </bean>
+
+   <bean id="replicationParams" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Replication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.replication.ReplicationParams</value>
+         </list>
+      </property>
+   </bean>
+
+   <!-- Replication Service -->
+   <bean id="ReplicationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.replication.ReplicationService</value>
+      </property>
+      <property name="target">
+         <ref bean="replicationService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="ReplicationService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="ReplicationService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Replication service transaction bean -->
+   <bean id="ReplicationService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Replication service security bean -->
+   <bean id="ReplicationService_security"
+      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+   <!-- Replication Service base bean -->
+   <bean id="replicationService" class="org.alfresco.repo.replication.ReplicationServiceImpl" >
+      <property name="actionService" ref="ActionService"/>
+      <property name="transferService" ref="TransferService"/>
+      <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
+      <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
+   </bean>
+
+   <bean id="replicationDefinitionPersister" class="org.alfresco.repo.replication.ReplicationDefinitionPersisterImpl" >
+      <property name="runtimeActionService" ref="actionService" />
+      <property name="nodeService" ref="NodeService" />
+   </bean>
+
+
+   <!-- Replication Action executor -->
+   <bean id="replicationActionExecutor" parent="action-executer"
+      class="org.alfresco.repo.replication.ReplicationActionExecutor">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+      <property name="applicableTypes">
+         <list>
+            <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+         </list>
+      </property>
+      <property name="trackStatus" value="true" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="jobLockService" ref="JobLockService" />
+      <property name="transferService" ref="TransferService2" />
+      <property name="nodeCrawlerFactory" ref="NodeCrawlerFactory" />
+      <property name="actionTrackingService" ref="actionTrackingService" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
+      <property name="replicationParams" ref="replicationParams" />
+      <property name="excludedAspects">
+         <list>
+            <value>{http://www.alfresco.org/model/rule/1.0}rules</value>
+            <value>{http://www.alfresco.org/model/content/1.0}versionable</value>
+            <value>{http://www.alfresco.org/model/content/1.0}mlDocument</value>
+            <value>{http://www.alfresco.org/model/forum/1.0}discussable</value> 
+         </list>
+      </property>
+   </bean>
+
+   <!-- JavaScript API support -->
+   <bean id="replicationServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.replication.script.ScriptReplicationService">
+        <property name="extensionName">
+            <value>replicationService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="replicationService" ref="ReplicationService"/>
+    </bean>
+   
+</beans>

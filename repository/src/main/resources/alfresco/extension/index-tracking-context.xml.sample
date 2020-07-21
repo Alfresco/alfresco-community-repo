@@ -1,0 +1,4 @@
+
+Index tracking is now controlled using core properties.
+See 'alfresco/repository.properties' and 'alfresco/extension/custom-repository.properties.sample'.
+

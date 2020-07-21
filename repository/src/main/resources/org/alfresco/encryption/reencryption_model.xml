@@ -1,0 +1,49 @@
+<model name="test:dictionarydaotest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Content Model</description>
+   <author>Alfresco</author>
+   <published>2011-08-24</published>
+   <version>1.0</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/reencryption_test/1.0" prefix="test"/>
+   </namespaces>
+
+   <data-types>
+   </data-types>
+   
+   <constraints>
+   </constraints>
+
+   <types>
+      <type name="test:base">
+         <title>Base</title>
+         <description>The Base Type</description>
+         <parent>cm:content</parent>
+         
+         <properties>
+            <property name="test:prop1">
+               <type>d:encrypted</type>
+               <mandatory>false</mandatory>
+               <constraints>
+               </constraints>
+            </property>
+         </properties>
+         
+         <associations>
+         </associations>
+         
+         <mandatory-aspects>
+         </mandatory-aspects>
+      </type>
+   </types>
+   
+   <aspects>
+   </aspects>
+   
+</model>

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    The permissions root element
+    =============================
+    
+    This contains one or more namespace elements, permissionSets
+    and global permissions
+-->
+
+<!ELEMENT permissions (namespaces+, permissionSet*, globalPermission*)>
+
+
+
+<!--
+    The namespaces element
+    ======================
+    
+    This contains one or more name space element.
+    This defines prefixes for uris to be used when identifying types
+-->
+
+<!ELEMENT namespaces (namespace+)>
+
+
+
+<!--
+    The namespace element 
+    =====================
+      
+      uri - the uri for the namespace
+      prefix - the prefix to use for the uri in type name
+-->
+
+<!ELEMENT namespace EMPTY>
+<!ATTLIST namespace uri CDATA #REQUIRED>
+<!ATTLIST namespace prefix CDATA #REQUIRED>
+
+
+
+<!-- 
+    The permissionSet element
+    =========================                                           
+ 
+    This contains permissionGroups, permissions and dynamic authorities 
+
+    The type attribute identifies to which type or aspect the contained 
+    definitions apply in the prefix:name form                           
+ 
+    The exposed attribute governs if these permissions are exposed via   
+    getExposedPermissions() on the permission model                     
+      all - exposes all permission groups                               
+      selected - only the permission groups that say they are           
+                 explicitly exposed are exposed                         
+-->
+
+<!ELEMENT permissionSet (permissionGroup*, permission*, dynamicAuthority*)>
+<!ATTLIST permissionSet type CDATA #REQUIRED>
+<!ATTLIST permissionSet expose (all | selected) "all">
+
+<!-- 
+    The permissionGroup element
+    ===========================
+    
+    A permission group builds a new permisison group      
+    using existing permission groups. These are specified 
+    by the includePermissionGroup element.
+    
+    name - The simple name of the permission. The full name includes 
+           the type uri from the outer permissionSet
+           
+    type - If the permission group extends another then this attribute can be used
+           to specify the type it extends. Normally it would assume this follows
+           the data dictionary type hierarchy.
+           
+    extends - does this permission group extend one that already exists?
+    
+    expose - if the the containing permission set does not expose all permission groups
+             specify if this particular permission group is exposed or not.
+             
+    allowFullControl - if true, this permission group effectively grants all permissions
+    
+    requiresType - does this permissionGroup require the type (as specified on the containing permission set)
+                   to be present. This is useful for permission groups tied to aspects. If false, the permission
+                   group applies to all types - as they could have the aspect. If true, the permission group
+                   only makes sense if the aspect has been applied 
+ -->
+ 
+<!ELEMENT permissionGroup (includePermissionGroup* )>
+<!ATTLIST permissionGroup name CDATA #REQUIRED>
+<!ATTLIST permissionGroup type CDATA #IMPLIED>
+<!ATTLIST permissionGroup extends (true | false) "false">
+<!ATTLIST permissionGroup expose (true | false) "false">
+<!ATTLIST permissionGroup allowFullControl (true | false) "false" >
+<!ATTLIST permissionGroup requiresType (true | false) "true">
+
+
+
+<!--
+	The includePermissionGroup element
+	==================================
+	
+	type - the type on which to find the permission group to include
+	
+	permissionGroup - the name of the permission group to include as defined on the type
+-->
+
+<!ELEMENT includePermissionGroup EMPTY>
+<!ATTLIST includePermissionGroup type CDATA #IMPLIED>
+<!ATTLIST includePermissionGroup permissionGroup CDATA #REQUIRED>
+
+
+
+<!--
+    The permission element
+    ======================
+    
+    Define a base permission. The permission groups to which this permission
+    applies are defined in the grantedToGroup element. Other permissions 
+    which are required or implied by this permission can be defined using 
+    requiredPermission elements.
+
+	name - as permissionGroup
+	
+	expose - as permissionGroup
+	
+	requiresType - as permissionGroup  
+    
+-->
+
+<!ELEMENT permission (grantedToGroup*, requiredPermission* )>
+<!ATTLIST permission name CDATA #REQUIRED>
+<!ATTLIST permission expose (true | false) "false">
+<!ATTLIST permission requiresType (true | false) "true">
+
+
+
+<!--
+	The dynamicAuthorities element
+	==============================
+	
+	Dynamic authorities are defined in the context of a type but this
+	information is currently unused.
+	
+	evaluator - the class path for an implementation of DynamicAuthority
+-->
+
+<!ELEMENT dynamicAuthority EMPTY>
+<!ATTLIST dynamicAuthority evaluator CDATA #REQUIRED>
+
+
+
+<!--
+    The requiredPermission element
+    ==============================
+    
+    name - the name of the required permission or permission group
+    
+    type - the type of the required permission or permission group
+    
+    on - if required permission must be present on the node, its primary parent, or its children 
+    
+    implies - false - the permission wil be checked
+           - true - the permission is effectively granted along with this one.  
+	
+	       This will normally be false. For example, to require read permission on the
+	       parent to be able to read the node. This requirement would be recursive,
+	       as read on any node woudl require read on the parent of that node.
+	
+	       If true this is the case where this permission allows the user to 
+	       take another action as it is required to carry out the first. Normally
+	       you would protect the method call to require both permissions. This 
+	       does really grant the other permission. If a permission A is defined that 
+	       requires another permission B, with implies true, then granting someone
+	       permission A will also grant permission B. If implies is false, then granting
+	       A will not allow A until permission B is also available. 
+-->
+
+<!ELEMENT requiredPermission EMPTY>
+<!ATTLIST requiredPermission name CDATA #REQUIRED>
+<!ATTLIST requiredPermission type CDATA #IMPLIED>
+<!ATTLIST requiredPermission on (node | parent | children) #REQUIRED>
+<!ATTLIST requiredPermission implies (true | false) "false">
+
+
+
+<!--
+    The grantedToGroup element
+    ==========================
+    
+    This identifies to a permissionGroup to which a permission is granted
+    
+    type - the type on which the permissionGroup is defined
+    
+    permissionGroup - the name of the permission group
+-->
+
+<!ELEMENT grantedToGroup EMPTY >
+<!ATTLIST grantedToGroup type CDATA #IMPLIED>
+<!ATTLIST grantedToGroup permissionGroup CDATA #REQUIRED>
+
+
+
+<!--
+    The globalPermissions element
+    =============================
+
+	A global permission assignment.
+	
+	authority - the string representation of the authority
+	
+	permission - the permission that is granted (this can be the simple name if it is unique
+	             or the fully qualified version if not.)
+
+-->
+
+<!ELEMENT globalPermission EMPTY >
+<!ATTLIST globalPermission authority CDATA #IMPLIED>
+<!ATTLIST globalPermission permission CDATA #REQUIRED>
+

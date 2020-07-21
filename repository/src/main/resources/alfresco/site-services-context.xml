@@ -1,0 +1,204 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Bootstrap the permission model -->
+    <bean id="siteService_permissionBootstrap" parent="permissionModelBootstrap">
+    	<property name="model" value="alfresco/model/sitePermissionDefinitions.xml"/>
+    </bean>
+
+    <!-- Site service transaction beans -->
+
+    <bean id="siteServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>hasCreateSitePermissions</value>
+                <value>findSites</value>
+                <value>listSites</value>
+                <value>listSitesPaged</value>
+                <value>getSite</value>
+                <value>listMembers</value>
+                <value>listMembersInfo</value>
+                <value>getMembersRole</value>
+                <value>isMember</value>
+                <value>getContainer</value>
+                <value>hasContainer</value>
+                <value>getSiteRoles</value>
+                <value>getSiteGroup</value>
+                <value>hasSite</value>
+                <value>getSiteRoleGroup</value>
+                <value>getSiteRoot</value>
+                <value>canAddMember</value>
+                <value>listContainers</value>
+                <value>isFavouriteSite</value>
+                <value>getFavouriteSites</value>
+                <value>getSiteShortName</value>
+                <value>isSiteAdmin</value>
+                <value>addFavouriteSite</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="siteServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createSite</value>
+                <value>updateSite</value>
+                <value>deleteSite</value>
+                <value>setMembership</value>
+                <value>removeMembership</value>
+                <value>createContainer</value>
+                <value>setMembership</value>
+                <value>cleanSitePermissions</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Site service bean -->
+
+    <bean id="SiteService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.site.SiteServiceInternal</value>
+                <value>org.alfresco.service.cmr.site.SiteService</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="siteService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="siteServiceReadTxnAdvisor" />
+                <idref bean="siteServiceWriteTxnAdvisor" />
+                <idref bean="checkTxnAdvisor" />
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="SiteService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Site service support beans -->
+
+    <bean id="siteCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+    
+    <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="localeDAO" ref="localeDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurity" ref="SiteService_security_listSites"/>
+    </bean>
+    
+    
+     <!-- I18N -->   
+    <bean id="siteServiceResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+       <property name="resourceBundles">
+          <list>
+             <value>alfresco.messages.site-service</value>
+          </list>
+       </property>
+    </bean>
+    
+    <!--  Site role precedence - higher number - more important role -->    
+    <bean id="siteRoleComparator" class="org.alfresco.repo.site.RoleComparatorImpl" init-method="init">
+       <property name="rolePrecedence">
+       		<map>
+       			<entry key="SiteManager" value="4" />
+       			<entry key="SiteCollaborator" value="3" />
+       			<entry key="SiteContributor" value="2" />
+       			<entry key="SiteConsumer" value="1" />
+       		</map>
+       </property>
+    </bean>
+    
+    <bean id="siteService" parent="baseSiteService"/>
+    
+    <!-- Canned queries -->
+    
+    <bean id="FileFolderService_security_list" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="FileFolderService_security" />
+        <property name="service" value="org.alfresco.service.cmr.model.FileFolderService" />
+        <property name="methodName" value="list" />
+    </bean>
+
+    <bean name="siteContainersCannedQueryFactory" class="org.alfresco.repo.site.SiteContainersCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="methodSecurity" ref="FileFolderService_security_list"/>
+    </bean>
+    
+    <bean id="baseSiteService" abstract="true" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="directNodeService" ref="nodeService"/>
+       <property name="fileFolderService" ref="FileFolderService"/>
+       <property name="searchService" ref="SearchService"/>
+       <property name="namespaceService" ref="NamespaceService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="authenticationContext" ref="authenticationContext"/>
+       <property name="personService" ref="PersonService"/>
+       <property name="activityService" ref="activityService"/>
+       <property name="taggingService" ref="TaggingService"/>
+       <property name="authorityService" ref="authorityService"/>
+       <property name="dictionaryService" ref="DictionaryService"/>
+       <property name="transactionHelper" ref="retryingTransactionHelper"/>
+       <property name="sitesXPath">
+           <value>./${spaces.company_home.childname}/st:sites</value>
+       </property>
+       <property name="roleComparator" ref="siteRoleComparator" />
+       <property name="sysAdminParams" ref="sysAdminParams"/>
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+       <property name="sitesPermissionsCleaner" ref="sitesPermissionsCleaner"/>
+       <property name="cannedQueryRegistry" ref="siteCannedQueryRegistry"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="publicServiceAccessService" ref="PublicServiceAccessService" />
+       <property name="tenantService" ref="tenantService"/>
+       <property name="singletonCache" ref="immutableSingletonCache"/>
+       <property name="siteNodeRefCache" ref="siteNodeRefCache"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="eventPublisher" ref="eventPublisher" />
+    </bean>
+    
+    <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">
+        <property name="extensionName">
+            <value>siteService</value>
+        </property>
+        <!-- Creates Sites which require the ServiceRegistry -->
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="siteService" ref="SiteService"/>
+    </bean>
+    
+    <!-- Behaviours and policies for Sites -->
+    <bean id="siteAspect" class="org.alfresco.repo.site.SiteAspect" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+    </bean>
+    
+    <bean id="sitesPermissionsCleaner" class="org.alfresco.repo.site.SitesPermissionCleaner">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="siteServiceImpl" ref="siteService"/>
+       <property name="publicServiceAccessService" ref="PublicServiceAccessService"/>
+       <property name="aclDAO" ref="aclDAO"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="tenantService" ref="tenantService"/>
+    </bean>
+
+</beans>

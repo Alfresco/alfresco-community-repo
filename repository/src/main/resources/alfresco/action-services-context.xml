@@ -1,0 +1,778 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Action Service Configuration -->
+
+    <!-- Thread Pools    -->
+    
+    <!--  the default pool is used to run most of the async actions -->
+    <bean id="defaultAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>defaultAsyncAction</value>
+        </property>
+        <property name="corePoolSize">
+            <value>${default.async.action.corePoolSize}</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>${default.async.action.maximumPoolSize}</value>
+        </property>
+        <property name="threadPriority">
+            <value>${default.async.action.threadPriority}</value>
+        </property>
+    </bean>
+    
+    <!--  the deployment pool is used to throttle long running deployments which may otherwise block normal 
+          operations -->
+    <bean id="deploymentAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>deploymentAsyncAction</value>
+        </property>
+        <property name="corePoolSize">
+            <value>${deployment.service.corePoolSize}</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>${deployment.service.maximumPoolSize}</value>
+        </property>        
+        <property name="threadPriority">
+            <value>${deployment.service.threadPriority}</value>
+        </property>
+    </bean>
+    
+    <!-- this bean supports the registration of 'action filter' beans. These beans should extend the
+        baseActionFilter bean below, which provides automatic registration with the
+        default AsynchronousActionService. These filter beans are used to detect equivalent pending
+        actions and to drop unnecessary repeat actions.
+        See bean createThumbnailActionFilter for an example. -->
+    <bean name="baseActionFilter" abstract="true" init-method="init" class="org.alfresco.repo.action.AbstractAsynchronousActionFilter">
+       <property name="asynchronousActionExecutionQueue">
+           <ref bean="defaultAsynchronousActionExecutionQueue"/>
+       </property>
+    </bean>
+    
+    <!-- Action Service -->
+    <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>         
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>         
+        <property name="searchService">
+            <ref bean="ADMSearchService" />
+        </property>         
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
+        </property>        
+        <property name="actionTrackingService">
+            <ref bean="actionTrackingService" />
+        </property>        
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+        <property name="monitor">
+            <ref bean="actionServiceMonitor"/>
+        </property>
+    </bean>
+
+    <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
+      <property name="actionServiceImpl" ref="actionService"/>
+      <property name="threadPoolExecutor">
+         <ref bean="defaultAsyncThreadPool"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService"/>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <!-- The empty string here is intentional -->
+      <property name="id" value=""/>
+    </bean>
+    
+    <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
+      <property name="actionServiceImpl" ref="actionService"/>
+      <property name="threadPoolExecutor">
+         <ref bean="deploymentAsyncThreadPool"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService"/>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="id" value="deployment"/>
+    </bean>
+    
+    <!-- Action Tracking Service -->
+    <bean id="actionTrackingService" class="org.alfresco.repo.action.ActionTrackingServiceImpl">
+        <property name="transactionService">
+            <ref bean="TransactionService" />
+        </property>         
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>         
+        <property name="runtimeActionService">
+            <ref bean="actionService" />
+        </property>         
+        <property name="executingActionsCache">
+            <ref bean="executingActionsCache" />
+        </property>         
+    </bean>
+    
+   <!-- Running Actions monitor -->
+   <bean id="actionServiceMonitor" class="org.alfresco.repo.action.ActionServiceMonitor"/>
+
+   <!-- JavaScript API support for action tracking -->
+   <bean id="actionTrackingServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.action.script.ScriptActionTrackingService">
+        <property name="extensionName">
+            <value>actionTrackingService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="actionTrackingService" ref="actionTrackingService"/>
+    </bean>
+
+    <!-- Supports scheduled, persisted actions -->
+    <bean id="scheduledPersistedActionService" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl">
+        <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+        <property name="nodeService" ref="NodeService" />
+        <property name="startupNodeService" ref="nodeService" />
+        <property name="runtimeActionService" ref="actionService"/>
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="scheduler" ref="schedulerFactory" />
+    </bean>
+
+   <!-- Actions Aspect -->
+   
+   <bean id="actionsAspect" class="org.alfresco.repo.action.ActionsAspect" init-method="init">
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="ruleService" ref="ruleService"/>
+   </bean>   
+   
+   <!-- I18N -->
+   
+   <bean id="actionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.action-service</value>
+                <value>alfresco.messages.action-config</value>
+            </list>
+        </property>
+   </bean>
+
+   <!--  Action parameter constraints -->
+   
+   <bean id="action-constraint" abstract="true" init-method="init">
+      <property name="actionService" ref="actionService"/>
+      <property name="cacheAllowableValues" value="false"/>
+   </bean>
+   
+   <bean id="ac-compare-operations" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
+      <property name="enumClassName" value="org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation" />
+   </bean>
+   
+   <bean id="ac-content-properties" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
+      <property name="enumClassName" value="org.alfresco.repo.action.evaluator.compare.ContentPropertyName" />
+   </bean>
+   
+   <bean id="ac-mimetypes" class="org.alfresco.repo.action.constraint.MimetypeParameterConstraint" parent="action-constraint">      
+      <property name="mimetypeMap" ref="mimetypeService"/>
+   </bean>
+   
+   <bean id="ac-types" class="org.alfresco.repo.action.constraint.TypeParameterConstraint" parent="action-constraint">      
+      <property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+   
+   <bean id="ac-aspects" class="org.alfresco.repo.action.constraint.AspectParameterConstraint" parent="action-constraint">      
+      <property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+   
+   <bean id="ac-properties" class="org.alfresco.repo.action.constraint.PropertyParameterConstraint" parent="action-constraint">      
+      <property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+   
+   <bean id="ac-email-templates" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="repository" ref="repositoryHelper" />
+      <property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates"/>
+      <property name="cacheAllowableValues" value="false" />
+      <property name="nodeInclusionFilter">
+         <list>
+            <value>ftl</value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="repository" ref="repositoryHelper" />
+      <property name="searchPath" value="/app:company_home/app:dictionary/app:scripts"/>
+      <property name="cacheAllowableValues" value="false" />
+      <property name="nodeInclusionFilter">
+         <list>
+            <value>js</value>
+         </list>
+      </property>
+   </bean>
+   
+    <!-- Action Conditions -->
+
+    <bean id="action-condition-evaluator" abstract="true" init-method="init">
+        <property name="runtimeActionService">
+            <ref bean="actionService" />
+        </property>
+    </bean>
+
+    <bean id="no-condition" class="org.alfresco.repo.action.evaluator.NoConditionEvaluator" parent="action-condition-evaluator">
+    </bean>
+
+    <bean id="compare-property-value" class="org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator" parent="action-condition-evaluator">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="propertyValueComparators">
+            <list>
+                <bean class="org.alfresco.repo.action.evaluator.compare.TextPropertyValueComparator"/>
+                <bean class="org.alfresco.repo.action.evaluator.compare.NumericPropertyValueComparator"/>
+                <bean class="org.alfresco.repo.action.evaluator.compare.DatePropertyValueComparator"/>
+            </list>
+        </property>
+   </bean>
+
+    <bean id="compare-date-property" parent="compare-property-value"> </bean>
+    <bean id="compare-integer-property" parent="compare-property-value"> </bean>
+    <bean id="compare-text-property" parent="compare-property-value"> </bean>
+
+    
+    <bean id="compare-mime-type" class="org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator" parent="compare-property-value"/>
+
+    <bean id="in-category" class="org.alfresco.repo.action.evaluator.InCategoryEvaluator" parent="action-condition-evaluator">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+    
+    <bean id="is-subtype" class="org.alfresco.repo.action.evaluator.IsSubTypeEvaluator" parent="action-condition-evaluator">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+
+    <bean id="has-aspect" class="org.alfresco.repo.action.evaluator.HasAspectEvaluator" parent="action-condition-evaluator">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+    </bean>
+    
+    <bean id="has-tag" class="org.alfresco.repo.action.evaluator.HasTagEvaluator" parent="action-condition-evaluator">
+        <property name="nodeService" ref="nodeService" />
+        <property name="taggingService" ref="taggingService" />
+    </bean>
+    
+    
+    <bean id="has-version-history" class="org.alfresco.repo.action.evaluator.HasVersionHistoryEvaluator" parent="action-condition-evaluator">
+      <property name="publicCondition">
+         <value>false</value>
+      </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="versionService">
+            <ref bean="versionService" />
+        </property>
+    </bean>
+
+    <bean id="composite-condition" class="org.alfresco.repo.action.evaluator.CompositeConditionEvaluator" parent="action-condition-evaluator">
+    </bean>
+   
+    <!-- Actions -->
+
+    <bean id="action-executer" abstract="true" init-method="init">
+        <property name="runtimeActionService">
+            <ref bean="actionService" />
+        </property>
+        <property name="lockService">
+         <ref bean="LockService"/>
+        </property>        
+        <property name="baseNodeService">
+         <ref bean="nodeService"/>
+        </property>
+        <property name="mlAwareNodeService">
+            <ref bean="mlAwareNodeService"/>
+        </property>
+	<property name="dictionaryService">
+		<ref bean="dictionaryService" />
+	</property>
+        <property name="trackStatus" value="false" />
+        <property name="locales">
+            <set>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="de" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="es" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="fr" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="it" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="ja" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="nb" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="nl" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="ru" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="zh" />
+                    <constructor-arg value="CN" />
+                </bean>
+            </set>
+        </property>
+    </bean>
+    
+    <bean id="composite-action" class="org.alfresco.repo.action.executer.CompositeActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+      <property name="actionService">
+         <ref bean="actionService"/>
+      </property>
+   </bean>
+   
+   <bean id="create-version" class="org.alfresco.repo.action.executer.CreateVersionActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="versionService">
+         <ref bean="versionService"/>
+      </property>
+   </bean>
+
+    <bean id="add-features" class="org.alfresco.repo.action.executer.AddFeaturesActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="remove-features" class="org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="specialise-type" class="org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="link-category" class="org.alfresco.repo.action.executer.LinkCategoryActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="simple-workflow" class="org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+    </bean>
+
+    <bean id="transform" class="org.alfresco.repo.action.executer.TransformActionExecuter" parent="action-executer">
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="checkOutCheckInService" ref="CheckOutCheckInService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="copyService" ref="CopyService" />
+        <property name="mimetypeService" ref="mimetypeService" />
+        <property name="synchronousTransformClient" ref="synchronousTransformClient" />
+        <property name="converter" ref="transformOptionsConverter" />
+        <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="transform-image" class="org.alfresco.repo.action.executer.ImageTransformActionExecuter"
+        parent="transform">
+    </bean>
+
+    <bean id="copy" class="org.alfresco.repo.action.executer.CopyActionExecuter" parent="action-executer">
+        <property name="nodeService" ref="NodeService" />
+        <property name="copyService" ref="CopyService" />
+        <property name="checkOutCheckInService" ref="CheckOutCheckInService" />
+    </bean>
+    
+    <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService">
+            <ref bean="FileFolderService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="check-in" class="org.alfresco.repo.action.executer.CheckInActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="cociService">
+            <ref bean="checkOutCheckInService"></ref>
+        </property>
+        <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="check-out" class="org.alfresco.repo.action.executer.CheckOutActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="cociService">
+            <ref bean="checkOutCheckInService"></ref>
+        </property>
+        <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="take-ownership" class="org.alfresco.repo.action.executer.TakeOwnershipActionExecuter" parent="action-executer">
+       <property name="publicAction">
+          <value>false</value>
+       </property>
+       <property name="nodeService">
+          <ref bean="NodeService" />
+       </property>
+       <property name="ownableService">
+          <ref bean="OwnableService"></ref>
+       </property>
+       <property name="applicableTypes">
+          <list>
+             <value>{http://www.alfresco.org/model/content/1.0}content</value>
+             <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+          </list>
+       </property>
+    </bean>
+
+    <!-- Import mail action executor from the OutboundSMTP subsystem -->
+    <bean id="mail" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="OutboundSMTP" />
+        </property>
+        <property name="sourceBeanName">
+            <value>mail</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.action.executer.ActionExecuter</value>
+                <value>org.alfresco.repo.action.executer.TestModeable</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="errorProneActionExecutor" class="org.alfresco.repo.activities.feed.ErrorProneActionExecutor" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+   </bean>
+   
+    <!-- Import MailService from the OutboundSMTP subsystem (needed for email space/invited users actions) -->
+    <bean id="mailService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="OutboundSMTP" />
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.mail.javamail.JavaMailSender</value>
+            </list>
+        </property>
+    </bean>
+   
+    <bean id="set-property-value" class="org.alfresco.repo.action.executer.SetPropertyValueActionExecuter" parent="action-executer">
+        <property name="adhocPropertiesAllowed" value="true"/>
+        <property name="publicAction">
+            <value>true</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"></ref>
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="extract-metadata" class="org.alfresco.repo.action.executer.ContentMetadataExtracter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="metadataExtracterRegistry">
+            <ref bean="metadataExtracterRegistry" />
+        </property>
+        <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+        <property name="carryAspectProperties">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <bean id="import" class="org.alfresco.repo.action.executer.ImporterActionExecuter" parent="action-executer">
+        <property name="importerService">
+            <ref bean="ImporterService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"></ref>
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="fileFolderService">
+            <ref bean="FileFolderService"/>
+        </property>
+    </bean>
+    
+    <bean id="export" class="org.alfresco.repo.action.executer.ExporterActionExecuter" parent="action-executer">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+        <property name="exporterService">
+            <ref bean="ExporterService"/>
+        </property>
+        <property name="mimetypeService">
+            <ref bean="mimetypeService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"></ref>
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+    </bean>
+    
+    <bean id="repository-export" class="org.alfresco.repo.action.executer.RepositoryExporterActionExecuter" parent="action-executer">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+        <property name="repositoryExporterService">
+            <ref bean="repositoryExporterComponent"/>
+        </property>
+    </bean>
+    
+    <bean id="script" class="org.alfresco.repo.action.executer.ScriptActionExecuter" parent="action-executer">
+        <!-- The service registry is needed as ScriptAction needs it -->
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="companyHomePath">
+            <value>/${spaces.company_home.childname}</value>
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
+        </property>
+    </bean>
+    
+    <bean id="counter" class="org.alfresco.repo.action.executer.CounterIncrementActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="nodeService" />  <!-- runtime nodeService -->
+        </property>
+    </bean>
+    
+    <bean id="execute-all-rules" class="org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="RuleService" />
+        </property>
+        <property name="runtimeRuleService">
+            <ref bean="ruleService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="count-children" class="org.alfresco.repo.action.executer.CountChildrenActionExecuter" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="link-rules" class="org.alfresco.repo.rule.LinkRules" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="ruleService">
+          <ref bean="ruleService"/>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
+    <bean id="unlink-rules" class="org.alfresco.repo.rule.UnlinkRules" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="ruleService">
+          <ref bean="ruleService"/>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+
+    <bean id="ignore-inherited-rules" class="org.alfresco.repo.rule.UnlinkRules" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="ruleService">
+          <ref bean="ruleService"/>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+   </bean>
+
+    <bean id="reorder-rules" class="org.alfresco.repo.rule.ReorderRules" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="ruleService">
+          <ref bean="ruleService"/>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
+    <bean id="accept-simpleworkflow" class="org.alfresco.repo.action.executer.TransitionSimpleWorkflowActionExecuter" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="copyService">
+          <ref bean="CopyService"/>
+      </property>
+      <property name="isAcceptTransition">
+          <value>true</value>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
+     <bean id="reject-simpleworkflow" class="org.alfresco.repo.action.executer.TransitionSimpleWorkflowActionExecuter" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="copyService">
+          <ref bean="CopyService"/>
+      </property>
+      <property name="isAcceptTransition">
+          <value>false</value>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
+    <!-- Scheduled action helper beans -->
+    
+    <!-- Base template action definition -->
+    <bean id="baseTemplateActionDefintion" abstract="true" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
+</beans>

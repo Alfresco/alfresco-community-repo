@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- These are the XML files of the high level parts of the context -->
+    <import resource="classpath:alfresco/bulk-import-context.xml" />
+    <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
+    <import resource="classpath*:alfresco/office-addin-context.xml"/>
+    <import resource="classpath:alfresco/blog-context.xml"/>
+    <import resource="classpath:alfresco/calendar-services-context.xml"/>
+    <import resource="classpath:alfresco/comment-services-context.xml"/>
+    <import resource="classpath:alfresco/discussions-services-context.xml"/>
+    <import resource="classpath:alfresco/download-services-context.xml"/>
+    <import resource="classpath:alfresco/links-services-context.xml"/>
+    <import resource="classpath:alfresco/quickshare-services-context.xml"/>
+    <import resource="classpath:alfresco/rating-services-context.xml"/>
+    <import resource="classpath:alfresco/remote-credentials-services-context.xml"/>
+    <import resource="classpath:alfresco/oauth1-credentials-store-services-context.xml"/>
+    <import resource="classpath:alfresco/oauth2-credentials-store-services-context.xml"/>
+    <import resource="classpath:alfresco/remote-ticket-services-context.xml"/>
+    <import resource="classpath:alfresco/rendition-services-context.xml"/>
+    <import resource="classpath:alfresco/rendition-services2-context.xml"/>
+    <import resource="classpath:alfresco/replication-services-context.xml"/>
+    <import resource="classpath:alfresco/thumbnail-service-context.xml"/>
+    <import resource="classpath:alfresco/preference-service-context.xml"/>
+    <import resource="classpath:alfresco/favourites-service-context.xml"/>
+    <import resource="classpath:alfresco/form-services-context.xml"/>
+    <import resource="classpath:alfresco/opencmis-context.xml" />
+    <import resource="classpath:alfresco/period-type-context.xml" />
+    <import resource="classpath*:alfresco/node-locator-context.xml" />
+    <import resource="classpath*:alfresco/transfer-service-context.xml"/>
+    <import resource="classpath*:alfresco/distributionpolicies-context.xml" />
+    <import resource="classpath*:alfresco/slingshot-context.xml" />
+    <import resource="classpath*:alfresco/solr-facets-context.xml" />
+    <import resource="classpath*:alfresco/custom-model-management-services-context.xml" />
+    <import resource="classpath*:alfresco/repo-clients-apps-context.xml" />
+    <import resource="classpath*:alfresco/domain/*-context.xml" />
+    <import resource="classpath*:alfresco/smartfolder-context.xml" />
+    <import resource="classpath*:alfresco/reset-password-context.xml" />
+    <import resource="classpath:alfresco/heartbeat/heartbeat-repo-collector-context.xml"/>
+    <import resource="classpath*:alfresco/enterprise/heartbeat/heartbeat-enterprise-repo-collector-context.xml" />
+    <import resource="classpath*:alfresco/deprecated-model-bootstrap-context.xml" />
+    <import resource="classpath*:alfresco/events-context.xml" />
+    <import resource="classpath*:alfresco/messaging-context.xml" />
+</beans>

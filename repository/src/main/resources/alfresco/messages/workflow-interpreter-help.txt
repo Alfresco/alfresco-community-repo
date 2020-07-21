@@ -1,0 +1,307 @@
+    ##
+    ##  Meta commands 
+    ## 
+    
+    ok> help 
+    
+        List this help. 
+    
+    ok> r 
+    
+        Repeat last command. 
+    
+    ok> user [<userName>] 
+    
+        Switch to specified <userName>.  If <userName> is omitted, the currently 
+        selected user is shown. 
+    
+    ok> use
+    
+        Show current workflow context.
+        
+    ##
+    ##  Quit / Exit
+    ##
+    
+        If running in a web browser, then close this window or tab (and logout from Alfresco Explorer or close the web browser).
+    
+        If running as a command-line utility, then type 'quit' or 'exit'.
+    
+    ## 
+    ##  Workflow Definition Commands 
+    ## 
+    
+    ok> show file <definitionClassPath>
+    
+        Output the contents of the file located at <definitionClassPath>.
+        
+        <definitionClassPath> class path to workflow definition file. 
+    
+    ok> deploy <engine> <definitionClassPath> 
+    
+        Deploy workflow definition to Alfresco server. 
+    
+        <definitionClassPath> class path to workflow definition. 
+        <engine> workflow engine name (eg. activiti)
+    
+    ok> redeploy
+    
+        Redeploy the last workflow definition.
+    
+    ok> show definitions [all]
+    
+        List latest deployed workflow definitions.  Or, display all workflows
+        definitions (including previous versions) with the additional keyword
+        'all'.
+    
+    ok> use definition [<workflowDefId>] 
+    
+        Switch to use the workflow definition identified by <workflowDefId>.  If 
+        <workflowDefId> is ommited, the currently selected workflow definition 
+        is shown. 
+    
+    ok> undeploy definition <workflowDefId>
+    
+        Undeploy the latest version of the workflow definition identified by 
+        <workflowDefId>.  This will also terminate and remove all "in-flight" 
+        workflows associated with the definition.
+        
+        If multiple versions of the definition exist, you will have to undeploy
+        each in turn to remove the definition completely or issue the 'undeploy
+        definition name' command.
+    
+    ok> undeploy definition name <workflowName>
+    
+        Undeploy all versions of a workflow definition.  As with 'undeploy
+        definition', all "in-flight" workflows associated with each version
+        are terminated.
+    
+    ## 
+    ##  Variable Commands 
+    ## 
+    
+    Note: The following variables are defined automatically when the console
+          starts.  They may be deleted or modified.
+          
+          var bpm:package package 1       (test package of one document)
+          var bpm:assignee person admin   (test assignee who is admin)
+    
+
+    ok> var 
+    
+        Show all defined variables. 
+    
+    ok> var <varName>[*]=<varValue> 
+    
+        Define or update a variable. 
+    
+        <varName> variable name 
+        [*] if specified, define a collection 
+        <varValue> variable value (comma-seperate to specify a list of values) 
+    
+        e.g. 
+    
+        var bpm:assignee*=admin,fred 
+        var wf:notifyMe=true 
+    
+    ok> var <varName>[*] person <varValue> 
+    
+        Define or update a (cm:person) node ref variable. 
+    
+        <varName> variable name 
+        [*] if specified, define a collection 
+        <varValue> variable value (comma-seperate to specify a list of values) 
+    
+        e.g. 
+        
+        var bpm:assignee* person admin,fred 
+    
+    ok> var <varName>[*] group <varValue> 
+    
+        Define or update a (usr:authorityContainer) node ref variable. 
+    
+        <varName> variable name 
+        [*] if specified, define a collection 
+        <varValue> variable value (comma-seperate to specify a list of values) 
+    
+        e.g. 
+        
+        var bpm:groupAssignee group GROUP_Engineering
+    
+    ok> var <varName> package <itemCount>
+    
+        Define or update a (bpm:workflowPackage) node ref variable.
+        
+        A new workflow package is created containing <itemCount> content items.
+        
+        e.g.
+        
+        var bpm:package package 4    
+    
+    ok> var <varName>= 
+    
+        Delete an existing variable. 
+    
+        <varName> variable name 
+    
+    ## 
+    ##  Workflow Commands 
+    ## 
+        
+    ok> start [<varName[=varValue>]]* 
+    
+        Start a new workflow using the currently selected workflow definition.  Start 
+        Task parameters are provided as name/value pairs or references to pre-defined 
+        variables. 
+        
+        e.g. 
+        
+        start bpm:assignee=david wf:predefined 
+        
+    ok> show workflows [all]
+    
+        Display the list of active workflows for the currently selected workflow 
+        definition.  Or, display the list of all workflows (latest and previous
+        versions of process definitions) when used with the additional keyword 'all'.
+    
+    ok> use workflow <workflowId>
+    
+        Use the specified <workflowId>.
+    
+    ok> desc workflow <workflowId> 
+    
+        Describe the specified <workflowId>. 
+    
+    ok> show paths [<workflowId>] 
+    
+        Display the workflow paths for the specified <workflowId>.  If <workflowId> 
+        is omitted, the paths for the currently started workflow are shown. 
+    
+    ok> desc path <pathId>
+    
+        Describe the specified <pathId>.  Includes the list of properties associated
+        with the path.
+    
+    ok> show transitions [<workflowId>] 
+    
+        Display all available transitions for the specified <workflowId>.  If 
+        <workflowId> is omitted, the transitions for the currently started workflow 
+        are shown. 
+    
+    ok> signal <pathId> [<transitionName>] 
+    
+        Signal transition on specified <pathId>.  If <transitionName> is omitted, the 
+        default transition is taken. 
+    
+    ok> event <pathId> <eventtype>
+    
+        Fire an event of custom 'eventtype' against the specified path.
+    
+    ok> end workflow <workflowId> 
+    
+        End (cancel) the specified <workflowId>. 
+    
+    ok> delete workflow <workflowId>
+    
+        Force deletion of the specified <workflowId>.
+    
+    ok> delete all workflows
+    
+        Force deletion of all "in-flight" workflows.  Use with care!
+    
+    ##
+    ##  Timer Commands
+    ##
+    
+    ok> show timers [all]
+    
+        Display the list of active timers for the currently selected workflow 
+        definition.  Or, display the list of all timers when used with the 
+        additional keyword 'all'.
+    
+    ## 
+    ##  Task Commands 
+    ## 
+    
+    ok> show my tasks 
+    
+        List tasks assigned to the currently selected user. 
+    
+    ok> show my completed 
+    
+        List tasks completed by the currently selected user. 
+    
+    ok> show my pooled
+    
+        List tasks in a pool for the currently selected user.
+        
+    ok> show tasks [<pathId>] 
+    
+        List tasks associated with the specified workflow <pathId>.  If <pathId> is 
+        omitted, the tasks associated with the currently selected workflow path are 
+        shown. 
+    
+    ok> desc task <taskId> 
+    
+        Describe the task identified by <taskId>. 
+    
+    ok> update task <taskid> [<varName[=varValue>]]* 
+    
+        Update the state of the specified <taskId>.  Task properties are provided as 
+        name/value pairs or references to pre-defined variables. 
+    
+        <varName> variable name 
+        [*] if specified, define a collection 
+        <varValue> variable value (comma-seperate to specify a list of values) 
+        
+        e.g. 
+        
+        update task activiti$122 bpm:assignee=fred wf:notifyMe=false 
+    
+    ok> end task <taskId> [<transitionName>] 
+    
+        End the task identified by <taskId>.  If <transitionName> is omitted, the 
+        default transition is taken. 
+       
+    ok> query task [predicate]*
+    
+        Query for tasks.  If no predicates are provided, all "in-progress" tasks 
+        are returned (across all "active" workflows).
+        
+        Predicates are:
+        
+        taskId=<taskId>
+        taskName=<taskName>              e.g. taskName=wf:reviewTask
+        taskState=IN_PROGRESS|COMPLETED
+        taskActor=<actorId>              e.g. taskActor=admin
+        task.<propqname>=<propvalue>     e.g. task.bpm:outcome=approve
+        processId=<processId>
+        processName=<processName>        e.g. processName=wf:review
+        workflowDefinitionName=<name>    e.g. workflowDefinitionName=activitiAdhoc
+        processActive=true|false         e.g. processActive=true
+        process.<propqname>=<propvalue>  e.g. process.initiator=admin
+        orderBy=<orderBy>*               e.g. orderBy=TaskDue_Desc,TaskActor_Asc
+        
+        Where <orderBy> is one of:
+        
+        TaskId_Asc,
+        TaskId_Desc,
+        TaskCreated_Asc,
+        TaskCreated_Desc,
+        TaskDue_Asc,
+        TaskDue_Desc,
+        TaskName_Asc,
+        TaskName_Desc,
+        TaskActor_Asc,
+        TaskActor_Desc,
+        TaskState_Asc,
+        TaskState_Desc     
+        
+        e.g. query all in-progress pending submissions for web project X, ordered by pending due date, submitter
+        
+        query task taskName=wcmwf:submitpending taskState=IN_PROGRESS \
+          process.wcwmf:webproject=workspace://SpacesStore/projectx orderBy=TaskDue_Desc,TaskActor_Asc
+        
+    ## 
+    ##  end 
+    ## 

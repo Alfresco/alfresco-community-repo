@@ -1,0 +1,194 @@
+###############################
+## Common Alfresco Properties #
+###############################
+
+#
+# Sample custom content and index data location
+#
+#dir.root=/srv/alfresco/alf_data
+#dir.keystore=${dir.root}/keystore
+
+#
+# Sample database connection properties
+#
+#db.username=alfresco
+#db.password=alfresco
+
+#
+# External locations
+#-------------
+#jodconverter.officeHome=/usr/lib64/libreoffice
+#jodconverter.portNumbers=8101
+#jodconverter.enabled=true
+#img.root=./ImageMagick
+
+#
+# Windows specific environment variables (should not be set on unix) for ImageMagick
+#
+#img.coders=${img.root}/modules/coders
+#img.config=${img.root}/config
+
+#
+# Property to control whether schema updates are performed automatically.
+# Updates must be enabled during upgrades as, apart from the static upgrade scripts,
+# there are also auto-generated update scripts that will need to be executed.  After
+# upgrading to a new version, this can be disabled.
+#
+#db.schema.update=true
+
+#
+# MySQL connection
+#
+#db.driver=org.gjt.mm.mysql.Driver
+#db.url=jdbc:mysql://localhost/alfresco?useUnicode=yes&characterEncoding=UTF-8
+
+#
+# Oracle connection
+#
+#db.driver=oracle.jdbc.OracleDriver
+#db.url=jdbc:oracle:thin:@localhost:1521:alfresco
+
+#
+# SQLServer connection
+# Requires SNAPSHOT isolation mode
+# Enable TCP protocol on fixed port 1433
+# Prepare the database with:
+# ALTER DATABASE alfresco SET ALLOW_SNAPSHOT_ISOLATION ON; 
+#
+#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#db.url=jdbc:sqlserver://${db.host}:${db.port};databaseName=${db.name};lockTimeout=1000;
+#db.txn.isolation=4096
+
+#
+# PostgreSQL connection (requires postgresql-8.2-504.jdbc3.jar or equivalent)
+#
+#db.driver=org.postgresql.Driver
+#db.url=jdbc:postgresql://localhost:5432/alfresco
+
+#
+# Index Recovery Mode
+#-------------
+#index.recovery.mode=AUTO
+
+#
+# Outbound Email Configuration
+#-------------
+#mail.host=
+#mail.port=25
+#mail.username=anonymous
+#mail.password=
+#mail.encoding=UTF-8
+#mail.from.default=alfresco@alfresco.org
+#mail.smtp.auth=false
+
+#
+# Alfresco Email Service and Email Server
+#-------------
+
+# Enable/Disable the inbound email service.  The service could be used by processes other than
+# the Email Server (e.g. direct RMI access) so this flag is independent of the Email Service.
+#-------------
+#email.inbound.enabled=true
+
+# Email Server properties 
+#-------------
+#email.server.enabled=true
+#email.server.port=25
+#email.server.domain=alfresco.com
+#email.inbound.unknownUser=anonymous
+
+# A comma separated list of email REGEX patterns of allowed senders.
+# If there are any values in the list then all sender email addresses
+# must match. For example:
+#   .*\@alfresco\.com, .*\@alfresco\.org
+# Allow anyone:
+#-------------
+#email.server.allowed.senders=.*
+
+#
+# The default authentication chain
+# To configure external authentication subsystems see:
+# http://wiki.alfresco.com/wiki/Alfresco_Authentication_Subsystems
+#-------------
+#authentication.chain=alfrescoNtlm1:alfrescoNtlm
+
+#
+# URL Generation Parameters (The ${localname} token is replaced by the local server name)
+#-------------
+#alfresco.context=alfresco
+#alfresco.host=${localname}
+#alfresco.port=8080
+#alfresco.protocol=http
+#
+#share.context=share
+#share.host=${localname}
+#share.port=8080
+#share.protocol=http
+
+#imap.server.enabled=true
+#imap.server.port=143
+#imap.server.host=localhost
+
+# Default value of alfresco.rmi.services.host is 0.0.0.0 which means 'listen on all adapters'.
+# This allows connections to JMX both remotely and locally.
+#
+alfresco.rmi.services.host=0.0.0.0
+
+#
+#
+# Assign individual ports for each service for best performance 
+# or run several services on the same port. You can even run everything on 50500 if needed.
+#
+# Select 0 to use a random unused port.
+# 
+#monitor.rmi.service.port=50508
+
+#Smart Folders Config Properties
+
+smart.folders.enabled=true
+smart.folders.model=alfresco/model/smartfolder-model.xml
+smart.folders.model.labels=alfresco/messages/smartfolder-model
+
+#Smart reference config
+
+#smart.reference.classpath.hash=${smart.folders.config.vanilla.processor.classpath}->1,${smart.folders.config.system.templates.classpath}->2
+
+#Smart store config
+
+#Company home relative download associations of smart entries 
+#smart.download.associations.folder=${spaces.dictionary.childname}/${spaces.smartdownloads.childname}
+
+#Generic virtualization methods config
+
+#Vanilla JSON templates javascript processor classpath. A java script processor used to 
+#covert JSON templates to internal smart folder definitions.
+
+#smart.folders.config.vanilla.processor.classpath=/org/alfresco/repo/virtual/node/vanilla.js
+
+#System virtualization method config
+
+#System virtualization method aspect.
+#smart.folders.config.system.aspect=smf:systemConfigSmartFolder
+#System virtualization method aspect defined template location property.
+#smart.folders.config.system.aspect.template.location.property=smf:system-template-location
+#Classpath to be explored for *.json entries defining system templates.
+#smart.folders.config.system.templates.classpath=/org/alfresco/repo/virtual/node
+#A company home relative name or qname path location of repository system templates.
+#smart.folders.config.system.templates.path=${spaces.dictionary.childname}/${spaces.smartfolders.childname}
+#Content sub type of repository system templates.
+#smart.folders.config.system.templates.template.type=smf:smartFolderTemplate
+
+#Custom virtualization method config
+
+#Custom virtualization method aspect.
+#smart.folders.config.custom.aspect=smf:customConfigSmartFolder
+#Custom virtualization method aspect template content association.
+#smart.folders.config.custom.aspect.template.association=smf:custom-template-association
+
+
+#Type virtualization method config
+
+#A company home relative name or qname path location of the type mapped templates.
+#smart.folders.config.type.templates.path=${spaces.dictionary.childname}/${spaces.smartfolders.childname}
+#Type and aspect qname regular expression filter. 
+#smart.folders.config.type.templates.qname.filter=none

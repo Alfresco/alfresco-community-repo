@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions xmlns='http://www.omg.org/spec/BPMN/20100524/MODEL' targetNamespace='http://www.bpmnwithactiviti.org' xmlns:activiti='http://activiti.org/bpmn'>
+ <process id='sampleWorkflowServiceTask' name="Sample Workflow only Service Task" isExecutable="true">
+        <startEvent id='theStart'/>
+        <sequenceFlow id='flow1' sourceRef='theStart'   targetRef='SampleServiceTask' />
+        <serviceTask id='SampleServiceTask' name='Execution Check' activiti:class='org.alfresco.repo.workflow.activiti.script.AlfrescoScriptDelegate'>
+          <extensionElements>
+             <activiti:field name="script">
+                <activiti:string>logger.log("Hello World");</activiti:string>
+             </activiti:field>
+          </extensionElements>
+        </serviceTask>
+        <sequenceFlow id='flow2' sourceRef='SampleServiceTask' targetRef='theEnd' />
+        <endEvent id='theEnd' />
+ </process>
+</definitions>

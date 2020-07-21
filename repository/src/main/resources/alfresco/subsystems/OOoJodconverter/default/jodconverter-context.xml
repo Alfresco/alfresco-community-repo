@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+   <bean id="jodconverter.shared.instance" class="org.alfresco.repo.content.JodConverterSharedInstance">
+       <property name="url">
+           <value>${jodconverter.url}</value>
+       </property>
+       <property name="officeHome">
+           <value>${jodconverter.officeHome}</value>
+       </property>
+       <property name="maxTasksPerProcess">
+          <value>${jodconverter.maxTasksPerProcess}</value>
+       </property>
+       <property name="taskExecutionTimeout">
+          <value>${jodconverter.taskExecutionTimeout}</value>
+       </property>
+       <property name="taskQueueTimeout">
+          <value>${jodconverter.taskQueueTimeout}</value>
+       </property>
+       <property name="connectTimeout">
+          <value>${jodconverter.connectTimeout}</value>
+       </property>
+       <property name="portNumbers">
+          <value>${jodconverter.portNumbers}</value>
+       </property>
+       <property name="templateProfileDir">
+          <value>${jodconverter.templateProfileDir}</value>
+       </property>
+       <property name="enabled">
+          <value>${jodconverter.enabled}</value>
+       </property>
+       <property name="deprecatedOooExe">
+          <value>${ooo.exe}</value>
+       </property>
+       <property name="deprecatedOooPort">
+          <value>${ooo.port}</value>
+       </property>
+       <property name="deprecatedOooEnabled">
+          <value>${ooo.enabled}</value>
+       </property>
+   </bean>
+
+   <bean id="extracter.worker.JodConverter" class="org.alfresco.repo.content.metadata.JodConverterMetadataExtracterWorker">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="jodConverter">
+         <ref bean="jodconverter.shared.instance" />
+      </property>
+   </bean>
+
+   <bean id="transformer.worker.JodConverter" class="org.alfresco.repo.content.transform.JodContentTransformer">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="enabled" value="${legacy.transform.service.enabled}" />
+      <property name="jodConverter">
+         <ref bean="jodconverter.shared.instance" />
+      </property>
+      <property name="documentFormatsConfiguration">
+         <value>classpath:alfresco/mimetype/jodconverter-document-formats.json</value>
+      </property>
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
+      </property>
+       <property name="remoteTransformerClient">
+           <bean class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+               <constructor-arg>
+                   <value>LibreOffice</value>
+               </constructor-arg>
+               <constructor-arg>
+                   <value>${jodconverter.url}</value>
+               </constructor-arg>
+               <property name="startupRetryPeriodSeconds">
+                   <value>${jodconverter.startupRetryPeriodSeconds}</value>
+               </property>
+           </bean>
+       </property>
+   </bean>
+
+</beans>

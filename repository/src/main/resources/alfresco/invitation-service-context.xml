@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+     
+     <!--  Invitation Service Configuration File --> 
+     <bean id="invitationService" class="org.alfresco.repo.invitation.InvitationServiceImpl" init-method="init">
+        <property name="workflowService" ref="WorkflowService"/>
+        <property name="workflowAdminService" ref="workflowAdminService"/>
+        <property name="actionService" ref="ActionService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="authenticationService" ref="AuthenticationService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="userNameGenerator" ref="userNameGenerator"/>
+        <property name="passwordGenerator" ref="passwordGenerator"/> 
+        <property name="sendEmails" value="${notification.email.siteinvite}"/> 
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="sysAdminParams" ref="sysAdminParams"/>
+        <property name="nominatedInvitationWorkflowId" value="${site.invite.nominated.workflowId}"/>
+        <property name="nominatedInvitationExternalWorkflowId" value="${site.invite.nominatedExternal.workflowId}"/>
+        <property name="moderatedInvitationWorkflowId" value="${site.invite.moderated.workflowId}"/>
+        <property name="templateService" ref="templateService"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="messageService" ref="messageService"/>
+     </bean>
+     
+    <!-- Site service security bean -->
+    <bean id="InvitationService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+     
+    <!-- Site service transaction bean -->
+    <bean id="InvitationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="InvitationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.invitation.InvitationService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>invitationService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="InvitationService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="InvitationService_security"/>
+            </list>
+        </property>
+    </bean>
+        
+    <bean id="invitationResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+    	<property name="resourceBundles">
+    		<list>
+    			<value>alfresco.messages.invitation-service</value>
+    		</list>
+    	</property>
+   </bean>
+   
+   <bean id="invitationServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.invitation.script.ScriptInvitationService">
+        <property name="extensionName">
+            <value>invitations</value>
+        </property>
+        <property name="invitationService" ref="InvitationService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="siteService" ref="SiteService"/>
+    </bean>
+   
+    <!--  Activiti Workflow Delegate beans -->
+    <bean id="baseInvitationDelegate" parent="baseJavaDelegate"
+            class="org.alfresco.repo.invitation.activiti.AbstractInvitationDelegate" abstract="true">
+        <property name="invitationService" ref="InvitationService" />
+    </bean>
+    
+    <bean id="AcceptNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.AcceptNominatedInviteDelegate" />
+    
+    <bean id="ApproveModeratedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.ApproveModeratedInviteDelegate" />
+    
+    <bean id="CancelNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.CancelNominatedInviteDelegate" />
+    
+    <bean id="RejectModeratedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.RejectModeratedInviteDelegate" />
+    
+    <bean id="RejectNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.RejectNominatedInviteDelegate" />
+    
+    <bean id="SendNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate" />
+         
+    <bean id="SendNominatedInviteAddDirectDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.SendNominatedInviteAddDirectDelegate" />
+         
+    <bean id="SendModeratedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate">
+         <property name="emailTemplatePath">
+                 <util:constant static-field="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH"/>
+         </property>
+    </bean>    
+</beans>

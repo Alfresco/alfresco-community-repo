@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Default Audit Configuration -->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <!-- Includes duplicate definitions of the extractors and generators -->
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+
+    <DataGenerators>
+       <DataGenerator name="systemTime" registeredName="auditModel.generator.time"/>
+       <DataGenerator name="user" class="org.alfresco.repo.audit.generator.AuthenticatedUserDataGenerator"/>
+    </DataGenerators>
+
+    <PathMappings>
+        <PathMap source="/test/one.one/two.one" target="/test/1.1/2.1"/>
+        <PathMap source="/test/one.one/two.two" target="/test/1.1/2.2"/>
+        <PathMap source="/actions-test" target="/actions-test"/>
+        <PathMap source="/actions-test/actions/action-01-mapped" target="/actions-test/actions/action-01"/>
+        <PathMap source="/actions-test/actions/action-02-sourced" target="/actions-test/actions/action-02"/>
+    </PathMappings>
+
+    <Application name="Alfresco Test" key="test">
+        <GenerateValue key="time" dataGenerator="systemTime"/>
+        <AuditPath key="1.1">
+            <AuditPath key="2.1">
+                <AuditPath key="3.1">
+                    <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    <AuditPath key="4.1">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="4.2">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                        <RecordValue key="value.2" dataExtractor="simpleValue"/>
+                        <GenerateValue key="value.3" dataGenerator="systemTime"/>
+                    </AuditPath>
+                    <AuditPath key="4.3">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="4.4">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="4.5">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+                <AuditPath key="3.2">
+                    <AuditPath key="4.1">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                        <GenerateValue key="time" dataGenerator="systemTime"/>
+                    </AuditPath>
+                    <AuditPath key="4.2">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+            <AuditPath key="2.2">
+                <AuditPath key="3.1">
+                    <AuditPath key="4.1">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="4.2">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+                <AuditPath key="3.2">
+                    <AuditPath key="4.1">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                        <GenerateValue key="time" dataGenerator="systemTime"/>
+                    </AuditPath>
+                    <AuditPath key="4.2">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+    <Application name="Actions Test" key="actions-test">
+        <AuditPath key="actions">
+            <GenerateValue key="user" dataGenerator="user"/>
+            <AuditPath key="context-node">
+                <RecordValue key="noderef" dataExtractor="simpleValue"/>
+            </AuditPath>
+            <AuditPath key="action-01">
+                <AuditPath key="params">
+                    <AuditPath key="A">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="B">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="C">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+            <AuditPath key="action-02">
+                <RecordValue key="valueA" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/A" dataTrigger="/actions-test/actions/action-02/params/A"/>
+                <RecordValue key="valueB" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/B" dataTrigger="/actions-test/actions/action-02/params/B"/>
+                <RecordValue key="valueC" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/C" dataTrigger="/actions-test/actions/action-02/params/C"/>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+</Audit>

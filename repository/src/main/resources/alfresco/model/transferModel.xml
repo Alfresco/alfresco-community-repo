@@ -1,0 +1,263 @@
+<model name="trx:applicationmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+	<description>Alfresco Transfer Application Model</description>
+	<author>Alfresco</author>
+	<published>2009-12-16</published>
+	<version>1.0</version>
+
+	<imports>
+		<import uri="http://www.alfresco.org/model/dictionary/1.0"
+			prefix="d" />
+		<import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+		<import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+	</imports>
+
+	<namespaces>
+		<namespace uri="http://www.alfresco.org/model/transfer/1.0"
+			prefix="trx" />
+	</namespaces>
+
+	<constraints>
+		<constraint name="trx:protocols" type="LIST">
+			<parameter name="allowedValues">
+				<list>
+					<value>http</value>
+					<value>https</value>
+				</list>
+			</parameter>
+		</constraint>
+	</constraints>
+
+	<types>
+
+		<type name="trx:transferGroup">
+			<title>Transfer Group</title>
+			<description>The definition of a transfer group</description>
+			<parent>cm:folder</parent>
+			<properties>
+			</properties>
+		</type>
+
+
+		<type name="trx:transferTarget">
+			<title>Transfer Target</title>
+			<description>The definition of a transfer target</description>
+			<parent>cm:folder</parent>
+			<properties>
+
+				<property name="trx:endpointhost">
+					<title>Endpoint Host</title>
+					<type>d:text</type>
+					<mandatory enforced="false">true</mandatory>
+					<index enabled="true">
+						<atomic>true</atomic>
+						<stored>false</stored>
+						<tokenised>false</tokenised>
+					</index>
+				</property>
+
+				<property name="trx:endpointport">
+					<title>Endpoint Port</title>
+					<type>d:int</type>
+					<mandatory enforced="false">true</mandatory>
+				</property>
+
+				<property name="trx:endpointpath">
+					<title>Endpoint Path</title>
+					<type>d:text</type>
+					<mandatory enforced="false">true</mandatory>
+               <default>/alfresco/service/api/transfer</default>
+				</property>
+
+				<property name="trx:endpointprotocol">
+					<title>Endpoint Protocol</title>
+					<type>d:text</type>
+					<mandatory enforced="false">true</mandatory>
+					<constraints>
+						<constraint ref="trx:protocols" />
+					</constraints>
+				</property>
+
+				<property name="trx:username">
+					<title>Username</title>
+					<type>d:text</type>
+				</property>
+
+				<property name="trx:password">
+					<title>Password</title>
+					<type>d:any</type>
+					<index enabled="false">
+						<atomic>true</atomic>
+						<stored>false</stored>
+						<tokenised>false</tokenised>
+					</index>
+				</property>
+
+			</properties>
+		</type>
+
+   <type name="trx:fileTransferTarget">
+      <title>File Transfer Target</title>
+      <description>Used to model a file transfer receiver with its corresponding root node</description>
+      <parent>trx:transferTarget</parent>
+      <associations>
+         <association name="trx:fileTransferRootNode">
+            <source>
+               <mandatory>false</mandatory>
+               <many>true</many>
+            </source>
+            <target>
+               <class>cm:folder</class>
+               <mandatory>false</mandatory>
+               <many>true</many>
+            </target>
+         </association>
+      </associations>
+   </type>
+
+
+
+
+		<type name="trx:transferLock">
+			<title>Transfer Lock</title>
+			<description>Node type used to represent the transfer lock node
+			</description>
+			<parent>cm:content</parent>
+			<mandatory-aspects>
+				<aspect>trx:transferRelated</aspect>
+			</mandatory-aspects>
+		</type>
+
+		<type name="trx:tempTransferStore">
+			<title>Temp Transfer Store</title>
+			<description>Node type used for storage of temporarily orphaned incoming nodes</description>
+			<parent>cm:content</parent>
+			<associations>
+			   <child-association name="trx:orphan">
+			      <source>
+			         <mandatory>false</mandatory>
+			         <many>true</many>
+			      </source>
+			      <target>
+			         <class>sys:base</class>
+			         <mandatory>false</mandatory>
+			         <many>true</many>
+			      </target>
+			   </child-association>
+			</associations>
+		</type>
+
+		<type name="trx:transferRecord">
+			<title>Transfer Record</title>
+			<description>Node type used to record transfer information
+			</description>
+			<parent>cm:content</parent>
+			<properties>
+				<property name="trx:progressPosition">
+					<title>Current Progress</title>
+					<type>d:int</type>
+					<mandatory enforced="false">true</mandatory>
+				</property>
+				<property name="trx:progressEndpoint">
+					<title>Progress Endpoint</title>
+					<type>d:int</type>
+					<mandatory enforced="false">true</mandatory>
+				</property>
+				<property name="trx:transferStatus">
+					<title>Transfer Status</title>
+					<type>d:text</type>
+					<mandatory enforced="false">true</mandatory>
+				</property>
+				<property name="trx:transferError">
+					<title>Transfer Error Object</title>
+					<type>d:any</type>
+					<mandatory>false</mandatory>
+				</property>
+			</properties>
+		</type>
+
+		<!-- The Transfer Report -->
+		<type name="trx:transferReport">
+			<title>Transfer Report</title>
+			<description>Transfer Report</description>
+			<parent>cm:content</parent>
+		</type>
+
+		<type name="trx:transferReportDest">
+            <title>Transfer Report From Destination</title>
+            <description>Transfer Report (Destination)</description>
+            <parent>cm:content</parent>
+        </type>
+
+	</types>
+
+	<aspects>
+		<!-- Can this resorce be temporarily disabled? -->
+		<aspect name="trx:enableable">
+			<title>Can this resource be enabled/disabled.</title>
+			<properties>
+				<property name="trx:enabled">
+					<title>Enabled</title>
+					<type>d:boolean</type>
+					<mandatory>true</mandatory>
+				</property>
+			</properties>
+		</aspect>
+
+		<aspect name="trx:transferRelated">
+			<title>Nodes with this aspect are related to a particular transfer.
+			</title>
+			<properties>
+				<property name="trx:transferId">
+					<title>Transfer Id</title>
+					<description>Transfer Identifier to uniquely identify a particular transfer</description>
+					<type>d:text</type>
+					<mandatory enforced="false">true</mandatory>
+				</property>
+			</properties>
+		</aspect>
+
+		<aspect name="trx:transferred">
+            <title>Transferred Node</title>
+            <description>Nodes with this aspect have been transferred from one repository to another</description>
+            <properties>
+                <property name="trx:repositoryId">
+                    <title>Source RepositoryId</title>
+                    <description>The repository id that this node originates from.</description>
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                </property>
+                <property name="trx:fromRepositoryId">
+                    <title>From Repository Id</title>
+                    <description>The id of the repository that transferred this node to this repository</description>
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                </property>
+                <property name="trx:fromContent">
+                    <title>ContentProperties</title>
+                    <description>The content URLs transferred with this node</description>
+                    <type>d:text</type>
+                    <mandatory enforced="false">false</mandatory>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="trx:alien">
+            <title>Alien Node</title>
+            <description>Nodes with this aspect are either alien nodes or have been invaded by other alien nodes</description>
+            <properties>
+                <property name="trx:invadedBy">
+                    <title>Invaded By</title>
+                    <description>The repositories that have invaded this node</description>
+                    <type>d:text</type>
+                    <mandatory enforced="false">false</mandatory>
+                    <multiple>true</multiple>
+                    <default>false</default>
+                </property>
+            </properties>
+        </aspect>
+
+	</aspects>
+
+</model>

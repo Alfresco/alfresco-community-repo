@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Audit Application Definition 'alfresco-access'
+  -
+  - Extracts high level audit records on the creation, deletion, modification and access
+  - of user visible objects.
+  -
+  - The following alfresco-global.properties must be set:
+  -
+  -   # Enable audit in general
+  -   audit.enabled=true
+  -
+  -   # Enable the alfresco-access audit application
+  -   audit.alfresco-access.enabled=true
+  -->
+<Audit xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd">
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+       <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue"/>
+    </DataExtractors>
+    
+    <DataGenerators>
+       <DataGenerator name="currentUser" registeredName="auditModel.generator.user"/>
+    </DataGenerators>
+
+    <PathMappings>
+        <PathMap source="/alfresco-access" target="/alfresco-access" />
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/no-error" target="/alfresco-access/login"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/error" target="/alfresco-access/loginFailure"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/args/userName" target="/alfresco-access/loginUser"/>
+        <PathMap source="/alfresco-api/pre/ticketComponent/invalidateTicketById/args" target="/alfresco-access/logout"/>
+        <PathMap source="/alfresco-access/transaction/properties/add/cm:versionLabel" target="/alfresco-access/transaction/cm:versionLabel"/>
+        <PathMap source="/alfresco-access/transaction/properties/to/cm:versionLabel" target="/alfresco-access/transaction/cm:versionLabel"/>
+    </PathMappings>
+
+    <Application name="alfresco-access" key="alfresco-access">
+    
+       <AuditPath key="login">
+            <RecordValue key="user" dataExtractor="simpleValue" dataSource="/alfresco-access/loginUser" dataTrigger="/alfresco-access/login" />
+        </AuditPath>
+
+        <AuditPath key="loginFailure">
+            <RecordValue key="user" dataExtractor="simpleValue" dataSource="/alfresco-access/loginUser" dataTrigger="/alfresco-access/loginFailure" />  
+        </AuditPath>
+
+        <AuditPath key="logout">
+            <GenerateValue key="user" dataGenerator="currentUser"/>
+        </AuditPath>
+
+        <AuditPath key="transaction">
+            <RecordValue key="action" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/action" dataTrigger="/alfresco-access/transaction/action" />  
+            <RecordValue key="sub-actions" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/sub-actions" dataTrigger="/alfresco-access/transaction/sub-actions" />  
+            <RecordValue key="user" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/user" dataTrigger="/alfresco-access/transaction/user" />  
+
+            <RecordValue key="path" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/path" dataTrigger="/alfresco-access/transaction/path" />
+            <RecordValue key="type" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/type" dataTrigger="/alfresco-access/transaction/type" />  
+            <RecordValue key="version" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/cm:versionLabel" dataTrigger="/alfresco-access/transaction/cm:versionLabel" />  
+
+            <AuditPath key="copy">
+                <AuditPath key="from">
+                    <RecordValue key="path" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/copy/from/path" dataTrigger="/alfresco-access/transaction/copy/from/path" />
+                </AuditPath>
+            </AuditPath>
+
+            <AuditPath key="move">
+                <AuditPath key="from">
+                    <RecordValue key="path" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/move/from/path" dataTrigger="/alfresco-access/transaction/move/from/path" />
+                </AuditPath>
+            </AuditPath>
+            
+            <AuditPath key="properties">
+                <RecordValue key="fromName" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/properties/from/name" dataTrigger="/alfresco-access/transaction/properties/from/name" />  
+                <RecordValue key="toName" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/properties/to/name" dataTrigger="/alfresco-access/transaction/properties/to/name" />  
+                <RecordValue key="from" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/properties/from" dataTrigger="/alfresco-access/transaction/properties/from" />  
+                <RecordValue key="to" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/properties/to" dataTrigger="/alfresco-access/transaction/properties/to" />  
+                <RecordValue key="add" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/properties/add" dataTrigger="/alfresco-access/transaction/properties/add" />  
+                <RecordValue key="delete" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/properties/delete" dataTrigger="/alfresco-access/transaction/properties/delete" />  
+            </AuditPath>
+            
+            <AuditPath key="aspects">
+                <RecordValue key="add" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/aspects/add" dataTrigger="/alfresco-access/transaction/aspects/add" />  
+                <RecordValue key="delete" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/aspects/delete" dataTrigger="/alfresco-access/transaction/aspects/delete" />  
+            </AuditPath>
+            
+        </AuditPath>
+        
+    </Application>
+        
+</Audit>

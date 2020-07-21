@@ -1,0 +1,125 @@
+<model name="usr:usermodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco User Model</description>
+   <author>Alfresco</author>
+   <published>2010-01-27</published>
+   <version>0.3</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/user/1.0" prefix="usr"/>
+   </namespaces>
+
+	<constraints>
+	  <constraint name="usr:userNameConstraint" type="org.alfresco.repo.dictionary.constraint.UserNameConstraint" />
+   </constraints>
+   
+   <types>
+      
+      <type name="usr:authority">
+        <title>Alfresco Authority Abstract Type</title>
+         <parent>sys:base</parent>
+      </type>
+      
+      <type name="usr:user">
+         <title>Alfresco User Type</title>
+         <parent>usr:authority</parent>
+         <properties>
+			<!-- The tokenisation set here is ignored - it is fixed for this type -->
+			<!-- This is so you can not break person lookup -->
+            <property name="usr:username">
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="usr:userNameConstraint" />
+               </constraints>
+            </property>
+            <property name="usr:password">
+               <type>d:text</type>
+            </property>
+            <property name="usr:password2">
+               <type>d:text</type>
+            </property>
+            <property name="usr:passwordHash">
+               <type>d:text</type>
+            </property>
+            <property name="usr:enabled">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:accountExpires">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:accountExpiryDate">
+               <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="usr:credentialsExpire">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:credentialsExpiryDate">
+               <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="usr:accountLocked">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:salt">
+               <type>d:text</type>
+            </property>
+            <property name="usr:hashIndicator">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </type>
+   
+      <!--  Note this type is not used and was replaced by cm:authorityContainer -->
+      <!--  Retained here because old authority containers are left in place in upgraded repositories (after migration) -->       
+      <type name="usr:authorityContainer">
+         <title>Deprecated Alfresco Authority Type - NOT USED</title>
+         <parent>usr:authority</parent>
+         <properties>
+			<!-- The tokenisation set here is ignored - it is fixed for this type -->
+			<!-- This is so you can not break group lookup -->
+            <property name="usr:authorityName">
+               <type>d:text</type>
+            </property>
+            <property name="usr:members">
+               <type>d:text</type>
+               <multiple>true</multiple>   
+            </property>
+			<property name="usr:authorityDisplayName">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="usr:member">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>usr:authority</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>  
+
+   </types>
+   
+   
+</model>

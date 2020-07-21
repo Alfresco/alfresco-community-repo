@@ -1,0 +1,16 @@
+{
+  "renditions": [
+    {
+      "renditionName": "doclib",
+      "targetMediaType": "image/png",
+      "options": [
+        {"name": "resizeWidth", "value": 180},
+        {"name": "resizeHeight", "value": 180},
+        {"name": "allowEnlargement", "value": false},
+        {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
+        {"name": "thumbnail", "value": true}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "transformers": [
+    {
+      "transformerName": "rubbish",
+      "transformerPipeline" : [
+        {"transformerName": "appleIWorks",                                      "targetMediaType": "image/jpeg"},
+        {"transformerName": "imagemagick"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/vnd.apple.pages", "maxSourceSizeBytes": 786432, "targetMediaType": "rubbish"}
+      ],
+      "transformOptions": [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+##
+##  Meta commands
+##
+
+ok> help
+
+    List this help.
+
+ok> r
+
+    Repeat last command.
+    
+##
+##  Quit / Exit
+##
+
+    If running in a web browser, then close this window or tab (and logout from Alfresco Explorer or close the web browser).
+    
+    If running as a command-line utility, then type 'quit' or 'exit'.
+
+##
+##  General Repo Admin Commands
+##
+
+ok> show file <fileClassPath>
+
+    Output the contents of the file located at <fileClassPath>.
+
+    <fileClassPath> class path to a file
+
+    e.g. show file alfresco/extension/xxxModel.xml
+    e.g. show file alfresco/extension/yyy-messages.properties
+    
+ok> show file-list <filesClassPath>
+
+    Show list of files located at <filesClassPath> with first match being listed for each filename.
+
+    <filesClassPath> class path to a list of files. Wildcard * is allowed. For example, to see
+    a list of message resource bundles that would be loaded, use: /path1/path2/bundlename*.properties
+
+    e.g. show file-list alfresco/extension/*
+    e.g. show file-list alfresco/extension/*Model.xml
+    e.g. show file-list alfresco/extension/zzz-messages*.properties
+        
+##
+##  Model Admin Commands
+##
+
+ok> show models
+
+    Show deployed models - that are stored in the repository data dictionary.
+
+ok> deploy model <fileClassPath>
+
+    Upload model to repository and load into runtime data dictionary. This will also
+    set the repository model as active. 
+    
+    If a model is already deployed then it will be updated and re-deployed.
+
+    e.g. deploy model alfresco/extension/exampleModel.xml
+
+ok> undeploy model <modelFileName>
+
+    Permanently delete model from repository (all versions) and unload from runtime data dictionary.
+
+    e.g. undeploy model exampleModel.xml
+
+ok> activate model <modelFileName>
+
+    Set repository model to active and load into runtime data dictionary.
+    
+    e.g. activate model exampleModel.xml
+    
+ok> deactivate model <modelFileName>
+
+    Set repository model to inactive and unload from runtime data dictionary. 
+    
+    e.g. deactivate model exampleModel.xml
+    
+##
+##  Message Admin Commands
+##
+
+ok> show messages
+
+    Show deployed message resource bundles - that are stored in the repository data dictionary.
+
+ok> deploy messages <resourceBundleClassPath>
+
+    Upload message resource bundle to repository and runtime message service.
+
+    e.g. deploy messages alfresco/extension/lifecycle-messages
+    
+ok> undeploy messages <resourceBundleBaseName>
+
+    Remove message resource bundle from repository and from runtime message service.
+    
+    e.g. undeploy messages lifecycle-messages
+    
+ok> reload messages <resourceBundleBaseName>
+
+    Reload message resource bundle from repository into runtime message service.
+    
+    e.g. reload messages lifecycle-messages
+
+##
+##  end
+##

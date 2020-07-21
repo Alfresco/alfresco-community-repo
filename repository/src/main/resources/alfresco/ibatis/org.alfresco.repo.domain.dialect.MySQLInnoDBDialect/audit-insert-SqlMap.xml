@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.audit.insert">
+
+    <insert id="insert_AuditModel" parameterType="AuditModel" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.audit.insert_AuditModel_AutoIncrement"/>
+    </insert>
+    
+    <insert id="insert_AuditApplication" parameterType="AuditApplication" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.audit.insert_AuditApplication_AutoIncrement"/>
+    </insert>
+    
+    <insert id="insert_AuditEntry" parameterType="AuditEntry" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.audit.insert_AuditEntry_AutoIncrement"/>
+    </insert>
+    
+</mapper>

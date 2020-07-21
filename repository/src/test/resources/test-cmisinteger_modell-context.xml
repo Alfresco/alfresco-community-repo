@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+    <!-- Registration of new models -->	
+    <bean id="testcmisintegermodelDictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>opencmis/testcmisinteger_model.xml</value>
+                <value>opencmis/testcmisdecimal_model.xml</value>
+                <value>opencmis/testcmis_item_model.xml</value>
+                <value>cmis/exampleModel.xml</value>
+            </list>
+        </property>
+    </bean>
+</beans>

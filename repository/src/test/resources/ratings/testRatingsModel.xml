@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="testratings:testRatingsModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Test Ratings Model</description>
+   <author>Alfresco</author>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/testratings/1.0" prefix="testratings"/>
+   </namespaces>
+   
+   <aspects>
+      <aspect name="testratings:spinalTapRatingSchemeRollups">
+         <title>Spinal Tap rating scheme rollups</title>
+         <properties>
+            <property name="testratings:spinalTapRatingSchemeCount">
+               <title>Spinal Tap Rating Scheme ratings count</title>
+               <type>d:int</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="testratings:spinalTapRatingSchemeTotal">
+               <title>Spinal Tap Rating Scheme ratings total</title>
+               <type>d:float</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+</model>

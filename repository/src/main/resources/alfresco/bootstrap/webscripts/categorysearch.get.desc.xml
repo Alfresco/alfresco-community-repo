@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Category Search Sample</shortname>
+  <description>Sample that finds all blog entries tagged with specified categories</description>
+  <url>/sample/blog/category/{category}</url>
+  <format default="html">argument</format>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+  <lifecycle>sample</lifecycle>
+</webscript>

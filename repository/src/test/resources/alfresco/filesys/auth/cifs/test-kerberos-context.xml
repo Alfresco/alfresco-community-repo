@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Overriding test properties to point to custom properties -->
+   <bean id="cifs-test-properties"
+      class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="ignoreUnresolvablePlaceholders" value="true" />
+      <property name="properties">
+         <props>
+            <prop key="kerberos.authentication.realm">ALFRESCO.ORG</prop>
+            <prop key="kerberos.authentication.user.configEntryName">Alfresco</prop>
+            <prop key="kerberos.authentication.defaultAdministratorUserNames"></prop>
+            <prop key="kerberos.authentication.cifs.configEntryName">AlfrescoCIFS</prop>
+            <prop key="kerberos.authentication.cifs.password">secret</prop>
+            <prop key="kerberos.authentication.cifs.enableTicketCracking">false</prop>
+            <prop key="kerberos.authentication.stripUsernameSuffix">true</prop>
+
+            <!-- initialization not necessary for test -->
+            <prop key="kerberos.authentication.authenticateCIFS">false</prop>
+            <prop key="kerberos.authentication.authenticateFTP">false</prop>
+         </props>
+      </property>
+      <property name="searchSystemEnvironment">
+          <value>false</value>
+      </property>
+   </bean>
+
+   <import resource="classpath:alfresco/subsystems/Authentication/kerberos/kerberos-authentication-context.xml" />
+
+</beans>

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="clientAppDefaultPropertiesTest" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath*:org/alfresco/repo/client/config/test-repo-clients-apps.properties</value>
+            </list>
+        </property>
+    </bean>
+    <!-- simulate the alfresco global properties bean -->
+    <bean id="globalPropertiesTest" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath*:org/alfresco/repo/client/config/test-global-properties.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="clientAppConfigTest" class="org.alfresco.repo.client.config.ClientAppConfig">
+        <property name="defaultProperties" ref="clientAppDefaultPropertiesTest"/>
+        <property name="globalProperties" ref="globalPropertiesTest"/>
+    </bean>
+</beans>

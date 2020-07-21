@@ -1,0 +1,117 @@
+@startuml
+
+Title: Default Authentication Login Flow
+
+participant "Repository\nContainer" as W
+participant "LoginPost\nbean" as LB
+participant "SubsystemChaining\nAuthenticationService" as SCAS
+participant "MutableAuthentication\nServiceImpl" as AS
+participant "Authentication\nComponentImpl" as AC
+participant "PersonServiceImpl" as PS
+participant "NodeService" as NS
+participant "Authentication\nContextImpl" as ACX
+participant "Authentication\nUtil" as AU
+participant "InMemoryTicketComponentImpl" as ITC
+participant "AuthorityServiceImpl" as AUS
+participant "RepositoryAuthenticatedUser" as RAU
+participant "RepositoryAuthenticationDao" as RAD
+participant "MD4PasswordEncoderImpl" as MPE
+participant "RepositoryAuthenticationProvider" as RAP
+participant "CompositePasswordEncoder" as CPE
+
+activate W
+W->LB: login request <username> <password>
+LB->LB: login <username> <password>
+LB->SCAS:authenticate <username> <password>
+note right of SCAS
+allowedUsers and maxUsers check
+end note
+SCAS->SCAS: preAuthenticationCheck
+note right of SCAS
+get list of usableAuthenticationServices
+and iterates over this list.  In
+this default case there is a single
+service 'alfrescoNtlm'
+end note
+SCAS->AS: authenticate\n<username> <password>
+AS->AC:clearCurrentSecurityContext
+AC->ACX:clearCurrentSecurityContext
+ACX->AU:clearCurrentSecurityContext
+AU->ACX: done
+ACX->AC: done
+AC->AS: done
+AS->ITC:clearCurrentTicket
+ITC->AS: done
+note right of AS
+allowedUsers and maxUsers check
+end note
+AS->AS: preAuthenticationCheck
+note right of AS
+Checks cache to detect
+Brute Force attack
+end note
+AS->AS: isUserProtected <username>
+AS->AC: authenticate\n<username> <password>
+AC->PS:getUserIdentifier <username>
+PS->PS:getPersonOrNullImpl
+PS->PS:looks for Person\nin Cache
+PS->NS:get properties of Person\nand checks if\nneeds to add to cache
+PS->AC: username
+note right of AC
+Checks for guest
+end note
+AC->AC:isGuestUserName
+AC->AC: authenticateImpl <username> <password>
+AC->AU: getUserTenant
+AU->AC: tenant
+group Retrying Transaction
+AC->RAD: loadUserByUsername <username>
+RAD->RAU: constructor <username> <hashedpassword>
+RAD->AC: user details
+AC->RAP: isPasswordCorrect\n(UsernamePasswordAuthenticationToken, user details)
+RAP->CPE: matches
+CPE->MPE:isPasswordValid
+MPE->MPE:encodeInternal
+MPE->MPE: true
+MPE->RAP: true
+RAP->AC: true
+AC->AUS: isAdminAuthority
+AUS->AC: false
+AC->PS:getPersonOrNullImpl
+PS->PS:looks for Person\nin Cache
+PS->NS:get properties of Person\nand checks if\nneeds to add to cache
+NS->PS: properties
+PS->AC: username
+end
+group setCurrentUser <username>
+AC->ACX: isSystemUserName <username>
+ACX->AC: false
+AC->AC: setUserDetails (role=<b>ROLE_AUTHENTICATED</b>)
+end
+note right of AC
+Increment numberSuccessfulAuthentications
+end note
+AC->AC: onAuthenticate
+AC->AS: succeeded
+AS->ITC: clearCurrentTicket
+ITC->AS: done
+AS->ITC: getCurrentTicket (auto create off)
+ITC->AS
+AS->AS: getNewTicket
+AS->AS: preAuthenticationCheck
+AS->ITC: getNewTicket
+AS->SCAS
+SCAS->LB
+note right of LB
+Put ticket into the model
+end note
+LB->AS: getCurrentTicket
+AS->LB: ticket
+LB->W: Login Request Response
+note right of W
+Authentication TICKET
+returned in model
+end note
+deactivate W
+
+@enduml

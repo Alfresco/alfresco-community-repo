@@ -1,0 +1,449 @@
+<model name="sys:systemmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Repository System Definitions</description>
+   <author>Alfresco</author>
+   <published>2005-09-29</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <namespace uri="http://www.alfresco.org/system/registry/1.0" prefix="reg" />
+      <namespace uri="http://www.alfresco.org/system/modules/1.0" prefix="module" />
+   </namespaces>
+
+   <types>
+   
+      <type name="sys:deleted">
+         <title>Deleted</title>
+         <description>Placeholder type for deleted nodes</description>
+         <properties>
+            <property name="sys:originalId">
+               <type>d:long</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="sys:base">
+         <title>Base</title>
+         <mandatory-aspects>
+            <aspect>sys:referenceable</aspect>
+            <aspect>sys:localized</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="sys:descriptor">
+         <title>Descriptor</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="sys:name">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionMajor">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionMinor">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionRevision">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionLabel">
+               <type>d:text</type>
+            </property>
+            <property name="sys:licenseMode">
+               <type>d:text</type>
+            </property>
+            <property name="sys:versionBuild">
+               <type>d:text</type>
+            </property>
+            <property name="sys:versionSchema">
+               <type>d:int</type>
+               <mandatory enforced="true">true</mandatory>
+               <default>0</default>
+            </property>
+            <property name="sys:versionEdition">
+               <type>d:content</type>
+               <multiple>false</multiple>
+            </property>               
+            <property name="sys:versionProperties">
+               <type>d:content</type>
+               <multiple>false</multiple>
+            </property>               
+            <property name="sys:keyStore">
+               <type>d:content</type>
+               <multiple>false</multiple>
+            </property>    			
+         </properties>
+      </type>      
+
+      <type name="sys:container">
+         <title>Container</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="sys:children">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+
+      <type name="sys:store_root">
+         <title>Store Root</title>
+         <parent>sys:container</parent>
+         <associations>
+            <child-association name="sys:lost_found">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:lost_found</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>sys:aspect_root</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="sys:reference">
+         <title>Reference</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="sys:reference">
+               <type>d:noderef</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+      <!-- Container for recovery of orphaned items -->      
+      <type name="sys:lost_found">
+         <title>Lost+Found</title>
+         <parent>sys:container</parent>
+      </type>
+      
+      <!-- Container for each user performing deletes -->      
+      <type name="sys:archiveUser">
+         <title>Archive User</title>
+         <description>Type to gather all nodes archived by a user</description>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="sys:archivedLink">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:archived</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+      
+   </types>
+
+
+   <aspects>
+
+      <aspect name="sys:aspect_root">
+         <title>Root</title>
+      </aspect>
+
+      <!-- aspect to store the fundamental node identifiers -->
+      <aspect name="sys:referenceable">
+         <title>Referenceable</title>
+         <properties>
+            <property name="sys:store-protocol">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:store-identifier">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:node-uuid">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:node-dbid">
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+      <!-- aspect to tag incomplete nodes -->
+      <aspect name="sys:incomplete">
+         <title>Incomplete</title>
+      </aspect>
+      
+      <!-- aspect to tag temporary nodes -->
+      <aspect name="sys:temporary">
+         <title>Temporary</title>
+         <!-- Explicitly turn off archiving for all nodes with this aspect -->
+         <archive>false</archive>
+      </aspect>
+
+      <!-- aspect to tag hidden nodes -->
+      <aspect name="sys:hidden">
+         <title>Hidden</title>
+         <!-- Explicitly turn off archiving for all nodes with this aspect -->
+         <archive>false</archive>
+         <properties>
+             <!-- A bit mask encoding whether clients (such as CIFS, WebDav, Share, ...) can see the node -->
+	         <property name="sys:clientVisibilityMask">
+	            <type>d:int</type>
+	            <mandatory>false</mandatory>
+	            <default>0</default>
+	         </property>
+	         <!-- Is this file hidden regardless of file name patterns -->
+	         <property name="sys:hiddenFlag">
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+             </property>
+	         <!-- Should the hidden aspect cascade to child nodes? -->
+             <property name="sys:cascadeHidden">
+                <type>d:boolean</type>
+                <mandatory>false</mandatory>
+                <default>false</default>
+             </property>
+             <!-- Should the index control aspect cascade to child nodes? -->
+             <property name="sys:cascadeIndexControl">
+                <type>d:boolean</type>
+                <mandatory>false</mandatory>
+                <default>false</default>
+             </property>
+             <property name="sys:clientControlled">
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+             </property>
+         </properties>
+      </aspect>
+      
+      <!-- aspect to tag nodes that are, by default, undeletable -->
+      <aspect name="sys:undeletable">
+         <title>Undeletable</title>
+      </aspect>
+      
+      <!-- aspect to tag nodes that are, by default, unmovable -->
+      <aspect name="sys:unmovable">
+         <title>Unmovable</title>
+      </aspect>
+      
+      <!-- aspect to tag nodes during delete operations -->
+      <aspect name="sys:pendingDelete">
+         <title>Pending Delete</title>
+      </aspect>
+      
+      <!-- aspect to tag nodes being formed and without any content yet -->
+      <aspect name="sys:noContent">
+         <title>NoContent</title>
+         <archive>false</archive>
+      </aspect>
+      
+      <!-- aspect to tag nodes being formed and without any content yet, by WebDav -->
+      <aspect name="sys:webdavNoContent">
+         <title>NoContent</title>
+         <archive>false</archive>
+      </aspect>
+      
+      <!-- Aspect attached to archive root -->
+      <aspect name="sys:archiveRoot">
+         <title>Archive Root</title>
+         <description>Aspect attached to root of archive store</description>
+         <associations>
+            <child-association name="sys:archiveUserLink">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:archiveUser</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </aspect>
+
+      <!-- details stored on archived nodes -->
+      <aspect name="sys:archived">
+         <title>Archived</title>
+         <properties>
+            <property name="sys:archivedOriginalParentAssoc">
+               <type>d:childassocref</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="sys:archivedBy">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="sys:archivedDate">
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="sys:archivedOriginalOwner">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      <aspect name="sys:archived-assocs">
+         <properties>
+            <property name="sys:archivedParentAssocs">
+               <type>d:childassocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="sys:archivedChildAssocs">
+               <type>d:childassocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="sys:archivedSourceAssocs">
+               <type>d:assocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="sys:archivedTargetAssocs">
+               <type>d:assocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+         </properties>
+      </aspect>
+
+      <!--archived properties used to restore locked nodes-->
+      <aspect name="sys:archivedLockable">
+         <title>Archived Lockable</title>
+         <properties>
+            <property name="sys:archivedLockOwner">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="sys:archivedLockType">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="sys:archivedLockLifetime">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="sys:archivedExpiryDate">
+               <type>d:date</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="sys:archivedLockAdditionalInfo">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!--
+         Localization:
+         If you add this aspect to a node, then the server will assume that all non-multilingual
+         properties apply to this locale.
+      -->
+      <aspect name="sys:localized">
+         <title>Translation</title>
+         <properties>
+            <property name="sys:locale">
+               <title>Locale</title>    
+               <type>d:locale</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+      <!-- aspect used for soft delete in rename shuffle -->
+      <aspect name="sys:softDelete">
+         <title>SoftDelete</title>
+         <archive>false</archive>
+      </aspect>
+
+      <!-- Aspect to record append content stream status for a node -->
+      <aspect name="sys:CMISUpdateContext">
+         <title>CMIS Update Context</title>
+         <properties>
+            <property name="sys:gotFirstChunk">
+               <title>Got First Content Chunk</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!-- Aspect to record the last transaction that requires a cascade update to index children (like move, rename, link and unlink) -->
+      <aspect name="sys:cascadeUpdate">
+         <title>Cascade update</title>
+         <properties>
+            <property name="sys:cascadeCRC">
+               <title>Cascade CRC</title>
+               <type>d:long</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="sys:cascadeTx">
+               <title>Cascade Tx</title>
+               <type>d:long</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="sys:pendingFixAcl">
+         <title>Pending fix ACL</title>
+         <properties>
+            <property name="sys:sharedAclToReplace">
+               <title>Shared Acl To Replace</title>
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:inheritFromAcl">
+               <title>Inherit From</title>
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+
+</model>

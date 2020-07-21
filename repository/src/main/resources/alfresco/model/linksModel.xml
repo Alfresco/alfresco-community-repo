@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="lnk:linksmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Links Model</description>
+   <author></author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/linksmodel/1.0" prefix="lnk"/>
+   </namespaces>
+
+   <types>
+      <type name="lnk:link">
+         <parent>cm:content</parent>
+         <properties>
+            <property name="lnk:title">
+               <title>Link Title</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="lnk:url">
+               <title>Link URL</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="lnk:description">
+               <title>Link Description</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </type>
+   </types>
+
+   <aspects>
+      <aspect name="lnk:internal">
+         <title>Internal Link</title>
+         <properties>
+            <property name="lnk:isInternal">
+               <title>Is Internal</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+</model>

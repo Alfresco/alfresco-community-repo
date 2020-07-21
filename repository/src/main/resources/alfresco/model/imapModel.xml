@@ -1,0 +1,212 @@
+<model name="imap:imapmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>IMAP Content Model</description>
+   <author>Alfresco</author>
+   <published>2009-01-20</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/imap/1.0"   prefix="imap" />
+   </namespaces>
+
+   <types>
+            <type name="imap:imapAttach">
+         <title>Attachment to the IMAP message</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="imap:attachID">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="imap:imapBody">
+         <title>Body of the IMAP message</title>
+         <parent>cm:content</parent>
+      </type>
+   </types>
+   
+   <!--  The IMAP content aspect is applied to content items of type message/RFC822 -->
+   <aspects>
+      <aspect name="imap:imapContent">
+         <title>IMAP File</title>
+         <parent>imap:flaggable</parent>
+         <properties>
+            <!-- Message -->
+            <property name="imap:messageFrom">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:messageTo">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:messageCc">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:messageSubject">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:messageId">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:threadIndex">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:dateReceived">
+               <title>Date Received</title>
+               <type>d:datetime</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="imap:dateSent">
+               <title>Date Sent</title>
+               <type>d:datetime</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+         <associations>
+            <association name="imap:attachment">
+               <title>Attachment</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="imap:attachmentsFolder">
+               <title>Attachments Folder</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+       <aspect name="imap:flaggable">
+          <properties>
+            <property name="imap:flagAnswered">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagDeleted">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagDraft">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagSeen">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagRecent">
+               <type>d:boolean</type>
+            </property>
+            <property name="imap:flagFlagged">
+               <type>d:boolean</type>
+            </property>          
+          </properties>
+          </aspect>
+ 
+      <aspect name="imap:imapFolder">
+         <properties>
+            <property name="imap:uidValidity">
+               <title>UIDVALIDITY</title>
+               <type>d:long</type>
+               <!-- <protected>true</protected>  -->
+            </property>
+            <property name="imap:maxUid">
+               <title>MAXUID</title>
+               <type>d:long</type>
+            </property>
+            <property name="imap:changeToken">
+               <title>CHANGETOKEN</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+       
+      <aspect name="imap:nonSubscribed"/>
+       <aspect name="imap:nonSelectable"/>
+          
+      <aspect name="imap:imapPreferences">
+         <title>IMAP Preferences</title>
+         <associations>
+            <association name="imap:imapUnsubscribed">
+               <title>Unsubscribed</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:folder</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <aspect name="imap:messageHeaders">
+          <title>IMAP Message Headers</title>
+          <properties>
+             <property name="imap:messageHeaders">
+                <title>Message Headers</title>
+                <type>d:text</type>
+                <multiple>true</multiple>
+             </property>
+          </properties>
+      </aspect>
+    </aspects>
+
+</model>

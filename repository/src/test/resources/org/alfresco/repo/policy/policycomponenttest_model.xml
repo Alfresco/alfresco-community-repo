@@ -1,0 +1,101 @@
+<model name="poltest:policycomponenttest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/policycomponenttest/1.0" prefix="poltest"/>
+   </namespaces>
+
+   <types>
+      
+      <type name="poltest:base">
+         <parent>sys:base</parent>
+         <properties>
+            <property name="poltest:base_a">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <association name="poltest:base_assoc_a">
+               <target>
+                  <class>poltest:base</class>
+               </target>
+            </association>
+         </associations>
+      </type>
+   
+      <type name="poltest:file">
+         <parent>poltest:base</parent>
+         <properties>
+            <property name="poltest:file_b">
+               <type>d:text</type>
+            </property>
+            <property name="poltest:file_c">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <overrides>
+            <property name="poltest:base_a">
+               <default>an overriden default value</default>
+            </property>
+         </overrides>
+      </type>
+
+      <type name="poltest:folder">
+         <parent>poltest:base</parent>
+         <properties>
+            <property name="poltest:folder_d">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <association name="poltest:folder_assoc_d">
+               <target>
+                  <class>poltest:folder</class>
+               </target>
+            </association>
+         </associations>            
+      </type>
+
+      <type name="poltest:a_type">
+         <parent>sys:base</parent>
+         <properties>
+            <property name="poltest:a_type">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="poltest:b_type">
+         <parent>poltest:a_type</parent>
+         <properties>
+            <property name="poltest:b_type">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="poltest:c_type">
+         <parent>poltest:b_type</parent>
+         <properties>
+            <property name="poltest:c_type">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+   </types>
+   
+   <aspects>
+      <aspect name="poltest:aspect">
+         <properties>
+            <property name="poltest:aspect_a">
+               <type>d:int</type>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+   
+</model>

@@ -1,0 +1,155 @@
+<model name="app:applicationmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Application Model</description>
+   <author>Alfresco</author>
+   <published>2005-09-29</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/application/1.0" prefix="app"/>
+   </namespaces>
+
+   
+   <types>
+   
+      <!-- TODO: Glossary will be revisited when implementation is better understood -->
+      <type name="app:glossary">
+         <parent>cm:folder</parent>
+         <!--
+         <mandatory-aspects>
+            <aspect>CategoryContainable</aspect>
+         </mandatory-aspects>
+         <associations>
+            <association name="app:namespace">
+               <target-type>Category</target-type>
+               <target-multiplicity>0..*</target-multiplicity>
+               <source-mulitplicity>0..1<source-multiplicity>
+               <duplicates-allowed>false</duplicates-allowed>
+            </association>
+         </associations>
+         -->
+      </type>
+
+      <type name="app:configurations">
+         <title>Configurations</title>
+         <parent>cm:systemfolder</parent>
+      </type>
+      
+      <type name="app:filelink">
+         <title>File Link Object</title>
+         <parent>cm:link</parent>
+      </type>
+      
+      <type name="app:folderlink">
+         <title>Folder Link Object</title>
+         <parent>cm:link</parent>
+      </type>
+      
+	</types>
+
+	<aspects>
+   
+      <aspect name="app:uifacets">
+         <title>UI Facets</title>
+         <parent>cm:titled</parent>
+         <properties>
+            <property name="app:icon">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="app:inlineeditable">
+         <title>Inline Editable</title>
+         <properties>
+            <property name="app:editInline">
+               <title>Edit Inline</title>
+               <type>d:boolean</type>
+            </property>
+         </properties>
+      </aspect>
+   
+      <!--  TODO: Is this needed - should simpleworkflow ? -->
+      <aspect name="app:workflow">
+         <title>Workflow</title>
+      </aspect>
+   
+      <aspect name="app:simpleworkflow">
+         <parent>app:workflow</parent>
+         <properties>
+            <property name="app:approveStep">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="app:approveFolder">
+               <type>d:noderef</type>
+               <protected>true</protected>
+            </property>
+            <property name="app:approveMove">
+               <type>d:boolean</type>
+            </property>
+            <property name="app:rejectStep">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="app:rejectFolder">
+               <type>d:noderef</type>
+               <protected>true</protected>
+            </property>
+            <property name="app:rejectMove">
+               <type>d:boolean</type>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="app:configurable">
+         <title>Configurable</title>
+         <associations>
+            <child-association name="app:configurations">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:configurations</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="app:feedsource">
+         <title>Feed Source</title>
+         <properties>
+            <property name="app:template">
+               <title>Feed Template</title>
+               <type>d:noderef</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="app:defaultViewConfig">
+         <title>Default View Config</title>
+         <properties>
+            <property name="app:defaultViewId">
+               <title>Default View Id</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="app:linked">
+         <title>Marker aspect to indicate that the node has been linked.</title>
+      </aspect>
+
+	</aspects>
+	
+</model>

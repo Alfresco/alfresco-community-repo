@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <bean id="doclibCustomVtiProperties" parent="common-placeholder-configurer">
+        <property name="locations">
+            <list>
+                <value>classpath*:alfresco/module/org.alfresco.module.vti/context/vti.properties</value>
+                <!-- Override -->
+                <value>classpath*:alfresco/extension/custom-vti.properties</value>
+            </list>
+        </property>
+        <property name="properties">
+            <props>
+                <prop key="vti.server.external.port">0</prop>
+                <prop key="vti.server.external.host">null</prop>
+                <prop key="vti.server.external.protocol">null</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="doclibCustomVtiServer" class="org.alfresco.repo.jscript.app.VtiServerCustomResponse">
+        <property name="scriptUtils">
+            <ref bean="utilsScript" />
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
+        </property>
+        <property name="port">
+            <value>${vti.server.external.port}</value>
+        </property>
+        <property name="host">
+            <value>${vti.server.external.host}</value>
+        </property>
+        <property name="protocol">
+            <value>${vti.server.external.protocol}</value>
+        </property>
+        <property name="contextPath">
+            <value>${vti.server.external.contextPath}</value>
+        </property>
+    </bean>
+   
+   <!-- Bean below used by share-enablement project and over-ridden by repository-enterprise -->  
+   <util:map id="slingshotDocLibCustomResponsesMap">
+        <entry key="vtiServer">
+            <ref bean="doclibCustomVtiServer"/>
+        </entry>
+   </util:map>
+
+</beans>

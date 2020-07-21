@@ -1,0 +1,1682 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 modelSchema.xsd" -->
+<model name="cm:contentmodel" 
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+   <description>Alfresco Content Domain Model</description>
+   <author>Alfresco</author>
+   <published>2009-06-04</published>
+   <version>1.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <namespace uri="http://www.alfresco.org/model/rendition/1.0" prefix="rn"/>
+      <namespace uri="http://www.alfresco.org/model/exif/1.0" prefix="exif"/>
+      <namespace uri="http://www.alfresco.org/model/audio/1.0" prefix="audio"/>
+      <namespace uri="http://www.alfresco.org/model/webdav/1.0" prefix="webdav"/>
+   </namespaces>
+
+   <constraints>
+      <constraint name="cm:filename" type="REGEX">
+         <parameter name="expression"><value><![CDATA[(.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)]]></value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
+      </constraint>
+      <constraint name="cm:userNameConstraint" type="org.alfresco.repo.dictionary.constraint.UserNameConstraint" />
+      <constraint name="cm:authorityNameConstraint" type="org.alfresco.repo.dictionary.constraint.AuthorityNameConstraint" />
+      <constraint name="cm:storeSelectorConstraint" type="REGISTERED">
+         <parameter name="registeredName"><value>defaultStoreSelector</value></parameter>
+      </constraint>
+   </constraints>
+   
+   <types>
+   
+      <type name="cm:cmobject">
+         <title>Object</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="cm:name">
+               <title>Name</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+                  <facetable>false</facetable>
+               </index>
+               <constraints>
+                  <constraint ref="cm:filename" />
+               </constraints>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="cm:folder">
+         <title>Folder</title>
+         <parent>cm:cmobject</parent>
+         <archive>true</archive>
+         <associations>
+            <child-association name="cm:contains">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+               <propagateTimestamps>true</propagateTimestamps>
+            </child-association>
+         </associations>
+      </type>
+      
+      <type name="cm:content">
+         <title>Content</title>
+         <parent>cm:cmobject</parent>
+         <archive>true</archive>
+         <properties>
+            <property name="cm:content">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+               <!-- Although content is marked as indexed atomically it may end up asynchronous -->
+               <!-- if the content conversion will take too long. Content that does not require conversion -->
+               <!-- to UTF8 test/plain will always be indexed atomically -->
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="cm:dictionaryModel">
+         <title>Dictionary Model</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="cm:modelName">
+               <title>Model name</title>
+               <type>d:qname</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelDescription">
+               <title>Description</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelAuthor">
+               <title>Author</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelPublishedDate">
+               <title>Published Date</title>
+               <type>d:date</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelVersion">
+               <title>Version</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelActive">
+               <title>Model Active</title>
+               <type>d:boolean</type>
+               <default>false</default>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="cm:link">
+         <title>Link Object</title>
+         <parent>cm:cmobject</parent>
+         <properties>
+            <property name="cm:destination">
+               <title>Link Destination</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="cm:savedquery">
+         <title>Saved Query</title>
+         <parent>cm:content</parent>
+      </type>
+      
+      <type name="cm:systemfolder">
+         <title>System Folder</title>
+         <parent>cm:folder</parent>
+      </type>
+      
+      <type name="cm:authority">
+        <title>Alfresco Authority Abstract Type</title>
+         <parent>sys:base</parent>
+      </type>
+
+      <type name="cm:person">
+         <title>Person</title>
+         <parent>cm:authority</parent>
+         <properties>
+            <!-- The tokenisation set here is ignored - it is fixed for this type -->
+            <!-- This is so you can not break person lookup -->
+            <property name="cm:userName">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <constraints>
+                  <constraint ref="cm:userNameConstraint" />
+               </constraints>
+            </property>
+            <property name="cm:homeFolder">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+             <property name="cm:firstName">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="cm:lastName">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="cm:middleName">
+               <type>d:text</type>
+            </property>
+            <property name="cm:email">
+               <type>d:text</type>
+            </property>
+            <property name="cm:organizationId">
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:homeFolderProvider">
+               <type>d:text</type>
+            </property>
+            <property name="cm:defaultHomeFolderPath">
+               <type>d:text</type>
+            </property>
+            <property name="cm:presenceProvider">
+                <type>d:text</type>
+            </property>
+            <property name="cm:presenceUsername">
+                <type>d:text</type>
+            </property>
+            <property name="cm:organization">
+                <type>d:text</type>
+            </property>
+            <property name="cm:jobtitle">
+                <type>d:text</type>
+                <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:location">
+                <type>d:text</type>
+                <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:persondescription">
+                <type>d:content</type>
+            </property>
+            <property name="cm:telephone">
+                <type>d:text</type>
+            </property>
+            <property name="cm:mobile">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companyaddress1">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companyaddress2">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companyaddress3">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companypostcode">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companytelephone">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companyfax">
+                <type>d:text</type>
+            </property>
+            <property name="cm:companyemail">
+                <type>d:text</type>
+            </property>
+            <property name="cm:skype">
+                <type>d:text</type>
+            </property>
+            <property name="cm:instantmsg">
+                <type>d:text</type>
+            </property>
+            <property name="cm:userStatus">
+               <type>d:text</type>
+            </property>
+            <property name="cm:userStatusTime">
+               <type>d:datetime</type>
+            </property>
+            <property name="cm:googleusername">
+               <type>d:text</type>
+            </property>
+            
+            <property name="cm:emailFeedDisabled">
+                <type>d:boolean</type>
+            </property>
+            
+            <property name="cm:subscriptionsPrivate">
+                <type>d:boolean</type>
+            </property>
+            
+            <!-- system maintained / protected values -->
+            
+            <property name="cm:emailFeedId">
+                <type>d:long</type>
+                <protected>true</protected>
+            </property>
+            
+            <property name="cm:sizeCurrent">
+                <type>d:long</type>
+                <protected>true</protected>
+                <mandatory enforced="true">true</mandatory>
+                <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            
+            <property name="cm:sizeQuota">
+                <type>d:long</type>
+                <protected>true</protected>
+            </property>
+            
+         </properties>
+         
+         <associations>
+            <association name="cm:avatar">
+               <source>
+                  <role>cm:avatarOf</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasAvatar</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+
+      <type name="cm:authorityContainer">
+         <title>Alfresco Authority Type</title>
+         <parent>cm:authority</parent>
+         <properties>
+            <!-- The tokenisation set here is ignored - it is fixed for this type -->
+            <!-- This is so you can not break group lookup -->
+            <property name="cm:authorityName">
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="cm:authorityNameConstraint" />
+               </constraints>
+            </property>
+            <property name="cm:authorityDisplayName">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="cm:member">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:authority</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>  
+
+      <type name="cm:zone">
+         <title>Alfresco Authentication Zone Type</title>
+         <parent>cm:cmobject</parent>
+         <properties>
+         </properties>
+         <associations>
+            <child-association name="cm:inZone">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:authority</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>  
+
+      <!-- Classification -->
+         
+      <type name="cm:category_root">
+         <title>Category Root</title>
+         <parent>cm:cmobject</parent>
+         <associations>
+            <child-association name="cm:categories">
+               <source>
+                   <mandatory>false</mandatory>
+                   <many>true</many>
+               </source>
+               <target> 
+                  <class>cm:category</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>sys:aspect_root</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="cm:category">
+         <title>Category</title>
+         <parent>cm:cmobject</parent>
+         <associations>
+            <child-association name="cm:subcategories">
+               <source>
+                   <mandatory>false</mandatory>
+                   <many>true</many>
+               </source>
+               <target>
+                  <class>cm:category</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>
+      
+      <!-- Multilingual -->
+      <type name="cm:mlRoot">
+         <title>Multilingual Root</title>
+         <parent>sys:container</parent>
+         <associations>
+            <child-association name="cm:mlContainer">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:mlContainer</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+      
+      <type name="cm:mlContainer">
+         <title>Multilingual Container</title>
+         <parent>sys:container</parent>
+         <associations>
+            <child-association name="cm:mlChild">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:mlDocument</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>cm:versionable</aspect>
+            <aspect>cm:author</aspect>
+            <aspect>sys:localized</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="cm:rating">
+         <title>Rating</title>
+         <parent>sys:base</parent>
+         <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
+         <properties>
+            <property name="cm:ratingScore">
+               <title>Rating</title>
+               <type>d:float</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:ratingScheme">
+               <title>Rating Scheme</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:ratedAt">
+               <title>Rated at</title>
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+
+      <!-- Failed thumbnail content type -->
+      <type name="cm:failedThumbnail">
+         <title>Failed Thumbnail</title>
+         <parent>cm:cmobject</parent> 
+         <archive>false</archive>
+         <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
+         <properties>
+            <property name="cm:failureCount">
+               <title>Count of thumbnail failures</title>
+               <type>d:int</type>
+               <default>0</default>
+            </property>
+            <property name="cm:failedThumbnailTime">
+               <title>Failed Thumbnail Time</title>
+               <type>d:datetime</type>
+            </property>
+         </properties>
+      </type>
+
+      <!--              -->
+      <!--  DEPRECATED  -->
+      <!--              -->
+
+      <!-- Thumbnail content type -->
+      <type name="cm:thumbnail">
+         <title>Thumbnail</title>
+         <parent>cm:content</parent>
+         <archive>false</archive>
+         <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
+         <properties>     
+            <property name="cm:thumbnailName">
+                <title>Thumbnail Name</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+            </property>     
+            <property name="cm:contentPropertyName">
+                <title>Thumbnailed Content Property Name</title>
+                <type>d:qname</type>
+                <mandatory>true</mandatory>
+            </property>                
+         </properties>
+      </type>
+
+      <!--                      -->
+      <!--  DEPRECATED (end of) -->
+      <!--                      -->
+
+   </types>
+   
+   
+   <aspects>
+   
+      <aspect name="cm:titled">
+         <title>Titled</title>
+         <properties>
+            <property name="cm:title">
+               <title>Title</title>
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="cm:description">
+               <title>Description</title>
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:auditable">
+         <title>Auditable</title>
+         <properties>
+            <property name="cm:created">
+               <title>Created</title>
+               <type>d:datetime</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:creator">
+               <title>Creator</title>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:modified">
+               <title>Modified</title>
+               <type>d:datetime</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:modifier">
+               <title>Modifier</title>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:accessed">
+               <title>Accessed</title>
+               <type>d:datetime</type>
+               <protected>true</protected>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="cm:personDisabled">
+         <title>Person Disabled</title>
+         <description>Indicates that a cm:person type has been disabled.</description>
+      </aspect>
+
+      <aspect name="cm:annullable">
+         <title>Annullable</title>
+         <description>Indicates that a node can be deleted if a pending activity is cancelled</description>
+      </aspect>
+
+      <aspect name="cm:transformable">
+         <title>Transformable</title>
+         <associations>
+            <association name="cm:formats">
+               <title>Formats</title>
+               <source>
+                  <role>cm:formatOf</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasFormat</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <aspect name="cm:templatable">
+         <title>Templatable</title>
+         <properties>
+            <property name="cm:template">
+               <title>Template</title>
+               <type>d:noderef</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:webscriptable">
+         <title>Webscriptable</title>
+         <properties>
+            <property name="cm:webscript">
+               <title>Webscript</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:projectsummary">
+         <title>Project Summary</title>
+         <properties>
+            <property name="cm:summaryWebscript">
+               <title>Project Summary Webscript</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:complianceable">
+         <title>Complianceable</title>
+         <properties>
+            <property name="cm:removeAfter">
+               <title>Remove After</title>
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
+      </aspect>
+   
+      <aspect name="cm:ownable">
+         <title>Ownable</title>
+         <properties>
+            <property name="cm:owner">
+               <title>Owner</title>
+               <type>d:text</type> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:author">
+         <title>Author</title>
+         <properties>
+            <property name="cm:author">
+               <title>Author</title>
+               <type>d:text</type> 
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:dublincore">
+         <title>Dublin Core</title>
+         <parent>cm:titled</parent>
+         <properties>
+            <property name="cm:publisher">
+               <title>Publisher</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:contributor">
+               <title>Contributor</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:type">
+               <title>Type</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:identifier">
+               <title>Identifier</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="cm:dcsource">
+               <title>Source</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="cm:coverage">
+               <title>Coverage</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="cm:rights">
+               <title>Rights</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="cm:subject">
+               <title>Subject</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+            <aspect>cm:author</aspect>
+         </mandatory-aspects>
+      </aspect>
+   
+      <aspect name="cm:basable">
+         <title>Basable</title>
+         <associations>
+            <association name="cm:basis">
+               <source>
+                  <role>cm:basedOn</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasBasis</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+      <aspect name="cm:partable">
+         <title>Partable</title>
+         <associations>
+            <association name="cm:parts">
+               <source>
+                  <role>cm:partOf</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasPart</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+      <aspect name="cm:referencing">
+         <title>Referencing</title>
+         <associations>
+            <association name="cm:references">
+               <source>
+                  <role>cm:referencedBy</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:references</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+      <aspect name="cm:replaceable">
+         <title>Replacable</title>
+         <associations>
+            <association name="cm:replaces">
+               <source>
+                  <role>cm:replacedBy</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:replaces</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+      <aspect name="cm:effectivity">
+         <title>Effectivity</title>
+         <properties>
+            <property name="cm:from">
+               <title>Effective From</title>
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:to">
+               <title>Effective To</title>
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:summarizable">
+         <title>Summarizable</title>
+         <properties>
+            <property name="cm:summary">
+               <title>Summary</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:countable">
+         <title>Countable</title>
+         <properties>
+            <property name="cm:hits">
+               <type>d:int</type>
+            </property>
+            <property name="cm:counter">
+               <type>d:int</type>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:copiedfrom">
+         <title>Copied From</title>
+         <associations>
+            <association name="cm:original">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <aspect name="cm:workingcopy">
+         <title>Working Copy</title>
+         <!-- Explicitly turn off archiving for all nodes with this aspect -->
+         <archive>false</archive>
+         <properties>
+            <property name="cm:workingCopyOwner">
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:workingCopyMode">
+               <type>d:text</type>
+            </property>
+            <!--  The label as added to the filename during checkout, e.g. "(Working Copy)" -->
+            <property name="cm:workingCopyLabel">
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:checkedOut">
+         <title>Checked Out</title>
+         <associations>
+            <association name="cm:workingcopylink">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:workingcopy</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>cm:lockable</aspect>
+         </mandatory-aspects>
+      </aspect>
+   
+      <aspect name="cm:cmisCreatedCheckedOut">
+         <title>CMIS Created Checked Out</title>
+      </aspect>
+   
+      <aspect name="cm:versionable">
+         <title>Versionable</title>
+         <properties>
+            <property name="cm:versionLabel">
+               <title>Version Label</title>
+               <type>d:text</type>
+               <protected>true</protected>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:versionType">
+               <title>Version Type</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:initialVersion">
+               <title>Initial Version</title>
+               <type>d:boolean</type>
+               <default>${version.store.initialVersion}|true</default>
+            </property>
+            <property name="cm:autoVersion">
+               <title>Auto Version</title>
+               <type>d:boolean</type>
+               <default>${version.store.enableAutoVersioning}|true</default>
+            </property>
+            <property name="cm:autoVersionOnUpdateProps">
+               <title>Auto Version - on update properties only</title>
+               <type>d:boolean</type>
+               <default>${version.store.enableAutoVersionOnUpdateProps}|true</default>
+            </property>
+          </properties>
+      </aspect>
+      
+      <aspect name="cm:lockable">
+         <title>Lockable</title>
+         <properties>
+            <property name="cm:lockOwner">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:lockType">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:lockLifetime">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:expiryDate">
+               <type>d:date</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="cm:lockIsDeep">
+               <type>d:boolean</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:lockAdditionalInfo">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:subscribable">
+         <associations>
+            <association name="cm:subscribedBy">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:person</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+      <aspect name="cm:classifiable">
+         <title>Classifiable</title>
+      </aspect>
+   
+      <aspect name="cm:generalclassifiable">
+         <title>General Classifiable</title>
+         <parent>cm:classifiable</parent>
+         <properties>
+            <property name="cm:categories">
+               <title>Categories</title>
+               <type>d:category</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>         
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:taggable">
+         <title>Taggable</title>
+         <parent>cm:classifiable</parent>
+         <properties>
+            <property name="cm:taggable">
+               <title>Tags</title>
+               <type>d:category</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>         
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:tagscope">
+         <title>Tag Scope</title>
+         <properties>
+            <property name="cm:tagScopeCache">
+               <title>Tags</title>
+               <type>d:content</type>
+               <protected>true</protected>
+            </property>        
+            <property name="cm:tagScopeSummary">
+               <title>Tag Summary</title>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>        
+         </properties>    
+      </aspect>
+      
+
+      <!-- Aspects used by the Rating Service -->
+      <aspect name="cm:rateable">
+         <title>Rateable</title>
+         <associations>
+            <child-association name="cm:ratings">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:rating</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </aspect>
+
+      <!-- The Rating Service uses aspects to store rolled up rating values.
+           The aspect and property names here must follow the naming convention
+           as described in the code. -->
+      <aspect name="cm:likesRatingSchemeRollups">
+         <title>Likes rating scheme rollups</title>
+         <properties>
+            <property name="cm:likesRatingSchemeCount">
+               <title>Likes Rating Scheme ratings count</title>
+               <type>d:int</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:likesRatingSchemeTotal">
+               <title>Likes Rating Scheme ratings total</title>
+               <type>d:float</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:fiveStarRatingSchemeRollups">
+         <title>Five star rating scheme rollups</title>
+         <properties>
+            <property name="cm:fiveStarRatingSchemeCount">
+               <title>Five Star Rating Scheme ratings count</title>
+               <type>d:int</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:fiveStarRatingSchemeTotal">
+               <title>Five Star Rating Scheme ratings total</title>
+               <type>d:float</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
+   
+      <aspect name="cm:attachable">
+         <title>Attachable</title>
+         <associations>
+            <association name="cm:attachments">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <aspect name="cm:emailed">
+         <title>Emailed</title>
+         <properties>
+            <property name="cm:originator">
+               <title>Originator</title>
+               <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>true</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+            <property name="cm:addressee">
+               <title>Addressee</title>
+               <type>d:text</type>
+            </property>
+            <property name="cm:addressees">
+               <title>Addressees</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="cm:subjectline">
+               <title>Subject</title>
+               <type>d:text</type>
+            </property>
+            <property name="cm:sentdate">
+               <title>Sent Date</title>
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+                  <facetable>true</facetable>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!-- An aspect to make a node reference another node. -->
+      <aspect name="cm:referencesnode">
+         <title>References Node</title>
+         <properties>
+            <property name="cm:noderef">
+               <title>Node Reference</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+            
+      <aspect name="cm:mlDocument">
+         <title>Multilingual Document</title>
+         <mandatory-aspects>
+            <aspect>sys:localized</aspect>
+            <aspect>cm:versionable</aspect>
+         </mandatory-aspects>
+      </aspect>
+            
+      <aspect name="cm:mlEmptyTranslation">
+         <title>Empty Translation</title>
+         <mandatory-aspects>
+            <aspect>cm:mlDocument</aspect>
+         </mandatory-aspects>
+      </aspect>
+      
+      <aspect name="cm:storeSelector">
+         <title>ContentStore Selector</title>
+         <properties>
+            <property name="cm:storeName">
+               <title>Store Name</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+               <constraints>
+                  <constraint ref="cm:storeSelectorConstraint" />
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+             
+      <aspect name="cm:preferences">
+             <title>Preferences</title>
+             <properties>
+                <property name="cm:preferenceValues">
+                   <type>d:content</type>
+                </property>
+            </properties>
+         <associations>
+            <child-association name="cm:preferenceImage">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="cm:syndication">
+         <title>Content syndication</title>
+         <properties>
+            <property name="cm:published">
+               <title>Published</title>
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="cm:updated">
+               <title>Updated</title>
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cm:geographic">
+         <title>Geographic</title>
+         <properties>
+            <property name="cm:latitude">
+               <title>Latitude</title>
+               <type>d:double</type>
+            </property>
+            <property name="cm:longitude">
+               <title>Longitude</title>
+               <type>d:double</type>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!--             -->
+      <!--  RENDITIONS -->
+      <!--             -->
+      
+      <!-- This aspect marks a node as a rendition. -->
+      <aspect name="rn:rendition">
+         <title>Rendition</title>
+      </aspect>
+      <!-- A hidden rendition is one which is located directly under its source node. -->
+      <aspect name="rn:hiddenRendition">
+         <title>Hidden Rendition</title>
+         <parent>rn:rendition</parent>
+      </aspect>
+      <!-- A visible rendition is one which is located somewhere other than under its source node. -->
+      <aspect name="rn:visibleRendition">
+         <title>Visible Rendition</title>
+         <parent>rn:rendition</parent>
+      </aspect>
+
+      <!-- This aspect is applied to nodes which have been "rendered" using the rendition service. -->
+      <aspect name="rn:renditioned">
+         <title>Renditioned</title>
+         <associations>
+            <!-- This association links the source content node to the rendition -->
+            <child-association name="rn:rendition">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="rn:preventRenditions">
+         <title>Marker aspect to prevent the creation of renditions for a node.</title>
+      </aspect>
+      
+      <aspect name="cm:failedThumbnailSource">
+         <title>Failed Thumbnail Source</title>
+         <associations>
+            <child-association name="cm:failedThumbnail">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:failedThumbnail</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="cm:thumbnailModification">
+         <title>Thumbnail Modification Data</title>
+         <properties>
+             <property name="cm:lastThumbnailModification">
+                <title>Last thumbnail modifcation data</title>
+                <type>d:text</type>
+                <multiple>true</multiple>
+             </property>
+         </properties>
+      </aspect>
+      
+      <!--       -->
+      <!--  EXIF -->
+      <!--       -->
+      
+      <aspect name="exif:exif">
+         <title>EXIF</title>
+         <properties>
+            <property name="exif:dateTimeOriginal">
+               <title>Date and Time</title>
+               <type>d:datetime</type>
+            </property>
+            <property name="exif:pixelXDimension">
+               <title>Image Width</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:pixelYDimension">
+               <title>Image Height</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:exposureTime">
+               <title>Exposure Time</title>
+               <type>d:double</type>
+            </property>
+            <property name="exif:fNumber">
+               <title>F Number</title>
+               <type>d:double</type>
+            </property>
+            <property name="exif:flash">
+               <title>Flash Activated</title>
+               <type>d:boolean</type>
+            </property>
+            <property name="exif:focalLength">
+               <title>Focal Length</title>
+               <type>d:double</type>
+            </property>
+            <property name="exif:isoSpeedRatings">
+               <title>ISO Speed</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:manufacturer">
+               <title>Camera Manufacturer</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:model">
+               <title>Camera Model</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:software">
+               <title>Camera Software</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:orientation">
+               <title>Orientation</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:xResolution">
+               <title>Horizontal Resolution</title>
+               <type>d:double</type>
+            </property>
+            <property name="exif:yResolution">
+               <title>Vertical Resolution</title>
+               <type>d:double</type>
+            </property>
+            <property name="exif:resolutionUnit">
+               <title>Resolution Unit</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
+        
+      <!--        -->
+      <!--  Audio -->
+      <!--        -->
+      
+      <aspect name="audio:audio">
+         <title>Audio</title>
+         <properties>
+            <property name="audio:album">
+               <title>Album</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:artist">
+               <title>Artist</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:composer">
+               <title>Composer</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:engineer">
+               <title>Engineer</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:genre">
+               <title>Genre</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:trackNumber">
+               <title>Track Number</title>
+               <type>d:int</type>
+            </property>
+            <property name="audio:releaseDate">
+               <title>Release Date</title>
+               <type>d:date</type>
+            </property>
+
+            <property name="audio:sampleRate">
+               <title>Sample Rate</title>
+               <type>d:int</type>
+            </property>
+            <property name="audio:sampleType">
+               <title>Sample Type</title>
+               <description>Audio Sample Type, typically one of 8Int, 16Int, 32Int or 32Float</description>
+               <type>d:text</type>
+            </property>
+            <property name="audio:channelType">
+               <title>Channel Type</title>
+               <description>Audio Channel Type, typically one of Mono, Stereo, 5.1 or 7.1</description>
+               <type>d:text</type>
+            </property>
+            <property name="audio:compressor">
+               <title>Compressor</title>
+               <description>Audio Compressor Used, such as MP3 or FLAC</description>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
+        
+      <!--                  -->
+      <!-- Indexing control -->
+      <!--                  -->
+      
+      <aspect name="cm:indexControl">
+         <title>Index Control</title>
+         <properties>
+            <property name="cm:isIndexed">
+               <title>Is indexed</title>
+               <type>d:boolean</type>
+               <default>true</default>
+            </property>
+            <property name="cm:isContentIndexed">
+               <title>Is content indexed</title>
+               <type>d:boolean</type>
+               <default>true</default>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!-- Introduced in ALF-17519. Used to store arbitrary webdav 'dead' properties that may be set by webdav clients -->
+      <aspect name="webdav:object">
+         <title>Webdav Object</title>
+         <properties>
+            <property name="webdav:deadproperties">
+               <title>Webdav Dead Properties</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!--             -->
+      <!--  DEPRECATED -->
+      <!--             -->
+      
+      <aspect name="cm:localizable">
+         <title>Localizable</title>
+         <properties>
+            <property name="cm:locale">
+               <title>Locale</title>
+               <type>d:category</type>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="cm:translatable">
+         <title>Translatable</title>
+         <parent>cm:localizable</parent>
+         <associations>
+            <association name="cm:translations">
+               <title>Translations</title>
+               <source>
+                  <role>cm:translationOf</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasTranslation</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <!-- Thumbnailed aspect relates a content node to it's thumbnails.
+           It is retained here for backwards compatibility reasons -->
+      <aspect name="cm:thumbnailed">
+         <title>Thumbnailed</title>
+            <parent>rn:renditioned</parent>
+         <properties>              
+            <property name="cm:automaticUpdate">
+               <title>Automatic Update</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>true</default>
+            </property> 
+         </properties>
+      </aspect>
+      
+      <!--                      -->
+      <!--  DEPRECATED (end of) -->
+      <!--                      -->
+      
+   </aspects>
+
+</model>

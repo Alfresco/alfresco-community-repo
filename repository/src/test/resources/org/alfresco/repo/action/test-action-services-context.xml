@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <bean id="sleep-action" class="org.alfresco.repo.action.ActionServiceImplTest$SleepActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+      <property name="trackStatus" value="true" />
+      <property name="sleepMs">
+         <value>1000</value>
+      </property>
+   </bean>
+   
+   <bean id="sleepActionFilter" class="org.alfresco.repo.action.ActionServiceImplTest$SleepActionFilter" parent="baseActionFilter">
+       <property name="name">
+           <value>preventMultipleSleepActions</value>
+       </property>
+       <property name="actionDefinitionName">
+           <value>sleep-action</value>
+       </property>
+   </bean>
+
+    <bean id="empty-action" class="org.alfresco.repo.action.executer.EmptyActionExecutor" parent="action-executer">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+
+   
+   <bean id="transient-fail-action"
+         class="org.alfresco.repo.action.ActionServiceImplTest$TransientFailActionExecuter"
+         parent="action-executer" />
+</beans>

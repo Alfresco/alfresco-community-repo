@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.qname">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result_Namespace" type="Namespace">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="uri" column="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+  
+    <resultMap id="result_QName" type="QName">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="namespaceId" column="ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="localName" column="local_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+  
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter_NamespaceId" type="Namespace">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+  
+    <parameterMap id="parameter_NamespaceUri" type="Namespace">
+        <parameter property="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+  
+    <parameterMap id="parameter_QNameId" type="QName">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_Namespace_AutoIncrement">
+        insert into alf_namespace (version, uri) 
+        values (#{version}, #{uri})
+    </sql>
+    <sql id="insert_Namespace_Sequence">
+        insert into alf_namespace (id, version, uri) 
+        values (#{id}, #{version}, #{uri})
+    </sql>
+    
+    <sql id="insert_QName_AutoIncrement">
+        insert into alf_qname (version, ns_id, local_name) 
+        values (#{version}, #{namespaceId}, #{localName})
+    </sql>
+    <sql id="insert_QName_AutoIncrement_Sequence">
+        insert into alf_qname (id, version, ns_id, local_name) 
+        values (#{id}, #{version}, #{namespaceId}, #{localName})
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_NamespaceById" parameterMap="parameter_NamespaceId" resultMap="result_Namespace">
+        select
+            *
+        from
+            alf_namespace
+        where
+            id = ?
+    </select>
+
+    <select id="select_NamespaceByUri" parameterMap="parameter_NamespaceUri" resultMap="result_Namespace">
+        select
+            *
+        from
+            alf_namespace
+        where
+            uri = ?
+    </select>
+    
+    <update id="update_Namespace" parameterType="Namespace">
+       update
+           alf_namespace
+       set
+           uri = #{uri}
+       where
+           id = #{id}
+    </update>
+
+    <select id="select_QNameById" parameterMap="parameter_QNameId" resultMap="result_QName">
+        select
+            *
+        from
+            alf_qname
+        where
+            id = ?
+    </select>
+
+    <select id="select_QNameByNsAndLocalName" parameterType="QName" resultMap="result_QName">
+        select
+            *
+        from
+            alf_qname
+        where
+            ns_id = #{namespaceId} and
+            local_name = #{localName}
+    </select>
+    
+    <update id="update_QName" parameterType="QName">
+       update
+           alf_qname
+       set
+           ns_id = #{namespaceId},
+           local_name = #{localName}
+       where
+           id = #{id}
+    </update>
+
+    <delete id="delete_QName" parameterType="QName">
+       delete from
+           alf_qname
+       where
+           id = #{id}
+    </delete>
+
+</mapper>

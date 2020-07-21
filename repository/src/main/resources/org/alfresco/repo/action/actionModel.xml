@@ -1,0 +1,313 @@
+<model name="act:actionmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Action Model</description>
+   <author>Alfresco</author>
+   <published>2005-08-16</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/application/1.0" prefix="app"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/action/1.0" prefix="act"/>
+   </namespaces>
+
+    <constraints>
+        <constraint name="act:allowedExecutionstatuses" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value>New</value>
+                    <value>Pending</value>
+                    <value>Running</value>
+                    <value>Completed</value>
+                    <value>Cancelled</value>
+                    <value>Declined</value>
+                    <value>Failed</value>
+                </list>
+            </parameter>
+        </constraint>
+    </constraints>
+   
+   <types>
+   
+      <!-- Action, conditions and rules -->
+      
+      <type name="act:actionbase">
+        <title>Action Base Type</title>
+        <parent>cm:cmobject</parent> 
+        <properties>
+            <property name="act:definitionName">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>  
+         <associations>
+            <child-association name="act:parameters">
+               <target>
+                  <class>act:actionparameter</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>  
+      </type>
+      
+     <type name="act:action">
+        <title>Action</title>
+        <parent>act:actionbase</parent>
+        <properties>
+            <property name="act:actionTitle">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:actionDescription">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:trackStatus">
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executeAsynchronously">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="act:runAsUser">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:runAsPassword">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executionStartDate">
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executionEndDate">
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executionActionStatus">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <constraints>
+                   <constraint ref="act:allowedExecutionstatuses" />
+               </constraints>
+            </property>
+            <property name="act:executionFailureMessage">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>        
+         <associations>
+            <child-association name="act:conditions">
+               <target>
+                  <class>act:actioncondition</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="act:compensatingAction">
+               <target>
+                  <class>act:action</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
+     </type>
+     
+     <type name="act:actioncondition">     
+        <title>Action Condition</title>
+        <parent>act:actionbase</parent>
+        <properties>
+            <property name="act:invert">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+     </type>
+     
+     <type name="act:compositeactioncondition">     
+       <title>Composite Condition</title>
+       <parent>act:actioncondition</parent>
+       <properties>
+          <property name="act:orconditions">
+             <type>d:boolean</type>
+            <mandatory>true</mandatory>
+          </property>
+       </properties>
+       <associations>
+          <child-association name="act:compositeconditions">
+             <target>
+                <class>act:actioncondition</class>
+                <mandatory>true</mandatory>
+                <many>true</many>
+             </target>
+          </child-association>
+       </associations>
+     </type>
+     
+     <type name="act:actionparameter">
+        <title>Action/Condition Parameter</title>
+        <parent>cm:cmobject</parent>
+        <properties>
+            <property name="act:parameterName">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="act:parameterValue">
+               <type>d:any</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+     </type>
+     
+     <type name="act:compositeaction">
+        <title>Composite Action</title>
+        <parent>act:action</parent>
+         <associations>
+            <child-association name="act:actions">
+               <target>
+                  <class>act:action</class>
+                  <mandatory enforced="true">true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+     </type>
+     
+     <type name="act:savedactionfolder">
+        <title>Saved Action Folder</title>
+        <parent>cm:systemfolder</parent>
+         <associations>
+            <child-association name="act:savedActions">
+               <target>
+                  <class>act:action</class>
+                  <mandatory enforced="true">true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+     </type>
+
+
+      <!-- This type has been deprecated: for backwards compatibility only -->     
+     <type name="act:actionexecutiondetails">
+        <title>Action Execution Details</title>
+        <parent>cm:cmobject</parent>
+        <properties>
+            <property name="act:actionExecutionTitle">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>          
+            <property name="act:executionStatus">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="act:errorMessage">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:errorDetails">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+     </type>
+
+     <type name="act:actionSchedule">
+        <title>Persistent Action Schedule</title>
+        <parent>cm:cmobject</parent>
+        <properties>
+            <property name="act:lastExecutedAt">
+                <type>d:datetime</type>
+                <mandatory>false</mandatory>
+            </property>
+            <property name="act:startDate">
+                <type>d:datetime</type>
+                <mandatory>true</mandatory>
+            </property>
+            <!-- 
+            <property name="act:endDate">
+                <type>d:datetime</type>
+                <mandatory>false</mandatory>
+            </property>
+            -->
+            <property name="act:intervalCount">
+                <type>d:int</type>
+                <mandatory>true</mandatory>
+            </property>
+            <property name="act:intervalPeriod">
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <constraints>
+                    <constraint type="LIST">
+                        <parameter name="caseSensitive"><value>true</value></parameter>
+                        <parameter name="allowedValues">
+                            <list>
+                                <value>Month</value>
+                                <value>Week</value>
+                                <value>Day</value>
+                                <value>Hour</value>
+                                <value>Minute</value>
+                                <value>Second</value>
+                            </list>
+                        </parameter>
+                    </constraint>
+                </constraints>
+            </property>
+        </properties>
+        <associations>
+            <association name="act:scheduledAction">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>act:action</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+        </associations>
+     </type>
+     
+   </types>
+
+   <aspects>
+   
+      <aspect name="act:actions">
+         <title>Rules</title>           
+         <associations>
+            <child-association name="act:actionFolder">
+               <target>
+                  <class>cm:systemfolder</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>  
+      </aspect>
+      
+      <!-- This type has been deprecated: for backwards compatibility only -->     
+      <aspect name="act:actionexecutionhistory">
+         <title>Action Execution History</title>           
+         <associations>
+            <child-association name="act:actionExecutionDetails">
+               <target>
+                  <class>act:actionexecutiondetails</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>  
+      </aspect>
+         
+   </aspects>
+
+</model>

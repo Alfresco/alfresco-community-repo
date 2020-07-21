@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of new Model -->
+
+<!-- The important part here is the name - Note: the use of the my: namespace
+     which is defined further on in the document -->
+<model name="my:mynewmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Optional meta-data about the model -->   
+   <description>Example custom Model</description>
+   <author></author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+   	  <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <!-- Introduction of new namespaces defined by this model -->
+   <!-- NOTE: The following namespace my.new.model should be changed to reflect your own namespace -->
+   <namespaces>
+      <namespace uri="my.new.model" prefix="my"/>
+   </namespaces>
+   
+   <types>
+   
+      <!-- Definition of new Content Type: Standard Operating Procedure -->
+      <type name="my:sop">
+         <title>Standard Operating Procedure</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="my:publishedDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="my:authorisedBy">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <association name="my:signOff">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+            <child-association name="my:processSteps">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+			</child-association>            
+         </associations>
+      </type>
+      
+    </types>
+    
+    <aspects>
+      
+      <!-- Definition of new Content Aspect: Image Classification -->
+      <aspect name="my:imageClassification">
+         <title>Image Classfication</title>
+         <properties>
+            <property name="my:width">
+               <type>d:int</type>
+            </property>
+            <property name="my:height">
+               <type>d:int</type>
+            </property>
+            <property name="my:resolution">
+               <type>d:int</type>
+            </property>
+         </properties>
+      </aspect>
+      
+   </aspects>
+   
+</model>

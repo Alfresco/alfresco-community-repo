@@ -1,0 +1,85 @@
+<model name="daotest1:dictionarydaotest1" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Content Model</description>
+   <author>Alfresco</author>
+   <published>2005-05-30</published>
+   <version>1.0</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/dictionarydaotest1/1.0" prefix="daotest1"/>
+   </namespaces>
+
+   <types>
+      
+      <type name="daotest1:type1">
+         <title>Base</title>
+         <description>Type 1</description>
+         <parent>cm:content</parent>
+         
+         <properties>
+            <property name="daotest1:prop1">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+            </property>
+         </properties>
+         
+         <associations>
+            <association name="daotest1:assoc1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <child-association name="daotest1:childassoc1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+            </child-association>
+         </associations>
+         
+         <mandatory-aspects>
+            <aspect>daotest1:aspect1</aspect>
+         </mandatory-aspects>
+      </type>
+   </types>
+   
+   <aspects>
+      <aspect name="daotest1:aspect1">
+         <title>Aspect1</title>
+         <description>Aspect1</description>
+         <parent></parent>
+         
+         <properties>
+            <property name="daotest1:aspectProp1">
+               <type>d:int</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+   
+</model>

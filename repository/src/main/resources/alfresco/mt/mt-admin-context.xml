@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--
+        Bootstrap Data: Prototype beans for the per-tenant bootstrap.
+        These are fetched by the MultiTAdminServiceImpl when new tenant is created.
+    -->
+    <bean id="userBootstrap-mt" parent="userBootstrap-base" scope="prototype" />
+    <bean id="systemBootstrap-mt" parent="systemBootstrap-base" scope="prototype" />
+    <bean id="versionBootstrap-mt" parent="versionBootstrap-base" scope="prototype" />
+    <bean id="version2Bootstrap-mt" parent="version2Bootstrap-base" scope="prototype" />
+    <bean id="spacesArchiveBootstrap-mt" parent="spacesArchiveBootstrap-base" scope="prototype" />
+    <bean id="spacesBootstrap-mt" parent="spacesBootstrap-base" scope="prototype" />
+    
+    <!--                                           -->
+    <!-- MT Admin Service Implementation -->
+    <!--                                           -->
+    
+    <bean id="tenantAdminService" parent="baseMultiTAdminService" class="org.alfresco.repo.tenant.MultiTAdminServiceImpl" />
+    
+    <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter" parent="interpreterBase">
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="authenticationService" ref="AuthenticationService"/>
+        <property name="baseAdminUsername"><value>${alfresco_user_store.adminusername}</value></property>
+    </bean>
+    
+    <bean id="tenantInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.tenant-interpreter-help</value>
+            </list>
+        </property>
+    </bean>
+   
+</beans>
+

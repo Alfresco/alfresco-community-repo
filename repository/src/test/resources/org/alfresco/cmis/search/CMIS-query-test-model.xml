@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 ../../../../../../config/alfresco/model/modelSchema.xsd" -->
+<model name="test:cmis-query-test" xmlns="http://www.alfresco.org/model/dictionary/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <description>Test model the cmis query tests</description>
+    <author>Alfresco</author>
+    <published>2010-01-22</published>
+    <version>0.1</version>
+    
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+    
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/test/cmis-query-test" prefix="test"/>
+    </namespaces>
+    
+    <types>
+        <type name="test:extendedContent">
+            <title>Extended Content</title>
+            <parent>cm:content</parent>
+            <includedInSuperTypeQuery>true</includedInSuperTypeQuery>
+            <properties>
+                <!-- d:text -> String -->
+                
+                <property name="test:singleTextBoth">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                        <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+                <property name="test:singleTextUntokenised">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                        <atomic>true</atomic>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="test:singleTextTokenised">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <property name="test:multipleTextBoth">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleTextUntokenised">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleTextTokenised">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:mltext -> String -->
+                
+                <property name="test:singleMLTextBoth">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+                <property name="test:singleMLTextUntokenised">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="test:singleMLTextTokenised">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <property name="test:multipleMLTextBoth">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleMLTextUntokenised">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                        <atomic>true</atomic>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleMLTextTokenised">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:float -> Decimal -->
+                
+                <property name="test:singleFloat">
+                    <type>d:float</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                        </index>
+                </property>
+                <property name="test:multipleFloat">
+                    <type>d:float</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true" >
+                           <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                        </index>
+                </property>
+                
+                <!-- d:double -> Decimal -->
+                
+                <property name="test:singleDouble">
+                    <type>d:double</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleDouble">
+                    <type>d:double</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:int -> Integer -->
+                
+                <property name="test:singleInteger">
+                    <type>d:int</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleInteger">
+                    <type>d:int</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:long -> Integer -->
+                
+                <property name="test:singleLong">
+                    <type>d:long</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleLong">
+                    <type>d:long</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:boolean -> Boolean -->
+                
+                <property name="test:singleBoolean">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleBoolean">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:date -> DateTime -->
+                
+                <property name="test:singleDate">
+                    <type>d:date</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleDate">
+                    <type>d:date</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                   <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                
+                <!-- d:datetime -> DateTime -->
+                
+                <property name="test:singleDatetime">
+                    <type>d:datetime</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                   <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+                <property name="test:multipleDatetime">
+                    <type>d:datetime</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </type>
+               
+        <type name="test:extendedFolder">
+            <title>Extended Folder</title>
+            <parent>cm:folder</parent>
+        </type>
+        
+        <type name="test:type-that-requires-encoding">
+            <title>Type that requires encoding</title>
+            <parent>cm:content</parent>
+            <includedInSuperTypeQuery>true</includedInSuperTypeQuery>
+            <properties>
+                <property name="test:property-that-requires-encoding">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                        <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </type>
+    </types>
+    
+    <aspects>
+        <aspect name="test:aspect-that-requires-encoding">
+            <title>Type that requires encoding</title>
+            <includedInSuperTypeQuery>true</includedInSuperTypeQuery>
+        </aspect>
+    </aspects>
+    
+</model>

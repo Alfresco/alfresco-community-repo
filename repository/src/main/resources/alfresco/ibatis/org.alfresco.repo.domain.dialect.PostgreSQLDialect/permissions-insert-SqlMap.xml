@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.permissions.insert">
+
+    <insert id="insert_Acl" parameterType="Acl">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE">
+            select nextVal('alf_access_control_list_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Acl_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AclMember" parameterType="AclMember">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE">
+            select nextVal('alf_acl_member_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AclMember_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AclChangeSet" parameterType="AclChangeSet">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_acl_change_set_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AclChangeSet_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Ace" parameterType="Ace">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_access_control_entry_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Ace_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AceContext" parameterType="AceContext">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_ace_context_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AceContext_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Permission" parameterType="Permission">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_permission_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Permission_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Authority" parameterType="Authority">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_authority_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Authority_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AuthorityAlias" parameterType="AuthorityAlias">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_authority_alias_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AuthorityAlias_Sequence"/>
+        
+    </insert>
+    
+</mapper>

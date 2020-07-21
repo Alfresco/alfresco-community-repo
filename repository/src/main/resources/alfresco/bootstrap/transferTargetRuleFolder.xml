@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <view:reference xmlns="" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" view:pathref="/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default">
+    <view:aspects>
+      <rule:rules/>
+    </view:aspects>
+  </view:reference>
+</view:view>

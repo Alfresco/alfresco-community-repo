@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--  Nominated Invitation Workflow Model -->
+
+<model name="inwf:invite-workflow-model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm" />
+      <import uri="http://www.alfresco.org/model/workflow/1.0" prefix="wf" />
+   </imports>
+
+  <namespaces>
+    <namespace uri="http://www.alfresco.org/model/workflow/invite/nominated/1.0" prefix="inwf" />
+  </namespaces>
+
+   <types>
+      
+      <!--  Custom Tasks -->
+      <type name="inwf:inviteToSiteTask">
+         <parent>bpm:startTask</parent>
+         <properties>
+            <property name="inwf:serverPath">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:acceptUrl">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:rejectUrl">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteTicket">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeGenPassword">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+            <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+    <type name="inwf:activitiInvitePendingTask">
+        <parent>bpm:activitiOutcomeTask</parent>
+        <properties>
+            <property name="inwf:inviteOutcome">
+                <type>d:text</type>
+                <default>reject</default>
+                <constraints>
+                    <constraint name="inwf:inviteOutcomeOptions"
+                        type="LIST">
+                        <parameter name="allowedValues">
+                            <list>
+                                <value>accept</value>
+                                <value>reject</value>
+                            </list>
+                        </parameter>
+                    </constraint>
+                </constraints>
+            </property>
+        </properties>
+        <overrides>
+            <property name="bpm:outcomePropertyName">
+                <default>{http://www.alfresco.org/model/workflow/invite/nominated/1.0}inviteOutcome</default>
+            </property>
+            <property name="bpm:reassignable">
+                <default>false</default>
+            </property>
+        </overrides>
+        <mandatory-aspects>
+            <aspect>inwf:nominatedInvitationStats</aspect>
+        </mandatory-aspects>
+    </type>
+
+      <type name="inwf:acceptInviteTask">
+         <parent>bpm:workflowTask</parent>
+         <overrides>
+            <property name="bpm:reassignable">
+                <default>false</default>
+            </property>
+         </overrides>
+         <mandatory-aspects>
+             <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="inwf:rejectInviteTask">
+         <parent>bpm:workflowTask</parent>
+         <overrides>
+            <property name="bpm:reassignable">
+                <default>false</default>
+            </property>
+         </overrides>
+         <mandatory-aspects>
+             <aspect>inwf:nominatedInvitationStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+   
+   <aspects>
+      <aspect name="inwf:nominatedInvitationStats">
+          <properties>
+            <property name="inwf:resourceType">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:resourceName">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:resourceTitle">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:resourceDescription">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeRole">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviterUserName">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeUserName">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeEmail">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeFirstName">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:inviteeLastName">
+               <type>d:text</type>
+            </property>
+          </properties>
+      </aspect>
+   </aspects>
+   
+</model>

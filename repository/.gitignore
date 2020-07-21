@@ -1,0 +1,37 @@
+*.class
+
+# Eclipse
+.classpath
+.settings
+.project
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+target
+*.log
+*.log.*
+
+# Mobile Tools for Java (J2ME)
+
+.mtj
+.tmp/
+
+# Package Files #
+
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+
+hs_err_pid*
+alf_data
+/src/main/resources/alfresco-global.properties
+/src/main/resources/alfresco/extension/custom-log4j.properties

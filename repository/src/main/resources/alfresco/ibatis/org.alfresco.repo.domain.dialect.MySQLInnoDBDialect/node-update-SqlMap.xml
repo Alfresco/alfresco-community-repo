@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.update">
+    
+    <!--
+        MySQL does not allow the target table to be present in the subselect
+    -->
+    <update id="update_PrimaryChildrenSharedAcl" parameterType="PrimaryChildrenAclUpdate">
+        update 
+            alf_child_assoc assoc
+            join alf_node child on (child.id = assoc.child_node_id and assoc.is_primary = #{isPrimary}) 
+        set
+            child.acl_id = #{newSharedAclId},
+            child.version = child.version + 1,
+            child.transaction_id = #{txnId}
+        where
+            assoc.parent_node_id = #{primaryParentNodeId}
+            and
+            (
+                child.acl_id is null 
+                <if test="optionalOldSharedAclIdInAdditionToNull != null"> OR child.acl_id = #{optionalOldSharedAclIdInAdditionToNull}</if>
+            )
+    </update>
+    
+    <!--
+        ANSI subselect is not performant on MySQL.  Use non-ANSI join syntax. 
+    -->
+    <update id="update_ChildrenTxns" parameterType="ChildAssoc">
+        update
+            alf_node n
+            join alf_child_assoc ca on (ca.child_node_id = n.id)
+        set
+            n.version = n.version + 1,
+            n.transaction_id = #{parentNode.transaction.id}
+        where
+            ca.parent_node_id = #{parentNode.id}
+            <if test="isPrimary == true">and ca.is_primary = #{isPrimary}</if>
+    </update>
+
+</mapper>

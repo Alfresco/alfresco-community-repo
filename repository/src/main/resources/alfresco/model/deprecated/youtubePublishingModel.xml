@@ -1,0 +1,44 @@
+<model name="youtube:publishingmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco YouTube Publishing Content Model</description>
+   <author>Alfresco</author>
+   <published>2011-06-15</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+      <import uri="http://www.alfresco.org/model/publishing/1.0" prefix="pub" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/publishing/youtube/1.0" prefix="youtube" />
+   </namespaces>
+
+   <types>
+      <type name="youtube:DeliveryChannel">
+         <title>YouTube Delivery Channel</title>
+         <description>Node type used to represent YouTube delivery channels</description>
+         <parent>pub:DeliveryChannel</parent>
+         <mandatory-aspects>
+            <aspect>youtube:DeliveryChannelAspect</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+
+   <aspects>
+      <aspect name="youtube:DeliveryChannelAspect">
+         <title>YouTube Delivery Channel</title>
+         <description>Applied to a node that represents a YouTube delivery channel</description>
+         <parent>pub:UserPasswordDeliveryChannelAspect</parent>
+      </aspect>
+
+      <aspect name="youtube:AssetAspect">
+         <title>YouTube Asset</title>
+         <description>Applied to a node that has been published to YouTube</description>
+         <parent>pub:AssetAspect</parent>
+      </aspect>
+   </aspects>
+</model>

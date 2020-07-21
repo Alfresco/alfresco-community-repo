@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>IMAP Server Status</shortname>
+   <description>
+      This script returns the status of the IMAP server (enabled/disabled)
+   </description>
+   <url>/imap/servstatus</url>
+   <format default="html">extension</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <family>IMAP</family>
+   <lifecycle>internal</lifecycle>
+</webscript>

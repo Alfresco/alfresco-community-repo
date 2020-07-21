@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Node Version Info</shortname>
+  <description>Node Version Info</description>
+  <url>/api/version</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

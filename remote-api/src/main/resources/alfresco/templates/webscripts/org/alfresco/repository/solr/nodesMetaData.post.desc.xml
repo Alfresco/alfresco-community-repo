@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get the metadata for the specified nodes</shortname>
+  <description>Get the metadata for the specified nodes.</description>
+  <url>/api/solr/metadata</url>
+  <format default="json">argument</format>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+</webscript>

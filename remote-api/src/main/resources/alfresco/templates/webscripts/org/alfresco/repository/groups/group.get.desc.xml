@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Get the details of a group</shortname>
+   <description><![CDATA[
+      Gets the details of a group.
+    ]]>
+   </description>
+   <url>/api/groups/{shortName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

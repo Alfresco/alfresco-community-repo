@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.alfresco.org/ws/headers/1.0" xmlns:headers="http://www.alfresco.org/ws/headers/1.0" elementFormDefault="qualified" version="0.1">
+
+	<complexType name="QueryConfiguration">
+		<sequence>
+			<element name="fetchSize" type="int" default="500"></element>
+		</sequence>
+	</complexType>
+
+	<complexType name="LocaleConfiguration">
+		<sequence>
+			<element name="locale" type="string" maxOccurs="1" minOccurs="0"></element>
+		</sequence>
+	</complexType>
+	
+	<complexType name="NamespaceConfiguration">
+		<sequence>
+			<element name="mapping" maxOccurs="unbounded" minOccurs="0" type="headers:NamespaceConfigurationInner"></element>
+		</sequence>
+	</complexType>
+	
+	<complexType name="NamespaceConfigurationInner">
+	  <sequence>
+	     <element name="prefix" type="NCName"></element>
+	     <element name="uri" type="string"></element>
+     </sequence>
+	</complexType>
+
+</schema>

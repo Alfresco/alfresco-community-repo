@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>Get invitation</shortname>
+  <description><![CDATA[
+  Get a single web site invitation.
+  ]]>
+  </description>
+  <url>/api/sites/{shortname}/invitations/{inviteId}</url>
+  <format default="json"/>
+  <lifecycle>limited_support</lifecycle>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

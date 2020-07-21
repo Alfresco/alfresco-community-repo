@@ -1,0 +1,20 @@
+<webscript>
+   <shortname>Add a root group</shortname>
+   <description><![CDATA[
+      Adds a root group.
+      <br />You must have "administrator" privileges to add a root group.
+      <br />Returns STATUS_CREATED if a new group is created.
+      <br />If the group already exists returns BAD_REQUEST.
+      
+      The following properties may be specified for the new root group:-
+      <dl>
+      <dt>displayName</dt><dd>The display name</dd>
+      </dl>
+   ]]>
+   </description>
+   <url>/api/rootgroups/{shortName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

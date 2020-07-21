@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get action condition definition collection</shortname>
+  <description>Gets a collection of action conditions available.</description>
+  <url>/api/actionconditiondefinitions</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

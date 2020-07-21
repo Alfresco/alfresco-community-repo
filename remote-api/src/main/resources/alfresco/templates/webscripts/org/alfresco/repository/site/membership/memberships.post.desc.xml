@@ -1,0 +1,25 @@
+<webscript>
+  <shortname>Add Web site membership</shortname>
+  <description> <![CDATA[
+  Adds a new membership to the Web site.
+  <br />
+  'shortname' is the shortname of the web site,  'authorityname' is the full authority name for the membership.
+    Required parameters,
+  <br />
+        role, mandatory String,  the new role name for this membership.
+  <br />
+        person object, with userName property
+  <br>
+  		OR      
+        group object, with fullName property
+  <br />
+    	OR      
+        authority object, with fullName property
+  <br />
+  ]]></description>
+  <url>/api/sites/{shortname}/memberships</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

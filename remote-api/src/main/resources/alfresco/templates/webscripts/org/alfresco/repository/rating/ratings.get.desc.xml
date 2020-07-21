@@ -1,0 +1,46 @@
+<webscript>
+   <shortname>GET rating</shortname>
+   <description><![CDATA[
+   Gets the list of ratings for the specified NodeRef (if there are any) as well as some
+   general statistics on ratings for the specified node.<br/>
+   The ratings returned will only include those applied by the currently authenticated user. There
+   will be one for each rating scheme in which the user has submitted a rating.<br/>
+   The returned data will be of the form:<br/>
+   {<br/>
+   &nbsp;&nbsp;"nodeRef": "workspace:\/\/SpacesStore\/d0b163fe-050d-43f5-88e4-db1794a3e5cd",<br/>
+   &nbsp;&nbsp;"ratings":<br/>
+   &nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;"fiveStarRatingScheme":<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rating": 5,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"appliedAt": "12 Jul 2010 16:38:05 GMT+0100 (BST)",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"appliedBy": "UserOne"<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+   &nbsp;&nbsp;},<br/>
+   &nbsp;&nbsp;"nodeStatistics":<br/>
+   &nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;"likesRatingScheme":<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"averageRating": 3,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingsTotal": 3,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingsCount": 1<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+   &nbsp;&nbsp;}<br/>
+   }<br/>
+   with the following meanings:<br/>
+   nodeRef: the nodeRef whose ratings are requested.<br/>
+   ratings/ratingScheme: the rating scheme name<br/>
+   ratings/rating: the rating applied to the named noderef in the scheme by the current user<br/>
+   ratings/appliedAt: the datetime when the rating was applied<br/>
+   ratings/appliedBy: the user who applied the rating (the current user)<br/>
+   nodeStatistics/averageRating: the average (mean) rating on this node in the named rating scheme for all users<br/>
+   nodeStatistics/ratingsTotal: the total score (sum) of all ratings on this node in the named rating scheme<br/>
+   nodeStatistics/ratingsCount: the total number of applied ratings on this node in the named rating scheme.<br/>
+   ]]>
+   </description>
+   <url>/api/node/{store_type}/{store_id}/{id}/ratings</url>
+   <format default="json" />
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

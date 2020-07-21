@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webscript>
+    <shortname>Handles GET for the Discovery api</shortname>
+    <description>Returns repository information</description>
+    <url>/discovery</url>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <format default="json">argument</format>
+    <lifecycle>public_api</lifecycle>
+</webscript>

@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>List registered Mime Types, along with the details</shortname>
+  <description>
+  Returns a list of all mime types, along with their details. If requested,
+  can also drill down to one mime type and return information on the
+  metadata extractor used for it, and any transformations to and from it.
+  </description>
+  <url>/mimetypes?mimetype={mimetype?}</url>
+  <format default="html"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

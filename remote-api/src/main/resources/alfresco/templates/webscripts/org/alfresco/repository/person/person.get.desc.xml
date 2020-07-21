@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Get Person</shortname>
+   <description>Get the details of a person.</description>
+   <url>/api/people/{userName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

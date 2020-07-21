@@ -1,0 +1,35 @@
+<webscript>
+   <shortname>POST a rating to a NodeRef</shortname>
+   <description><![CDATA[
+   Posts a user rating to the specified NodeRef.<br/>
+   The rating consists of a score and a rating scheme name. The rating scheme will
+   define a minimum and a maximum allowed score and it is the responsibility of the
+   caller of this webscript to ensure that the scheme name is valid and that the posted
+   score is within the allowed range.<br/>
+   The rating will be applied using the fully authenticated user who makes the POST call.<br/>
+   The body of the post should be in the form, e.g.<br/>
+   {<br/>
+   &nbsp;&nbsp;&nbsp;"rating": 4.5,<br/>
+   &nbsp;&nbsp;&nbsp;"ratingScheme": "fiveStarRatingScheme"<br/>
+   }<br/>
+   <br/>
+   The response will be of the form, e.g.<br/>
+   {<br/>
+   &nbsp;&nbsp;&nbsp;"data":<br/>
+   &nbsp;&nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratedNodeUrl": "\/api\/node\/workspace\/SpacesStore\/eb25f870-2e58-487a-aba1-fa5f8ae04c52\/ratings",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rating": 4.5,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingScheme": "fiveStarRatingScheme",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"averageRating": 3,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingsTotal": 55.5,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingsCount": 9<br/>
+   &nbsp;&nbsp;&nbsp;}<br/>
+   }<br/>
+   ]]>
+   </description>
+   <url>/api/node/{store_type}/{store_id}/{id}/ratings</url>
+   <format default="json" />
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

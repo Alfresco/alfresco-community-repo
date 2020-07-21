@@ -1,0 +1,30 @@
+<alfresco-config>
+
+   <plug-ins>
+      <evaluators>
+         <evaluator id="object-type" class="org.springframework.extensions.config.evaluator.ObjectTypeEvaluator" />
+      </evaluators>
+   </plug-ins>
+   
+   <config>
+      <another-global-item>Another global value</another-global-item>
+      <override>true</override>
+      <merge-children>
+         <child-two>child two value</child-two>
+      </merge-children>
+   </config>
+   
+   <config evaluator="object-type" condition="java.lang.String">
+      <another-item>Another value</another-item>
+   </config>
+   
+   <config evaluator="string-compare" condition="Merge Test">
+      <first-item>the overridden first value</first-item>
+      <fourth-item>second value</fourth-item>
+      <children>
+         <child-two>child two value</child-two>
+         <child-three>child three value</child-three>
+      </children>
+   </config>
+   
+</alfresco-config>

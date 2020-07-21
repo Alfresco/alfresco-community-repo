@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="REST API" preserve-order="true">
+	<listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+	</listeners>
+
+    <!--
+    The suites in "test-suites" folder are balanced according to execution time to make the CI/CD efficient.
+    Any new test should be allocated inside the existing package or a new package should be created and
+    added to the test suit. Currently the packages are created according to API groupings plus "misc" folder
+    with tests testing several APIs.
+    -->
+
+    <suite-files>
+        <suite-file path="test-suites/part1-suite.xml"/>
+        <suite-file path="test-suites/part2-suite.xml"/>
+        <suite-file path="test-suites/part3-suite.xml"/>
+    </suite-files>
+</suite>

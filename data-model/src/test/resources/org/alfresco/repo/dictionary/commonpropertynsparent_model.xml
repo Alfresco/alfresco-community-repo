@@ -1,0 +1,12 @@
+﻿<model name="parentcomns:commonpropertynsparent" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>'parent' data model which defines a common property namespace</description>
+   <author>Alfresco</author>
+   <published>2013-10-21</published>
+   <version>1.0</version>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/commonpropertynsparent/1.0" prefix="parentcomns"/>
+   </namespaces>
+
+</model>

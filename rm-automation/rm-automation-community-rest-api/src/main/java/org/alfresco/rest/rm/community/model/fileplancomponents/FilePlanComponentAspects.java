@@ -57,6 +57,9 @@ public class FilePlanComponentAspects
     // retention schedule cut off aspect
     public static final String CUT_OFF_ASPECT = "rma:cutOff";
 
-    //declare version as record aspect
-    public static final String  VERSION_AS_RECORD="rmv:versionRecord";
+    // declare version as record aspect
+    public static final String VERSION_AS_RECORD = "rmv:versionRecord";
+
+    // WORM store selector aspect
+    public static final String ASPECT_STORE_SELECTOR = "cm:storeSelector";
 }

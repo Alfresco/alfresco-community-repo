@@ -41,7 +41,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
-import java.util.List;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -127,7 +126,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     @BeforeMethod (alwaysRun = true)
-    public void createDocument()
+    public void createDocument() throws Exception
     {
         STEP("Create a document in the collaboration site");
         testFile = dataContent.usingSite(publicSite)
@@ -215,13 +214,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         assertStatusCode(ACCEPTED);
 
         STEP("Check the exception thrown in alfresco logs");
-        //Retry the operation because sometimes it takes few seconds to throw the exception
-        Utility.sleep(6000, 30000, () ->
-        {
-            List<String> alfrescoLogs = dockerHelper.getAlfrescoLogs();
-            assertTrue(alfrescoLogs.stream().anyMatch(logLine -> logLine.contains(expectedException)));
-        });
-
+        dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException);
     }
 
     /**

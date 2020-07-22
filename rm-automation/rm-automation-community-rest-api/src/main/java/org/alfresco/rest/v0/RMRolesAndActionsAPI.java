@@ -327,7 +327,34 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action)
     {
-        return executeAction(user, password, contentName, action, null);
+        return executeAction(user, password, contentName, action, null, SC_OK);
+    }
+    /**
+     * Perform an action on the given content
+     *
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
+     * @return The HTTP response.
+     */
+    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
+                                      int status)
+    {
+        return executeAction(user, password, contentName, action, null, status);
+    }
+
+    /**
+     * Perform an action on the given content
+     *
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
+     * @return The HTTP response.
+     */
+    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
+                                      ZonedDateTime date)
+    {
+        return executeAction(user, password, contentName, action, null, SC_OK);
     }
 
     /**
@@ -363,7 +390,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param date        the date to be updated
      * @return The HTTP response.
      */
-    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action, ZonedDateTime date)
+    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
+                                      ZonedDateTime date, int status)
     {
         final JSONObject actionParams = new JSONObject();
         if (date != null)
@@ -371,7 +399,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
             actionParams.put("asOfDate", new JSONObject().put("iso8601", ISO_INSTANT_FORMATTER.format(date)));
         }
         final JSONObject requestParams = actionsRequestBody(user, password, contentName, action, actionParams);
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(user, password, status, requestParams, RM_ACTIONS_API);
     }
 
     /**

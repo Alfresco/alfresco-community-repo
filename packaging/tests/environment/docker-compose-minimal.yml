@@ -36,7 +36,12 @@ services:
         -Dimap.server.port=1143
         -Dftp.port=1221
         -Dcors.enabled=true
-        -Dcors.allowed.origins=http://localhost:4200
+        -Dcors.allowed.origins=http://localhost:4200,http://localhost:8080
+
+        -Dmetadata-keystore.password=mp6yc0UD9e
+        -Dmetadata-keystore.aliases=metadata
+        -Dmetadata-keystore.metadata.password=mp6yc0UD9e
+        -Dmetadata-keystore.metadata.algorithm=AES
         "
     ports:
       - 8082:8080

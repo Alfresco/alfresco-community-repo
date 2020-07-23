@@ -231,20 +231,20 @@ jobs:
       script:
         - travis_wait 30 mvn install -q -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
-## Comment out for now to avoid pushing 8.300 to nuxus until we are ready
-##    - stage: release
-##      name: "Push to Nexus"
-##      if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no-release\]/
-##      before_install:
-##        - "cp .travis.settings.xml $HOME/.m2/settings.xml"
-##      script:
-##        # Use full history for release
-##        - git checkout -B "${TRAVIS_BRANCH}"
-##        # Add email to link commits to user
-##        - git config user.email "${GIT_EMAIL}"
-##        # Skip building of release commits
-##        - mvn --batch-mode -q -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform
-#
+# Comment out for now to avoid pushing 8.300 to nuxus until we are ready
+#    - stage: release
+#      name: "Push to Nexus"
+#      if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no-release\]/
+#      before_install:
+#        - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+#      script:
+#        # Use full history for release
+#        - git checkout -B "${TRAVIS_BRANCH}"
+#        # Add email to link commits to user
+#        - git config user.email "${GIT_EMAIL}"
+#        # Skip building of release commits
+#        - mvn --batch-mode -q -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform
+
 #    - name: "Trigger alfresco-enterprise-repo build"
 #      stage: trigger_downstream
 #      # for all active branches and if it is not a PR

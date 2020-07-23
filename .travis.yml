@@ -37,6 +37,8 @@ before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
   - travis_retry mvn install -DskipTests=true -Dversion.edition=Community -PcommunityDocker -B -V
 
+# Hello Sara
+
 jobs:
   include:
     - stage: test

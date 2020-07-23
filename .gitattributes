@@ -6,3 +6,5 @@
 *.xml eol=crlf
 *.js eol=crlf
 *.properties eol=crlf
+# Shell scripts require LF
+*.sh text eol=lf

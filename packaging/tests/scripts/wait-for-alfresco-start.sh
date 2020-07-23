@@ -27,5 +27,10 @@ if (("$COUNTER" < "$TIMEOUT")) ; then
 else
    echo "Waited $COUNTER seconds"
    echo "Alfresco Could not start in time."
+   echo "All started containers:"	
+   docker ps -a	
+   ALFCONTAINER=`docker ps -a | grep _alfresco | awk '{ print $1 }'`
+   echo "Last 200 lines from alfresco.log on container $ALFCONTAINER:"
+   docker logs --tail=200 $ALFCONTAINER
    exit 1
 fi

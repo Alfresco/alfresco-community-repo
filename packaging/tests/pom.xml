@@ -17,4 +17,8 @@
         <module>tas-integration</module>
     </modules>
 
+    <properties>
+        <!-- TAS tests require an old version -->
+        <dependency.org-json.version>20170516</dependency.org-json.version>
+    </properties>
 </project>

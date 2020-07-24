@@ -50,8 +50,6 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.util.List;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -266,12 +264,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         assertStatusCode(ACCEPTED);
 
         STEP("Check the exception thrown in alfresco logs");
-        //Retry the operation because sometimes it takes few seconds to throw the exception
-        Utility.sleep(6000, 30000, () ->
-        {
-            List<String> alfrescoLogs = dockerHelper.getAlfrescoLogs();
-            assertTrue(alfrescoLogs.stream().anyMatch(logLine -> logLine.contains(expectedException)));
-        });
+        dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException);
 
         STEP("Check that the file is not a record");
         assertFalse(hasRecordAspect(testFile), "File should not have record aspect");

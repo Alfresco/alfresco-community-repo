@@ -49,7 +49,8 @@ public enum ActionsOnRule
     SET_PROPERTY_VALUE_RM("setPropertyValue"),
     HIDE_RECORD("hide-record"),
     DECLARE_VERSION_AS_RECORD("declare-as-version-record"),
-    DECLARE_AS_RECORD("create-record");
+    DECLARE_AS_RECORD("create-record"),
+    WORM_LOCK("wormLock");
 
     private String actionValue;
 

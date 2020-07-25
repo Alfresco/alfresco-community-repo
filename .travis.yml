@@ -1,5 +1,5 @@
 dist: xenial
-sudo: required
+os: linux
 language: java
 jdk:
   - openjdk11
@@ -180,7 +180,7 @@ jobs:
         - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal+transforms.yml
         - docker images
         - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      secript:
+      script:
         - travis_wait 60 mvn install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part2"

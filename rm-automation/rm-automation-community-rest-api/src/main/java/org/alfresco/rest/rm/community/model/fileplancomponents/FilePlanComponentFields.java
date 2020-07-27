@@ -134,5 +134,5 @@ public class FilePlanComponentFields
     public static final String PATH = "path";
     /** CONTENT STORE property */
     //public static final String PROPERTIES_STORE = "cm:storeName";
-    public static final String PROPERTIES_STORE = "rm:wormStore";
+    public static final String PROPERTIES_STORE = "rma:wormStore";
 }

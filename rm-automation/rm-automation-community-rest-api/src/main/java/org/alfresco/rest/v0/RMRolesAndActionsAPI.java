@@ -337,8 +337,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param contentName the content name
      * @return The HTTP response.
      */
-    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
-                                      int status)
+    public HttpResponse executeActionAndExpectResponseCode(String user, String password, String contentName, RM_ACTIONS action,
+                                                           int status)
     {
         return executeAction(user, password, contentName, action, null, status);
     }

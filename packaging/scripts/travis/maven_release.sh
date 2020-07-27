@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ev
 
 releaseVersion=$1
 developmentVersion=$2
@@ -14,7 +14,7 @@ if [ -z ${releaseVersion} ] || [ -z ${developmentVersion} ];
     then echo "Please provide a Release and Development verison in the format <acs-version>-<additional-info> (6.3.0-EA or 6.3.0-SNAPSHOT)"
          exit -1
 else   
-    mvn --batch-mode \
+    mvn -B \
     -PfullBuild,all-tas-tests \
     -Dusername="${GIT_USERNAME}" \
     -Dpassword="${GIT_PASSWORD}" \

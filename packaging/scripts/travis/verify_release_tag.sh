@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ev
 
 if [ -v ${RELEASE_VERSION} ]||[ -z ${RELEASE_VERSION} ]; then
     echo "Please provide a RELEASE_VERSION in the format <acs-version>-<additional-info> (6.3.0-EA or 6.3.0-SNAPSHOT)"

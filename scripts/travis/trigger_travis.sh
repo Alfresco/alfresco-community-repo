@@ -4,6 +4,15 @@ USER=${1}
 REPO=${2}
 BRANCH=${3}
 
+if ! git ls-remote --exit-code --heads \
+  https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${USER}/${REPO}.git \
+  "${BRANCH}" ; then
+
+  echo "Branch \"${BRANCH}\" not found on the downstream repository ${USER}/${REPO}. Exiting..."
+  exit 0
+fi
+
+
 body="{
 \"request\": {
   \"branch\":\"${BRANCH}\"

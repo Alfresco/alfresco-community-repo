@@ -354,7 +354,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
                                       ZonedDateTime date)
     {
-        return executeAction(user, password, contentName, action, null, SC_OK);
+        return executeAction(user, password, contentName, action, date, SC_OK);
     }
 
     /**

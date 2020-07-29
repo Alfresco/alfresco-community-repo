@@ -7,8 +7,8 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.300-SNAPSHOT</version>
-     </parent>
+        <version>8.300-TEST1-SNAPSHOT</version>
+    </parent>
 
     <scm>
         <connection>scm:git:https://github.com/Alfresco/alfresco-repository.git</connection>

@@ -68,7 +68,6 @@ public class NodePropertiesAPI extends BaseAPI
      * @param nodeId
      * @return JSONArray  object
      */
-
     protected JSONArray getNodeProperties(String username, String password, String nodeId)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();

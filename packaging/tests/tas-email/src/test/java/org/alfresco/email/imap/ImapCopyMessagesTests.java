@@ -108,46 +108,4 @@ public class ImapCopyMessagesTests extends EmailTest
                 .and().assertThat().existsInImap()
                 .then().copyMessageTo(testFolder);
     }
-
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
-            description = "Verify user cannot copy messages with a size bigger than the quota limit")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL, TestGroup.REQUIRE_JMX }, expectedExceptions = MessagingException.class,
-            expectedExceptionsMessageRegExp = ".*User quota exceeded")
-    public void userCannotCopyMessagesBiggerThanQuotaLimit() throws Exception
-    {
-        if (!imapProtocol.withJMX().getSystemUsagesConfigurationStatus())
-            throw new SkipException("Skipping this test because user quotas are not enabled. Please add " +
-                    "system.usages.enabled=true to alfresco-global.properties, restart Alfresco and run the test again.");
-
-        UserModel quotaUser = dataUser.createRandomTestUser();
-        dataUser.addUserToSite(quotaUser, testSite, UserRole.SiteCollaborator);
-        dataUser.setUserQuota(quotaUser, 0);
-        testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(FileModel.getFileModelWithContentSizeOfxMB(1));
-        dataSite.usingUser(quotaUser).usingSite(testSite).setIMAPFavorite();
-
-        imapProtocol.authenticateUser(quotaUser).usingSite(testSite).copyMessagesTo(testFolder);
-    }
-
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
-            description = "Verify user can copy messages with a size smaller than the quota limit")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL, TestGroup.REQUIRE_JMX })
-    public void userCanCopyMessagesSmallerThanQuotaLimit() throws Exception
-    {
-        if (!imapProtocol.withJMX().getSystemUsagesConfigurationStatus())
-            throw new SkipException("Skipping this test because user quotas are not enabled. Please add " +
-                    "system.usages.enabled=true to alfresco-global.properties, restart Alfresco and run the test again.");
-
-        SiteModel quotaSite = dataSite.usingUser(testUser).createIMAPSite();
-
-        UserModel quotaUser = dataUser.createRandomTestUser();
-        dataUser.addUserToSite(quotaUser, quotaSite, UserRole.SiteCollaborator);
-        dataUser.setUserQuota(quotaUser, 2);
-        testFolder = dataContent.usingUser(testUser).usingSite(quotaSite).createFolder();
-        dataContent.usingUser(testUser).usingSite(quotaSite).createContent(FileModel.getFileModelWithContentSizeOfxMB(1));
-        dataSite.usingUser(quotaUser).usingSite(quotaSite).setIMAPFavorite();
-
-        imapProtocol.authenticateUser(quotaUser).usingSite(quotaSite).copyMessagesTo(testFolder)
-            .usingResource(testFolder).assertThat().countMessagesIs(1);
-    }
 }

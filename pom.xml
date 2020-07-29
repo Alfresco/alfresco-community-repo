@@ -22,6 +22,8 @@
     </modules>
 
     <properties>
+        <dependency.alfresco-community-repo.version>${project.version}</dependency.alfresco-community-repo.version>
+
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
@@ -121,23 +123,23 @@
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-core</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-core</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-data-model</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-data-model</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
             </dependency>
             <dependency>
@@ -148,23 +150,23 @@
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-remote-api</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-remote-api</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-repository</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-repository</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
             </dependency>
             <dependency>
@@ -582,35 +584,35 @@
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>alfresco-community-repo-cmis-test</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>alfresco-community-repo-email-test</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>alfresco-community-repo-integration-test</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>alfresco-community-repo-restapi-test</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>alfresco-community-repo-webdav-test</artifactId>
-                <version>${project.version}</version>
+                <version>${dependency.alfresco-community-repo.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>

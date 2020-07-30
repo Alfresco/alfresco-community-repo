@@ -23,6 +23,12 @@ branches:
     - /release\/.*/
     - feature/REPO-5111_repo_build
     - feature/ACS-457_travis-release-config
+    - feature/REPO-5266_dup_tas_code
+
+env:
+  global:
+    - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
+    - TAS_COMMUNITY=../alfresco-community-repo/packaging/tests/environment
 
 stages:
   - name: test
@@ -171,54 +177,52 @@ jobs:
 
     - name: "REST API TAS tests part1"
       before_script:
-        - docker images
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal+transforms.yml
-        - docker images
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part2"
       before_script:
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal+transforms.yml
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part3"
       before_script:
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal+transforms.yml
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests"
       before_script:
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal+transforms.yml
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
-        - travis_wait 40 mvn -B -q install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+        - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Email TAS tests"
       before_script:
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal.yml
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
-        - travis_wait 30 mvn -B -q install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+        - travis_wait 30 mvn -B install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "WebDAV TAS tests"
       before_script:
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal.yml
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
-        - travis_wait 30 mvn -B -q install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+        - travis_wait 30 mvn -B install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Integration TAS tests"
       before_script:
-        - ./packaging/tests/scripts/start-compose.sh ./packaging/tests/environment/docker-compose-minimal.yml
-        - ./packaging/tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
-        - travis_wait 30 mvn -B -q install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+        - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
 # Comment out for now to avoid pushing 8.300 to Nexus until we are ready
 #     - name: "Push to Nexus"

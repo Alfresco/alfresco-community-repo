@@ -162,7 +162,7 @@
       <plugins>
          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>${dependency.maven-jar-plugin.version}</version>
             <executions>
                <execution>
                   <goals>

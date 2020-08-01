@@ -30,7 +30,7 @@ branches:
 env:
   global:
     - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
-    - TAS_COMMUNITY=../alfresco-community-repo/packaging/tests/environment
+    - TAS_ENVIRONMENT=../alfresco-community-repo/packaging/tests/environment
 
 stages:
   - name: test
@@ -182,7 +182,7 @@ jobs:
     - name: "REST API TAS tests part1"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 60 mvn install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
@@ -190,7 +190,7 @@ jobs:
     - name: "REST API TAS tests part2"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 60 mvn install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
@@ -198,7 +198,7 @@ jobs:
     - name: "REST API TAS tests part3"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 60 mvn install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
@@ -206,7 +206,7 @@ jobs:
     - name: "CMIS TAS tests"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal+transforms.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 40 mvn install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
@@ -214,7 +214,7 @@ jobs:
     - name: "Email TAS tests"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 30 mvn install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
@@ -222,7 +222,7 @@ jobs:
     - name: "WebDAV TAS tests"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 30 mvn install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
@@ -230,7 +230,7 @@ jobs:
     - name: "Integration TAS tests"
       jdk: openjdk11
       install:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_COMMUNITY}/docker-compose-minimal.yml
+        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 30 mvn install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false

@@ -61,7 +61,7 @@
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.guava.version>28.2-jre</dependency.guava.version>
         <dependency.commons-io.version>2.7</dependency.commons-io.version>
-        <dependency.gson.version>2.8.2</dependency.gson.version>
+        <dependency.gson.version>2.8.5</dependency.gson.version>
         <dependency.httpclient.version>4.5.12</dependency.httpclient.version>
         <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
         <dependency.maven-jar-plugin.version>3.2.0</dependency.maven-jar-plugin.version>

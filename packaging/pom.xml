@@ -14,6 +14,7 @@
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
         <version.edition>Community</version.edition>
         <image.tag>latest</image.tag>
+        <image.registry>quay.io</image.registry>
 
         <installer.version.name>${project.version}</installer.version.name>
         <alfresco.package.name>alfresco-community</alfresco.package.name>

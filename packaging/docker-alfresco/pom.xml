@@ -12,7 +12,6 @@
 
     <properties>
         <image.name>alfresco/alfresco-community-repo-base</image.name>
-        <image.registry>quay.io</image.registry>
     </properties>
 
     <build>
@@ -129,35 +128,31 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>fabric8-maven-plugin</artifactId>
-                <configuration>
-                    <images>
-                        <image>
-                            <name>${image.name}</name>
-                            <build>
-                                <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                <buildOptions>
-                                    <squash>true</squash>
-                                </buildOptions>
-                            </build>
-                        </image>
-                    </images>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
             <id>communityDocker</id>
+            <!-- builds "image:latest" locally -->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>fabric8-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                        <buildOptions>
+                                            <squash>true</squash>
+                                        </buildOptions>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>build-image</id>
@@ -174,6 +169,7 @@
 
         <profile>
             <id>internal</id>
+            <!-- publishes "image:latest" on Quay & DockerHub -->
             <build>
                 <plugins>
                     <plugin>
@@ -181,6 +177,7 @@
                         <artifactId>fabric8-maven-plugin</artifactId>
                         <configuration>
                             <images>
+                                <!-- Quay image -->
                                 <image>
                                     <name>${image.name}:${image.tag}</name>
                                     <registry>${image.registry}</registry>
@@ -191,44 +188,9 @@
                                         </buildOptions>
                                     </build>
                                 </image>
-                            </images>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>build-push-image</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>build</goal>
-                                    <goal>push</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>master</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>fabric8-maven-plugin</artifactId>
-                        <configuration>
-                            <images>
+                                <!-- DockerHub image -->
                                 <image>
-                                    <name>${image.name}</name>
-                                    <registry>${image.registry}</registry>
-                                    <build>
-                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                        <buildOptions>
-                                            <squash>true</squash>
-                                        </buildOptions>
-                                    </build>
-                                </image>
-                                <image>
-                                    <name>${image.name}</name>
+                                    <name>${image.name}:${image.tag}</name>
                                     <build>
                                         <dockerFileDir>${project.basedir}/</dockerFileDir>
                                         <buildOptions>
@@ -255,15 +217,16 @@
 
         <profile>
             <id>release</id>
+            <!-- publishes "image:release_version" on Quay & DockerHub -->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>fabric8-maven-plugin</artifactId>
-                        <configuration>
+                        <configuration combine.self="override">
                             <images>
+                                <!-- Quay image -->
                                 <image>
-                                    <alias>quay.io</alias>
                                     <name>${image.name}:${project.version}</name>
                                     <registry>${image.registry}</registry>
                                     <build>
@@ -273,8 +236,8 @@
                                         </buildOptions>
                                     </build>
                                 </image>
+                                <!-- DockerHub image -->
                                 <image>
-                                    <alias>dockerhub</alias>
                                     <name>${image.name}:${project.version}</name>
                                     <build>
                                         <dockerFileDir>${project.basedir}/</dockerFileDir>

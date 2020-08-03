@@ -133,22 +133,9 @@
    </dependencies>
 
    <build>
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <artifactId>maven-release-plugin</artifactId>
-               <configuration>
-                  <autoVersionSubmodules>true</autoVersionSubmodules>
-                  <tagNameFormat>@{project.version}</tagNameFormat>
-               </configuration>        
-            </plugin>
-         </plugins>
-      </pluginManagement>
-
       <plugins>
          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
-            <version>${dependency.maven-jar-plugin.version}</version>
             <executions>
                <execution>
                   <goals>

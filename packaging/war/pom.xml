@@ -242,15 +242,9 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${dependency.maven-jar-plugin.version}</version>
                     <configuration>
                         <source>${maven.build.sourceVersion}</source>
                     </configuration>
-                </plugin>
-                <!-- Ensure consistent maven-release-plugin version-->
-                <plugin>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>

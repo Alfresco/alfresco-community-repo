@@ -157,12 +157,6 @@
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
-                <artifactId>content-services-community</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <type>war</type>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-jlan-embed</artifactId>
                 <version>${dependency.alfresco-jlan.version}</version>
             </dependency>

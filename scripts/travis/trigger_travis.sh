@@ -33,9 +33,16 @@ curl -s -X POST \
   "${URL}" \
  | tee /tmp/travis-request-output.txt
 
+cat /tmp/travis-request-output.txt
+
 if grep -q '"@type": "error"' /tmp/travis-request-output.txt; then
-    exit 1
+  echo "Error when triggering build..."
+  exit 2
 fi
 if grep -q 'access denied' /tmp/travis-request-output.txt; then
-    exit 1
+  echo "Access denied when triggering build..."
+  exit 3
 fi
+
+exit 0
+

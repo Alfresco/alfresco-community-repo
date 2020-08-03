@@ -21,9 +21,7 @@ branches:
   only:
     - master
     - /release\/.*/
-    - feature/REPO-5111_repo_build
     - feature/ACS-457_travis-release-config
-    - feature/REPO-5266_dup_tas_code
 
 env:
   global:
@@ -252,4 +250,11 @@ jobs:
       before_install: skip
       install: skip
       script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
+
+    # TODO enable or delete
+    #- name: "Trigger alfresco-enterprise-repo build"
+    #  stage: trigger_downstream
+    #  before_install: skip
+    #  install: skip
+    #  script: bash scripts/travis/trigger_travis.sh "Alfresco" "acs-community-packaging" "${TRAVIS_BRANCH}"
 

@@ -10,24 +10,6 @@
         <version>8.300-TEST1-SNAPSHOT</version>
     </parent>
 
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/alfresco-repository.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-repository.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-repository</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <licenseName>community</licenseName>
 

@@ -83,22 +83,6 @@
         <dependency.tas-dataprep.version>2.3</dependency.tas-dataprep.version>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>full-build</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>core</module>
-                <module>data-model</module>
-                <module>repository</module>
-                <module>remote-api</module>
-                <module>packaging</module>
-            </modules>
-        </profile>
-    </profiles>
-
     <scm>
         <connection>scm:git:https://github.com/Alfresco/alfresco-community-repo.git</connection>
         <developerConnection>scm:git:https://github.com/Alfresco/alfresco-community-repo.git</developerConnection>

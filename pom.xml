@@ -65,6 +65,7 @@
         <dependency.httpclient.version>4.5.12</dependency.httpclient.version>
         <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
         <dependency.maven-jar-plugin.version>3.2.0</dependency.maven-jar-plugin.version>
+        <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
 
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.3.1</alfresco.aos-module.version>
@@ -522,6 +523,16 @@
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${dependency.slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${dependency.slf4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>${dependency.xercesImpl.version}</version>
@@ -696,12 +707,6 @@
             </dependency>
 
             <!-- Test only dependencies, as popped up while running mvn test -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>1.7.30</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>

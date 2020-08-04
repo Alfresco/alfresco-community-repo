@@ -23,6 +23,9 @@
     <properties>
         <dependency.alfresco-community-repo.version>${project.version}</dependency.alfresco-community-repo.version>
 
+        <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
+        <version.edition>Community</version.edition>
+
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>

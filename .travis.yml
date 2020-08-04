@@ -233,17 +233,12 @@ jobs:
       script:
         - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
-# Comment out for now to avoid pushing 8.300 to Nexus until we are ready
-#     - name: "Push to Nexus"
-#       stage: release
-#       install: mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true
-#       script:
-#        # Use full history for release
-#        - git checkout -B "${TRAVIS_BRANCH}"
-#        # Add email to link commits to user
-#        - git config user.email "${GIT_EMAIL}"
-#        # Skip building of release commits
-#        - mvn -B -q -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform
+    - name: "Push to Nexus"
+      stage: release
+      install: travis_retry travis_wait 30 mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true -Pinternal
+      before_script: bash scripts/travis/verify_release_tag.sh
+      script: travis_wait 40 bash scripts/travis/maven_release.sh
+      #TODO deploy
 
     - name: "Trigger alfresco-enterprise-repo build"
       stage: trigger_downstream

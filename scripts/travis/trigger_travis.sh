@@ -28,7 +28,7 @@ curl -s -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -H "Travis-API-Version: 3" \
-  -H "Authorization: token ${TRAVIS_ACCESS_TOKEN}" \
+  -H "Authorization: token ${TRAVIS_ACCESS_TOKEN_TEMP}" \
   -d "${BODY}" \
   "${URL}" \
  | tee /tmp/travis-request-output.txt

@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.requests.gscore.api;
 
 import com.google.common.collect.ImmutableMap;
 
+import lombok.SneakyThrows;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
@@ -109,7 +110,8 @@ public class ActionsExecutionAPI extends RMModelRequest
      * @param targetNode the node on which the action is executed
      * @throws Exception
      */
-    public JSONObject addWORMLock(RepoTestModel targetNode) throws Exception
+    @SneakyThrows
+    public JSONObject addWORMLock(RepoTestModel targetNode)
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
                                  .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode);

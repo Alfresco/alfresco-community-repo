@@ -132,4 +132,7 @@ public class FilePlanComponentFields
     public static final String IS_COMPLETED = "isCompleted";
     public static final String CONTENT = "content";
     public static final String PATH = "path";
+    /** CONTENT STORE property */
+    //public static final String PROPERTIES_STORE = "cm:storeName";
+    public static final String PROPERTIES_STORE = "rma:wormStore";
 }

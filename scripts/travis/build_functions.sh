@@ -22,6 +22,32 @@ function cloneRepo() {
   popd >/dev/null
 }
 
+function retrievePomParentVersion() {
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
+
+  sed -n '/<parent>/,/<\/parent>/p' pom.xml \
+    | sed -n '/<version>/,/<\/version>/p' \
+    | tr -d '\n' \
+    | grep -oP '(?<=<version>).*(?=</version>)' \
+    | xargs
+
+  popd >/dev/null
+}
+
+function retrievePomProperty() {
+  local KEY="${1}"
+
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
+
+  sed -n '/<properties>/,/<\/properties>/p' pom.xml \
+    | sed -n "/<${KEY}>/,/<\/${KEY}>/p" \
+    | tr -d '\n' \
+    | grep -oP "(?<=<${KEY}>).*(?=</${KEY}>)" \
+    | xargs
+
+  popd >/dev/null
+}
+
 function evaluatePomProperty() {
   local KEY="${1}"
 
@@ -56,9 +82,9 @@ function pullAndBuildSameBranchOnUpstream() {
     exit 1
   fi
 
-  pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
-
   cloneRepo "${UPSTREAM_REPO}" "${SOURCE_BRANCH}"
+
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
 
   cd "$(basename "${UPSTREAM_REPO%.git}")"
 

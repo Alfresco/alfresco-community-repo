@@ -1,5 +1,6 @@
 package org.alfresco.rest.search;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -12,6 +13,16 @@ import java.util.List;
  * Generated from 'Alfresco Content Services REST API' swagger file
  * Base Path {@linkplain /alfresco/api/-default-/public/search/versions/1}
  */
+
+/*
+ From Jackson 2.8 this annotation is required to make sure that defaults are read from the actual field values,
+ as opposing to field type defaults. For example, the default for boolean primitive is "false",
+ but the default for the "min" field in this class is "true".
+ This configuration does not affect the product and is only related to test framework and how it serializes the request into JSON.
+ See org.alfresco.utility.model.TestModel#toJson
+ Note: This change was required for org.alfresco.test.search.functional.searchServices.search.StatsSearchTest
+ */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class RestRequestStatsModel extends TestModel implements IRestModel<RestRequestStatsModel>
 {
     @Override

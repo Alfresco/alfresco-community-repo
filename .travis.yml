@@ -25,7 +25,7 @@ branches:
   only:
     - master
     - /release\/.*/
-    - feature/REPO-5266_dup_tas_code
+    - merge_to_7_0_0_A3
 
 env:
   global:

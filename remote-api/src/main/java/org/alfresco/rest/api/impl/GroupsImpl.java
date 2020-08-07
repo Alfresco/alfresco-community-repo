@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,6 +73,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -84,7 +84,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class GroupsImpl implements Groups
 {
     private static final int MAX_ZONES = 1;
+    private static final int MAX_DISPLAY_NAMES = 1;
     private static final String DISPLAY_NAME = "displayName";
+    private static final String ZONE = "zone";
     private static final String AUTHORITY_NAME = "authorityName";
     private static final String ERR_MSG_MODIFY_FIXED_AUTHORITY = "Trying to modify a fixed authority";
 
@@ -181,39 +183,20 @@ public class GroupsImpl implements Groups
 
     public CollectionWithPagingInfo<Group> getGroups(final Parameters parameters)
     {
-        final List<String> includeParam = parameters.getInclude();
-
         Paging paging = parameters.getPaging();
 
         // Retrieve sort column. This is limited for now to sort column due to
         // v0 api implementation. Should be improved in the future.
         Pair<String, Boolean> sortProp = getGroupsSortProp(parameters);
-
         // Parse where clause properties.
-        Query q = parameters.getQuery();
-        Boolean isRootParam = null;
-        String zoneFilter = null;
-        if (q != null)
-        {
-            GroupsQueryWalker propertyWalker = new GroupsQueryWalker();
-            QueryHelper.walk(q, propertyWalker);
-
-            isRootParam = propertyWalker.getIsRoot();
-            List<String> zonesParam = propertyWalker.getZones();
-            if (zonesParam != null)
-            {
-                validateZonesParam(zonesParam);
-                zoneFilter = zonesParam.get(0);
-            }
-        }
-
+        GroupsFilter groupsFilters = getGroupsFilterFromQueryParameters(parameters.getQuery());
         final AuthorityType authorityType = AuthorityType.GROUP;
         final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
 
         PagingResults<AuthorityInfo> pagingResult;
         try
         {
-            pagingResult = getAuthoritiesInfo(authorityType, isRootParam, zoneFilter, rootAuthorities, sortProp, paging);
+            pagingResult = getAuthoritiesInfo(authorityType, groupsFilters, rootAuthorities, sortProp, paging);
         }
         catch (UnknownAuthorityException e)
         {
@@ -221,9 +204,15 @@ public class GroupsImpl implements Groups
             pagingResult = new EmptyPagingResults<>();
         }
 
-        // Create response.
-        final List<AuthorityInfo> page = pagingResult.getPage();
+        List<Group> groups = createGroupsResponse(pagingResult.getPage(), parameters.getInclude(), rootAuthorities);
+
         int totalItems = pagingResult.getTotalResultCount().getFirst();
+
+        return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
+    }
+    
+    private List<Group> createGroupsResponse(final List<AuthorityInfo> page, final List<String> includeParam, final Set<String> rootAuthorities)
+    {
         List<Group> groups = new AbstractList<Group>()
         {
             @Override
@@ -239,27 +228,58 @@ public class GroupsImpl implements Groups
                 return page.size();
             }
         };
-
-        return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
+        return groups;
     }
 
-    private void validateZonesParam(List<String> zonesParam)
+    private GroupsFilter getGroupsFilterFromQueryParameters(Query queryParameters)
     {
-        if (zonesParam.size() > MAX_ZONES)
+        GroupsFilter.GroupsFilterBuilder groupsFilterBuilder = GroupsFilter.builder();
+
+        if (queryParameters != null)
         {
-            throw new IllegalArgumentException("A maximum of " + MAX_ZONES + " zones may be specified.");
+            GroupsQueryWalker propertyWalker = new GroupsQueryWalker();
+            QueryHelper.walk(queryParameters, propertyWalker);
+
+            groupsFilterBuilder
+                    .withIsRoot(
+                            propertyWalker.getIsRoot())
+                    .withZoneFilter(
+                            getStringFilterFromList(propertyWalker.getZones(), ZONE, MAX_ZONES))
+                    .withDisplayNameFilter(
+                            getStringFilterFromList(propertyWalker.getDisplayNames(), DISPLAY_NAME, MAX_DISPLAY_NAMES));
         }
-        else if (zonesParam.isEmpty())
+        return groupsFilterBuilder.build();
+    }
+    
+    private String getStringFilterFromList(List<String> listParam, String paramName, int maxItems)
+    {
+        String filter = null;
+        if (listParam != null)
         {
-            throw new IllegalArgumentException("Zones filter list cannot be empty.");
+            validateListParam(listParam, paramName, maxItems);
+            filter = listParam.get(0);
         }
-        // Validate each zone name
-        zonesParam.forEach(zone -> {
-            if (zone.isEmpty())
-            {
-                throw new IllegalArgumentException("Zone name cannot be empty (i.e. '')");
-            }
-        });
+        return filter;
+    }
+
+    private void validateListParam(List<String> listParam, String paramName, int maxItems)
+    {
+        if (listParam.size() > maxItems)
+        {
+            throw new IllegalArgumentException("A maximum of " + maxItems + " " + paramName + "s may be specified.");
+        }
+        else if (listParam.isEmpty())
+        {
+            throw new IllegalArgumentException(StringUtils.capitalize(paramName) + "s filter list cannot be empty.");
+        }
+        
+        listParam
+                .stream()
+                .filter(String::isEmpty)
+                .findAny()
+                .ifPresent(displayName -> {
+                    throw new IllegalArgumentException(StringUtils.capitalize(paramName) + " cannot be empty (i.e. '')");
+                });
     }
 
     @Override
@@ -290,7 +310,7 @@ public class GroupsImpl implements Groups
             List<String> zonesParam = propertyWalker.getZones();
             if (zonesParam != null)
             {
-                validateZonesParam(zonesParam);
+                validateListParam(zonesParam, ZONE, MAX_ZONES);
                 zoneFilter = zonesParam.get(0);
             }
         }
@@ -334,22 +354,26 @@ public class GroupsImpl implements Groups
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
 
-    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, Boolean isRootParam, String zoneFilter, Set<String> rootAuthorities, Pair<String, Boolean> sortProp,
-            Paging paging)
+    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, GroupsFilter groupsFilter, Set<String> rootAuthorities, 
+                                                            Pair<String, Boolean> sortProp, Paging paging)
     {
+        Boolean isRootParam = groupsFilter.getIsRoot();
+        String zoneFilter = groupsFilter.getZoneFilter();
+        String displayNameFilter = groupsFilter.getDisplayNameFilter();
         PagingResults<AuthorityInfo> pagingResult;
 
-        if (isRootParam != null)
+        if (isRootParam != null || displayNameFilter != null)
         {
             List<AuthorityInfo> groupList;
 
-            if (isRootParam)
+            if (isRootParam != null && isRootParam)
             {
                 // Limit the post processing work by using the already loaded
                 // list of root authorities.
                 List<AuthorityInfo> authorities = rootAuthorities.stream().
                         map(this::getAuthorityInfo).
                         filter(auth -> zonePredicate(auth.getAuthorityName(), zoneFilter)).
+                        filter(auth -> displayNamePredicate(auth.getAuthorityDisplayName(), displayNameFilter)).
                         collect(Collectors.toList());
                 groupList = new ArrayList<>(rootAuthorities.size());
                 groupList.addAll(authorities);
@@ -376,14 +400,11 @@ public class GroupsImpl implements Groups
                 groupList = nonPagingResult.getPage();
                 if (groupList != null)
                 {
-                    for (Iterator<AuthorityInfo> i = groupList.iterator(); i.hasNext();)
-                    {
-                        AuthorityInfo authorityInfo = i.next();
-                        if (!isRootParam.equals(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName())))
-                        {
-                            i.remove();
-                        }
-                    }
+                    groupList = groupList
+                            .stream()
+                            .filter(auth -> isRootPredicate(isRootParam, rootAuthorities, auth.getAuthorityName()))
+                            .filter(auth -> displayNamePredicate(auth.getAuthorityDisplayName(), displayNameFilter))
+                            .collect(Collectors.toList());
                 }
             }
 
@@ -459,6 +480,25 @@ public class GroupsImpl implements Groups
         if (requiredZone != null)
         {
             return zones != null && zones.contains(requiredZone);
+        }
+        return true;
+    }
+
+    /**
+     * Checks to see if the named group authority should be included in results
+     * when filtered by displayName.
+     * <p>
+     * If the requiredDisplayName parameter is null, then the filter will not be applied (returns true.)
+     * <p>
+     * @param groupDisplayName
+     * @param requiredDisplayName
+     * @return true if result should be included.
+     */
+    private boolean displayNamePredicate(String groupDisplayName, String  requiredDisplayName)
+    {
+        if (requiredDisplayName != null)
+        {
+            return groupDisplayName != null && groupDisplayName.equalsIgnoreCase(requiredDisplayName);
         }
         return true;
     }
@@ -1026,6 +1066,7 @@ public class GroupsImpl implements Groups
     private static class GroupsQueryWalker extends MapBasedQueryWalker
     {
         private List<String> zones;
+        private List<String> displayNames;
 
         public GroupsQueryWalker()
         {
@@ -1044,6 +1085,10 @@ public class GroupsImpl implements Groups
             if (propertyName.equalsIgnoreCase("zones"))
             {
                 zones = Arrays.asList(propertyValues);
+            }
+            if (propertyName.equalsIgnoreCase(DISPLAY_NAME))
+            {
+                displayNames = Arrays.asList(propertyValues);
             }
         }
 
@@ -1066,5 +1111,81 @@ public class GroupsImpl implements Groups
         {
             return getProperty(PARAM_IS_ROOT, WhereClauseParser.EQUALS, Boolean.class);
         }
+
+        /**
+         * The list of displayName specified in the where clause.
+         *
+         * @return The displayNames list if specified, or null if not.
+         */
+        public List<String> getDisplayNames()
+        {
+            return displayNames;
+        }
+    }
+}
+
+class GroupsFilter
+{
+    private Boolean isRoot;
+    private String zoneFilter;
+    private String displayNameFilter;
+    
+    private GroupsFilter()
+    {
+    }
+    
+    public static GroupsFilterBuilder builder()
+    {
+        return new GroupsFilterBuilder();
+    }
+
+    public Boolean getIsRoot()
+    {
+        return isRoot;
+    }
+    
+    public String getZoneFilter()
+    {
+        return zoneFilter;
+    }
+
+    public String getDisplayNameFilter()
+    {
+        return displayNameFilter;
+    }
+
+    public static class GroupsFilterBuilder
+    {
+        private Boolean isRoot;
+        private String zoneFilter;
+        private String displayNameFilter;
+
+        public GroupsFilterBuilder withIsRoot(Boolean isRoot)
+        {
+            this.isRoot = isRoot;
+            return this;
+        }
+
+        public GroupsFilterBuilder withZoneFilter(String zoneFilter)
+        {
+            this.zoneFilter = zoneFilter;
+            return this;
+        }
+
+        public GroupsFilterBuilder withDisplayNameFilter(String displayNameFilter)
+        {
+            this.displayNameFilter = displayNameFilter;
+            return this;
+        }
+
+        public GroupsFilter build()
+        {
+            GroupsFilter groupsFilter = new GroupsFilter();
+            groupsFilter.isRoot = this.isRoot;
+            groupsFilter.zoneFilter = this.zoneFilter;
+            groupsFilter.displayNameFilter = this.displayNameFilter;
+            return groupsFilter;
+        }
+
     }
 }

@@ -115,6 +115,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             testGetGroupsByIsRoot(true);
             testGetGroupsByIsRoot(false);
             testGetGroupsWithZoneFilter();
+            testGetGroupsWithDisplayNameFilter();
         }
         finally
         {
@@ -1855,5 +1856,194 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         subGroup.setParentIds(subGroupParents);
 
         return subGroup;
+    }
+
+    private void testGetGroupsWithDisplayNameFilter() throws Exception 
+    { 
+        shouldFilterGroupByDisplayName();
+        shouldFilterGroupByDisplayNameWhenNameNotExist();
+        shouldFilterGroupByDisplayNameAndZone();
+        shouldFilterGroupByDisplayNameWhenGroupIsRoot();
+        shouldFilterGroupByDisplayNameWhenIsRootIsFalse();
+        shouldFilterGroupByDisplayNameAndZoneWhenGroupIsRoot();
+        shouldReturnBadRequestErrorWhenTooManyDisplayNames();
+        shouldReturnBadRequestErrorWhenDisplayNameIsEmpty();
+        shouldNotAllowWildcards();
+    }
+
+    private void shouldFilterGroupByDisplayName() throws Exception 
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where", "(displayName in ('A Group'))");
+
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertEquals(1, groups.size());
+        assertEquals("A Group", groups.get(0).getDisplayName());
+
+        otherParams.put("where", "(displayName in ('a group'))");
+        response = getGroups(paging, otherParams);
+        response.getList();
+
+        assertEquals(1, groups.size());
+        assertEquals("A Group", groups.get(0).getDisplayName());
+    }
+
+    private void shouldFilterGroupByDisplayNameWhenNameNotExist() throws Exception 
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where", "(displayName in ('AGroupName'))");
+
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertTrue(groups.isEmpty());
+    }
+
+    private void shouldFilterGroupByDisplayNameAndZone() throws Exception 
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+        otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+        otherParams.put("where", "(zones in ('APITEST.MYZONE') AND displayName in ('A Group'))");
+
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertEquals(1, groups.size());
+        assertTrue(groups.get(0).getZones().contains("APITEST.MYZONE"));
+        assertEquals("A Group", groups.get(0).getDisplayName());
+    }
+
+    private void shouldFilterGroupByDisplayNameWhenGroupIsRoot() throws Exception 
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where", "(isRoot=true AND displayName in ('Root Group'))");
+
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertEquals(1, groups.size());
+        assertEquals("Root Group", groups.get(0).getDisplayName());
+    }
+
+    private void shouldFilterGroupByDisplayNameWhenIsRootIsFalse() throws Exception
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where", "(isRoot=False AND displayName in ('A Group'))");
+
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertEquals(1, groups.size());
+        assertEquals("A Group", groups.get(0).getDisplayName());
+    }
+
+    private void shouldFilterGroupByDisplayNameAndZoneWhenGroupIsRoot() throws Exception 
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+        otherParams.put("where", "(isRoot=true AND zones in ('APITEST.MYZONE') AND displayName in ('Root Group'))");
+
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertEquals(1, groups.size());
+        assertTrue(groups.get(0).getZones().contains("APP.DEFAULT"));
+        assertEquals("Root Group", groups.get(0).getDisplayName());
+    }
+
+    private void shouldReturnBadRequestErrorWhenTooManyDisplayNames() throws Exception
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where", "(displayName in ('Group A', 'Group B'))");
+
+        getGroups(paging, otherParams, "Incorrect response", 400);
+    }
+
+    private void shouldReturnBadRequestErrorWhenDisplayNameIsEmpty() throws Exception 
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where","(displayName in ())");
+    
+        getGroups(paging, otherParams, "Incorrect response",400);
+    
+        otherParams.put("where","(displayName in (''))");
+        getGroups(paging, otherParams, "Incorrect response",400); 
+    }
+    
+    private void shouldNotAllowWildcards() throws Exception
+    {
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        Map<String, String> otherParams = new HashMap<>();
+        
+        otherParams.put("where", "(displayName in ('*'))");
+        ListResponse<Group> response = getGroups(paging, otherParams);
+        List<Group> groups = response.getList();
+
+        assertEquals(0, groups.size());
+        
+        otherParams.put("where", "(isRoot=true AND displayName in ('*'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(displayName in ('A*'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(isRoot=true AND displayName in ('A*'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(displayName in ('*roup'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+        
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(isRoot=true AND displayName in ('*roup'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+
+        assertEquals(0, groups.size());
+        
+        otherParams.put("where", "(displayName in ('Root ?ROUP'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+        
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(isRoot=true AND displayName in ('Root ?ROUP'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+        
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(displayName in ('Group'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+        
+        assertEquals(0, groups.size());
+
+        otherParams.put("where", "(isRoot=true AND displayName in ('Group'))");
+        response = getGroups(paging, otherParams);
+        groups = response.getList();
+        
+        assertEquals(0, groups.size());
     }
 }

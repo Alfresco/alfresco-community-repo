@@ -159,8 +159,8 @@
         </dependency>
         <dependency> 
             <groupId>com.fasterxml.jackson.core</groupId> 
-            <artifactId>jackson-annotations</artifactId> 
-            <version>2.11.1</version> 
+            <artifactId>jackson-annotations</artifactId>
+            <version>${dependency.jackson.version}</version>
         </dependency> 
         <dependency>
             <groupId>org.antlr</groupId>

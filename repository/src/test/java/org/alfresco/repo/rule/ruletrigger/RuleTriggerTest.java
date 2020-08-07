@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import java.util.Random;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -426,7 +427,33 @@ public class RuleTriggerTest extends BaseSpringTest
         // Check to see if the rule type has been triggered
         assertTrue(ruleType.rulesTriggered);
         assertEquals(3, ruleType.triggerCount);
-    }        
+    }
+    @Test
+    public void testOnPropertyUpdateRuleTrigger()
+    {
+        NodeRef nodeRef1 = this.nodeService.createNode(this.rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                    ContentModel.TYPE_CONTAINER).getChildRef();
+
+        ContentWriter contentWriter = this.contentService.getWriter(nodeRef1, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent("some content");
+
+        Random rand=new Random();
+        this.nodeService.setProperty(nodeRef1, ContentModel.PROP_CASCADE_CRC, rand.nextLong());
+        // Terminate the transaction
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+
+        TestRuleType contentUpdate = createTestRuleType(ON_PROPERTY_UPDATE_TRIGGER);
+        this.nodeService.setProperty(nodeRef1, ContentModel.PROP_CASCADE_CRC, rand.nextLong());
+
+        assertFalse(contentUpdate.rulesTriggered);
+        assertEquals("trigger count not matching",0,contentUpdate.triggerCount);
+
+    }
 
     private TestRuleType createTestRuleType(String ruleTriggerName)
     {

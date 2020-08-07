@@ -83,14 +83,14 @@ jobs:
       install:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.2
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.4
       script: travis_wait 20 mvn test -B -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
 
     - name: "Repository - AppContext04TestSuite"
       install:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.2
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.4
       script: travis_wait 20 mvn test -B -pl repository -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext05TestSuite"
@@ -109,7 +109,7 @@ jobs:
       install:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.2
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.4
       script: travis_wait 20 mvn test -B -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
 
     - name: "Repository - AppContextExtraTestSuite"
@@ -122,7 +122,7 @@ jobs:
       install:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.2
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.4
       script: travis_wait 20 mvn test -B -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
 
     - name: "Repository - MySQL tests"

@@ -35,6 +35,14 @@
         <img.exe>convert</img.exe>
 
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
+
+        <!-- Test override -->
+        <dependency.jaxb.version>2.3.0</dependency.jaxb.version>
+        <dependency.gson.version>2.8.6</dependency.gson.version>
+        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
+<!--        <dependency.bouncycastle.version>1.65</dependency.bouncycastle.version>-->
+<!--        <dependency.spring.version>5.2.3.RELEASE</dependency.spring.version>-->
+
     </properties>
 
     <dependencies>

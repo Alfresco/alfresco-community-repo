@@ -238,7 +238,6 @@ jobs:
       install: travis_retry travis_wait 30 mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true -Pinternal
       before_script: bash scripts/travis/verify_release_tag.sh
       script: travis_wait 40 bash scripts/travis/maven_release.sh
-      #TODO deploy
 
     - name: "Trigger alfresco-enterprise-repo build"
       stage: trigger_downstream

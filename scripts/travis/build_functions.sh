@@ -79,8 +79,16 @@ function pullAndBuildSameBranchOnUpstream() {
 
   if ! remoteBranchExists "${UPSTREAM_REPO}" "${SOURCE_BRANCH}" ; then
     printf "Branch \"%s\" not found on the %s repository\n" "${SOURCE_BRANCH}" "${UPSTREAM_REPO}"
-    exit 1
+    #exit 1
   fi
+
+  local SOURCE_BRANCH="${TRAVIS_BRANCH}"
+  if ! remoteBranchExists "${UPSTREAM_REPO}" "${SOURCE_BRANCH}" ; then
+    printf "Branch \"%s\" not found on the %s repository\n" "${SOURCE_BRANCH}" "${UPSTREAM_REPO}"
+    #exit 1
+  fi
+  # TODO remove this line and enable the previous "exit" commands:
+  local SOURCE_BRANCH="master"
 
   cloneRepo "${UPSTREAM_REPO}" "${SOURCE_BRANCH}"
 

@@ -7,23 +7,9 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo</artifactId>
-      <version>8.300-SNAPSHOT</version>
+      <version>8.300-TEST1-SNAPSHOT</version>
    </parent>
 
-   <scm>
-      <connection>scm:git:https://github.com/Alfresco/alfresco-core.git</connection>
-      <developerConnection>scm:git:https://github.com/Alfresco/alfresco-core.git</developerConnection>
-      <url>https://github.com/Alfresco/alfresco-core</url>
-      <tag>HEAD</tag>
-  </scm>
-
-   <distributionManagement>
-      <repository>
-          <id>alfresco-public</id>
-          <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-      </repository>
-   </distributionManagement>
-   
    <dependencies>
       <dependency>
          <groupId>commons-codec</groupId>
@@ -147,22 +133,9 @@
    </dependencies>
 
    <build>
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <artifactId>maven-release-plugin</artifactId>
-               <configuration>
-                  <autoVersionSubmodules>true</autoVersionSubmodules>
-                  <tagNameFormat>@{project.version}</tagNameFormat>
-               </configuration>        
-            </plugin>
-         </plugins>
-      </pluginManagement>
-
       <plugins>
          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
-            <version>${dependency.maven-jar-plugin.version}</version>
             <executions>
                <execution>
                   <goals>

@@ -552,6 +552,34 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
                 return propertyField;
             }
         }
+        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX))
+        {
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX.length()));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
+            if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
+                    !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+            {
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX+" only supported on date and datetime properties");
+            }
+            else
+            {
+                return propertyField;
+            }
+        }
+        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX))
+        {
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX.length()));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
+            if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
+                    !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+            {
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX+" only supported on date and datetime properties");
+            }
+            else
+            {
+                return propertyField;
+            }
+        }
         else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX.length()));

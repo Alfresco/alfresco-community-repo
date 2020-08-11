@@ -25,7 +25,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - merge_to_7_0_0_A3
 
 env:
   global:

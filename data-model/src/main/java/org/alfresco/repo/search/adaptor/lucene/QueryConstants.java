@@ -187,7 +187,11 @@ public interface QueryConstants
 
     public static final String FIELD_SOLR_UNIT_OF_TIME_HOUR_SUFFIX = "_unit_of_time_hour";
 
-    public static final String FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX = "_unit_of_time_day";
+    public static final String FIELD_SOLR_UNIT_OF_TIME_DAY_SUFFIX = "_unit_of_time_day_of_month";
+
+    public static final String FIELD_SOLR_UNIT_OF_TIME_DAY_OF_WEEK_SUFFIX = "_unit_of_time_day_of_week";
+
+    public static final String FIELD_SOLR_UNIT_OF_TIME_DAY_OF_YEAR_SUFFIX = "_unit_of_time_day_of_year";
 
     public static final String FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX = "_unit_of_time_month";
 

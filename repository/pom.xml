@@ -705,7 +705,7 @@
         <dependency>
             <groupId>org.gytheio</groupId>
             <artifactId>gytheio-messaging-camel</artifactId>
-            <version>0.11.3</version>
+            <version>${dependency.gytheio.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -1027,18 +1027,18 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.5</version>
+            <version>1.9.6</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.6</version>
+            <version>3.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>2.4.19</version>
+            <version>2.4.20</version>
             <classifier>indy</classifier>
             <scope>test</scope>
         </dependency>

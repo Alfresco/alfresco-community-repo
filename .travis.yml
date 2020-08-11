@@ -233,8 +233,10 @@ jobs:
       script:
         - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
+    # TODO enable job
     - name: "Push to Nexus"
       stage: release
+      if: false
       install: travis_retry travis_wait 30 mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true -Pinternal
       before_script: bash scripts/travis/verify_release_tag.sh
       script: travis_wait 40 bash scripts/travis/maven_release.sh
@@ -245,10 +247,11 @@ jobs:
       install: skip
       script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
 
-    # TODO enable or delete
-    #- name: "Trigger alfresco-enterprise-repo build"
-    #  stage: trigger_downstream
-    #  before_install: skip
-    #  install: skip
-    #  script: bash scripts/travis/trigger_travis.sh "Alfresco" "acs-community-packaging" "${TRAVIS_BRANCH}"
+    # TODO enable or delete job
+    - name: "Trigger acs-community-packaging build"
+      stage: trigger_downstream
+      if: false
+      before_install: skip
+      install: skip
+      script: bash scripts/travis/trigger_travis.sh "Alfresco" "acs-community-packaging" "${TRAVIS_BRANCH}"
 

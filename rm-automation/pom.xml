@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services</artifactId>
-      <version>3.4.0-RC2</version>
+      <version>3.4.0-SNAPSHOT</version>
    </parent>
 
    <licenses>

@@ -16,7 +16,7 @@ export S3_BUCKET2_PROTOCOL=s3vTest
 
 mvn -B -U clean install -DskipTests -Pbuild-test-image 
 
-./scripts/start-compose.sh ./rm-enterprise/rm-enterprise-share/worm-support-docker-compose.yml
+bash ./scripts/start-compose.sh ./rm-enterprise/rm-enterprise-share/worm-support-docker-compose.yml
 
 # Run the WORM tests
 mvn -B -U clean test \

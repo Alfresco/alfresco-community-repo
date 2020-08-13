@@ -16,11 +16,11 @@ export S3_BUCKET2_NAME="travis-ags-worm-${TRAVIS_BUILD_NUMBER}-${TRAVIS_JOB_NUMB
 export S3_PROTOCOL=s3v2
 export S3_BUCKET2_PROTOCOL=s3vTest
 
-bash ./scripts/start-compose.sh ./rm-enterprise/rm-enterprise-share/worm-support-docker-compose.yml
+bash ./scripts/start-compose.sh rm-enterprise/rm-enterprise-share/worm-support-docker-compose.yml
 
 # Run the WORM tests
 mvn -B -U clean test \
-  -DsuiteXmlFile=wormTestSuite.xml
+  -DsuiteXmlFile=wormTestSuite.xml \
   -Dconnector.s3.bucketName=${S3_BUCKET2_NAME}
 
 popd

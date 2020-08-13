@@ -24,7 +24,9 @@ cache:
 # the cache can grow constantly
 before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
 
-before_install: cp .travis.settings.xml ${HOME}/.m2/settings.xml
+before_install: 
+  - cp .travis.settings.xml ${HOME}/.m2/settings.xml
+  - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
 install: skip
 
 stages:

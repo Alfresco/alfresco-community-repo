@@ -61,19 +61,19 @@ jobs:
       script:
         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-    - name: "Enterprise WORM automated Tests"
+    - name: "Enterprise WORM Tests"
       stage: Tests
       before_install: bash scripts/init.sh
       script: bash scripts/worm-mb-tests.sh
       # after_script: bash _ci/cleanup.sh
-        - echo "Enterprise WORM automated Tests"
+        - echo "Enterprise WORM Tests"
 
 
-    # - name: "Community Integrations Tests on MySQL"
-    #   stage: Tests
-    #   script:
-    #     - echo "Community Integrations Tests on MySQL"
-    # - name: "Enterprise Integrations Tests on MySQL"
+    - name: "Community Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Community Integrations Tests on MySQL"
+    - name: "Enterprise Integrations Tests on MySQL"
     #   stage: Tests
     #   script:
     #     - echo "Enterprise Integrations Tests on MySQL"

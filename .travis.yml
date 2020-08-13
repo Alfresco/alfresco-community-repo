@@ -64,7 +64,7 @@ jobs:
 
     - name: "Enterprise WORM Tests"
       stage: Tests
-      install: travis_retry mvn -B -U clean install -DskipTests
+      install: travis_retry travis_wait 90 mvn -B -U install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
       script: bash scripts/worm-mb-tests.sh
       # after_script: bash _ci/cleanup.sh
 

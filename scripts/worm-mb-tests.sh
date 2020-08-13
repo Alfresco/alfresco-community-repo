@@ -7,16 +7,15 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../"
 
 docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
 
-sudo apt-get update
-sudo apt-get install -q -y awscli
+pip install awscli
 printf "${CREATE_BUCKET_AWS_ACCESS_KEY}\n${CREATE_BUCKET_AWS_SECRET_KEY}\n\n\n" | aws configure
 
 export AWS_ACCESS_KEY_ID=${CREATE_BUCKET_AWS_ACCESS_KEY}
 export AWS_SECRET_ACCESS_KEY=${CREATE_BUCKET_AWS_SECRET_KEY}
 
 export S3_BUCKET_REGION="eu-west-1"
-export S3_BUCKET_NAME="travis-ags-${TRAVIS_BUILD_NUMBER}-${TRAVIS_JOB_NUMBER}"
-export S3_BUCKET2_NAME="travis-ags-worm-${TRAVIS_BUILD_NUMBER}-${TRAVIS_JOB_NUMBER}-b2"
+export S3_BUCKET_NAME="travis-ags-${TRAVIS_JOB_NUMBER}"
+export S3_BUCKET2_NAME="travis-ags-worm-${TRAVIS_JOB_NUMBER}-b2"
 export S3_PROTOCOL=s3v2
 export S3_BUCKET2_PROTOCOL=s3vTest
 

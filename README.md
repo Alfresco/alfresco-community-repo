@@ -1,23 +1,180 @@
-# README
+# TODO
 
-Repository is a work in progress and is temporary. It will be deleted. Please do not clone it.
+## Create new README for the combined project
 
-It is an attempt to combine a number of existing community projects to make development of the repository component
-simpler. It creates an alfresco.war and an alfresco/alfresco-community-repo-base docker image that contains no other
-ACS components. A branch of acs-community-packaging is also being changed so that dependency management flows from
-this project to the packaging and AMP projects.
+Original README files:
 
-## Project versions
+### Alfresco Core
+[![Build Status](https://travis-ci.com/Alfresco/alfresco-core.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-core)
 
-This table shows the project branches/tags that have been used to create the branches on alfresco-community-repo.
+Alfresco Core is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
+The library contains the following:
+* Various helpers and utils
+* Canned queries interface and supporting classes
+* Generic encryption supporting classes
 
-| alfresco-community-repo | alfresco-core      | alfresco-data-model  | alfresco-repository  | alfresco-remote-api  | acs-community-packaging |
-| ----------------------- | ------------------ | -------------------- | -------------------- | -------------------- | ----------------------- |
-|master                   | master             | master               | master               | master               | develop                 |
-|release/6.2.N            | support/SP/7.N     | support/SP/8.50.N    | support/SP/7.N       | support/SP/7.N       | develop                 |
-|release/6.2.1            | tags/7.33          | tags/8.50.14         | support/HF/7.183.N   | support/HF/7.133.N   | develop                 |
-|release/6.2.0            | tags/7.22          | support/HF/8.50.2.N  | support/HF/7.134.N   | support/HF/7.107.N   | develop                 |
-|release/6.1.1            | support/HF/7.5.7.N | support/HF/8.25.11.N | support/HF/7.33.42.N | support/HF/7.34.25.N | develop                 |
-|release/6.1.0            | support/HF/7.5.1.N | tags/8.25.1          | support/HF/7.33.12.N | support/HF/7.34.1.N  | develop                 |
-|release/6.0.1            | tags/7.5           | tags/8.18            | support/HF/6.56.15.N | support/HF/6.39.7.N  | develop                 |
-|release/6.0.0            | tags/7.3           | tags/8.9             | support/HF/6.56.5.N  | support/HF/6.39.2.N  | develop                 |
+Version 7 of the library uses Spring 5, Quartz 2.3 and does not have Hibernate dependency.
+
+### Building and testing
+The project can be built and tested by running Maven command:
+~~~
+mvn clean install
+~~~
+
+### Artifacts
+The artifacts can be obtained by:
+* downloading from [Alfresco repository](https://artifacts.alfresco.com/nexus/content/groups/public)
+* getting as Maven dependency by adding the dependency to your pom file:
+~~~
+<dependency>
+  <groupId>org.alfresco</groupId>
+  <artifactId>alfresco-core</artifactId>
+  <version>version</version>
+</dependency>
+~~~
+and Alfresco repository:
+~~~
+<repository>
+  <id>alfresco-maven-repo</id>
+  <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+</repository>
+~~~
+The SNAPSHOT version of the artifact is **never** published.
+
+### Old version history
+The history for older versions can be found in [Alfresco SVN](https://svn.alfresco.com/repos/alfresco-open-mirror/services/alfresco-core/)
+
+### Contributing guide
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
+
+### Alfresco Data Model
+[![Build Status](https://travis-ci.com/Alfresco/alfresco-data-model.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-data-model)
+
+Data model is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
+The library contains the following:
+* Dictionary, Repository and Search Services interfaces
+* Models for data types and Dictionary implementation
+* Parsers
+
+Please note that the data model uses version 2 of the Jackson libraries. 
+The upgrade from version 1 was not backward compatible, any projects
+that are dependent on data model using Jackson 1.x should use the data-model 6.N branch. 
+
+Version 8.0 of data-model depends on alfresco-core 7.0 which is based on Spring 5.
+ 
+
+### Building and testing
+The project can be built and tested by running Maven command:
+~~~
+mvn clean install
+~~~
+
+### Artifacts
+The artifacts can be obtained by:
+* downloading from [Alfresco repository](https://artifacts.alfresco.com/nexus/content/groups/public)
+* getting as Maven dependency by adding the dependency to your pom file:
+~~~
+<dependency>
+  <groupId>org.alfresco</groupId>
+  <artifactId>alfresco-data-model</artifactId>
+  <version>version</version>
+</dependency>
+~~~
+and Alfresco repository:
+~~~
+<repository>
+  <id>alfresco-maven-repo</id>
+  <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+</repository>
+~~~
+The SNAPSHOT version of the artifact is **never** published.
+
+### Old version history
+The history for older versions can be found in [Alfresco SVN](https://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/projects/data-model)
+
+### Contributing guide
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
+
+### Alfresco Repository
+[![Build Status](https://travis-ci.com/Alfresco/alfresco-repository.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-repository)
+
+Repository is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
+The library contains the following:
+* DAOs and SQL scripts
+* Various Service implementations
+* Utility classes
+
+### Building and testing 
+The project can be built by running Maven command:
+~~~
+mvn clean install
+~~~
+The tests are combined in test classes split by test type or Spring application context used in the test, see classes in _src/test/java/org/alfresco_. All of these classes as well as individual tests can be run by specifying the test class name and a set of DB connection properties, for example:
+~~~
+mvn clean test -Dtest=SomeRepoTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql:alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+~~~
+
+### Artifacts
+The artifacts can be obtained by:
+* downloading from [Alfresco repository](https://artifacts.alfresco.com/nexus/content/groups/public)
+* getting as Maven dependency by adding the dependency to your pom file:
+~~~
+<dependency>
+  <groupId>org.alfresco</groupId>
+  <artifactId>alfresco-repository</artifactId>
+  <version>version</version>
+</dependency>
+~~~
+and Alfresco Maven repository:
+~~~
+<repository>
+  <id>alfresco-maven-repo</id>
+  <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+</repository>
+~~~
+The SNAPSHOT version of the artifact is **never** published.
+
+### Contributing guide
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
+
+### Alfresco Remote API
+[![Build Status](https://travis-ci.com/Alfresco/alfresco-remote-api.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-remote-api)
+
+Remote API is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
+The library contains the following:
+* REST API framework
+* WebScript implementations including [V1 REST APIs](https://community.alfresco.com/community/ecm/blog/2017/05/02/v1-rest-api-10-things-you-should-know)
+* [OpenCMIS](https://chemistry.apache.org/java/opencmis.html) implementations
+
+### Building and testing
+The project can be built by running Maven command:
+~~~
+mvn clean install
+~~~
+The tests are combined in test classes split by test type or Spring application context used in the test, see classes in _src/test/java/org/alfresco_. All of these classes as well as individual tests can be run by specifying the test class name and a set of DB connection properties, for example:
+~~~
+mvn clean test -Dtest=SomeTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql:alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+~~~
+
+### Artifacts
+The artifacts can be obtained by:
+* downloading from [Alfresco repository](https://artifacts.alfresco.com/nexus/content/groups/public)
+* getting as Maven dependency by adding the dependency to your pom file:
+~~~
+<dependency>
+  <groupId>org.alfresco</groupId>
+  <artifactId>alfresco-remote-api</artifactId>
+  <version>version</version>
+</dependency>
+~~~
+and Alfresco Maven repository:
+~~~
+<repository>
+  <id>alfresco-maven-repo</id>
+  <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+</repository>
+~~~
+The SNAPSHOT version of the artifact is **never** published.
+
+### Contributing guide
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.

@@ -74,15 +74,6 @@ public class ImapReadMessagesTests extends EmailTest
     }
 
     @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that site manager can see wiki pages via IMAP")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
-    public void siteManagerCanViewWikiPages() throws Exception
-    {
-        dataWiki.usingUser(testUser).usingSite(testSite).createRandomWiki();
-        imapProtocol.authenticateUser(testUser).usingSiteWikiContainer(testSite).assertThat().countMessagesIs(1);
-    }
-
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator can see files created by self")
     @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
     public void collaboratorCanViewFileCreatedBySelf() throws Exception

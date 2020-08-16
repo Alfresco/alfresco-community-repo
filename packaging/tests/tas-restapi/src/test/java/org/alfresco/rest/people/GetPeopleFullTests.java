@@ -38,7 +38,7 @@ public class GetPeopleFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get person response with Rest API")
     public void checkResponseSchemaForGetPerson() throws Exception
     {
-        RestPersonModel newUser = RestPersonModel.getRandomPersonModel("aspectNames", "avatarId", "statusUpdatedAt","displayName");
+        RestPersonModel newUser = RestPersonModel.getRandomPersonModel("aspectNames", "avatarId", "statusUpdatedAt","displayName", "quota", "quotaUsed");
         newUser = restClient.authenticateUser(adminUser).withCoreAPI().usingAuthUser().createPerson(newUser);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 

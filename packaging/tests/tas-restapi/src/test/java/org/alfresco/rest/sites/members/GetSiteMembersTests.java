@@ -310,7 +310,7 @@ public class GetSiteMembersTests extends RestTest
         siteMembers.assertThat().paginationField("count").is("1");
         siteMembers.assertThat().paginationField("hasMoreItems").is("true");
         siteMembers.assertThat().paginationField("maxItems").is("1");
-        siteMembers.assertThat().paginationField("totalItems").isNotPresent();
+        siteMembers.assertThat().paginationField("totalItems").is("4");
         siteMembers.assertThat().entriesListContains("id", firstSiteMember.getId())
                 .and().entriesListContains("role", firstSiteMember.getRole().toString())
                 .and().entriesListDoesNotContain("id", secondSiteMember.getId())

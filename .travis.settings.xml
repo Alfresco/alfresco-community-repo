@@ -1,0 +1,57 @@
+<settings>
+    <profiles>
+        <profile>
+            <id>alfresco-internal</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>alfresco-internal</id>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                    <name>Alfresco Internal Repository</name>
+                    <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>alfresco-internal</id>
+                    <name>Alfresco Internal Repository</name>
+                    <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+                </pluginRepository>
+            </pluginRepositories>
+            <properties>
+                <!-- WhiteSource token -->
+                <org.whitesource.orgToken>${env.WHITESOURCE_API_KEY}</org.whitesource.orgToken>
+            </properties>
+        </profile>
+    </profiles>
+
+    <servers>
+        <server>
+            <id>alfresco-public</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+        <server>
+            <id>alfresco-internal</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+        <server>
+            <id>quay.io</id>
+            <username>${env.QUAY_USERNAME}</username>
+            <password>${env.QUAY_PASSWORD}</password>
+        </server>
+        <server>
+            <id>docker.io</id>
+            <username>${env.DOCKERHUB_USERNAME}</username>
+            <password>${env.DOCKERHUB_PASSWORD}</password>
+        </server>
+    </servers>
+</settings>

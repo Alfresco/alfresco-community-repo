@@ -24,7 +24,7 @@ cache:
 # the cache can grow constantly
 before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
 
-before_install: 
+before_install:
   - cp .travis.settings.xml ${HOME}/.m2/settings.xml
   - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
   - docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -65,14 +65,13 @@ jobs:
 
     - name: "Enterprise WORM Tests"
       stage: Tests
-      before_script:
+      install:
         - source scripts/setUpMavenPhase.sh
         - bash scripts/create-worm-bucket.sh
-      install: 
-        - travis_retry travis_wait 30 mvn -B deploy -N
-        - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      before_script:
+        - travis_retry travis_wait 90 mvn -B -U install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
       script:
-        - travis_retry travis_wait 80 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=true -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 80 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
         - bash scripts/worm-mb-tests.sh
       # after_script: bash _ci/cleanup.sh
 

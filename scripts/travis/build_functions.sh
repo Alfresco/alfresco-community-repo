@@ -12,7 +12,7 @@ function cloneRepo() {
   local REPO="${1}"
   local TAG_OR_BRANCH="${2}"
 
-  printf "Clonning \"%s\" on %s" "${TAG_OR_BRANCH}" "${REPO}"
+  printf "Clonning \"%s\" on %s\n" "${TAG_OR_BRANCH}" "${REPO}"
 
   # clone the repository branch/tag
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../../" >/dev/null
@@ -64,7 +64,7 @@ function remoteBranchExists() {
   local REMOTE_REPO="${1}"
   local BRANCH="${2}"
 
-  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}"
+  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}" &>/dev/null
 }
 
 function identifyUpstreamSourceBranch() {

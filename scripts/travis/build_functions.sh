@@ -65,6 +65,25 @@ function remoteBranchExists() {
   git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}"
 }
 
+function identifyUpstreamSourceBranch() {
+  local UPSTREAM_REPO="${1}"
+
+  # if it's a pull request, use the source branch name (if it exists)
+  if isPullRequestBuild && remoteBranchExists "${UPSTREAM_REPO}" "${TRAVIS_PULL_REQUEST_BRANCH}" ; then
+    echo "${TRAVIS_PULL_REQUEST_BRANCH}"
+    exit 0
+  fi
+
+  # otherwise use the current branch name (or in case of PRs, the target branch name)
+  if remoteBranchExists "${UPSTREAM_REPO}" "${TRAVIS_BRANCH}" ; then
+    echo "${TRAVIS_BRANCH}"
+    exit 0
+  fi
+
+  # if none of the previous exists, use the "master" branch
+  echo "master"
+}
+
 function pullUpstreamTag() {
   local UPSTREAM_REPO="${1}"
   local TAG="${2}"
@@ -75,20 +94,8 @@ function pullUpstreamTag() {
 function pullAndBuildSameBranchOnUpstream() {
   local UPSTREAM_REPO="${1}"
   local EXTRA_BUILD_ARGUMENTS="${2}"
-  local SOURCE_BRANCH="$(isBranchBuild && echo "${TRAVIS_BRANCH}" || echo "${TRAVIS_PULL_REQUEST_BRANCH}")"
 
-  if ! remoteBranchExists "${UPSTREAM_REPO}" "${SOURCE_BRANCH}" ; then
-    printf "Branch \"%s\" not found on the %s repository\n" "${SOURCE_BRANCH}" "${UPSTREAM_REPO}"
-    #exit 1
-  fi
-
-  local SOURCE_BRANCH="${TRAVIS_BRANCH}"
-  if ! remoteBranchExists "${UPSTREAM_REPO}" "${SOURCE_BRANCH}" ; then
-    printf "Branch \"%s\" not found on the %s repository\n" "${SOURCE_BRANCH}" "${UPSTREAM_REPO}"
-    #exit 1
-  fi
-  # TODO remove this line and enable the previous "exit" commands:
-  local SOURCE_BRANCH="master"
+  local SOURCE_BRANCH="$(identifyUpstreamSourceBranch "${UPSTREAM_REPO}")"
 
   cloneRepo "${UPSTREAM_REPO}" "${SOURCE_BRANCH}"
 

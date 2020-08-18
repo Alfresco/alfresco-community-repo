@@ -1,81 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>content-services-community-docker-alfresco</artifactId>
-    <name>ACS Community Docker Image Builder for Alfresco Community</name>
+    <artifactId>alfresco-community-repo-docker</artifactId>
+    <name>Alfresco Community Repo Docker Base Builder</name>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>alfresco-community-repo-packaging</artifactId>
+        <version>7.183.300-TEST1-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <image.name>alfresco/alfresco-content-repository-community</image.name>
-        <image.registry>quay.io</image.registry>
+        <image.name>alfresco/alfresco-community-repo-base</image.name>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>content-services-community</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>api-explorer</artifactId>
-            <version>${dependency.alfresco-api-explorer.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-server-root</artifactId>
-            <version>${dependency.alfresco-server-root.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${dependency.postgresql.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-mmt</artifactId>
-            <version>${dependency.alfresco-mmt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-share-services</artifactId>
-            <version>${alfresco.alfresco-share-services.version}</version>
-            <type>amp</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco.aos-module</groupId>
-            <artifactId>alfresco-aos-module</artifactId>
-            <version>${alfresco.aos-module.version}</version>
-            <type>amp</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.alfresco.aos-module</groupId>
-                    <artifactId>alfresco-aos-repo-binding</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco.aos-module</groupId>
-            <artifactId>alfresco-vti-bin</artifactId>
-            <version>${alfresco.aos-module.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco.integrations</groupId>
-            <artifactId>alfresco-googledrive-repo-community</artifactId>
-            <version>${alfresco.googledrive.version}</version>
-            <type>amp</type>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>

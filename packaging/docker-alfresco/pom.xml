@@ -1,19 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>content-services-community-docker-alfresco</artifactId>
-    <name>ACS Community Docker Image Builder for Alfresco Community</name>
+    <artifactId>alfresco-community-repo-docker</artifactId>
+    <name>Alfresco Community Repo Docker Base Builder</name>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>alfresco-community-repo-packaging</artifactId>
+        <version>7.300-TEST1-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <image.name>alfresco/alfresco-content-repository-community</image.name>
-        <image.registry>quay.io</image.registry>
+        <image.name>alfresco/alfresco-community-repo-base</image.name>
     </properties>
 
     <dependencies>

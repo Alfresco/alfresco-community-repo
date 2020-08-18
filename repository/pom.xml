@@ -2,31 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
-    <version>7.205-SNAPSHOT</version>
     <packaging>jar</packaging>
+
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>12</version>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>7.300-TEST1-SNAPSHOT</version>
     </parent>
-
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/alfresco-repository.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-repository.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-repository</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <properties>
         <licenseName>community</licenseName>
@@ -226,7 +208,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>

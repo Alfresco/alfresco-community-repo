@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "=========================== Starting Integration Tests Script ==========================="
+echo "=========================== Starting Worm Tests Script ==========================="
 PS4="\[\e[35m\]+ \[\e[m\]"
 set -vex
 pushd "$(dirname "${BASH_SOURCE[0]}")/../"
@@ -25,4 +25,4 @@ mvn -B -U clean test \
 
 popd
 set +vex
-echo "=========================== Finishing Integration Tests Script =========================="
+echo "=========================== Finishing Worm Tests Script =========================="

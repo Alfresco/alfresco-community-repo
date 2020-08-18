@@ -116,7 +116,6 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName ASPECT_RECORD = QName.createQName(RM_URI, "record");
     QName PROP_DATE_FILED = QName.createQName(RM_URI, "dateFiled");
     QName PROP_ORIGIONAL_NAME = QName.createQName(RM_URI, "origionalName");
-    QName PROP_WORM_STORE = QName.createQName(RM_URI, "wormStore");
 
     // Common record details
     QName ASPECT_COMMON_RECORD_DETAILS = QName.createQName(RM_URI, "commonRecordDetails");

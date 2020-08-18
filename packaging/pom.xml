@@ -1,37 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>acs-community-packaging</artifactId>
-    <name>Alfresco Content Services Community Packaging</name>
-    <version>6.2.2-SNAPSHOT</version>
+    <artifactId>alfresco-community-repo-packaging</artifactId>
+    <name>Alfresco Community Repo Packaging</name>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>12</version>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>7.134.300-TEST1-SNAPSHOT</version>
     </parent>
 
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/acs-community-packaging.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/acs-community-packaging.git</developerConnection>
-        <url>https://github.com/Alfresco/acs-community-packaging</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-internal</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
-        <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
-        <version.edition>Community</version.edition>
         <image.tag>latest</image.tag>
 
         <dependency.alfresco-remote-api.version>7.147</dependency.alfresco-remote-api.version>

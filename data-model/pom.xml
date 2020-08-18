@@ -1,30 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>12</version>
-    </parent>
-
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>8.50.18.1-SNAPSHOT</version>
 
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-data-model</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-    </distributionManagement>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>7.199.300-TEST1-SNAPSHOT</version>
+    </parent>
 
     <properties>
         <dependency.alfresco-core.version>7.34.0</dependency.alfresco-core.version>

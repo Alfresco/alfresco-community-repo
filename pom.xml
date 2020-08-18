@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.300-TEST1-SNAPSHOT</version>
+    <version>7.199.300-TEST1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -48,7 +48,7 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.transform.model.version>1.0.2.11</dependency.transform.model.version>
 
-        <dependency.spring.version>5.2.8.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.1.15.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.11.2</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>

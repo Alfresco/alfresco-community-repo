@@ -21,6 +21,9 @@ aws s3api put-object-lock-configuration \
     --bucket "${S3_BUCKET2_NAME}" \
     --object-lock-configuration '{ "ObjectLockEnabled": "Enabled", "Rule": { "DefaultRetention": { "Mode": "COMPLIANCE", "Days": 1 }}}'
 
+aws s3api put-bucket-tagging --bucket "${S3_BUCKET2_NAME}" \
+   --tagging="TagSet=[{Key=toDeleteAfterTests,Value=true}]"
+
 popd
 set +vex
 echo "=========================== Finishing Create Worm Bucket Script =========================="

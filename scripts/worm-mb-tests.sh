@@ -23,6 +23,7 @@ cd rm-automation/rm-automation-enterprise-rest-api
 # Run the WORM tests
 mvn -B -U clean test \
   -DsuiteXmlFile=wormTestSuite.xml \
+  -Dskip.automationtests=false \
   -Dconnector.s3.bucketName=${S3_BUCKET2_NAME}
 
 popd

@@ -133,6 +133,7 @@ public class FilePlanComponentFields
     public static final String CONTENT = "content";
     public static final String PATH = "path";
     /** CONTENT STORE property */
-    //public static final String PROPERTIES_STORE = "cm:storeName";
-    public static final String PROPERTIES_STORE = "rma:wormStore";
+    public static final String PROPERTIES_STORE = "cm:storeName";
+    /** WORM Unlock Date */
+    public static final String PROPERTIES_WORM_UNLOCK_DATE = "rme:wormUnlockDate";
 }

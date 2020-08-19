@@ -71,6 +71,7 @@ jobs:
       before_script: bash scripts/create-worm-bucket.sh
       script: bash scripts/worm-mb-tests.sh
       after_script: bash scripts/cleanup.sh
+      after_failure: docker ps -a | grep '_alfresco_1_' | awk '{print $1}' | xargs docker logs | tail -5000
 
     # - name: "Community Integrations Tests on MySQL"
     #   stage: Tests

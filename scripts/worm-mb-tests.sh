@@ -18,6 +18,8 @@ export S3_BUCKET2_PROTOCOL=s3vTest
 
 bash scripts/start-compose.sh "${PWD}/rm-enterprise/rm-enterprise-share/worm-support-docker-compose.yml"
 
+cd rm-automation/rm-automation-enterprise-rest-api
+
 # Run the WORM tests
 mvn -B -U clean test \
   -DsuiteXmlFile=wormTestSuite.xml \

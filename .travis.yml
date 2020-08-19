@@ -68,8 +68,6 @@ jobs:
       install:
         - source scripts/setUpMavenPhase.sh
         - bash scripts/create-worm-bucket.sh
-      before_script:
-        - travis_retry travis_wait 90 mvn -B -U install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
       script:
         - travis_retry travis_wait 80 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} $MVN_SKIP -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
         - travis_wait 80 bash scripts/worm-mb-tests.sh

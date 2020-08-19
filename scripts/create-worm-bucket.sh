@@ -19,7 +19,7 @@ export S3_BUCKET2_PROTOCOL=s3vTest
 aws s3api create-bucket --bucket "${S3_BUCKET2_NAME}" --region us-east-1 --object-lock-enabled-for-bucket
 aws s3api put-object-lock-configuration \
     --bucket "${S3_BUCKET2_NAME}" \
-    --object-lock-configuration '{ "ObjectLockEnabled": "Enabled", "Rule": { "DefaultRetention": { "Mode": "COMPLIANCE", "Days": 1 }}}'
+    --object-lock-configuration 'ObjectLockEnabled=Enabled,Rule={DefaultRetention={Mode=COMPLIANCE,Days=1}}'
 
 aws s3api put-bucket-tagging --bucket "${S3_BUCKET2_NAME}" \
    --tagging="TagSet=[{Key=toDeleteAfterTests,Value=true}]"

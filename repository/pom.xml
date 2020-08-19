@@ -2,32 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
-    <version>6.56.15.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>10</version>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>6.56.15.300-TEST1-SNAPSHOT</version>
     </parent>
-
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/alfresco-repository.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-repository.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-repository</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <properties>
         <licenseName>community</licenseName>
@@ -39,9 +20,7 @@
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
-        <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>8.18</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.10</dependency.alfresco-hb-data-sender.version>

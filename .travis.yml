@@ -69,7 +69,7 @@ jobs:
         - travis_retry travis_wait 90 mvn -B -U -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
         - travis_retry travis_wait 30 mvn -B -U -q install $MVN_SKIP -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script: bash scripts/create-worm-bucket.sh
-      script: travis_wait 180 bash scripts/worm-mb-tests.sh
+      script: bash scripts/worm-mb-tests.sh
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1_' | awk '{print $1}' | xargs docker logs | tail -5000
 

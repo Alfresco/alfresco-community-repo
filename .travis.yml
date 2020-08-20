@@ -66,17 +66,15 @@ jobs:
     - name: "Enterprise WORM Tests"
       stage: Tests
       install:
-        - travis_retry travis_wait 90 mvn -B -U -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
-        - travis_retry travis_wait 30 mvn -B -U -q install $MVN_SKIP -pl :alfresco-governance-services-automation-enterprise-rest-api -am
+        - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
         - bash scripts/create-worm-bucket.sh
-        - bash scripts/start-compose.sh "${PWD}/${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
+        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
         - bash scripts/waitForAlfrescoToStart.sh
-      script:
-        - cd $AUTOMATION_ENTERPRISE_PATH
-        - mvn -B -U test -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
+      script: mvn -B -U clean test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
       after_script: bash scripts/cleanup.sh
-      after_failure: docker ps -a | grep '_alfresco_1_' | awk '{print $1}' | xargs docker logs | tail -5000
+      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
     # - name: "Community Integrations Tests on MySQL"
     #   stage: Tests

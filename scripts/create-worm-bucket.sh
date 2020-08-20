@@ -8,12 +8,6 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../"
 pip install awscli
 printf "${CREATE_BUCKET_AWS_ACCESS_KEY}\n${CREATE_BUCKET_AWS_SECRET_KEY}\n\n\n" | aws configure
 
-export AWS_ACCESS_KEY_ID=${CREATE_BUCKET_AWS_ACCESS_KEY}
-export AWS_SECRET_ACCESS_KEY=${CREATE_BUCKET_AWS_SECRET_KEY}
-
-export S3_BUCKET_REGION="us-east-1"
-export S3_BUCKET2_NAME="travis-ags-worm-${TRAVIS_JOB_NUMBER}-b2"
-
 aws s3api create-bucket --bucket "${S3_BUCKET2_NAME}" --region ${S3_BUCKET_REGION} --object-lock-enabled-for-bucket
 aws s3api put-object-lock-configuration \
     --bucket "${S3_BUCKET2_NAME}" \

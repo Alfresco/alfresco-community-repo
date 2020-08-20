@@ -52,3 +52,6 @@ else
    echo "Alfresco Could not start in time."
    exit 1
 fi
+
+echo "Wait onther 30 seconds..."
+sleep 30

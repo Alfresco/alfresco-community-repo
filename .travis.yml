@@ -70,7 +70,8 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q install $MVN_SKIP -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
         - bash scripts/create-worm-bucket.sh
-        - bash scripts/worm-mb-start-env.sh
+        - bash scripts/start-compose.sh "${PWD}/${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - cd $AUTOMATION_ENTERPRISE_PATH
         - mvn -B -U test -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false

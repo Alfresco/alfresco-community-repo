@@ -72,7 +72,8 @@ jobs:
         - bash scripts/create-worm-bucket.sh
         - bash scripts/worm-mb-start-env.sh
       script:
-        - bash scripts/worm-mb-tests.sh
+        - cd $AUTOMATION_ENTERPRISE_PATH
+        - mvn -B -U test -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1_' | awk '{print $1}' | xargs docker logs | tail -5000
 

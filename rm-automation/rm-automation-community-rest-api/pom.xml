@@ -73,7 +73,7 @@
                   <groupId>com.fasterxml.jackson.core</groupId>
                   <artifactId>jackson-databind</artifactId>
               </exclusion>
-          </exclusions>         
+          </exclusions>
       </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>

@@ -41,28 +41,28 @@ stages:
 
 jobs:
   include:
-    # - name: "Build AGS Community"
-    #   stage: Build AGS
-    #   before_script: source scripts/setUpMavenPhase.sh
-    #   script:
-    #     - travis_retry travis_wait 120 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+     - name: "Build AGS Community"
+       stage: Build AGS
+       before_script: source scripts/setUpMavenPhase.sh
+       script:
+         - travis_retry travis_wait 120 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-    # - name: "Build AGS Enterprise"
-    #   stage: Build AGS
-    #   install:
-    #     - travis_retry travis_wait 30 mvn -B deploy -N
-    #     - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-    #   before_script: source scripts/setUpMavenPhase.sh
-    #   script:
-    #     - travis_retry travis_wait 80 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+     - name: "Build AGS Enterprise"
+       stage: Build AGS
+       install:
+         - travis_retry travis_wait 30 mvn -B deploy -N
+         - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+       before_script: source scripts/setUpMavenPhase.sh
+       script:
+         - travis_retry travis_wait 80 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-    # - name: "Build AGS Benchmark"
-    #   stage: Build AGS
-    #   install:
-    #     - travis_retry travis_wait 80 mvn -B -q clean install $MVN_SKIP -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-    #   before_script: source scripts/setUpMavenPhase.sh
-    #   script:
-    #     - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+     - name: "Build AGS Benchmark"
+       stage: Build AGS
+       install:
+         - travis_retry travis_wait 80 mvn -B -q clean install $MVN_SKIP -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+       before_script: source scripts/setUpMavenPhase.sh
+       script:
+         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Enterprise WORM Tests"
       stage: Tests
@@ -77,70 +77,70 @@ jobs:
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
-    # - name: "Community Integrations Tests on MySQL"
-    #   stage: Tests
-    #   script:
-    #     - echo "Community Integrations Tests on MySQL"
-    # - name: "Enterprise Integrations Tests on MySQL"
-    #   stage: Tests
-    #   script:
-    #     - echo "Enterprise Integrations Tests on MySQL"
-    # - name: "Community Rest API Tests"
-    #   stage: Tests
-    #   install:
-    #     - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
-    #   before_script:
-    #     - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
-    #     - bash scripts/waitForAlfrescoToStart.sh
-    #   script:
-    #     - echo "Community Rest API Tests"
-    # - name: "Enterprise Rest API Tests"
-    #   stage: Tests
-    #   install:
-    #     - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
-    #   before_script:
-    #     - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
-    #     - bash scripts/waitForAlfrescoToStart.sh
-    #   script:
-    #     - echo "Enterprise Rest API Tests"
-    # - name: "Community UI Tests ..."
-    #   stage: Tests
-    #   install:
-    #     - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
-    #   before_script:
-    #     - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
-    #     - bash scripts/waitForAlfrescoToStart.sh
-    #   script:
-    #     - echo "Community UI Tests ..."
-    # - name: "Enterprise UI Tests ..."
-    #   stage: Tests
-    #   install:
-    #     - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
-    #   before_script:
-    #     - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
-    #     - bash scripts/waitForAlfrescoToStart.sh
-    #   script:
-    #     - echo "Enterprise UI Tests ..."
+     - name: "Community Integrations Tests on MySQL"
+       stage: Tests
+       script:
+         - echo "Community Integrations Tests on MySQL"
+     - name: "Enterprise Integrations Tests on MySQL"
+       stage: Tests
+       script:
+         - echo "Enterprise Integrations Tests on MySQL"
+     - name: "Community Rest API Tests"
+       stage: Tests
+       install:
+         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
+       before_script:
+         - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
+         - bash scripts/waitForAlfrescoToStart.sh
+       script:
+         - echo "Community Rest API Tests"
+     - name: "Enterprise Rest API Tests"
+       stage: Tests
+       install:
+         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
+       before_script:
+         - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+         - bash scripts/waitForAlfrescoToStart.sh
+       script:
+         - echo "Enterprise Rest API Tests"
+     - name: "Community UI Tests ..."
+       stage: Tests
+       install:
+         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
+       before_script:
+         - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
+         - bash scripts/waitForAlfrescoToStart.sh
+       script:
+         - echo "Community UI Tests ..."
+     - name: "Enterprise UI Tests ..."
+       stage: Tests
+       install:
+         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+       before_script:
+         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
+         - bash scripts/waitForAlfrescoToStart.sh
+       script:
+         - echo "Enterprise UI Tests ..."
 
-    # - name: "Source Clear Scan (SCA)"
-    #   stage: Security Scans
-    #   script:
-    #    - echo "Source Clear Scan (SCA)"
-    # - name: "Static Analysis (SAST)"
-    #   stage: Security Scans
-    #   script:
-    #    - echo "Static Analysis (SAST)"
+     - name: "Source Clear Scan (SCA)"
+       stage: Security Scans
+       script:
+        - echo "Source Clear Scan (SCA)"
+     - name: "Static Analysis (SAST)"
+       stage: Security Scans
+       script:
+        - echo "Static Analysis (SAST)"
 
-    # - name: "Community Release"
-    #   stage: Release
-    #   script:
-    #     - echo "Community Release"
-    # - name: "Enterprise Release"
-    #   stage: Release
-    #   script:
-    #     - echo "Enterprise Release"
+     - name: "Community Release"
+       stage: Release
+       script:
+         - echo "Community Release"
+     - name: "Enterprise Release"
+       stage: Release
+       script:
+         - echo "Enterprise Release"
 
-    # - name: "Copy to S3 Release Bucket"
-    #   stage: Publish
-    #   script:
-    #     - echo "Copy to S3 Release Bucket"
+     - name: "Copy to S3 Release Bucket"
+       stage: Publish
+       script:
+         - echo "Copy to S3 Release Bucket"

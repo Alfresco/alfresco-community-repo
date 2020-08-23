@@ -11,8 +11,6 @@
     </parent>
 
     <properties>
-        <dependency.alfresco-core.version>7.21</dependency.alfresco-core.version>
-        <dependency.cxf.version>3.3.2</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
@@ -302,12 +300,12 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.21-20190624-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.21-20190624-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.tdunning</groupId>

@@ -25,10 +25,12 @@
 
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
         <version.edition>Community</version.edition>
+        <licenseName>community</licenseName>
+        <alfresco.package.name>alfresco-community</alfresco.package.name>
 
-        <acs.version.major>7</acs.version.major>
-        <acs.version.minor>0</acs.version.minor>
-        <acs.version.revision>0</acs.version.revision>
+        <acs.version.major>6</acs.version.major>
+        <acs.version.minor>1</acs.version.minor>
+        <acs.version.revision>1</acs.version.revision>
         <acs.version.label></acs.version.label>
 
         <java.version>11</java.version>
@@ -36,7 +38,16 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
+        <image.tag>latest</image.tag>
+        <image.registry>quay.io</image.registry>
+
+        <installer.version.name>${project.version}</installer.version.name>
+        <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
+
+        <dir.root>${project.build.directory}/alf_data</dir.root>
+        <img.exe>convert</img.exe>
+
+        <dependency.alfresco-hb-data-sender.version>1.0.10</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
@@ -46,16 +57,18 @@
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.transform.model.version>1.0.2.11</dependency.transform.model.version>
+        <dependency.transform.model.version>0.0.10</dependency.transform.model.version>
+        <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
+        <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
 
-        <dependency.spring.version>5.2.8.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
-        <dependency.jackson.version>2.11.2</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.3.7</dependency.cxf.version>
+        <dependency.jackson.version>2.9.9</dependency.jackson.version>
+        <dependency.jackson-databind.version>2.9.10.3</dependency.jackson-databind.version>
+        <dependency.cxf.version>3.3.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.20</dependency.pdfbox.version>
-        <dependency.webscripts.version>8.8</dependency.webscripts.version>
+        <dependency.webscripts.version>7.8</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.4.6</dependency.mockito-core.version>
         <dependency.org-json.version>20090211</dependency.org-json.version>
@@ -63,25 +76,34 @@
         <dependency.guava.version>28.2-jre</dependency.guava.version>
         <dependency.commons-io.version>2.7</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
-        <dependency.httpclient.version>4.5.12</dependency.httpclient.version>
-        <dependency.httpcore.version>4.4.13</dependency.httpcore.version>
+        <dependency.httpclient.version>4.5.6</dependency.httpclient.version>
+        <dependency.httpcore.version>4.4.5</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
-        <dependency.gytheio.version>0.11.6</dependency.gytheio.version>
         <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
+        <dependency.groovy.version>2.5.9</dependency.groovy.version>
+        <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
+        <dependency.tika.version>1.21-20190624-alfresco-patched</dependency.tika.version>
+        <dependency.truezip.version>7.7.10</dependency.truezip.version>
+        <dependency.poi.version>4.0.1</dependency.poi.version>
+        <dependency.keycloak.version>6.0.1</dependency.keycloak.version>
+        <dependency.jboss.logging.version>3.3.2.Final</dependency.jboss.logging.version>
+        <dependency.camel.version>2.24.0</dependency.camel.version>
+        <dependency.activemq.version>5.15.7</dependency.activemq.version>
+        <dependency.pdfbox.version>2.0.15</dependency.pdfbox.version>
 
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.3.1</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.3.0</alfresco.aos-module.version>
 
-        <dependency.postgresql.version>42.2.14</dependency.postgresql.version>
-        <dependency.mysql.version>8.0.21</dependency.mysql.version>
-        <dependency.mariadb.version>2.6.2</dependency.mariadb.version>
+        <dependency.postgresql.version>42.2.6</dependency.postgresql.version>
+        <dependency.mysql.version>5.1.47</dependency.mysql.version>
+        <dependency.mariadb.version>2.2.5</dependency.mariadb.version>
 
-        <dependency.tas-utility.version>3.0.21</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.20</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
-        <dependency.tas-restapi.version>1.47</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.33</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.13</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>

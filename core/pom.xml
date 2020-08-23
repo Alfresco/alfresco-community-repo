@@ -11,8 +11,7 @@
    </parent>
    
    <properties>
-      <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
-      <dependency.surf.version>7.4</dependency.surf.version>
+      <dependency.org-json.version>20160212</dependency.org-json.version>
    </properties>
 
    <dependencies>
@@ -29,7 +28,6 @@
       <dependency>
          <groupId>commons-httpclient</groupId>
          <artifactId>commons-httpclient</artifactId>
-         <version>3.1-HTTPCLIENT-1265</version>
       </dependency>
       <dependency>
          <groupId>commons-logging</groupId>
@@ -76,7 +74,6 @@
       <dependency>
          <groupId>org.json</groupId>
          <artifactId>json</artifactId>
-         <version>20160212</version>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
@@ -109,7 +106,7 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-surf-core-configservice</artifactId>
-         <version>${dependency.surf.version}</version>
+         <version>${dependency.webscripts.version}</version>
       </dependency>
       <dependency>
          <groupId>javax.xml.bind</groupId>
@@ -144,7 +141,6 @@
       <dependency>
          <groupId>org.apache.httpcomponents</groupId>
          <artifactId>httpclient</artifactId>
-         <version>4.5.4</version>
       </dependency>
 
       <!-- provided dependencies -->

@@ -14,8 +14,6 @@
     <properties>
         <scm-path>local/development/workspace</scm-path>
         <scm-revision>${buildNumber}</scm-revision>
-
-        <licenseName>community</licenseName>
     </properties>
 
     <dependencies>
@@ -269,7 +267,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
                     <configuration>
                         <source>${maven.build.sourceVersion}</source>
                     </configuration>

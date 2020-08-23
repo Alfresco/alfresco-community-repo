@@ -248,12 +248,12 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.17-20180201-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.17-20180201-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.tdunning</groupId>

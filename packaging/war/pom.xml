@@ -13,8 +13,6 @@
     <properties>
         <scm-path>${project.parent.parent.scm.url}</scm-path>
         <scm-revision>${build-number}</scm-revision>
-
-        <licenseName>community</licenseName>
     </properties>
 
     <dependencies>

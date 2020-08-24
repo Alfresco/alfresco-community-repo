@@ -29,6 +29,7 @@ cache:
 before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
 
 before_install:
+  - echo "MAVEN_OPTS='-Xmx2g -XX:MaxPermSize=1024m -Xms256m'" > ~/.mavenrc
   - mkdir -p "${HOME}/.m2" && cp -f .travis.settings.xml "${HOME}/.m2/settings.xml"
   - find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
   - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}

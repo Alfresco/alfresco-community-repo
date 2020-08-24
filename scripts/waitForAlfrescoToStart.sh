@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export ALFRESCO_URL="http://localhost:8080/alfresco"
-
 WAIT_INTERVAL=1
 COUNTER=0
 TIMEOUT=300

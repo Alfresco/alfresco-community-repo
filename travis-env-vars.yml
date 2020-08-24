@@ -12,7 +12,7 @@ env:
     - AWS_SECRET_ACCESS_KEY=${CREATE_BUCKET_AWS_SECRET_KEY}
     - S3_BUCKET_REGION="us-east-1"
     - S3_BUCKET_NAME="travis-ags-${TRAVIS_JOB_NUMBER}"
-    - S3_BUCKET2_NAME="travis-ags-worm-${TRAVIS_JOB_NUMBER}-b2"
+    - S3_BUCKET2_NAME="travis-ags-worm-b2"
     - ALFRESCO_URL="http://localhost:8080/alfresco"
     - SHARE_URL="http://localhost:8181/share"
     - DISPLAY=:99.0

@@ -15,5 +15,4 @@ env:
     - S3_BUCKET2_NAME="travis-ags-worm-${TRAVIS_JOB_NUMBER}-b2"
     - ALFRESCO_URL="http://localhost:8080/alfresco"
     - SHARE_URL="http://localhost:8181/share"
-    - GRID_URL="http://127.0.0.1:4444/wd/hub"
     - DISPLAY=:99.0

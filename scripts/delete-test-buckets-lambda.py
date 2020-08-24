@@ -1,5 +1,6 @@
 import json
 import boto3
+from datetime import datetime, timedelta, timezone
 from botocore.exceptions import ClientError
 
 
@@ -22,6 +23,10 @@ def tag_matches(bucket):
             return True
     return False
 
+def age_matches(bucket):
+    delta = datetime.now(timezone.utc) - bucket.creation_date
+    return delta.days > 0
+
 def prefix_matches(bucket, prefix):
     if not prefix:
         return True
@@ -32,29 +37,56 @@ def prefix_matches(bucket, prefix):
 # Get a list of buckets to delete
 def get_buckets_to_delete(prefix):
     s3 = boto3.resource('s3')
+
     # Get all buckets matching bucket name prefix
     prefixed_buckets = [bucket for bucket in s3.buckets.all() if prefix_matches(bucket, prefix)]
-    # Filter buckets on tag
-    tagged_buckets = [bucket for bucket in prefixed_buckets if tag_matches(bucket)]
-    return tagged_buckets
 
+    # Filter buckets on tag
+    # tagged_buckets = [bucket for bucket in prefixed_buckets if tag_matches(bucket)]
+
+    # Filter buckets on age
+    old_buckets = [bucket for bucket in prefixed_buckets if age_matches(bucket)]
+
+    return old_buckets
 
 # Delete bucket
 def delete_bucket(bucket):
     try:
+        [object.delete for object in bucket.objects.all()]
+    except ClientError as e:
+        print("Failed to delete objects in bucket: " + bucket.name)
+        print(e)
+    try:
         bucket.objects.all().delete()
+    except ClientError as e:
+        print("Failed to delete objects in bucket: " + bucket.name)
+        print(e)
+
+    try:
+        [version.delete() for version in bucket.object_versions.all()]
+    except ClientError as e:
+        print("Failed to delete object_versions in bucket: " + bucket.name)
+        print(e)
+    try:
+        bucket.object_versions.delete()
+    except ClientError as e:
+        print("Failed to delete object_versions in bucket: " + bucket.name)
+        print(e)
+
+    try:
         bucket.delete()
         print("Bucket " + bucket.name + " was deleted")
     except ClientError as e:
         print("Failed to delete bucket: " + bucket.name)
         print(e)
 
+
 # Non-empty buckets are deleted (recursively); failed attempts will be logged.
 # The buckets are filtered on the name prefix: "travis-ags-worm-"
 def lambda_handler(event, context):
 
     # Retrieve bucket name prefix option
-    prefix = "travis-ags-worm-"
+    prefix = "travis-ags-"
 
     # Get a list of buckets to delete
     buckets_to_delete = get_buckets_to_delete(prefix)
@@ -70,3 +102,4 @@ def lambda_handler(event, context):
         'body': json.dumps('Done!')
     }
 
+#lambda_handler(None, None)

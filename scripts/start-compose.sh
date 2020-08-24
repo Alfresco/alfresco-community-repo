@@ -7,10 +7,6 @@ if [ -z "$DOCKER_COMPOSE_PATH" ] ; then
   exit 1
 fi
 
-# Fix uppercase bucket name if set
-#export S3_BUCKET_NAME="${S3_BUCKET_NAME,,}"
-#export S3_BUCKET2_NAME="${S3_BUCKET2_NAME,,}"
-
 echo "Starting AGS stack in ${DOCKER_COMPOSE_PATH}"
 
 # .env files are picked up from project directory correctly on docker-compose 1.23.0+

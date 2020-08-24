@@ -8,7 +8,7 @@ jdk:
   - openjdk11
 
 addons:
-  firefox: "42.0.0"
+  firefox: "43.0.1"
 
 services:
   - xvfb

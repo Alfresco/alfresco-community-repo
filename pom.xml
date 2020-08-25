@@ -26,6 +26,8 @@
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
         <version.edition>Community</version.edition>
 
+        <build-number>local</build-number>
+
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
@@ -738,7 +740,6 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5.3</version>
                     <configuration>
-                        <!-- TODO this will change the tag format for some of the ACS modules -->
                         <tagNameFormat>@{project.version}</tagNameFormat>
                     </configuration>
                 </plugin>

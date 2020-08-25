@@ -3,6 +3,7 @@ import:
   - source: travis-env-vars.yml
 os: linux
 dist: xenial
+language: java
 jdk:
   - openjdk11
 

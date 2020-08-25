@@ -1,11 +1,10 @@
 ---
 import:
   - source: travis-env-vars.yml
-os: linux
 dist: xenial
+sudo: required
 language: java
-jdk:
-  - openjdk11
+jdk: openjdk11
 
 addons:
   firefox: "43.0.1"
@@ -13,6 +12,10 @@ addons:
 services:
   - xvfb
   - docker
+
+git:
+  depth: false
+  quiet: true
 
 branches:
   only:
@@ -26,7 +29,7 @@ cache:
     - ${HOME}/.m2/repository
 
 # the cache can grow constantly
-before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
+# before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
 
 before_install:
   - mkdir -p "${HOME}/.m2" && cp -f .travis.settings.xml "${HOME}/.m2/settings.xml"
@@ -102,7 +105,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
         - bash scripts/create-worm-bucket.sh
-        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
+        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-rest.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
       after_script: bash scripts/cleanup.sh
@@ -134,7 +137,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
         - bash scripts/create-worm-bucket.sh
-        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
+        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-ui.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} -Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dwebdriver.element.wait.time=20000 -Dwebdriver.page.render.wait.time=60000
       after_script: bash scripts/cleanup.sh

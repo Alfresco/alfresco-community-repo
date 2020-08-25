@@ -29,7 +29,7 @@ cache:
 before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
 
 before_install:
-  - echo "MAVEN_OPTS='-Xmx2g -XX:MaxPermSize=1024m -Xms256m'" > ~/.mavenrc
+  - echo "MAVEN_OPTS='-Xmx4g -Xms512m'" > ~/.mavenrc
   - mkdir -p "${HOME}/.m2" && cp -f .travis.settings.xml "${HOME}/.m2/settings.xml"
   - find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
   - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
@@ -105,7 +105,7 @@ jobs:
         - bash scripts/create-worm-bucket.sh
         - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
         - bash scripts/waitForAlfrescoToStart.sh
-      script: travis_wait mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
+      script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
@@ -137,7 +137,7 @@ jobs:
         - bash scripts/create-worm-bucket.sh
         - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/worm-support-docker-compose.yml"
         - bash scripts/waitForAlfrescoToStart.sh
-      script: travis_wait mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} -Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dwebdriver.element.wait.time=20000 -Dwebdriver.page.render.wait.time=60000
+      script: mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} -Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dwebdriver.element.wait.time=20000 -Dwebdriver.page.render.wait.time=60000
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 

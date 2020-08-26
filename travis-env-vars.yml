@@ -8,3 +8,11 @@ env:
     - ENTERPRISE_REPO_PATH=rm-enterprise/rm-enterprise-repo
     - ENTERPRISE_SHARE_PATH=rm-enterprise/rm-enterprise-share
     - MVN_SKIP='-Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests'
+    - AWS_ACCESS_KEY_ID=${CREATE_BUCKET_AWS_ACCESS_KEY}
+    - AWS_SECRET_ACCESS_KEY=${CREATE_BUCKET_AWS_SECRET_KEY}
+    - S3_BUCKET_REGION="us-east-1"
+    - S3_BUCKET_NAME="travis-ags-${TRAVIS_JOB_NUMBER}"
+    - S3_BUCKET2_NAME="travis-ags-worm-b2"
+    - ALFRESCO_URL="http://localhost:8080/alfresco"
+    - SHARE_URL="http://localhost:8181/share"
+    - DISPLAY=:99.0

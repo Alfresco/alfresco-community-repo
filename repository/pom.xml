@@ -30,6 +30,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -464,7 +465,7 @@
             <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <!-- Spring Surf -->
         <dependency>
             <groupId>org.alfresco.surf</groupId>
@@ -917,18 +918,21 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -1345,5 +1349,5 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
 </project>

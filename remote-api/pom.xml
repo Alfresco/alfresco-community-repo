@@ -23,10 +23,12 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
             <exclusions>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>
@@ -138,12 +140,14 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>

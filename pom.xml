@@ -21,8 +21,6 @@
     </modules>
 
     <properties>
-        <dependency.alfresco-community-repo.version>${project.version}</dependency.alfresco-community-repo.version>
-
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
         <version.edition>Community</version.edition>
         <licenseName>community</licenseName>
@@ -137,60 +135,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>content-services-community</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <type>war</type>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-core</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-core</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-data-model</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-data-model</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-repository</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-repository</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-remote-api</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-remote-api</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-jlan-embed</artifactId>
@@ -618,41 +562,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>alfresco-community-repo-cmis-test</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>alfresco-community-repo-email-test</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>alfresco-community-repo-integration-test</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>alfresco-community-repo-restapi-test</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>alfresco-community-repo-webdav-test</artifactId>
-                <version>${dependency.alfresco-community-repo.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>utility</artifactId>

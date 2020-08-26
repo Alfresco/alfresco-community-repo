@@ -116,6 +116,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!--
             | provided dependencies (are not transitive and not included in webapps)

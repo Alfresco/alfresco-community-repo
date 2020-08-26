@@ -29,6 +29,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
             <exclusions>
                 <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
                 <exclusion>
@@ -882,6 +883,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
@@ -900,6 +902,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
@@ -918,6 +921,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
             <exclusions>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>

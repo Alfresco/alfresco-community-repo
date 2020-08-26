@@ -62,4 +62,7 @@ public class FilePlanComponentAspects
 
     // WORM store selector aspect
     public static final String ASPECT_STORE_SELECTOR = "cm:storeSelector";
+
+    // WORM Lock aspect
+    public static final String ASPECT_WORM_LOCK = "rme:wormLock";
 }

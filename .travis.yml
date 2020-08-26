@@ -235,6 +235,7 @@ jobs:
     # TODO enable job
     - name: "Push to Nexus"
       stage: release
+      if: false
       before_script: bash scripts/travis/verify_release_tag.sh
       script: travis_wait 40 bash scripts/travis/maven_release.sh
 

@@ -7,6 +7,8 @@ mkdir -p "${HOME}/.m2" && cp -f .travis.settings.xml "${HOME}/.m2/settings.xml"
 find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
 
 # Docker Logins
+# todo enable when the dockerhub credentials are set on the project
+#echo "${DOCKERHUB_USERNAME}" | docker login -u="${DOCKERHUB_PASSWORD}" --password-stdin
 echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
 
 # Enable experimental docker features (for the image squash option)

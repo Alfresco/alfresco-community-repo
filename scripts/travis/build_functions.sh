@@ -111,3 +111,18 @@ function pullAndBuildSameBranchOnUpstream() {
   popd
 }
 
+function retieveLatestTag() {
+  local REPO="${1}"
+  local BRANCH="${2}"
+
+  local LOCAL_PATH="/tmp/$(basename "${REPO%.git}")"
+
+  git clone -q -b "${BRANCH}" "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REPO}" "${LOCAL_PATH}"
+
+  pushd "${LOCAL_PATH}" >/dev/null
+  git describe --abbrev=0 --tags
+  popd >/dev/null
+
+  rm -rf "${LOCAL_PATH}"
+}
+

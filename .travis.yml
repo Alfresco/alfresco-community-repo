@@ -76,7 +76,6 @@ jobs:
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-      after_failure: tail ./target/reports/rm-automation-community-rest-api.log -5000
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:

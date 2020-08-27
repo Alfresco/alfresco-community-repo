@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -ev
+echo "=========================== Starting Build Script ==========================="
+PS4="\[\e[35m\]+ \[\e[m\]"
+set -vex
 pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
@@ -14,4 +16,8 @@ fi
 
 mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true "${PROFILES}"
 
+
+popd
+set +vex
+echo "=========================== Finishing Build Script =========================="
 

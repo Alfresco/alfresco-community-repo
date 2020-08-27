@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -ev
+echo "=========================== Starting Init Script ==========================="
+PS4="\[\e[35m\]+ \[\e[m\]"
+set -vex
 pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 # Maven Setup
@@ -16,4 +18,8 @@ sudo service docker restart
 
 # not helpful in this script
 # export HOST_IP=$(hostname  -I | cut -f1 -d' ')
+
+popd
+set +vex
+echo "=========================== Finishing Init Script =========================="
 

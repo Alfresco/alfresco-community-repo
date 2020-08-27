@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +vx
 
 function isPullRequestBuild() {
   test "${TRAVIS_PULL_REQUEST}" != "false"
@@ -126,3 +127,4 @@ function retieveLatestTag() {
   rm -rf "${LOCAL_PATH}"
 }
 
+set -vx

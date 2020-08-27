@@ -3,4 +3,4 @@ env:
     - AUTOMATION_COMMUNITY_PATH=rm-automation/rm-automation-community-rest-api
     - AUTOMATION_ENTERPRISE_PATH=rm-automation/rm-automation-enterprise-rest-api
     - AUTOMATION_UI_PATH=rm-automation/rm-automation-ui
-    - S3_INSTALLER_PATH=/eu.dl.alfresco.com/release/community/201707-build-00028/alfresco-community-installer-201707-linux-x64.bin
+    - S3_INSTALLER_PATH=/eu.dl.alfresco.com/release/enterprise/5.2/5.2.7/5.2.7.4/alfresco-content-services-installer-5.2.7.4-linux-x64.bin

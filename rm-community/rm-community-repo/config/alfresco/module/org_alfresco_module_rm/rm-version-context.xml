@@ -40,6 +40,7 @@
    <!-- extended version node service bean definition -->
    <bean id="rm.versionNodeService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionNodeServiceImpl">
       <property name="recordService" ref="RecordService" />
+      <property name="recordModelURIs" ref="recordService_recordModelURIs"/>
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionNodeService" />

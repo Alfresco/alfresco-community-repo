@@ -123,7 +123,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
     }
 
-    @Test
+    // TODO enable the test when APPS-46 is fixed
+    @Test (enabled = false)
     public void searchWhenTotalItemsReachWithNonRM() throws Exception
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
@@ -157,7 +158,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
-    @Test
+    // TODO enable the test when APPS-46 is fixed
+    @Test (enabled = false)
     public void searchWhenTotalItemsExceedNonRMUser() throws Exception
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
@@ -191,7 +193,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
-    @Test
+    // TODO enable the test when APPS-46 is fixed
+    @Test (enabled = false)
     public void searchResultsUnderTotalItemsNonRMUser() throws Exception
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)

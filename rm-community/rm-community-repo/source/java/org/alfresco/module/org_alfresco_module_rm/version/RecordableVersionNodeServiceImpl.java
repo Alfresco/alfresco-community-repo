@@ -27,13 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.version;
 
-import static org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl.RECORD_MODEL_URIS;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,6 +44,7 @@ import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -59,6 +59,17 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
 {
     /** record service */
     private RecordService recordService;
+
+    /** record model URI's */
+    private List<String> recordModelURIs;
+
+	/**
+     * @param recordModelURIs namespaces specific to records
+     */
+    public void setRecordModelURIs(List<String> recordModelURIs)
+    {
+        this.recordModelURIs = recordModelURIs;
+    }
 
     /**
      * @param recordService record service
@@ -116,7 +127,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
             if (!PROP_RECORDABLE_VERSION_POLICY.equals(property) &&
                     !PROP_FILE_PLAN.equals(property) &&
                     (recordService.isRecordMetadataProperty(property) ||
-                            RECORD_MODEL_URIS.contains(property.getNamespaceURI())))
+                            recordModelURIs.contains(property.getNamespaceURI())))
             {
                 properties.remove(property);
             }
@@ -208,9 +219,12 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
         NodeRef converted = VersionUtil.convertNodeRef(nodeRef);
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
+
             NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
             if (record != null && dbNodeService.exists(record))
             {
+//                Version versionRecored = recordableVersionService.getRecordedVersion(record);
+//                NodeRef node = versionRecored.getVersionedNodeRef();
                 Set<QName> aspects =  dbNodeService.getAspects(record);
                 return processAspects(aspects);
             }
@@ -244,7 +258,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
         {
             if (!ASPECT_VERSIONABLE.equals(aspect) &&
                     (recordService.isRecordMetadataAspect(aspect) ||
-                            RECORD_MODEL_URIS.contains(aspect.getNamespaceURI())))
+                            recordModelURIs.contains(aspect.getNamespaceURI())))
             {
                 result.remove(aspect);
             }

@@ -107,7 +107,7 @@ jobs:
         - bash scripts/create-worm-bucket.sh
         - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-rest.yml"
         - bash scripts/waitForAlfrescoToStart.sh
-      script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
+      script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Ds3.accessKey=${AWS_ACCESS_KEY_ID} -Ds3.secretKey=${AWS_SECRET_ACCESS_KEY} -Ds3.bucketName=${S3_BUCKET2_NAME} -Ds3.bucketRegion=${S3_BUCKET_REGION}
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 

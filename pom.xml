@@ -28,6 +28,7 @@
         <licenseName>community</licenseName>
         <alfresco.package.name>alfresco-community</alfresco.package.name>
 
+        <!-- The values set in version.properties. acs.version.label may be overridden in alfresco-enterprise-repo -->
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>

@@ -6,9 +6,8 @@
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>alfresco-community-repo-packaging</artifactId>
+        <version>6.56.15.300-TEST1-SNAPSHOT</version>
     </parent>
 
     <properties>

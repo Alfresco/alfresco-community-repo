@@ -59,16 +59,4 @@ public class RMRestProperties extends RestProperties
 
     @Value ("${docker.host}")
     private String dockerHost;
-
-    @Value ("${s3.accessKey}")
-    private String s3AccessKey;
-
-    @Value ("${s3.secretKey}")
-    private String s3SecretKey;
-
-    @Value ("${s3.bucketName}")
-    private String s3BucketName;
-
-    @Value ("${s3.bucketRegion}")
-    private String s3BucketRegion;
 }

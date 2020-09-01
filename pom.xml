@@ -65,9 +65,9 @@
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.9.8</dependency.jackson.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.pdfbox.version>2.0.20</dependency.pdfbox.version>
+        <dependency.pdfbox.version>2.0.12</dependency.pdfbox.version>
         <dependency.webscripts.version>6.20</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.60</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.4.6</dependency.mockito-core.version>
         <dependency.org-json.version>20090211</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
@@ -79,7 +79,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
-        <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
+        <dependency.jaxb.version>2.3.1</dependency.jaxb.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
         <dependency.tika.version>1.17-20180201-alfresco-patched</dependency.tika.version>
@@ -91,7 +91,7 @@
         <dependency.camel.version>2.22.1</dependency.camel.version>
         <dependency.activemq.version>5.15.7</dependency.activemq.version>
 
-        <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
+        <alfresco.googledocs.version>3.1.0</alfresco.googledocs.version>
         <alfresco.aos-module.version>1.2.2.1</alfresco.aos-module.version>
 
         <dependency.postgresql.version>42.2.5</dependency.postgresql.version>
@@ -263,7 +263,7 @@
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>2.3.2</version>
+                <version>2.3.0</version>
                 <!-- exclude c3p0 -->
                 <!-- see https://issues.alfresco.com/jira/browse/REPO-3447 -->
                 <exclusions>
@@ -291,12 +291,12 @@
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>1.9.4</version>
+                <version>1.9.3</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.14</version>
+                <version>1.11</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -308,7 +308,6 @@
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.2</version>
             </dependency>
-            <!-- Use 2.1 version as a newer dependency for commons-validator -->
             <dependency>
                 <groupId>commons-digester</groupId>
                 <artifactId>commons-digester</artifactId>
@@ -322,7 +321,7 @@
             <dependency>
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
-                <version>1.4</version>
+                <version>1.3.3</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
@@ -342,7 +341,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>3.1.0</version>
+                <version>3.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>
@@ -373,14 +372,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
                 <version>${dependency.spring.version}</version>
-                <!-- exclude spring-jcl which is brought in by spring-core -->
-                <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-jcl</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -407,14 +398,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
                 <version>${dependency.spring.version}</version>
-                <!-- exclude spring-jcl which is brought in by spring-orm -->
-                <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-jcl</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -439,54 +422,17 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${dependency.jackson-databind.version}</version>
+                <version>${dependency.jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
             </dependency>
-            <!-- newer dependency from camel-jackson -->
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jaxb-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>2.3.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-                <version>4.4.1</version>
-            </dependency>
-            <!-- Newer cxf libs, see REPO-3131 -->
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-rs-client</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${dependency.cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>${dependency.cxf.version}</version>
             </dependency>
             <!-- newer version, see REPO-3133 -->
             <dependency>
@@ -519,8 +465,8 @@
             </dependency>
             <dependency>
                 <groupId>org.alfresco.integrations</groupId>
-                <artifactId>alfresco-googledrive-repo-community</artifactId>
-                <version>${alfresco.googledrive.version}</version>
+                <artifactId>alfresco-googledocs-repo-community</artifactId>
+                <version>${alfresco.googledocs.version}</version>
                 <type>amp</type>
             </dependency>
             <!-- Enforce newer version -->
@@ -588,7 +534,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.8</version>
+                <version>20110211</version>
             </dependency>
 
             <dependency>
@@ -707,7 +653,7 @@
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
-                <version>2.10.6</version>
+                <version>2.10</version>
             </dependency>
 
             <!-- provided dependencies -->
@@ -722,7 +668,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13</version>
+                <version>4.12</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

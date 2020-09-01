@@ -223,8 +223,6 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
             NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
             if (record != null && dbNodeService.exists(record))
             {
-//                Version versionRecored = recordableVersionService.getRecordedVersion(record);
-//                NodeRef node = versionRecored.getVersionedNodeRef();
                 Set<QName> aspects =  dbNodeService.getAspects(record);
                 return processAspects(aspects);
             }

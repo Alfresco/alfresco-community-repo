@@ -85,7 +85,6 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-surf-core-configservice</artifactId>
-         <version>${dependency.spring.version}</version>
       </dependency>
       <dependency>
          <groupId>javax.xml.bind</groupId>

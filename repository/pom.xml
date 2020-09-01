@@ -19,7 +19,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
-            <version>${dependency.alfresco-jlan.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -51,7 +50,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-heartbeat-data-sender</artifactId>
-            <version>${dependency.alfresco-hb-data-sender.version}</version>
             <exclusions>
                 <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
                 <exclusion>
@@ -397,7 +395,6 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun</groupId>

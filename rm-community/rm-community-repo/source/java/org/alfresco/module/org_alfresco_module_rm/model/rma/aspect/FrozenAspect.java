@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.integrations.connector.worm.ObjectLockS3Service;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.util.PropertyModificationAllowedCheck;
@@ -78,6 +79,11 @@ public class FrozenAspect extends    BaseBehaviourBean
     protected FreezeService freezeService;
 
     /**
+     * Object lock S3 service
+     */
+    private ObjectLockS3Service objectLockS3Service;
+
+    /**
      * Utility class for property modification
      */
     private PropertyModificationAllowedCheck propertyModificationAllowedCheck;
@@ -88,6 +94,14 @@ public class FrozenAspect extends    BaseBehaviourBean
     public void setFreezeService(FreezeService freezeService)
     {
         this.freezeService = freezeService;
+    }
+
+    /**
+     * @param objectLockS3Service service
+     */
+    public void setObjectLockS3Service(ObjectLockS3Service objectLockS3Service)
+    {
+        this.objectLockS3Service = objectLockS3Service;
     }
 
     /**

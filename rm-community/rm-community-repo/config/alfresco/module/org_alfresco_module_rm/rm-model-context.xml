@@ -157,6 +157,9 @@
       <property name="identifierService" ref="recordsManagementIdentifierService"/>
    </bean>
 
+   <bean id="objectLockS3ServiceDefaultImpl"
+         class="org.alfresco.integrations.connector.worm.ObjectLockS3ServiceDefaultImpl"/>
+
    <bean id="rma.scheduled" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.ScheduledAspect" parent="rm.baseBehaviour">
       <property name="dispositionService" ref="dispositionService"/>
    </bean>
@@ -173,6 +176,8 @@
 
    <bean id="rma.freeze" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FrozenAspect" parent="rm.baseBehaviour">
       <property name="freezeService" ref="FreezeService" />
+      <property name="objectLockS3Service"
+                ref="#{ @'worm.objectLockS3Service' eq null ? 'objectLockS3ServiceDefaultImpl' : 'worm.objectLockS3Service' }"/>
       <property name="propertyModificationAllowedCheck" ref="updateFrozenPropertyCheck"/>
    </bean>
 

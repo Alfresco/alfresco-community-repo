@@ -1079,6 +1079,7 @@
         <property name="dispositionService" ref="DispositionService"/>
         <property name="recordableVersionService" ref="RecordableVersionService"/>
         <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
+        <property name="recordModelURIs" ref="recordService_recordModelURIs" />
         <property name="incompleteNodeTagger" ref="incompleteNodeTagger" />
         <property name="freezeService" ref="FreezeService" />
         <property name="namespaceService" ref="NamespaceService"/>
@@ -1097,7 +1098,16 @@
       <value>http://www.alfresco.org/model/rendition/1.0</value>
    </util:list>
 
-    <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
+   <!-- Defines a list of namespace URIs for record aspects -->
+   <util:list id="recordService_recordModelURIs" value-type="java.lang.String">
+      <value>http://www.alfresco.org/model/recordsmanagement/1.0</value>
+      <value>http://www.alfresco.org/model/rmcustom/1.0</value>
+      <value>http://www.alfresco.org/model/recordsmanagementreport/1.0</value>
+      <value>http://www.alfresco.org/model/recordableversion/1.0</value>
+      <value>http://www.alfresco.org/model/dod5015/1.0</value>
+   </util:list>
+
+   <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
       <property name="recordService" ref="recordService"/>
       <property name="namespaceService" ref="namespaceService"/>
     </bean>

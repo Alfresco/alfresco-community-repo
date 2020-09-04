@@ -93,7 +93,6 @@
       <dependency>
          <groupId>org.quartz-scheduler</groupId>
          <artifactId>quartz</artifactId>
-         <version>2.3.0</version>
          <!-- exclude c3p0 -->
          <!-- see https://issues.alfresco.com/jira/browse/REPO-3447 -->
          <exclusions>
@@ -164,7 +163,6 @@
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
-         <version>1.7.21</version>
          <scope>test</scope>
       </dependency>
       <dependency>

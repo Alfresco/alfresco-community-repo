@@ -533,7 +533,7 @@ public class BaseRMRestTest extends RestTest
      * @return the created record
      * @throws Exception
      */
-    public Record createElectronicRecord(String parentId, String name) throws Exception
+    public Record createElectronicRecord(String parentId, String name)
     {
        return createElectronicRecord(parentId, name ,null);
     }
@@ -547,7 +547,7 @@ public class BaseRMRestTest extends RestTest
      * @return the created record
      * @throws Exception
      */
-    public Record createElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    public Record createElectronicRecord(String parentId, String name, UserModel user)
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();

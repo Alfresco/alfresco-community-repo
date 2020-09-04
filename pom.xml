@@ -405,6 +405,32 @@
                 <artifactId>woodstox-core-asl</artifactId>
                 <version>4.4.1</version>
             </dependency>
+            <!-- Newer cxf libs, see REPO-3131 -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-client</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-policy</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
             <!-- newer version, see REPO-3133 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>

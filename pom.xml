@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.300-TEST1-SNAPSHOT</version>
+    <version>8.300-TEST2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -26,11 +26,13 @@
         <licenseName>community</licenseName>
         <alfresco.package.name>alfresco-community</alfresco.package.name>
 
+        <build-number>local</build-number>
+	
         <!-- The values set in version.properties. acs.version.label may be overridden in alfresco-enterprise-repo -->
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
-        <acs.version.label></acs.version.label>
+        <acs.version.label />
 
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
@@ -676,7 +678,6 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5.3</version>
                     <configuration>
-                        <!-- TODO this will change the tag format for some of the ACS modules -->
                         <tagNameFormat>@{project.version}</tagNameFormat>
                     </configuration>
                 </plugin>

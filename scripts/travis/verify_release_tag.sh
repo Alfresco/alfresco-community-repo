@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-set -ev
+echo "=========================== Starting Verify Release Tag Script ==========================="
+PS4="\[\e[35m\]+ \[\e[m\]"
+set -vex
+pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 #
 # Check that the version to be released does not already have a docker tag.
@@ -9,6 +12,11 @@ POM_VERSION=$(mvn -B -q help:evaluate -Dexpression=project.version -DforceStdout
 printf "POM version: %s\n" "${POM_VERSION}"
 
 IMAGE_TAG="${POM_VERSION%-SNAPSHOT}"
+
+if git rev-parse "${IMAGE_TAG}^{tag}" &>/dev/null ; then
+  echo "The next tag \"${IMAGE_TAG}\" already exists in the git project"
+  exit 1
+fi
 
 # get the image name from the pom file
 ALFRESCO_DOCKER_IMAGE="$(mvn -B -q help:evaluate -f ./packaging/docker-alfresco/pom.xml -Dexpression=image.name -DforceStdout)"
@@ -36,3 +44,9 @@ if docker_image_exists "${DOCKER_IMAGE_FULL_NAME}" ; then
 else
     echo "The ${RELEASE_VERSION} tag was not found"
 fi
+
+
+popd
+set +vex
+echo "=========================== Finishing Verify Release Tag Script =========================="
+

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-set -ev
+echo "=========================== Starting Release Script ==========================="
+PS4="\[\e[35m\]+ \[\e[m\]"
+set -vex
+pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
+
 
 # Use full history for release
 git checkout -B "${TRAVIS_BRANCH}"
@@ -14,4 +18,9 @@ mvn -B \
   -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
   -Dusername="${GIT_USERNAME}" \
   -Dpassword="${GIT_PASSWORD}"
+
+
+popd
+set +vex
+echo "=========================== Finishing Release Script =========================="
 

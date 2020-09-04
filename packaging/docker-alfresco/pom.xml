@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-packaging</artifactId>
-        <version>8.300-TEST1-SNAPSHOT</version>
+        <version>8.300-TEST2-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -189,15 +189,16 @@
                                     </build>
                                 </image>
                                 <!-- DockerHub image -->
-                                <image>
-                                    <name>${image.name}:${image.tag}</name>
-                                    <build>
-                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                        <buildOptions>
-                                            <squash>true</squash>
-                                        </buildOptions>
-                                    </build>
-                                </image>
+                                <!-- todo enable when the dockerhub credentials are set on the project -->
+<!--                                <image>-->
+<!--                                    <name>${image.name}:${image.tag}</name>-->
+<!--                                    <build>-->
+<!--                                        <dockerFileDir>${project.basedir}/</dockerFileDir>-->
+<!--                                        <buildOptions>-->
+<!--                                            <squash>true</squash>-->
+<!--                                        </buildOptions>-->
+<!--                                    </build>-->
+<!--                                </image>-->
                             </images>
                         </configuration>
                         <executions>
@@ -237,15 +238,16 @@
                                     </build>
                                 </image>
                                 <!-- DockerHub image -->
-                                <image>
-                                    <name>${image.name}:${project.version}</name>
-                                    <build>
-                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                        <buildOptions>
-                                            <squash>true</squash>
-                                        </buildOptions>
-                                    </build>
-                                </image>
+                                <!-- todo enable when the dockerhub credentials are set on the project -->
+<!--                                <image>-->
+<!--                                    <name>${image.name}:${project.version}</name>-->
+<!--                                    <build>-->
+<!--                                        <dockerFileDir>${project.basedir}/</dockerFileDir>-->
+<!--                                        <buildOptions>-->
+<!--                                            <squash>true</squash>-->
+<!--                                        </buildOptions>-->
+<!--                                    </build>-->
+<!--                                </image>-->
                             </images>
                         </configuration>
                         <executions>

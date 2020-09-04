@@ -57,7 +57,7 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.transform.model.version>0.0.10</dependency.transform.model.version>
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
-        <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
+        <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
 
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
@@ -71,14 +71,14 @@
         <dependency.mockito-core.version>3.4.6</dependency.mockito-core.version>
         <dependency.org-json.version>20090211</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
-        <dependency.guava.version>28.2-jre</dependency.guava.version>
+        <dependency.guava.version>27.1-jre</dependency.guava.version>
         <dependency.commons-io.version>2.6</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
         <dependency.httpclient.version>4.5.2</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.5</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
-        <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
-        <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
+        <dependency.xercesImpl.version>2.11.0-alfresco-patched-20180402</dependency.xercesImpl.version>
+        <dependency.slf4j.version>1.7.25</dependency.slf4j.version>
         <dependency.jaxb.version>2.3.1</dependency.jaxb.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
@@ -146,7 +146,7 @@
             <dependency>
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
-                <version>2.7.2-alfresco</version>
+                <version>2.7.2</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.services</groupId>
@@ -281,7 +281,8 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient-cache</artifactId>
-                <version>${dependency.httpclient.version}</version>
+<!--                <version>${dependency.httpclient.version}</version>-->
+                <version>4.5.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
@@ -319,12 +320,15 @@
                 <version>${dependency.spring.version}</version>
                 <!-- exclude spring-jcl which is brought in by spring-core -->
                 <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
+
+                <!-- WARNING: Undoing the fix done in most branches, but not 6.0.1.x, 6.1.1.x or 6.2.0.x
                 <exclusions>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
                     </exclusion>
                 </exclusions>
+                -->
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -353,12 +357,15 @@
                 <version>${dependency.spring.version}</version>
                 <!-- exclude spring-jcl which is brought in by spring-orm -->
                 <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-jcl</artifactId>
-                    </exclusion>
-                </exclusions>
+
+                <!-- WARNING: Undoing the fix done in most branches, but not 6.0.1.x, 6.1.1.x or 6.2.0.x
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-jcl</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    -->
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -399,12 +406,38 @@
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>2.3.3</version>
+                <version>2.3.2</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
                 <artifactId>woodstox-core-asl</artifactId>
-                <version>4.2.0</version>
+                <version>4.4.1</version>
+            </dependency>
+            <!-- Newer cxf libs, see REPO-3131 -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-client</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-policy</artifactId>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -470,7 +503,7 @@
             <dependency>
                 <groupId>com.drewnoakes</groupId>
                 <artifactId>metadata-extractor</artifactId>
-                <version>2.14.0</version>
+                <version>2.11.0</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -494,7 +527,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.19</version>
+                <version>1.18</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>

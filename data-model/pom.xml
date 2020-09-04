@@ -198,7 +198,6 @@
         <dependency>
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>woodstox-core-asl</artifactId>
-            <version>4.2.0</version>
         </dependency>
         <!-- This is now deployed at:
             | http://artifacts.alfresco.com/nexus/content/repositories/thirdparty/org/acegisecurity/acegi-security/0.8.2_patched/
@@ -216,7 +215,6 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.11.0-alfresco-patched-20180402</version>
         </dependency>
         <dependency>
             <groupId>xpp3</groupId>

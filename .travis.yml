@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - feature/REPO-5271_700
 
 env:
   global:

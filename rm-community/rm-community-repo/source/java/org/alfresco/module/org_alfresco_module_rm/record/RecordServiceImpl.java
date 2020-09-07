@@ -197,14 +197,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /** record model URI's */
-    public static final List<String> RECORD_MODEL_URIS = Collections.unmodifiableList(
-        Arrays.asList(
-            RM_URI,
-            RM_CUSTOM_URI,
-            ReportModel.RMR_URI,
-            RecordableVersionModel.RMV_URI,
-            DOD5015Model.DOD_URI
-    ));
+    private  List<String> recordModelURIs;
+
+    /**
+     * @param recordModelURIs namespaces specific to records
+     */
+    public void setRecordModelURIs(List<String> recordModelURIs)
+    {
+        this.recordModelURIs = recordModelURIs;
+    }
 
     /** non-record model URI's */
     private static final String[] NON_RECORD_MODEL_URIS = new String[]
@@ -268,6 +269,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
+
+    public RecordableVersionService getRecordableVersionService()
+    {
+        return recordableVersionService;
+    }
 
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
@@ -1733,7 +1739,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // check the URI's
-            result = RECORD_MODEL_URIS.contains(property.getNamespaceURI());
+            result = recordModelURIs.contains(property.getNamespaceURI());
 
             // check the custom model
             if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))

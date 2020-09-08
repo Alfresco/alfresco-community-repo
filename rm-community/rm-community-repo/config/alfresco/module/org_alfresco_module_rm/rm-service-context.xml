@@ -393,10 +393,13 @@
 
    <bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
+   <bean id="rootRecordsManagementCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+
    <bean id="filePlanService"
          parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <property name="rootContainerCache" ref="rootContainerCache" />
+        <property name="rootRecordsManagementCache" ref="rootRecordsManagementCache" />
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">

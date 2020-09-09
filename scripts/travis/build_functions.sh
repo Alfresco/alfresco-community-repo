@@ -94,6 +94,22 @@ function pullUpstreamTag() {
   cloneRepo "${UPSTREAM_REPO}" "${TAG}"
 }
 
+function pullUpstreamTagAndBuildDockerImage() {
+  local UPSTREAM_REPO="${1}"
+  local TAG="${2}"
+  local EXTRA_BUILD_ARGUMENTS="${3}"
+
+  cloneRepo "${UPSTREAM_REPO}" "${TAG}"
+
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
+
+  cd "$(basename "${UPSTREAM_REPO%.git}")"
+
+  mvn -B -V clean package -DskipTests -Dmaven.javadoc.skip=true "-Dimage.tag=${TAG}" ${EXTRA_BUILD_ARGUMENTS}
+
+  popd
+}
+
 function pullAndBuildSameBranchOnUpstream() {
   local UPSTREAM_REPO="${1}"
   local EXTRA_BUILD_ARGUMENTS="${2}"

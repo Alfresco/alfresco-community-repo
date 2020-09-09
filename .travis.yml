@@ -70,13 +70,14 @@ jobs:
         - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
-      before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
       install:
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-community-rest-api -am
+      before_script:
         - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
-      script:
-        - echo "Community Rest API Tests"
+      script: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
+      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:

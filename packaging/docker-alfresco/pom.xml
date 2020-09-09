@@ -189,16 +189,15 @@
                                     </build>
                                 </image>
                                 <!-- DockerHub image -->
-                                <!-- todo enable when the dockerhub credentials are set on the project -->
-<!--                                <image>-->
-<!--                                    <name>${image.name}:${image.tag}</name>-->
-<!--                                    <build>-->
-<!--                                        <dockerFileDir>${project.basedir}/</dockerFileDir>-->
-<!--                                        <buildOptions>-->
-<!--                                            <squash>true</squash>-->
-<!--                                        </buildOptions>-->
-<!--                                    </build>-->
-<!--                                </image>-->
+                                <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                        <buildOptions>
+                                            <squash>true</squash>
+                                        </buildOptions>
+                                    </build>
+                                </image>
                             </images>
                         </configuration>
                         <executions>
@@ -217,7 +216,7 @@
         </profile>
 
         <profile>
-            <id>release</id>
+            <id>releaseImage</id>
             <!-- publishes "image:release_version" on Quay & DockerHub -->
             <build>
                 <plugins>
@@ -238,16 +237,15 @@
                                     </build>
                                 </image>
                                 <!-- DockerHub image -->
-                                <!-- todo enable when the dockerhub credentials are set on the project -->
-<!--                                <image>-->
-<!--                                    <name>${image.name}:${project.version}</name>-->
-<!--                                    <build>-->
-<!--                                        <dockerFileDir>${project.basedir}/</dockerFileDir>-->
-<!--                                        <buildOptions>-->
-<!--                                            <squash>true</squash>-->
-<!--                                        </buildOptions>-->
-<!--                                    </build>-->
-<!--                                </image>-->
+                                <image>
+                                    <name>${image.name}:${project.version}</name>
+                                    <build>
+                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                        <buildOptions>
+                                            <squash>true</squash>
+                                        </buildOptions>
+                                    </build>
+                                </image>
                             </images>
                         </configuration>
                         <executions>
@@ -256,7 +254,8 @@
                                 <phase>deploy</phase>
                                 <goals>
                                     <goal>build</goal>
-                                    <goal>push</goal>
+                                    <!-- Image push is DISABLED, so Continuous Releases don't pollute the repository -->
+                                    <!--<goal>push</goal>-->
                                 </goals>
                             </execution>
                         </executions>

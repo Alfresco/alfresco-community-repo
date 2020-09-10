@@ -10,29 +10,6 @@
         <version>8.300-TEST2-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <licenseName>community</licenseName>
-
-        <dir.root>${project.build.directory}/alf_data</dir.root>
-        <img.exe>convert</img.exe>
-
-        <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
-        <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
-
-        <dependency.spring-security.version>5.2.1.RELEASE</dependency.spring-security.version>
-        <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>4.1.2</dependency.poi.version>
-        <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
-        <!-- REPO-4964 -->
-        <dependency.keycloak.version>11.0.0-alfresco-001</dependency.keycloak.version>
-        <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>2.24.2</dependency.camel.version>
-        <dependency.activemq.version>5.15.12</dependency.activemq.version>
-        <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
-        <dependency.acs-event-model.version>0.0.8</dependency.acs-event-model.version>
-        <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -42,7 +19,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
-            <version>${dependency.alfresco-jlan.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -75,7 +51,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-heartbeat-data-sender</artifactId>
-            <version>${dependency.alfresco-hb-data-sender.version}</version>
             <exclusions>
                 <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
                 <exclusion>
@@ -421,7 +396,6 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun</groupId>

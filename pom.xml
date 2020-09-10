@@ -23,9 +23,12 @@
     <properties>
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
         <version.edition>Community</version.edition>
+        <licenseName>community</licenseName>
+        <alfresco.package.name>alfresco-community</alfresco.package.name>
 
         <build-number>local</build-number>
 
+        <!-- The values set in version.properties. acs.version.label may be overridden in alfresco-enterprise-repo -->
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
@@ -35,6 +38,15 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
+
+        <image.tag>latest</image.tag>
+        <image.registry>quay.io</image.registry>
+
+        <installer.version.name>${project.version}</installer.version.name>
+        <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
+
+        <dir.root>${project.build.directory}/alf_data</dir.root>
+        <img.exe>convert</img.exe>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
@@ -47,6 +59,9 @@
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.transform.model.version>1.0.2.11</dependency.transform.model.version>
+        <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
+        <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
+        <dependency.acs-event-model.version>0.0.8</dependency.acs-event-model.version>
 
         <dependency.spring.version>5.2.8.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
@@ -70,6 +85,19 @@
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
         <dependency.gytheio.version>0.11.6</dependency.gytheio.version>
         <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
+        <dependency.groovy.version>2.5.9</dependency.groovy.version>
+        <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
+        <dependency.tika.version>1.24.1</dependency.tika.version>
+        <dependency.spring-security.version>5.2.1.RELEASE</dependency.spring-security.version>
+        <dependency.truezip.version>7.7.10</dependency.truezip.version>
+        <dependency.poi.version>4.1.2</dependency.poi.version>
+        <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
+        <dependency.keycloak.version>11.0.0-alfresco-001</dependency.keycloak.version>
+        <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
+        <dependency.camel.version>2.24.2</dependency.camel.version>
+        <dependency.activemq.version>5.15.12</dependency.activemq.version>
+        <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
+        <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
 
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.3.1</alfresco.aos-module.version>

@@ -232,10 +232,8 @@ jobs:
       script:
         - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
-    # TODO enable job
     - name: "Push to Nexus"
       stage: release
-      if: false
       before_script: bash scripts/travis/verify_release_tag.sh
       script: travis_wait 40 bash scripts/travis/maven_release.sh
 

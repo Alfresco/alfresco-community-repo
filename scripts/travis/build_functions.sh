@@ -123,7 +123,7 @@ function pullAndBuildSameBranchOnUpstream() {
   cd "$(basename "${UPSTREAM_REPO%.git}")"
 
   mvn -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true ${EXTRA_BUILD_ARGUMENTS}
-  mvn -B -V install -DskipTests -f packaging/tests/pom.xml
+  mvn -B -V -q install -DskipTests -f packaging/tests/pom.xml
 
   popd
 }

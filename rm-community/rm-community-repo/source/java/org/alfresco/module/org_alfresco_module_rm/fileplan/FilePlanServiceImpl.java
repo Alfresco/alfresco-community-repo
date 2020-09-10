@@ -197,7 +197,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         Set<QName> aspects = new HashSet<>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
 
-        Pair<StoreRef, String> key = new Pair<>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
+        Pair<StoreRef, String> key = new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
 
         if (!rootRecordsManagementCache.contains(key))
         {

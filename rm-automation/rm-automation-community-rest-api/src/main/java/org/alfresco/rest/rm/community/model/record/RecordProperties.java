@@ -264,5 +264,5 @@ public class RecordProperties extends TestModel
     private String store;
 
     @JsonProperty(PROPERTIES_WORM_UNLOCK_DATE)
-    private String wormUnlockDate;
+    private Date wormUnlockDate;
 }

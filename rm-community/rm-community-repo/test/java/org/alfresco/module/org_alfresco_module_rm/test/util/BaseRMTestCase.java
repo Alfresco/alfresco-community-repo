@@ -458,6 +458,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filter.disableBehaviour();
         try
         {
+            if (filePlanService != null)
+            {
+              filePlanService.clearRootRecordsManagementCache();
+            }
+
             if (filePlan != null && nodeService.exists(filePlan))
             {
                 List<NodeRef> holds = holdService.getHolds(filePlan);

@@ -178,6 +178,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 	}
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#clearRootRecordsManagementCache()
+     */
+    public void clearRootRecordsManagementCache()
+    {
+        this.rootContainerCache.clear();
+    }
+
+    /**
      * @param rootRecordsManagementCache        root records management node cache
      */
     public void setRootRecordsManagementCache(SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> rootRecordsManagementCache)

@@ -182,7 +182,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public void clearRootRecordsManagementCache()
     {
-        this.rootContainerCache.clear();
+        this.rootRecordsManagementCache.clear();
     }
 
     /**

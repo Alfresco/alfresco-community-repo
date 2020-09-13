@@ -8,7 +8,6 @@ jdk: openjdk11
 
 addons:
   firefox: "43.0.1"
-  artifacts: true
 
 services:
   - xvfb
@@ -133,13 +132,6 @@ jobs:
 
     - name: "Enterprise UI WORM Tests"
       stage: Tests
-      addons:
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
       install:
         - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
@@ -148,6 +140,13 @@ jobs:
         - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-ui.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} -Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dwebdriver.element.wait.time=20000 -Dwebdriver.page.render.wait.time=60000
+      addons:
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       after_script: bash scripts/cleanup.sh
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 

@@ -136,9 +136,9 @@ jobs:
       addons:
         artifacts:
           paths:
-            - ./governance-services/rm-automation/rm-automation-ui/target/surefire-reports
-            - ./governance-services/rm-automation/rm-automation-ui/target/reports
-            - ./governance-services/rm-automation/rm-automation-ui/target/screenshots
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
           target_paths: $TRAVIS_BUILD_NUMBER
       install:
         - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am

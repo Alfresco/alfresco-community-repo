@@ -178,11 +178,22 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 	}
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#clearRootRecordsManagementCache()
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#clearRootRecordsManagementCache(StoreRef)
      */
-    public void clearRootRecordsManagementCache()
+    public void clearRootRecordsManagementCache(StoreRef storeRef)
     {
-        this.rootRecordsManagementCache.clear();
+    	if (storeRef != null)
+    	{
+            Pair<StoreRef, String> key = new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
+            if (rootRecordsManagementCache.contains(key))
+            {
+                this.rootRecordsManagementCache.remove(key);
+            }
+    	}
+    	else
+    	{
+    		this.rootRecordsManagementCache.clear();
+    	}
     }
 
     /**

@@ -458,11 +458,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filter.disableBehaviour();
         try
         {
-            if (filePlanService != null)
-            {
-              filePlanService.clearRootRecordsManagementCache();
-            }
-
             if (filePlan != null && nodeService.exists(filePlan))
             {
                 List<NodeRef> holds = holdService.getHolds(filePlan);
@@ -488,6 +483,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             if (isCollaborationSiteTest() && siteService.getSite(collabSiteId) != null)
             {
                 siteService.deleteSite(collabSiteId);
+            }
+
+            if (filePlanService != null)
+            {
+              filePlanService.clearRootRecordsManagementCache(null);
             }
         }
         finally
@@ -941,6 +941,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         public void then() throws Exception  { /** empty implementation */ }
 
         public void after() throws Exception { /** empty implementation */ }
+        
+        public void mAfter() throws Exception
+        {
+        	this.after();
+        	if (filePlanService != null)
+        	{
+        	     filePlanService.clearRootRecordsManagementCache(null);
+        	}
+        }
 
         public void run() throws Exception
         {

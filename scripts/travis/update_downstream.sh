@@ -30,10 +30,14 @@ mvn versions:set-property versions:commit \
 git status
 git --no-pager diff pom.xml
 git add pom.xml
-git commit -m "Update upstream version to ${VERSION}"
-#todo enable this
-#git push
-git status
+
+if git status --untracked-files=no --porcelain | grep -q '^' ; then
+  git commit -m "Update upstream version to ${VERSION}"
+  git push
+else
+  echo "Dependencies are already up to date."
+  git status
+fi
 
 
 popd

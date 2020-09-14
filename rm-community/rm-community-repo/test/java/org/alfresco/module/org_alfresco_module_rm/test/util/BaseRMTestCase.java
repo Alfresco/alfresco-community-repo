@@ -1020,13 +1020,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         @Override
                         public void runImpl() throws Exception
                         {
-                           after();
+                           mAfter();
                         }
                     }, runAsUser);
                 }
                 else
                 {
-                    after();
+                    mAfter();
                 }
             }
         }

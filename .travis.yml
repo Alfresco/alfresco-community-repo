@@ -25,7 +25,7 @@ branches:
 env:
   global:
     - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
-    - TAS_ENVIRONMENT=../alfresco-community-repo/packaging/tests/environment
+    - TAS_ENVIRONMENT=./packaging/tests/environment
 
 stages:
   - name: test

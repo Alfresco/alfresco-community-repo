@@ -13,7 +13,7 @@ cloneRepo "${DOWNSTREAM_REPO}" "${TRAVIS_BRANCH}"
 cd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${DOWNSTREAM_REPO%.git}")"
 
 # Update parent
-mvn versions:update-parent versions:commit
+mvn -B versions:update-parent versions:commit
 
 VERSION="$(sed -n '/<parent>/,/<\/parent>/p' pom.xml \
     | sed -n '/<version>/,/<\/version>/p' \
@@ -22,7 +22,7 @@ VERSION="$(sed -n '/<parent>/,/<\/parent>/p' pom.xml \
     | xargs)"
 
 # Update dependency version
-mvn versions:set-property versions:commit \
+mvn -B versions:set-property versions:commit \
   -Dproperty=dependency.alfresco-community-repo.version \
   "-DnewVersion=${VERSION}"
 

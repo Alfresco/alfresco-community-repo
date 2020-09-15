@@ -126,7 +126,7 @@
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
 
    <!-- Records Management Root Cache Behavior -->
-   <bean id="cleanRecordsManagementRootCache" class="org.alfresco.module.org_alfresco_module_rm.behaviour.CleanRecordsManagementRootCache" init-method="init">
+   <bean id="cleanRecordsManagementRootCache" class="org.alfresco.module.org_alfresco_module_rm.behaviour.UpdateRecordsManagementRootCache" init-method="init">
       <property name="policyComponent" ref="policyComponent"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="filePlanService" ref="FilePlanService" />

@@ -145,8 +145,7 @@ jobs:
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
-      script:
-       - echo "Source Clear Scan (SCA)"
+      script: travis_wait 30 bash scripts/source_clear.sh
     - name: "Static Analysis (SAST)"
       stage: Security Scans
       script:

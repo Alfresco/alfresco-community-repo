@@ -28,6 +28,8 @@ package org.alfresco.module.org_alfresco_module_rm.behaviour;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -39,7 +41,18 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 
-public class CleanRecordsManagementRootCache implements RecordsManagementModel, OnDeleteNodePolicy, OnRemoveAspectPolicy 
+/**
+ * Updates the records management root nodes cache from {@link FilePlanService}
+ *
+ * @author Tiago Salvado
+ *
+ * @see RecordsManagementModel
+ * @see OnCreateNodePolicy
+ * @see OnDeleteNodePolicy
+ * @see OnAddAspectPolicy
+ * @see OnRemoveAspectPolicy
+ */
+public class UpdateRecordsManagementRootCache implements RecordsManagementModel, OnCreateNodePolicy, OnDeleteNodePolicy, OnAddAspectPolicy, OnRemoveAspectPolicy
 {
 
 	private PolicyComponent policyComponent;
@@ -86,9 +99,17 @@ public class CleanRecordsManagementRootCache implements RecordsManagementModel, 
 
         // register behaviour
         policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                this,
+                new JavaBehaviour(this, "onAddAspect"));
+        policyComponent.bindClassBehaviour(
             QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
             this,
             new JavaBehaviour(this, "onRemoveAspect"));
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                this,
+                new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(
             QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
             this,
@@ -96,8 +117,19 @@ public class CleanRecordsManagementRootCache implements RecordsManagementModel, 
     }
 
     /**
-     * On remove aspect, performs the records management root cache clean operation but only
-     * if the removed aspects matches {@link RecordsManagementModel#ASPECT_RECORDS_MANAGEMENT_ROOT}
+     * Updates the root records management cache when adding an aspect
+     */
+	@Override
+	public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+	{
+        if (nodeRef != null && ASPECT_RECORDS_MANAGEMENT_ROOT.isMatch(aspectTypeQName))
+        {
+            addToRootRecordsManagementCache(nodeRef);
+        }
+	}
+
+    /**
+     * Updates the root records management cache on aspect removal
      */
 	@Override
 	public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
@@ -105,11 +137,24 @@ public class CleanRecordsManagementRootCache implements RecordsManagementModel, 
         if (nodeRef != null && ASPECT_RECORDS_MANAGEMENT_ROOT.isMatch(aspectTypeQName))
         {
             clearRootRecordsManagementCache(nodeRef);
-		}
+        }
 	}
 
+    /**
+     * Updates the root records management cache on node creation
+     */
+	@Override
+	public void onCreateNode(ChildAssociationRef childAssocRef)
+	{
+        if (childAssocRef != null)
+		{
+            addToRootRecordsManagementCache(childAssocRef.getParentRef());
+            addToRootRecordsManagementCache(childAssocRef.getChildRef());
+        }
+    }
+
 	/**
-	 * On delete node, performs the records management root cache clean operation
+	 * Updates the root records management cache on node removal
 	 */
 	@Override
 	public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
@@ -122,7 +167,19 @@ public class CleanRecordsManagementRootCache implements RecordsManagementModel, 
 	}
 	
 	/**
-	 * Cleans the records managements root cache in case of supplied nodeRef has {@link RecordsManagementModel#ASPECT_RECORDS_MANAGEMENT_ROOT} aspect
+	 * Adds a node to the records managements root node cache
+	 *
+	 * @param nodeRef
+	 */
+	private void addToRootRecordsManagementCache(NodeRef nodeRef) {
+        if (nodeRef != null && nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
+        {
+            filePlanService.addToRootRecordsManagementCache(nodeRef);
+        }
+	}
+	
+	/**
+	 * Cleans the records managements root node cache
 	 * 
 	 * @param nodeRef
 	 */

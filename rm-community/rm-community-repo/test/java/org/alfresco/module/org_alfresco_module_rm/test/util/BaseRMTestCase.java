@@ -27,7 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -487,7 +489,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
             if (filePlanService != null)
             {
-              filePlanService.clearRootRecordsManagementCache(null);
+                filePlanService.clearRootRecordsManagementCache(null);
             }
         }
         finally
@@ -942,15 +944,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         public void after() throws Exception { /** empty implementation */ }
         
-        public void mAfter() throws Exception
-        {
-        	this.after();
-        	if (filePlanService != null)
-        	{
-        	     filePlanService.clearRootRecordsManagementCache(null);
-        	}
-        }
-
         public void run() throws Exception
         {
             try
@@ -1020,13 +1013,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         @Override
                         public void runImpl() throws Exception
                         {
-                           mAfter();
+                           after();
                         }
                     }, runAsUser);
                 }
                 else
                 {
-                    mAfter();
+                    after();
                 }
             }
         }

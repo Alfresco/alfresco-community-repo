@@ -178,6 +178,34 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 	}
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#addToRootRecordsManagementCache(NodeRef)
+     */
+    public void addToRootRecordsManagementCache(NodeRef nodeRef)
+    {
+        if (nodeRef != null && nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
+        {
+            Set<NodeRef> roots;
+            StoreRef storeRef = nodeRef.getStoreRef();
+            Pair<StoreRef, String> key = new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
+
+            if (rootRecordsManagementCache.contains(key))
+            {
+                roots = this.rootRecordsManagementCache.get(key);
+            }
+            else
+            {
+                roots = new HashSet<>();
+            }
+
+            if (!roots.contains(nodeRef)) {
+                roots.add(nodeRef);
+            }
+
+            rootRecordsManagementCache.put(key, roots);
+        }
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#clearRootRecordsManagementCache(StoreRef)
      */
     public void clearRootRecordsManagementCache(StoreRef storeRef)
@@ -230,7 +258,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                     {
                         results.add(nodeRef);
                     }
-
+                    
                     return true;
                 }
             });

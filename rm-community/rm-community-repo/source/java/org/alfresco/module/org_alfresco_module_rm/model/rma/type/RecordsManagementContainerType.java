@@ -33,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -55,7 +56,8 @@ import org.alfresco.service.namespace.QName;
    defaultType = "rma:recordsManagementContainer"
 )
 public class RecordsManagementContainerType extends    BaseBehaviourBean
-                                            implements NodeServicePolicies.OnCreateChildAssociationPolicy
+                                            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                            NodeServicePolicies.OnDeleteChildAssociationPolicy
 {
     /** behaviour name */
     private static final String BEHAVIOUR_NAME = "onCreateContainerType";
@@ -69,8 +71,20 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     /** record folder service */
     protected RecordFolderService recordFolderService;
 
+    /** RM container cache manager **/
+    private RMContainerCacheManager rmContainerCacheManager;
+
     /** I18N */
     private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
+
+    /**
+     * @param rmContainerCacheManager        RM container cache manager
+     *
+     */
+    public void setRmContainerCacheManager(RMContainerCacheManager rmContainerCacheManager)
+    {
+        this.rmContainerCacheManager = rmContainerCacheManager;
+    }
 
     /**
      * @param identifierService identifier service
@@ -194,15 +208,48 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             setIdenifierProperty(child);
                         }
                     }
+
+                    if (rmContainerCacheManager != null)
+                    {
+                        rmContainerCacheManager.add(child);
+                    }
                 }
 
                 return null;
             }
         });
-
     }
 
     /**
+     * 
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION
+    )
+	public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                // Get the elements of the deleted association
+                final NodeRef child = childAssocRef.getChildRef();
+
+                if (rmContainerCacheManager != null)
+                {
+                    rmContainerCacheManager.remove(child);
+                }
+
+                return null;
+            }
+        });
+	}
+
+	/**
      * Set the identifier property
      *
      * @param nodeRef	node reference

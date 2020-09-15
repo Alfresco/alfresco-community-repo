@@ -346,18 +346,4 @@ public interface FilePlanService
      */
     NodeRef createRecordCategory(NodeRef parent, String name, Map<QName, Serializable> properties);
 
-    /**
-     * Adds a node to records management root node cache
-     *
-     * @param nodeRef
-     */
-    void addToRootRecordsManagementCache(NodeRef nodeRef);
-
-   /**
-    * Clears the records management root node cache
-    *
-    * @param storeRef
-    */
-   void clearRootRecordsManagementCache(StoreRef storeRef);
-
 }

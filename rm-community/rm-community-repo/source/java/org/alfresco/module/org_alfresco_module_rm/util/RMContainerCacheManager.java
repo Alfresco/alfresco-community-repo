@@ -127,12 +127,20 @@ public class RMContainerCacheManager implements RecordsManagementModel
      */
     public void remove(NodeRef nodeRef)
     {
-        if (nodeRef != null && nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
+        if (nodeRef != null)
         {
-            Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
-            if (cache.contains(key))
+            if (nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
             {
-                cache.get(key).remove(nodeRef);
+                Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
+                if (cache.contains(key))
+                {
+                    cache.get(key).remove(nodeRef);
+                }
+            }
+
+            if (TYPE_RM_SITE.equals(nodeService.getType(nodeRef)))
+            {
+                reset();
             }
         }
     }

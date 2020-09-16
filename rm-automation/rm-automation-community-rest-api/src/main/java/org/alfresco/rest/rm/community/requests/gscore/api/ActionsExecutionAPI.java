@@ -116,4 +116,19 @@ public class ActionsExecutionAPI extends RMModelRequest
         return getRmRestWrapper().withCoreAPI().usingActions()
                                  .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode);
     }
+
+    /**
+     * WORM lock a node for a period of days
+     *
+     * @param targetNode      the node on which the action is executed
+     * @param retentionPeriod the retention period in days for the WORM lock
+     * @throws Exception
+     */
+    @SneakyThrows
+    public JSONObject addWORMLock(RepoTestModel targetNode, int retentionPeriod)
+    {
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode,
+                                         ImmutableMap.of("retentionPeriod", String.valueOf(retentionPeriod)));
+    }
 }

@@ -132,6 +132,14 @@ jobs:
 
     - name: "Enterprise UI WORM Tests"
       stage: Tests
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       install:
         - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
@@ -145,8 +153,7 @@ jobs:
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
-      script:
-       - echo "Source Clear Scan (SCA)"
+      script: travis_wait 30 bash scripts/source_clear.sh
     - name: "Static Analysis (SAST)"
       stage: Security Scans
       script:

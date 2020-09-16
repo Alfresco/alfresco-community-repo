@@ -177,7 +177,8 @@
    </bean>
 
    <util:constant id="propThumbnailModification" static-field="org.alfresco.model.ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA" />
-   
+   <util:constant id="propModified" static-field="org.alfresco.model.ContentModel.PROP_MODIFIED" />
+
    <!-- Defines a list of namespace URIs for properties, which should be always editable for a frozen node-->
    <util:list id="frozen_alwaysEditURIs" value-type="java.lang.String">
       <value>http://www.alfresco.org/model/system/1.0</value>
@@ -188,6 +189,7 @@
       <property name="whiteList">
          <list>
             <ref bean="propThumbnailModification" />
+            <ref bean="propModified" />
          </list>
       </property>
       <property name="editableURIs" ref="frozen_alwaysEditURIs" />

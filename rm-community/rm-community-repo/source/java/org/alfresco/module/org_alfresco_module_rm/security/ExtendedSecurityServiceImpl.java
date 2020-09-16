@@ -57,8 +57,8 @@ import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
-import org.alfresco.repo.security.authentication.AuthenticationUtil; 
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork; 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
@@ -76,10 +76,10 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
     static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
     static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
-    
+
     /** max page size for authority query */
     private static final int MAX_ITEMS = 50;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
 
@@ -241,7 +241,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public void set(NodeRef nodeRef, Pair<Set<String>, Set<String>> readersAndWriters)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         set(nodeRef, readersAndWriters.getFirst(), readersAndWriters.getSecond());
     }
 
@@ -412,7 +412,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             }
 
             // determine if there are any more pages to inspect
-            hasMoreItems = hasMoreItems ? results.hasMoreItems() : false;
+            hasMoreItems = results.hasMoreItems();
             pageCount ++;
         }
 

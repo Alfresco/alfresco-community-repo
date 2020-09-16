@@ -221,7 +221,9 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
+     * Attempts to remove a deleted node from records management root cache
      * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteAssociationPolicy#onDeleteAssociation(org.alfresco.service.cmr.repository.AssociationRef)
      */
     @Override
     @Behaviour
@@ -248,9 +250,9 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 return null;
             }
         });
-	}
+    }
 
-	/**
+    /**
      * Set the identifier property
      *
      * @param nodeRef	node reference

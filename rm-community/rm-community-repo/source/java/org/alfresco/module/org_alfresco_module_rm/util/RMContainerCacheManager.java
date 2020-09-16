@@ -138,12 +138,6 @@ public class RMContainerCacheManager implements RecordsManagementModel
                     cache.get(key).remove(nodeRef);
                 }
             }
-
-            QName nodeType = nodeService.getType(nodeRef);
-            if (TYPE_RM_SITE.isMatch(nodeType) || TYPE_RECORDS_MANAGEMENT_CONTAINER.isMatch(nodeType) || TYPE_FILE_PLAN.isMatch(nodeType))
-            {
-                reset();
-            }
         }
     }
 

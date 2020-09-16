@@ -226,7 +226,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.ASSOCIATION
+       kind = BehaviourKind.ASSOCIATION,
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
 	public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {

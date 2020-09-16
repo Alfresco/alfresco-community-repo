@@ -39,6 +39,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
+import org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -73,7 +74,8 @@ public class RmSiteType extends    BaseBehaviourBean
                         implements NodeServicePolicies.OnCreateNodePolicy,
                                    NodeServicePolicies.OnUpdatePropertiesPolicy,
                                    NodeServicePolicies.BeforeDeleteNodePolicy,
-                                   NodeServicePolicies.OnCreateChildAssociationPolicy
+                                   NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                   NodeServicePolicies.OnDeleteChildAssociationPolicy
 {
 	/** Constant values */
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
@@ -95,6 +97,9 @@ public class RmSiteType extends    BaseBehaviourBean
 
     private FilePlanType filePlanType;
 
+    /** RM container cache manager **/
+    private RMContainerCacheManager rmContainerCacheManager;
+
     /** Map of file plan type's key'ed by corresponding site types */
     protected Map<QName, QName> mapFilePlanType = new HashMap<>(3);
 
@@ -105,7 +110,7 @@ public class RmSiteType extends    BaseBehaviourBean
     public void setSiteService(SiteService siteService)
     {
 		this.siteService = siteService;
-	}
+    }
 
     /**
      * @param recordsManagementSearchService    records management search service
@@ -134,6 +139,15 @@ public class RmSiteType extends    BaseBehaviourBean
     public void setFilePlanType(FilePlanType filePlanType)
     {
         this.filePlanType = filePlanType;
+    }
+
+    /**
+     * @param rmContainerCacheManager        RM container cache manager
+     *
+     */
+    public void setRmContainerCacheManager(RMContainerCacheManager rmContainerCacheManager)
+    {
+        this.rmContainerCacheManager = rmContainerCacheManager;
     }
 
     /**
@@ -311,6 +325,32 @@ public class RmSiteType extends    BaseBehaviourBean
     }
 
     /**
+     *
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION
+    )
+    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                // Resets RM Container Cache Manager
+                if (rmContainerCacheManager != null)
+                {
+                    rmContainerCacheManager.reset();
+                }
+
+                return null;
+            }
+        });
+    }
+
+    /**
      * Add the limitation of creating only one rma:filePlan or one dod:filePlan depending on the type of rm site.
      * Let multiple cm:folder type be created under rm site.
      *
@@ -347,6 +387,12 @@ public class RmSiteType extends    BaseBehaviourBean
     )
     public void onDeleteNodeOnCommit(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
+        // Resets RM Container Cache Manager
+        if (rmContainerCacheManager != null)
+        {
+            rmContainerCacheManager.reset();
+        }
+
         filePlanType.enable();
     }
 }

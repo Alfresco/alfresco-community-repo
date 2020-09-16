@@ -34,6 +34,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
@@ -138,7 +139,8 @@ public class RMContainerCacheManager implements RecordsManagementModel
                 }
             }
 
-            if (TYPE_RM_SITE.equals(nodeService.getType(nodeRef)))
+            QName nodeType = nodeService.getType(nodeRef);
+            if (TYPE_RM_SITE.isMatch(nodeType) || TYPE_RECORDS_MANAGEMENT_CONTAINER.isMatch(nodeType) || TYPE_FILE_PLAN.isMatch(nodeType))
             {
                 reset();
             }

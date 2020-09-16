@@ -124,6 +124,7 @@
       <property name="capabilityService" ref="CapabilityService" />
       <property name="authorityService" ref="AuthorityService" />
       <property name="filePlanType" ref="rma.filePlan" />
+      <property name="rmContainerCacheManager" ref="rmContainerCacheManager" />
    </bean>
 
    <!-- rma model aspects -->

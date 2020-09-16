@@ -325,7 +325,11 @@ public class RmSiteType extends    BaseBehaviourBean
     }
 
     /**
+     * Handles site deletion in order to reset the records management root cache
      *
+     * @param childAssocRef
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteAssociationPolicy#onDeleteAssociation(org.alfresco.service.cmr.repository.AssociationRef)
      */
     @Override
     @Behaviour
@@ -379,6 +383,13 @@ public class RmSiteType extends    BaseBehaviourBean
         });
     }
 
+    /**
+     * Handles the deletion node policy (alf:onDeleteNode), resetting the records management root cache
+     * and enabling file plan behavior as well
+     *
+     * @param childAssocRef
+     * @param isNodeArchived
+     */
     @Behaviour
     (
                 kind = BehaviourKind.CLASS,

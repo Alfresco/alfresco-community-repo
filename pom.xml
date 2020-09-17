@@ -593,7 +593,7 @@
       <image.registry>quay.io</image.registry>
 
       <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
-      <javax-jaxb-impl.version>3.0.0-M1</javax-jaxb-impl.version>
+      <javax-jaxb-impl.version>3.0.0-M4</javax-jaxb-impl.version>
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
    </properties>

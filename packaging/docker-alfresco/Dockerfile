@@ -1,105 +1,50 @@
-# Fetch image based on Tomcat 8.5 and Java 11
+# Fetch image based on Tomcat 8.5.28 and Java 8
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:8.5.51-java-11-openjdk-centos-7
-
-# Set default docker_context. Will / Can be overriden with maven.
-ARG resource_path=target
-
-# Set default user information
-ARG GROUPNAME=Alfresco
-ARG GROUPID=1000
-ARG IMAGEUSERNAME=alfresco
-ARG USERID=33000
-
-# Set default environment args
-ARG TOMCAT_DIR=/usr/local/tomcat
-
+FROM alfresco/alfresco-base-tomcat:8.5.28-java-8-oracle-centos-7
 
 # Create prerequisite to store tools and properties
-RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
-    mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/transform/renditions && \
-    mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/transform/pipelines && \
-    mkdir ${TOMCAT_DIR}/alfresco-mmt && \
-    touch ${TOMCAT_DIR}/shared/classes/alfresco-global.properties
+RUN mkdir -p /usr/local/tomcat/shared/classes/alfresco/extension && \
+    mkdir /usr/local/tomcat/alfresco-mmt
+RUN touch /usr/local/tomcat/shared/classes/alfresco-global.properties
 
 # You need to run `mvn clean install` in the root of this project to update the following dependencies
 # Copy the WAR files to the appropriate location for your application server
 # Copy the JDBC drivers for the database you are using to the lib/ directory.
 # Copy the alfresco-mmt.jar
-# Copy Licenses to the root of the Docker image
-RUN mkdir /licenses
-COPY ${resource_path}/licenses/ /licenses/
-COPY ${resource_path}/war ${TOMCAT_DIR}/webapps
-COPY ${resource_path}/connector/* ${TOMCAT_DIR}/lib/
-COPY ${resource_path}/alfresco-mmt/* ${TOMCAT_DIR}/alfresco-mmt/
+COPY target/war /usr/local/tomcat/webapps
+COPY target/connector/* /usr/local/tomcat/lib/
+COPY target/alfresco-mmt/* /usr/local/tomcat/alfresco-mmt/
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
+COPY target/server-root/* /usr/local/tomcat/webapps
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes
-RUN sed -i "s/shared.loader=/shared.loader=\${catalina.base}\/shared\/classes/" ${TOMCAT_DIR}/conf/catalina.properties
+RUN sed -i "s/shared.loader=/shared.loader=\${catalina.base}\/shared\/classes/" /usr/local/tomcat/conf/catalina.properties
 
-RUN mkdir -p ${TOMCAT_DIR}/amps
+# Add debug for testing
+# RUN echo -e '\n\
+# log4j.logger.org.alfresco.repo.content.transform.TransformerDebug=debug\n\
+# ' >> /usr/local/tomcat/shared/classes/alfresco/extension/custom-log4j.properties
 
-#RUN echo -e '\n\
-#log4j.logger.org.alfresco.repo.content.transform.TransformerDebug=debug\n\
-#' >> ${TOMCAT_DIR}/shared/classes/alfresco/extension/custom-log4j.propertiesRUN mkdir -p ${TOMCAT_DIR}/amps
+RUN mkdir -p /usr/local/tomcat/amps
 
 # Copy the amps from build context to the appropriate location for your application server
-COPY ${resource_path}/amps ${TOMCAT_DIR}/amps
+COPY target/amps /usr/local/tomcat/amps
 
 # Install amps on alfresco.war
-RUN java -jar ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt*.jar install \
-              ${TOMCAT_DIR}/amps ${TOMCAT_DIR}/webapps/alfresco -directory -nobackup -force
+RUN chmod 664 /usr/local/tomcat/alfresco-mmt/alfresco-mmt-*.jar && \
+    java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt*.jar install \
+              /usr/local/tomcat/amps /usr/local/tomcat/webapps/alfresco -directory -nobackup -force
 
-# Move the log file
-RUN sed -i -e "s_log4j.appender.File.File\=alfresco.log_log4j.appender.File.File\=${TOMCAT_DIR}/logs\/alfresco.log_" \
-        ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j.properties && \
+# Docker CMD from parent image starts the server
 
+# Unpack ROOT.war and make webapps folder read-only.
+RUN mkdir /usr/local/tomcat/webapps/ROOT && cd /usr/local/tomcat/webapps/ROOT && jar -xvf /usr/local/tomcat/webapps/ROOT.war && rm -f /usr/local/tomcat/webapps/ROOT.war && chmod -R =r /usr/local/tomcat/webapps && \
 # Add catalina.policy to ROOT.war and alfresco.war
 # Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
 # Grant only deployXmlPermission to ROOT webapp.
-    sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" ${TOMCAT_DIR}/conf/catalina.policy
+    sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" /usr/local/tomcat/conf/catalina.policy
 
-# fontconfig is required by Activiti worflow diagram generator
-# installing pinned dependencies as well
-RUN yum install -y fontconfig-2.13.0-4.3.el7 \
-                   dejavu-fonts-common-2.33-6.el7 \
-                   fontpackages-filesystem-1.44-8.el7 \
-                   freetype-2.8-12.el7 \
-                   libpng-1.5.13-7.el7_2 \
-                   dejavu-sans-fonts-2.33-6.el7 && \
-    yum clean all
-
-# Generate default keystore. Please generate new one for production systems
-ARG CERT_DNAME="CN=Alfresco Repository, OU=Unknown, O=Alfresco Software Ltd., L=Maidenhead, ST=UK, C=GB"
-ARG CERT_VALIDITY=36525
-ARG KEYSTORE_PASSWORD=mp6yc0UD9e
-RUN mkdir ${TOMCAT_DIR}/shared/classes/alfresco/keystore && \
-    keytool -genseckey -dname "$CERT_DNAME" -validity ${CERT_VALIDITY} -alias metadata -keyalg AES -keysize 256 -keystore ${TOMCAT_DIR}/shared/classes/alfresco/keystore/keystore -storetype pkcs12 -storepass ${KEYSTORE_PASSWORD}
-
-
-# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 
-# group only has restricted permissions and world has no permissions.
-RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost && \
-    mkdir -p ${TOMCAT_DIR}/alf_data && \
-    groupadd -g ${GROUPID} ${GROUPNAME} && \
-    useradd -u ${USERID} -G ${GROUPNAME} ${IMAGEUSERNAME} && \
-    chgrp -R ${GROUPNAME} ${TOMCAT_DIR} && \
-    chmod g+rx ${TOMCAT_DIR}/conf && \
-    chmod -R g+r ${TOMCAT_DIR}/conf && \
-    find ${TOMCAT_DIR}/webapps -type d -exec chmod 0750 {} \; && \
-    find ${TOMCAT_DIR}/webapps -type f -exec chmod 0640 {} \; && \
-    chmod -R g+r ${TOMCAT_DIR}/webapps && \
-    chmod g+r ${TOMCAT_DIR}/conf/Catalina && \
-    chmod g+rwx ${TOMCAT_DIR}/alf_data && \
-    chmod g+rwx ${TOMCAT_DIR}/logs && \
-    chmod o-w ${TOMCAT_DIR}/logs && \
-    chmod g+rwx ${TOMCAT_DIR}/temp && \
-    chmod g+rwx ${TOMCAT_DIR}/work && \
-    chmod o-w ${TOMCAT_DIR}/work
-
-EXPOSE 10001
-
-# For remote debug
-EXPOSE 8000
-
-USER ${IMAGEUSERNAME}
+# To remote debug into this image add: EXPOSE 8000
+# Changes are also required to the docker-compose/docker-compose.yml file.
+# EXPOSE 8000

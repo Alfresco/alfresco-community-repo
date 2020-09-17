@@ -44,7 +44,6 @@ import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -215,7 +214,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // TODO only supported for Version2
-        
+
         NodeRef converted = VersionUtil.convertNodeRef(nodeRef);
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {

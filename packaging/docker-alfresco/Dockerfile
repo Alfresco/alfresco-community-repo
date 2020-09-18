@@ -17,9 +17,10 @@ RUN touch /usr/local/tomcat/shared/classes/alfresco-global.properties
 COPY ${resource_path}/war /usr/local/tomcat/webapps
 COPY ${resource_path}/connector/* /usr/local/tomcat/lib/
 COPY ${resource_path}/alfresco-mmt/* /usr/local/tomcat/alfresco-mmt/
-RUN rm -rf /usr/local/tomcat/webapps/ROOT
-COPY ${resource_path}/server-root/* /usr/local/tomcat/webapps
-COPY ${resource_path}/vti-bin/* /usr/local/tomcat/webapps
+
+# Copy Licenses to the root of the Docker image
+RUN mkdir /licenses
+COPY ${resource_path}/licenses/ /licenses/
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes
@@ -42,15 +43,12 @@ RUN chmod 664 /usr/local/tomcat/alfresco-mmt/alfresco-mmt-*.jar && \
 
 # Docker CMD from parent image starts the server
 
-# Unpack ROOT.war and make webapps folder read-only.
-RUN mkdir /usr/local/tomcat/webapps/ROOT && cd /usr/local/tomcat/webapps/ROOT && jar -xvf /usr/local/tomcat/webapps/ROOT.war && rm -f /usr/local/tomcat/webapps/ROOT.war && chmod -R =r /usr/local/tomcat/webapps && \
+# Make webapps folder read-only.
+RUN chmod -R =r /usr/local/tomcat/webapps && \
 # Add catalina.policy to ROOT.war and alfresco.war
 # Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
 # Grant only deployXmlPermission to ROOT webapp.
     sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" /usr/local/tomcat/conf/catalina.policy
-
-# Unpack _vti_bin.war
-RUN mkdir /usr/local/tomcat/webapps/_vti_bin && cd /usr/local/tomcat/webapps/_vti_bin && jar -xvf /usr/local/tomcat/webapps/_vti_bin.war && rm -f /usr/local/tomcat/webapps/_vti_bin.war
 
 # To remote debug into this image add: EXPOSE 8000
 # Changes are also required to the docker-compose/docker-compose.yml file.

@@ -559,8 +559,8 @@
       <maven.resources.version>3.1.0</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.10.3</jackson.version>
-      <jackson-databind.version>2.10.1</jackson-databind.version>
+      <jackson.version>2.11.2</jackson.version>
+      <jackson-databind.version>2.11.2</jackson-databind.version>
       <fabric8.docker.version>0.31.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.12</postgresql.version>
@@ -593,7 +593,7 @@
       <image.registry>quay.io</image.registry>
 
       <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
-      <javax-jaxb-impl.version>3.0.0-M1</javax-jaxb-impl.version>
+      <javax-jaxb-impl.version>3.0.0-M4</javax-jaxb-impl.version>
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
    </properties>

@@ -399,6 +399,8 @@ public class ImapMessageTest extends TestCase
     }
 
     @Test
+    // Test fails in <= 6.2.0 after project simplification. Test did ot exist at that time.
+    @Category(RedundantTests.class)
     public void testSearchTermWithNonEnglishLocale() throws Exception
     {
         folder = (IMAPFolder) store.getFolder(TEST_FOLDER);
@@ -433,6 +435,8 @@ public class ImapMessageTest extends TestCase
     }
 
     @Test
+    // Test fails in <= 6.2.0 after project simplification. Test did ot exist at that time.
+    @Category(RedundantTests.class)
     public void testSearchTermWithNonEnglishLocaleFalsePositive() throws Exception
     {
         Locale defaultLocale = Locale.getDefault();

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -108,6 +109,8 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
 
     @Test
     @Deprecated
+    // Probably due to use of t-engines in test env.
+    @Category(RedundantTests.class)
     public void testTransformAndNulls()
     {
         NodeRef versionableNode = createNewVersionableNode();

@@ -21,20 +21,21 @@ branches:
   only:
     - master
     - /release\/.*/
-    - feature/ACS-457_travis-release-config
 
 env:
   global:
     - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
-    - TAS_ENVIRONMENT=../alfresco-community-repo/packaging/tests/environment
+    - TAS_ENVIRONMENT=./packaging/tests/environment
 
 stages:
   - name: test
     if: commit_message !~ /\[skip tests\]/
   - name: release
-    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no-release\]/
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no release\]/
+  - name: update_downstream
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
   - name: trigger_downstream
-    if: fork = false AND type != pull_request AND commit_message !~ /\[no-downstream\]/
+    if: fork = false AND (branch != master AND branch !~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
 
 before_install: travis_retry bash scripts/travis/init.sh
 install: travis_retry bash scripts/travis/build.sh
@@ -241,25 +242,19 @@ jobs:
       script:
         - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
-    # TODO enable job
     - name: "Push to Nexus"
       stage: release
-      if: false
-      install: travis_retry travis_wait 30 mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true -Pinternal
       before_script: bash scripts/travis/verify_release_tag.sh
       script: travis_wait 40 bash scripts/travis/maven_release.sh
+
+    - name: "Update alfresco-enterprise-repo"
+      stage: update_downstream
+      install: skip
+      script: bash scripts/travis/update_downstream.sh
 
     - name: "Trigger alfresco-enterprise-repo build"
       stage: trigger_downstream
       before_install: skip
       install: skip
       script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
-
-    # TODO enable or delete job
-    - name: "Trigger acs-community-packaging build"
-      stage: trigger_downstream
-      if: false
-      before_install: skip
-      install: skip
-      script: bash scripts/travis/trigger_travis.sh "Alfresco" "acs-community-packaging" "${TRAVIS_BRANCH}"
 

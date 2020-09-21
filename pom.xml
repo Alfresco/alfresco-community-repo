@@ -21,26 +21,22 @@
     </modules>
 
     <properties>
-        <!-- Set to "Community Early Access" to add to the version.edition property in version.properties  -->
-        <version.edition>Community</version.edition>
-        <licenseName>community</licenseName>
-        <alfresco.package.name>alfresco-community</alfresco.package.name>
-
         <acs.version.major>6</acs.version.major>
         <acs.version.minor>2</acs.version.minor>
         <acs.version.revision>1</acs.version.revision>
-        <acs.version.label></acs.version.label>
+        <acs.version.label />
+
+        <version.edition>Community</version.edition>
+        <licenseName>community</licenseName>
+
+        <build-number>local</build-number>
+        <image.tag>latest</image.tag>
+        <image.registry>quay.io</image.registry>
 
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
-
-        <image.tag>latest</image.tag>
-        <image.registry>quay.io</image.registry>
-
-        <installer.version.name>${project.version}</installer.version.name>
-        <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>

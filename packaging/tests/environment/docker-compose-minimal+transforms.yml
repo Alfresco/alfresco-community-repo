@@ -94,7 +94,6 @@ services:
 
   imagemagick:
     image: alfresco/alfresco-imagemagick:${TRANSFORMERS_TAG}
-    mem_limit: 1g
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       ACTIVEMQ_URL: "nio://activemq:61616"
@@ -106,7 +105,6 @@ services:
 
   libreoffice:
     image: alfresco/alfresco-libreoffice:${TRANSFORMERS_TAG}
-    mem_limit: 1g
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       ACTIVEMQ_URL: "nio://activemq:61616"
@@ -118,7 +116,6 @@ services:
 
   tika:
     image: alfresco/alfresco-tika:${TRANSFORMERS_TAG}
-    mem_limit: 1g
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       ACTIVEMQ_URL: "nio://activemq:61616"
@@ -130,7 +127,6 @@ services:
 
   transform-misc:
     image: alfresco/alfresco-transform-misc:${TRANSFORMERS_TAG}
-    mem_limit: 1g
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       ACTIVEMQ_URL: "nio://activemq:61616"

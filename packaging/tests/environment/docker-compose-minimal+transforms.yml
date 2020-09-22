@@ -88,7 +88,6 @@ services:
 
   imagemagick:
     image: alfresco/alfresco-imagemagick:${TRANSFORMERS_TAG}
-    mem_limit: 1g
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
     ports:
@@ -96,7 +95,6 @@ services:
 
   libreoffice:
     image: alfresco/alfresco-libreoffice:${TRANSFORMERS_TAG}
-    mem_limit: 1g
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
     ports:

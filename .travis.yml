@@ -22,11 +22,6 @@ branches:
     - master
     - /release\/.*/
 
-env:
-  global:
-    - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
-    - TAS_ENVIRONMENT=./packaging/tests/environment
-
 stages:
   - name: test
     if: commit_message !~ /\[skip tests\]/
@@ -38,7 +33,7 @@ stages:
     if: fork = false AND (branch != master AND branch !~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
 
 before_install: travis_retry bash scripts/travis/init.sh
-install: travis_retry bash scripts/travis/build.sh
+install: travis_retry travis_wait 30 bash scripts/travis/build.sh
 
 jobs:
   include:
@@ -168,62 +163,6 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "REST API TAS tests part1"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
-
-    - name: "REST API TAS tests part2"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
-
-    - name: "REST API TAS tests part3"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
-
-    - name: "CMIS TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
-
-    - name: "Email TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 30 mvn -B install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
-
-    - name: "WebDAV TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 30 mvn -B install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
-
-    - name: "Integration TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Push to Nexus"
       stage: release

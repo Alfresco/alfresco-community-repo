@@ -82,7 +82,7 @@
                                                             <table cellpadding="0" cellspacing="0" border="0">
                                                                <tr>
                                                                   <td valign="top">
-                                                                     <img src="${shareUrl}/res/components/documentlibrary/images/record-64.png" alt="" width="64" height="64" border="0" style="padding-right: 10px;" />
+                                                                     <img src="${shareUrl}/rm/components/documentlibrary/images/record-64.png" alt="" width="64" height="64" border="0" style="padding-right: 10px;" />
                                                                   </td>
                                                                   <td>
                                                                      <table cellpadding="2" cellspacing="0" border="0">

@@ -1,45 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>10</version>
-    </parent>
-
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>8.25.1</version>
 
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-data-model</url>
-        <tag>8.25.1</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-internal</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>7.33.12.300-TEST1-SNAPSHOT</version>
+    </parent>
 
     <properties>
-        <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
-
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
             source/java/org/alfresco/repo/search/impl/parsers/FTSParser.java,
             source/java/org/alfresco/repo/search/impl/parsers/FTSLexer.java
         </sonar.exclusions>
-
     </properties>
 
     <build>
@@ -143,32 +120,11 @@
         </pluginManagement>
     </build>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Newer cxf libs, see REPO-3131 -->
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>3.0.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http</artifactId>
-                <version>3.0.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>3.0.12</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-core.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <!--
             | provided dependencies (are not transitive and not included in webapps)
@@ -260,7 +216,6 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.11.0-alfresco-patched-20180402</version>
         </dependency>
         <dependency>
             <groupId>xpp3</groupId>
@@ -271,12 +226,12 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.17-20180201-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.17-20180201-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.tdunning</groupId>

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>7.300-TEST1-SNAPSHOT</version>
+        <version>7.300-TEST1</version>
     </parent>
 
     <profiles>

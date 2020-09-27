@@ -19,13 +19,13 @@ public class NodesTests extends RestTest
 {
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify files can be moved from one folder to another")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY}) 
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void testMoveFile() throws Exception
     {
         restClient.authenticateUser(dataContent.getAdminUser());
 
         /*
-         * Create the following file structure for preconditions : 
+         * Create the following file structure for preconditions :
          *   - sourceFolder
          *     - file
          *   - destinationFolder

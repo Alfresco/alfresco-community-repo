@@ -1,86 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>content-repository-community-tas-tests-parent</artifactId>
-    <version>6.2.2-SNAPSHOT</version>
+    <artifactId>alfresco-community-repo-tests</artifactId>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>alfresco-community-repo-packaging</artifactId>
+        <version>6.56.5.300-TEST1-SNAPSHOT</version>
     </parent>
 
     <modules>
-        <module>tas-restapi</module>
-        <module>tas-cmis</module>
-        <module>tas-email</module>
-        <module>tas-webdav</module>
-        <module>tas-integration</module>
+<!-- Even the old TAS tests don't support Java 8 -->
+<!--        <module>tas-restapi</module>-->
+<!--        <module>tas-cmis</module>-->
+<!--        <module>tas-email</module>-->
+<!--        <module>tas-webdav</module>-->
+<!--        <module>tas-integration</module>-->
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>utility</artifactId>
-                <version>${dependency.tas-utility.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.rest-assured</groupId>
-                <artifactId>rest-assured</artifactId>
-                <version>${dependency.rest-assured.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.json</artifactId>
-                <version>${dependency.javax.json.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>restapi</artifactId>
-                <version>${dependency.tas-restapi.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>cmis</artifactId>
-                <version>${dependency.tas-cmis.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>email</artifactId>
-                <version>${dependency.tas-email.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>webdav</artifactId>
-                <version>${dependency.tas-webdav.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.tas</groupId>
-                <artifactId>ftp</artifactId>
-                <version>${dependency.tas-ftp.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.test</groupId>
-                <artifactId>dataprep</artifactId>
-                <version>${dependency.tas-dataprep.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-test</artifactId>
-                <version>${dependency.spring.version}</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <properties>
+        <dependency.org-json.version>20170516</dependency.org-json.version>
+    </properties>
 </project>

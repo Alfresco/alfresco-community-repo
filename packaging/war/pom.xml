@@ -6,26 +6,25 @@
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>alfresco-community-repo-packaging</artifactId>
+        <version>6.56.15.300-TEST1-SNAPSHOT</version>
     </parent>
 
     <properties>
         <scm-path>local/development/workspace</scm-path>
         <scm-revision>${buildNumber}</scm-revision>
-
-        <licenseName>community</licenseName>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -80,18 +79,21 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

@@ -1323,22 +1323,22 @@ public class IntegrationCoreTests extends IntegrationTest
 
         STEP("5. Using IMAP bulk delete doc1 and doc2");
         imapProtocol.authenticateUser(testUser1).usingSite(testSitePublic).deleteMessage(testFile1.getName(), testFile2.getName()).assertThat().doesNotContainMessages(testFile1, testFile2);
-        Utility.waitToLoopTime(10);
 
         STEP("6. Using CMIS verify that doc1 and doc2 are deleted");
-        cmisAPI.authenticateUser(testUser1)
-                .usingResource(testFile1).assertThat().doesNotExistInRepo()
-                .and().usingResource(testFile2).assertThat().doesNotExistInRepo();
+        Utility.sleep(500, 10000, () ->
+                cmisAPI.authenticateUser(testUser1)
+                    .usingResource(testFile1).assertThat().doesNotExistInRepo()
+                    .and().usingResource(testFile2).assertThat().doesNotExistInRepo());
 
         STEP("7. Using IMAP delete childDoc1 to childDoc4");
         imapProtocol.authenticateUser(testUser1).usingResource(parentFolder1).deleteMessage(childDoc1.getName(), childDoc2.getName(), childDoc3.getName(), childDoc4.getName())
                 .assertThat().doesNotContainMessages(childDoc1, childDoc2, childDoc3, childDoc4);
-        Utility.waitToLoopTime(10);
 
         STEP("8. Using WebDAV and FTP verify if docs are deleted from their folders");
-        webDavProtocol.authenticateUser(testUser1).usingResource(parentFolder1).assertThat().hasFiles(childDoc5)
-                .and().usingResource(childDoc1).assertThat().doesNotExistInRepo()
-                .and().usingResource(childDoc2).assertThat().doesNotExistInRepo();
+        Utility.sleep(500, 10000, () ->
+                webDavProtocol.authenticateUser(testUser1).usingResource(parentFolder1).assertThat().hasFiles(childDoc5)
+                    .and().usingResource(childDoc1).assertThat().doesNotExistInRepo()
+                    .and().usingResource(childDoc2).assertThat().doesNotExistInRepo());
 
         ftpProtocol.authenticateUser(testUser1).usingResource(childDoc3)
                 .assertThat().doesNotExistInRepo()

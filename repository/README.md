@@ -7,7 +7,7 @@ The library contains the following:
 * Various Service implementations
 * Utility classes
 
-### Building and testing
+### Building and testing 
 The project can be built by running Maven command:
 ~~~
 mvn clean install

@@ -18,7 +18,10 @@ import org.testng.annotations.*;
 public abstract class EmailTest extends AbstractTestNGSpringContextTests
 {
     private static Logger LOG = LogFactory.getLogger();
-    
+
+    @Autowired
+    protected EmailProperties emailProperties;
+
     @Autowired
     ServerHealth serverHealth;
 
@@ -73,8 +76,7 @@ public abstract class EmailTest extends AbstractTestNGSpringContextTests
             dataGroup.usingUser(anonymousUser).addUserToGroup(GroupModel.getEmailContributorsGroup());
         }
 
-        String jmxUseJolokiaAgent = System.getProperty("jmx.useJolokiaAgent");
-        if ("true".equals(jmxUseJolokiaAgent))
+        if (emailProperties.getUseJolokiaAgent())
         {
             imapProtocol.assertThat().protocolIsEnabled();
             smtpProtocol.assertThat().protocolIsEnabled();

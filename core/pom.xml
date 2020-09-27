@@ -1,56 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
-
-   <parent>   
-      <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-super-pom</artifactId>
-      <version>12</version>
-   </parent>   
    <artifactId>alfresco-core</artifactId>
-   <version>7.35-SNAPSHOT</version>
    <name>Alfresco Core</name>
    <description>Alfresco core libraries and utils</description>
 
-   <scm>
-      <connection>scm:git:https://github.com/Alfresco/alfresco-core.git</connection>
-      <developerConnection>scm:git:https://github.com/Alfresco/alfresco-core.git</developerConnection>
-      <url>https://github.com/Alfresco/alfresco-core</url>
-      <tag>HEAD</tag>
-  </scm>
-
-   <distributionManagement>
-      <repository>
-          <id>alfresco-public</id>
-          <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-      </repository>
-   </distributionManagement>
-   
-   <properties>
-      <dependency.spring.version>5.1.15.RELEASE</dependency.spring.version>
-      <dependency.surf.version>7.16</dependency.surf.version>
-      <maven.build.sourceVersion>11</maven.build.sourceVersion>
-   </properties>
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-community-repo</artifactId>
+      <version>7.300-TEST1-SNAPSHOT</version>
+   </parent>
 
    <dependencies>
       <dependency>
          <groupId>commons-codec</groupId>
          <artifactId>commons-codec</artifactId>
-         <version>1.14</version>
       </dependency>
       <dependency>
          <groupId>commons-httpclient</groupId>
          <artifactId>commons-httpclient</artifactId>
-         <version>3.1-HTTPCLIENT-1265</version>
       </dependency>
       <dependency>
          <groupId>commons-logging</groupId>
          <artifactId>commons-logging</artifactId>
-         <version>1.2</version>
       </dependency>
       <dependency>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
-         <version>2.6</version>
       </dependency>
       <dependency>
          <groupId>org.apache.commons</groupId>
@@ -71,12 +46,10 @@
       <dependency>
          <groupId>org.json</groupId>
          <artifactId>json</artifactId>
-         <version>20160212</version>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-orm</artifactId>
-         <version>${dependency.spring.version}</version>
          <!-- exclude spring-jcl which is brought in by spring-core -->
          <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
          <exclusions>
@@ -89,12 +62,10 @@
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-context</artifactId>
-         <version>${dependency.spring.version}</version>
       </dependency>
       <dependency>
          <groupId>org.quartz-scheduler</groupId>
          <artifactId>quartz</artifactId>
-         <version>2.3.2</version>
          <!-- exclude c3p0 -->
          <!-- see https://issues.alfresco.com/jira/browse/REPO-3447 -->
          <exclusions>
@@ -107,7 +78,6 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-surf-core-configservice</artifactId>
-         <version>${dependency.surf.version}</version>
       </dependency>
       <dependency>
          <groupId>javax.xml.bind</groupId>
@@ -117,7 +87,6 @@
       <dependency>
          <groupId>com.sun.xml.bind</groupId>
          <artifactId>jaxb-impl</artifactId>
-         <version>2.3.2</version>
       </dependency>
       <dependency>
          <groupId>com.sun.xml.bind</groupId>
@@ -137,7 +106,6 @@
       <dependency>
          <groupId>joda-time</groupId>
          <artifactId>joda-time</artifactId>
-         <version>2.10.5</version>
       </dependency>
 
       <!-- provided dependencies -->
@@ -152,13 +120,11 @@
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
-         <version>1.7.30</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <version>4.13</version>
          <scope>test</scope>
       </dependency>
       <dependency>

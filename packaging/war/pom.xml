@@ -6,26 +6,25 @@
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging</artifactId>
-        <version>6.2.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>alfresco-community-repo-packaging</artifactId>
+        <version>7.300-TEST1-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <scm-path>local/development/workspace</scm-path>
-        <scm-revision>${buildNumber}</scm-revision>
-
-        <licenseName>community</licenseName>
+        <scm-path>${project.parent.parent.scm.url}</scm-path>
+        <scm-revision>${build-number}</scm-revision>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -42,7 +41,6 @@
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.avalon.framework</groupId>
@@ -73,25 +71,27 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -99,7 +99,6 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

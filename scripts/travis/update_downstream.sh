@@ -34,10 +34,8 @@ git --no-pager diff pom.xml
 git add pom.xml
 
 if git status --untracked-files=no --porcelain | grep -q '^' ; then
-  #todo enable this commit & push
-  echo "Skip for now"
-  #git commit -m "Update upstream version to ${VERSION}"
-  #git push
+  git commit -m "Update upstream version to ${VERSION}"
+  git push
 else
   echo "Dependencies are already up to date."
   git status

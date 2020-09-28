@@ -415,7 +415,7 @@ public class RecordAspect extends    AbstractDisposableItem
     @Behaviour
             (
                     kind = BehaviourKind.CLASS,
-                    notificationFrequency = NotificationFrequency.EVERY_EVENT
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
             )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -425,7 +425,7 @@ public class RecordAspect extends    AbstractDisposableItem
         ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
 
         // Check only storeNameAfter since the store name is updated before this method is triggered
-        // Does not allow content setting content to null when moving content between stores (case not covered by
+        // Does not allow setting content to null when moving content between stores (case not covered by
         // ContentPropertyRestrictionInterceptor)
         if (storeNameAfter != null && contentAfter != null)
         {

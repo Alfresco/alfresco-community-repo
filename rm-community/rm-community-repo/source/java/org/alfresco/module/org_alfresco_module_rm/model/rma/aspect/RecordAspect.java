@@ -39,7 +39,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDispos
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
-import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -77,7 +76,7 @@ public class RecordAspect extends    AbstractDisposableItem
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
                                      CopyServicePolicies.OnCopyCompletePolicy,
-                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -373,21 +372,6 @@ public class RecordAspect extends    AbstractDisposableItem
         }
     }
 
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
-    public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
-    {
-        // Allow creation of content but not update
-        if (beforeValue != null)
-        {
-            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
-        }
-    }
-
     /**
      * Behaviour to remove the shared link before declare a record
      * and to create new bin if the node is a copy or has copies
@@ -420,5 +404,38 @@ public class RecordAspect extends    AbstractDisposableItem
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /**
+     * Behaviour to prevent content update for records
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.EVERY_EVENT
+            )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
+
+        ContentData contentBefore = (ContentData) before.get(ContentModel.PROP_CONTENT);
+        ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
+
+        // Check only storeNameAfter since the store name is updated before this method is triggered
+        // Does not allow content setting content to null when moving content between stores (case not covered by
+        // ContentPropertyRestrictionInterceptor)
+        if (storeNameAfter != null && contentAfter != null)
+        {
+            return;
+        }
+        else if (contentBefore != null)
+        {
+            {
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+            }
+        }
     }
 }

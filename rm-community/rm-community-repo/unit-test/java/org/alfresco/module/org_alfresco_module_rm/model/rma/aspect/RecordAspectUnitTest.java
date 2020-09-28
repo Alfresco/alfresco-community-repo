@@ -141,7 +141,8 @@ public class RecordAspectUnitTest
     {
         Map<QName, Serializable> before = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl", "text/plain",
                 0L, "UTF-8", Locale.UK));
-        Map<QName, Serializable> after = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl", "text/plain", 0L, "UTF-8", Locale.UK));
+        Map<QName, Serializable> after = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl2", "text" +
+                "/plain", 0L, "UTF-8", Locale.UK));
         recordAspect.onUpdateProperties(NODE_REF, before, after);
     }
 

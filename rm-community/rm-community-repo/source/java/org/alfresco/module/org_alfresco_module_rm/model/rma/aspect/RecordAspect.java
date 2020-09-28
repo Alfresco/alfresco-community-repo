@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -431,11 +432,9 @@ public class RecordAspect extends    AbstractDisposableItem
         {
             return;
         }
-        else if (contentBefore != null)
+        else if (!EqualsHelper.nullSafeEquals(contentBefore, contentAfter))
         {
-            {
                 throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
-            }
         }
     }
 }

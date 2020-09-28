@@ -11,8 +11,8 @@ git fetch origin "${TRAVIS_BRANCH}"
 git checkout "${TRAVIS_BRANCH}"
 git pull
 
-# Retrieve the current Community version
-VERSION="$(evaluatePomProperty "project.version")"
+# Retrieve the current Community version - latest tag on the current branch
+VERSION="$(git describe --abbrev=0 --tags)"
 
 DOWNSTREAM_REPO="github.com/Alfresco/alfresco-enterprise-repo.git"
 

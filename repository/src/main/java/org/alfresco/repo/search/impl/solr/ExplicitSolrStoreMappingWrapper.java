@@ -34,7 +34,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
@@ -243,7 +243,7 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
     }
 

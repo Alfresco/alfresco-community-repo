@@ -543,68 +543,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count)
     {
-        if (indexerAndSearcher instanceof LuceneIndexerAndSearcher)
-        {
-            AspectDefinition definition = dictionaryService.getAspect(aspectName);
-            if(definition == null)
-            {
-                throw new IllegalStateException("Unknown aspect");
-            }
-            QName catProperty = null;
-            Map<QName, PropertyDefinition> properties = definition.getProperties();
-            for(QName pName : properties.keySet())
-            {
-                if(pName.getNamespaceURI().equals(aspectName.getNamespaceURI()))
-                {
-                    if(pName.getLocalName().equalsIgnoreCase(aspectName.getLocalName()))
-                    {
-                        PropertyDefinition def = properties.get(pName);
-                        if(def.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
-                        {
-                            catProperty = pName;
-                        }
-                    }
-                }
-            }
-            if(catProperty == null)
-            {
-                throw new IllegalStateException("Aspect does not have category property mirroring the aspect name");
-            }
-            
-            
-            LuceneIndexerAndSearcher lias = (LuceneIndexerAndSearcher) indexerAndSearcher;
-            String field = "@" + catProperty;
-            SearchService searchService = lias.getSearcher(storeRef, false);
-            if (searchService instanceof LuceneSearcher)
-            {
-                LuceneSearcher luceneSearcher = (LuceneSearcher)searchService;
-                List<Pair<String, Integer>> topTerms = luceneSearcher.getTopTerms(field, count);
-                List<Pair<NodeRef, Integer>> answer = new LinkedList<Pair<NodeRef, Integer>>();
-                for (Pair<String, Integer> term : topTerms)
-                {
-                    Pair<NodeRef, Integer> toAdd;
-                    NodeRef nodeRef = new NodeRef(term.getFirst());
-                    if (nodeService.exists(nodeRef))
-                    {
-                        toAdd = new Pair<NodeRef, Integer>(nodeRef, term.getSecond());
-                    }
-                    else
-                    {
-                        toAdd = new Pair<NodeRef, Integer>(null, term.getSecond());
-                    }
-                    answer.add(toAdd);
-                }
-                return answer;
-            }
-            else
-            {
-                throw new UnsupportedOperationException("getPolularCategories is only supported for lucene indexes");
-            }
-        }
-        else
-        {
-            throw new UnsupportedOperationException("getPolularCategories is only supported for lucene indexes");
-        }
+        throw new UnsupportedOperationException();
     }
 
 }

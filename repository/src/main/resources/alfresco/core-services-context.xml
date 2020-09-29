@@ -1266,20 +1266,6 @@
       </property>
    </bean>
 
-   <bean id="adm.luceneQueryEngineImpl" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.adm.luceneQueryEngineImpl</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
-         </list>
-      </property>
-   </bean>
-
    <bean id="statsService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />

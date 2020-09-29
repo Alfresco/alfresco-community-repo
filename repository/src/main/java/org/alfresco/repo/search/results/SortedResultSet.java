@@ -36,7 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.repo.search.SearcherException;
-import org.alfresco.repo.search.impl.lucene.LuceneResultSetRow;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -105,8 +104,7 @@ public class SortedResultSet implements ResultSet
         nodeRefsAndScores = new ArrayList<NodeRefAndScore>(resultSet.length());
         for (ResultSetRow row : resultSet)
         {
-            LuceneResultSetRow lrow = (LuceneResultSetRow) row;
-            nodeRefsAndScores.add(new NodeRefAndScore(row.getNodeRef(), row.getScore(), lrow.doc()));
+            nodeRefsAndScores.add(new NodeRefAndScore(row.getNodeRef(), row.getScore(), row.getIndex()));
         }
         ArrayList<OrderDefinition> order = new ArrayList<OrderDefinition>();
         for (SortDefinition sd : sortDefinitions)

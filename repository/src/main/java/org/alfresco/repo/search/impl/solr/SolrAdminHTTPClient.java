@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -170,7 +170,7 @@ public class SolrAdminHTTPClient
 
                 if (get.getStatusCode() != HttpServletResponse.SC_OK)
                 {
-                    throw new LuceneQueryParserException("Request failed " + get.getStatusCode() + " " + url.toString());
+                    throw new QueryParserException("Request failed " + get.getStatusCode() + " " + url.toString());
                 }
 
                 Reader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
@@ -185,19 +185,19 @@ public class SolrAdminHTTPClient
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (HttpException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (IOException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (JSONException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
     }
 

@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
@@ -176,7 +177,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     else
                     {
                         // No DBID found 
-                        throw new LuceneQueryParserException("No DBID found for doc ...");
+                        throw new QueryParserException("No DBID found for doc ...");
                     }
                 }
                 

@@ -186,7 +186,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicyTest.class,
     org.alfresco.repo.workflow.activiti.WorklfowObjectFactoryTest.class,
     org.alfresco.repo.workflow.WorkflowSuiteContextShutdownTest.class,
-    org.alfresco.repo.search.impl.lucene.analysis.PathTokenFilterTest.class,
+    org.alfresco.repo.search.LuceneUtilsTest.class,
     
     org.alfresco.heartbeat.HBDataCollectorServiceImplTest.class,
     org.alfresco.heartbeat.jobs.LockingJobTest.class,

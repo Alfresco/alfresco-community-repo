@@ -42,7 +42,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
 import org.alfresco.repo.query.NodeBackedEntity;
-import org.alfresco.repo.search.impl.lucene.LuceneUtils;
+import org.alfresco.repo.search.LuceneUtils;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.links.LinkInfo;

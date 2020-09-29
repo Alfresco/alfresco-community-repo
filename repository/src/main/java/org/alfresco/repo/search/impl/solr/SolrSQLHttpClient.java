@@ -36,8 +36,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.index.shard.Floc;
 import org.alfresco.repo.index.shard.ShardRegistry;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -210,11 +210,11 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         }
         catch (ConnectException ce)
         {
-            throw new LuceneQueryParserException("Unable to reach InsightEngine", ce);
+            throw new QueryParserException("Unable to reach InsightEngine", ce);
         }
         catch (JSONException | IOException | EncoderException e)
         {
-            throw new LuceneQueryParserException("Unable to parse the solr response ", e);
+            throw new QueryParserException("Unable to parse the solr response ", e);
         }
         
     }

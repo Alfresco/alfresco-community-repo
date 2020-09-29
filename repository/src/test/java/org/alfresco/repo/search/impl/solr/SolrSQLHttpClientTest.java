@@ -46,7 +46,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepositoryState;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -177,7 +177,7 @@ public class SolrSQLHttpClientTest
             solrSQLHttpClient.executeQuery(mockSearchParameters, LANGUAGE);
             fail("Expected exception to be thrown due to failed connection.");
         }
-        catch (LuceneQueryParserException e)
+        catch (QueryParserException e)
         {
             assertTrue("Expected message to mention InsightEngine.", e.getMessage().contains("InsightEngine"));
         }

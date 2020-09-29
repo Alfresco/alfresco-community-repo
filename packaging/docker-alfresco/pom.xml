@@ -126,6 +126,25 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>extract-keystore</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <!-- Extract keystore from alfresco-repository -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-repository</artifactId>
+                                    <version>${project.version}</version>
+                                    <includes>alfresco/keystore/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

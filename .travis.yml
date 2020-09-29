@@ -21,6 +21,7 @@ branches:
   only:
     - master
     - /release\/.*/
+    - feature/REPO-5358_merge_6213
 
 env:
   global:

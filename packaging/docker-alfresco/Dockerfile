@@ -70,13 +70,8 @@ RUN yum install -y fontconfig-2.13.0-4.3.el7 \
                    dejavu-sans-fonts-2.33-6.el7 && \
     yum clean all
 
-# Generate default keystore. Please generate new one for production systems
-ARG CERT_DNAME="CN=Alfresco Repository, OU=Unknown, O=Alfresco Software Ltd., L=Maidenhead, ST=UK, C=GB"
-ARG CERT_VALIDITY=36525
-ARG KEYSTORE_PASSWORD=mp6yc0UD9e
-RUN mkdir ${TOMCAT_DIR}/shared/classes/alfresco/keystore && \
-    keytool -genseckey -dname "$CERT_DNAME" -validity ${CERT_VALIDITY} -alias metadata -keyalg AES -keysize 256 -keystore ${TOMCAT_DIR}/shared/classes/alfresco/keystore/keystore -storetype pkcs12 -storepass ${KEYSTORE_PASSWORD}
-
+# Copy default keystore
+COPY ${resource_path}/dependency/alfresco/keystore/keystore ${TOMCAT_DIR}/shared/classes/alfresco/extension/keystore/
 
 # The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 
 # group only has restricted permissions and world has no permissions.

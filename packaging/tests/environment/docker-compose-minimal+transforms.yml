@@ -10,6 +10,16 @@ services:
     image: alfresco/alfresco-community-repo-base:latest
     environment:
       CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      JAVA_TOOL_OPTIONS: "
+        -Dencryption.keystore.type=JCEKS
+        -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding
+        -Dencryption.keyAlgorithm=DESede
+        -Dencryption.keystore.location=/usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore
+        -Dmetadata-keystore.password=mp6yc0UD9e
+        -Dmetadata-keystore.aliases=metadata
+        -Dmetadata-keystore.metadata.password=oKIWzVdEdA
+        -Dmetadata-keystore.metadata.algorithm=DESede
+      "
       JAVA_OPTS :
         "
         -Ddb.driver=org.postgresql.Driver
@@ -39,10 +49,6 @@ services:
         -Dftp.port=1221
         -Dcors.enabled=true
         -Dcors.allowed.origins=http://localhost:4200,http://localhost:8080
-        -Dmetadata-keystore.password=mp6yc0UD9e
-        -Dmetadata-keystore.aliases=metadata
-        -Dmetadata-keystore.metadata.password=mp6yc0UD9e
-        -Dmetadata-keystore.metadata.algorithm=AES
         "
     ports:
       - 8082:8080

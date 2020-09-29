@@ -23,16 +23,26 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl;
 
-/**
- * Json returned from Solr
- *
- * @author Gethin James
- * @since 5.0
- */
-public interface JSONResult
+import org.alfresco.error.AlfrescoRuntimeException;
+
+public class QueryParameterisationException extends AlfrescoRuntimeException
 {
-    public Long getQueryTime();
-    public long getNumberFound();
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
+    public QueryParameterisationException(String msg)
+    {
+        super(msg);
+    }
+
+    public QueryParameterisationException(String msg, Throwable cause)
+    {
+        super(msg, cause);
+    }
+
 }

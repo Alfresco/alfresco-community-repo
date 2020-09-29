@@ -23,11 +23,19 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl;
 
 import java.util.Arrays;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.impl.solr.SolrActionAclReportResult;
+import org.alfresco.repo.search.impl.solr.SolrActionAclTxReportResult;
+import org.alfresco.repo.search.impl.solr.SolrActionCheckResult;
+import org.alfresco.repo.search.impl.solr.SolrActionFixResult;
+import org.alfresco.repo.search.impl.solr.SolrActionNodeReportResult;
+import org.alfresco.repo.search.impl.solr.SolrActionReportResult;
+import org.alfresco.repo.search.impl.solr.SolrActionStatusResult;
+import org.alfresco.repo.search.impl.solr.SolrActionTxReportResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 

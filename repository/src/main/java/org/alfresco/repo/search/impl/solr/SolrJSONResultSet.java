@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.JSONResult;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;

@@ -26,7 +26,7 @@
 package org.alfresco.repo.search.impl.solr;
 
 import org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean;
-import org.alfresco.repo.search.impl.lucene.AbstractAlfrescoFtsQueryLanguage;
+import org.alfresco.repo.search.impl.AbstractAlfrescoFtsQueryLanguage;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;

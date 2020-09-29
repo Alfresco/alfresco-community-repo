@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public abstract class AbstractJSONAPIResult implements JSONAPIResult
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.JSONAPIResult#getCores()
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getCores()
      */
     @Override
     public List<String> getCores()
@@ -80,7 +80,7 @@ public abstract class AbstractJSONAPIResult implements JSONAPIResult
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.JSONAPIResult#getCoresInfo()
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getCoresInfo()
      */
     @Override
     public Map<String, Map<String, Object>> getCoresInfo() 

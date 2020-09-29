@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.repo.search.impl.lucene.JSONAPIResultFactory;
+import org.alfresco.repo.search.impl.JSONAPIResultFactory;
 import org.alfresco.repo.solr.SOLRAdminClient;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;

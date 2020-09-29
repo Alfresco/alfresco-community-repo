@@ -23,38 +23,44 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.IndexerException;
-import org.alfresco.repo.search.SearcherException;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-
 /**
- * @author Andy
+ * JSON returned from SOLR API
  *
+ * @author aborroy
+ * @since 6.2
  */
-public abstract class AbstractIndexerAndSearcher implements IndexerAndSearcher
+public interface JSONAPIResult
 {
-
-    private  Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
     
-    @Override
-    public void registerQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
-    {
-        this.queryLanguages.put(queryLanguage.getName().toLowerCase(), queryLanguage);
-    }
-
+    /**
+     * Time to perform the requested action or command in SOLR
+     * @return Number of milliseconds
+     */
+    public Long getQueryTime();
     
-    @Override
-    public Map<String, LuceneQueryLanguageSPI> getQueryLanguages()
-    {
-        return queryLanguages;
-    }
+    /**
+     * HTTP Response code
+     * But for 200, that is being returned as 0
+     * @return Number representing an HTTP Status
+     */
+    public Long getStatus();
+
+    /**
+     * Name of the cores managed by SOLR
+     * @return A list with the names of the cores
+     */
+    public List<String> getCores();
+
+    /**
+     * Information from the cores to be exposed in JMX Beans
+     * The names and the structure of the properties depend on the type of the Action
+     * @return Core information by core name
+     */
+    public Map<String, Map<String, Object>> getCoresInfo();
 
 }

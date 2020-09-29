@@ -23,13 +23,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,20 +38,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The results of executing a SOLR TX action
+ * The results of executing a SOLR NODE REPORT action
  *
  * @author aborroy
  * @since 6.2
  */
-public class SolrActionTxReportResult extends AbstractJSONAPIResult
+public class SolrActionNodeReportResult extends AbstractJSONAPIResult
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionTxReportResult.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionNodeReportResult.class);
     
     /**
      * Parses the JSON to set this Java Object values
      * @param json JSONObject returned by SOLR API
      */
-    public SolrActionTxReportResult(JSONObject json)
+    public SolrActionNodeReportResult(JSONObject json)
     {
         try 
         {
@@ -75,34 +76,22 @@ public class SolrActionTxReportResult extends AbstractJSONAPIResult
         if (json.has("report")) 
         {
         
-            JSONObject coreList = json.getJSONObject("report");
-            JSONArray coreNameList = coreList.names();
-            for(int i = 0; i < coreNameList.length(); i++)
+            if (json.has("report")) 
             {
-                
-                String coreName = String.valueOf(coreNameList.get(i));
-                JSONObject core = coreList.getJSONObject(coreName);
-                cores.add(coreName);
-                
-                Map<String, Object> coreInfo = new HashMap<>();
-                
-                JSONObject transaction = core.getJSONObject("transaction");
-                coreInfo.put("transaction", getPropertyValueMap(transaction));
-
-                JSONObject nodes = core.getJSONObject("nodes");
-                Map<String, Object> nodesInfo = new HashMap<>();
-                JSONArray nodesPropertyNameList = nodes.names();
-                for (int j = 0; j < nodesPropertyNameList.length(); j++)
+            
+                JSONObject coreList = json.getJSONObject("report");
+                JSONArray coreNameList = coreList.names();
+                for(int i = 0; i < coreNameList.length(); i++)
                 {
-                    String nodeName = String.valueOf(nodesPropertyNameList.get(j));
-                    JSONObject node = nodes.getJSONObject(nodeName);
-                    coresInfo.put(coreName, getPropertyValueMap(node));
-                
+                    
+                    String coreName = String.valueOf(coreNameList.get(i));
+                    JSONObject core = coreList.getJSONObject(coreName);
+                    cores.add(coreName);
+                    
+                    coresInfo.put(coreName, getPropertyValueMap(core));
+                    
                 }
-                coreInfo.put("nodes", nodesInfo);
-                
-                coresInfo.put(coreName, coreInfo);
-                
+
             }
 
         }

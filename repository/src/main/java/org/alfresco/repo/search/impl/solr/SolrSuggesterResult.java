@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.util.ArrayList;
 import java.util.Iterator;

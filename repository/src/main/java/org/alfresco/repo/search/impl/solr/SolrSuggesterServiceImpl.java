@@ -29,7 +29,6 @@ package org.alfresco.repo.search.impl.solr;
 import java.util.HashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.search.impl.lucene.SolrSuggesterResult;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SuggesterParameters;
 import org.alfresco.service.cmr.search.SuggesterResult;

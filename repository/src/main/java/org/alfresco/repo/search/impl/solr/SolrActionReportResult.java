@@ -23,12 +23,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

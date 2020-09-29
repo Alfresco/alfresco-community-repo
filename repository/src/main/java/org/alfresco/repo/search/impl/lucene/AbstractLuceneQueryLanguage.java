@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.lucene;
 import java.util.List;
 
 import org.alfresco.repo.search.IndexerAndSearcher;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.springframework.beans.factory.InitializingBean;
 
 /**

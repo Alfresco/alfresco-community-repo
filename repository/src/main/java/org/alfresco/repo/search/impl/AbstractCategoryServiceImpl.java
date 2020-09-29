@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -43,10 +42,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -69,7 +65,7 @@ import org.alfresco.util.Pair;
  * 
  * @author andyh
  */
-public class LuceneCategoryServiceImpl implements CategoryService
+public abstract class AbstractCategoryServiceImpl implements CategoryService
 {
     protected NodeService nodeService;
     
@@ -88,7 +84,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * 
      */
-    public LuceneCategoryServiceImpl()
+    public AbstractCategoryServiceImpl()
     {
         super();
     }
@@ -541,9 +537,5 @@ public class LuceneCategoryServiceImpl implements CategoryService
         throw new UnsupportedOperationException();
     }
 
-    public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count)
-    {
-        throw new UnsupportedOperationException();
-    }
-
+    public abstract List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
 }

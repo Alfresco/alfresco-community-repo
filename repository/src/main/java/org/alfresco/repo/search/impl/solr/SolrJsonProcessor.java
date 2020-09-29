@@ -23,26 +23,18 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.impl.JSONResult;
+import org.json.JSONObject;
 
-public class QueryParameterisationException extends AlfrescoRuntimeException
+/**
+ * Processes Json returned from Solr
+ *
+ * @author Gethin James
+ */
+@FunctionalInterface
+public interface SolrJsonProcessor<T extends JSONResult>
 {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-
-    public QueryParameterisationException(String msg)
-    {
-        super(msg);
-    }
-
-    public QueryParameterisationException(String msg, Throwable cause)
-    {
-        super(msg, cause);
-    }
-
+    public T getResult(JSONObject json);
 }

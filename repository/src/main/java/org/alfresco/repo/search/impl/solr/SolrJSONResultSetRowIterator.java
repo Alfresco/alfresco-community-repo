@@ -25,35 +25,33 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
+import org.alfresco.repo.search.AbstractResultSetRowIterator;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
  * @author Andy
+ *
  */
-public class SolrXPathQueryLanguage extends AbstractLuceneQueryLanguage
+public class SolrJSONResultSetRowIterator extends AbstractResultSetRowIterator
 {
-    SolrQueryLanguage solrQueryLanguage;
-    
-    @Override
-    public ResultSet executeQuery(SearchParameters searchParameters)
+
+    /**
+     * @param resultSet ResultSet
+     */
+    public SolrJSONResultSetRowIterator(ResultSet resultSet)
     {
-        String query = "PATH:\""+searchParameters.getQuery()+"\"";
-        SearchParameters sp = searchParameters.copy();
-        sp.setLanguage(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO);
-        sp.setQuery(query);
-        return solrQueryLanguage.executeQuery(sp);
+        super(resultSet);
+        // TODO Auto-generated constructor stub
     }
 
-    public SolrQueryLanguage getSolrQueryLanguage()
+    public ResultSetRow next()
     {
-        return solrQueryLanguage;
+        return new SolrJSONResultSetRow((SolrJSONResultSet)getResultSet(), moveToNextPosition());
     }
 
-    public void setSolrQueryLanguage(SolrQueryLanguage solrQueryLanguage)
+    public ResultSetRow previous()
     {
-        this.solrQueryLanguage = solrQueryLanguage;
+        return new SolrJSONResultSetRow((SolrJSONResultSet)getResultSet(), moveToPreviousPosition());
     }
 }

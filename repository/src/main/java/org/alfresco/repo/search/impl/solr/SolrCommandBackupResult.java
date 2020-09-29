@@ -23,32 +23,29 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
-import java.util.ArrayList;
-
-import org.json.JSONArray;
+import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The results of executing a SOLR FIX action
+ * The results of executing a SOLR BACKUP command
  *
  * @author aborroy
  * @since 6.2
  */
-public class SolrActionFixResult extends AbstractJSONAPIResult
+public class SolrCommandBackupResult extends AbstractJSONAPIResult
 {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionFixResult.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrCommandBackupResult.class);
     
     /**
-     * Parses the JSON to set this Java Object values
+     * Parses the JSON to create a new result object
      * @param json JSONObject returned by SOLR API
      */
-    public SolrActionFixResult(JSONObject json)
+    public SolrCommandBackupResult(JSONObject json)
     {
         try 
         {
@@ -66,22 +63,22 @@ public class SolrActionFixResult extends AbstractJSONAPIResult
     @Override
     protected void processCoresInfoJson(JSONObject json) throws JSONException
     {
-
-        cores = new ArrayList<>();
-        
-        if (json.has("status")) 
-        {
-        
-            JSONObject coreList = json.getJSONObject("status");
-            JSONArray coreNameList = coreList.names();
-            for(int i = 0; i < coreNameList.length(); i++)
-            {
-                JSONObject core = coreList.getJSONObject(String.valueOf(coreNameList.get(i)));
-                cores.add(core.getString("name"));
-            }
-
-        }
-        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getStatus()
+     */
+    public Long getStatus()
+    {
+        return this.status;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getQueryTime()
+     */
+    public Long getQueryTime()
+    {
+        return this.queryTime;
     }
     
 }

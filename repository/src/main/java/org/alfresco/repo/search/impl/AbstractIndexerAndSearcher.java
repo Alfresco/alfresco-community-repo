@@ -23,37 +23,39 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.solr;
+package org.alfresco.repo.search.impl;
 
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.search.IndexerAndSearcher;
+import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 
 /**
  * @author Andy
+ *
  */
-public class SolrXPathQueryLanguage extends AbstractLuceneQueryLanguage
+public abstract class AbstractIndexerAndSearcher implements IndexerAndSearcher
 {
-    SolrQueryLanguage solrQueryLanguage;
+
+    private  Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
     
     @Override
-    public ResultSet executeQuery(SearchParameters searchParameters)
+    public void registerQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
     {
-        String query = "PATH:\""+searchParameters.getQuery()+"\"";
-        SearchParameters sp = searchParameters.copy();
-        sp.setLanguage(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO);
-        sp.setQuery(query);
-        return solrQueryLanguage.executeQuery(sp);
+        this.queryLanguages.put(queryLanguage.getName().toLowerCase(), queryLanguage);
     }
 
-    public SolrQueryLanguage getSolrQueryLanguage()
+    
+    @Override
+    public Map<String, LuceneQueryLanguageSPI> getQueryLanguages()
     {
-        return solrQueryLanguage;
+        return queryLanguages;
     }
 
-    public void setSolrQueryLanguage(SolrQueryLanguage solrQueryLanguage)
-    {
-        this.solrQueryLanguage = solrQueryLanguage;
-    }
 }

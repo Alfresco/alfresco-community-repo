@@ -23,13 +23,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,20 +38,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The results of executing a SOLR ACL REPORT action
+ * The results of executing a SOLR ACL TX action
  *
  * @author aborroy
  * @since 6.2
  */
-public class SolrActionAclReportResult extends AbstractJSONAPIResult
+public class SolrActionAclTxReportResult extends AbstractJSONAPIResult
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionAclReportResult.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionAclTxReportResult.class);
     
     /**
      * Parses the JSON to set this Java Object values
      * @param json JSONObject returned by SOLR API
      */
-    public SolrActionAclReportResult(JSONObject json)
+    public SolrActionAclTxReportResult(JSONObject json)
     {
         try 
         {
@@ -84,7 +85,20 @@ public class SolrActionAclReportResult extends AbstractJSONAPIResult
                 JSONObject core = coreList.getJSONObject(coreName);
                 cores.add(coreName);
                 
-                coresInfo.put(coreName, getPropertyValueMap(core));
+                Map<String, Object> coreInfo = new HashMap<>();
+
+                JSONObject nodes = core.getJSONObject("nodes");
+                Map<String, Object> nodesInfo = new HashMap<>();
+                JSONArray nodesPropertyNameList = nodes.names();
+                for (int j = 0; j < nodesPropertyNameList.length(); j++)
+                {
+                    String nodeName = String.valueOf(nodesPropertyNameList.get(j));
+                    JSONObject node = nodes.getJSONObject(nodeName);
+                    nodesInfo.put(nodeName, getPropertyValueMap(node));
+                }
+                coreInfo.put("nodes", nodesInfo);
+                
+                coresInfo.put(coreName, coreInfo);
                 
             }
 

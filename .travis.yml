@@ -81,9 +81,9 @@ jobs:
       before_script:
         - |
           if [[ ${TRAVIS_BRANCH} == *community* ]]; then
-            scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
+            bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
           else
-            scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+            bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
           fi
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false

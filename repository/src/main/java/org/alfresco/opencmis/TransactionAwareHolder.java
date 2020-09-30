@@ -81,22 +81,19 @@ public class TransactionAwareHolder<T> extends Holder<T>
     {
         this.internalHolder = internalHolder;
         this.value = internalHolder.getValue();
-        txListener = new TxAwareHolderListener();
     }
 
     @Override
     public T getValue()
     {
-        if (TransactionSynchronizationManager.isSynchronizationActive())
-        {
-            AlfrescoTransactionSupport.bindListener(txListener);
-        }
+        registerTxListenerIfNeeded();
         return this.value;
     }
 
     @Override
     public void setValue(T value)
     {
+        registerTxListenerIfNeeded();
         this.value = value;
     }
 
@@ -107,6 +104,17 @@ public class TransactionAwareHolder<T> extends Holder<T>
                 "internalHolder=" + internalHolder +
                 ", value=" + value +
                 '}';
+    }
+
+    // MNT-21800 CMIS Web Service Check Out returns error
+    private void registerTxListenerIfNeeded()
+    {
+        if (this.txListener == null && TransactionSynchronizationManager.isSynchronizationActive())
+        {
+            TxAwareHolderListener listener = new TxAwareHolderListener();
+            AlfrescoTransactionSupport.bindListener(listener);
+            this.txListener = listener;
+        }
     }
 
     private class TxAwareHolderListener extends TransactionListenerAdapter

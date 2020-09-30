@@ -47,7 +47,6 @@ public class M2ModelDefinition implements ModelDefinition
 {
     private QName name;
     private M2Model model;
-    private String  analyserResourceBundleName;
     private DictionaryDAO dictionaryDAO;
     
     
@@ -55,7 +54,6 @@ public class M2ModelDefinition implements ModelDefinition
     {
         this.name = QName.createQName(model.getName(), resolver);
         this.model = model;
-        this.analyserResourceBundleName = model.getAnalyserResourceBundleName();
         this.dictionaryDAO = dictionaryDAO;
     }
 
@@ -174,17 +172,6 @@ public class M2ModelDefinition implements ModelDefinition
     {
         return model.getChecksum(bindingType);
     }
-
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getAnalyserResourceBundleName()
-     */
-    @Override
-    public String getAnalyserResourceBundleName()
-    {
-        return analyserResourceBundleName;
-    }
-
 
     @Override
     public DictionaryDAO getDictionaryDAO()

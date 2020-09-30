@@ -161,22 +161,4 @@ public interface PropertyDefinition extends ClassAttributeDefinition
      * @return Returns a list of property constraint definitions
      */
     public List<ConstraintDefinition> getConstraints();
-    
-    /**
-     * Get the name of the property bundle that defines analyser mappings for this class.
-     * @return the resource or null if not set.
-     */
-    public String getAnalyserResourceBundleName();
-
-    /**
-     * @param locale Locale
-     * @return String
-     */
-    public String resolveAnalyserClassName(Locale locale);
-    
-    /**
-     * 
-     * @return String
-     */
-    public String resolveAnalyserClassName();
 }

@@ -118,12 +118,6 @@ public class CustomModelDefinitionImpl implements CustomModelDefinition
     }
 
     @Override
-    public String getAnalyserResourceBundleName()
-    {
-        return m2ModelDefinition.getAnalyserResourceBundleName();
-    }
-
-    @Override
     public String getAuthor()
     {
         return m2ModelDefinition.getAuthor();

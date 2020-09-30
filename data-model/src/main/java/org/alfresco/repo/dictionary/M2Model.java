@@ -60,7 +60,6 @@ public class M2Model
     private String author = null;
     private Date published = null;
     private String version;
-    private String  analyserResourceBundleName = null;
 
     private List<M2Namespace> namespaces = new ArrayList<M2Namespace>();
     private List<M2Namespace> imports = new ArrayList<M2Namespace>();
@@ -467,21 +466,6 @@ public class M2Model
     private static List createList()
     {
         return new ArrayList();
-    }
-
-
-    /**
-     * @return String
-     */
-    public String getAnalyserResourceBundleName()
-    {
-        return analyserResourceBundleName;
-    }
-
-
-    public void setAnalyserResourceBundleName(String analyserResourceBundleName)
-    {
-        this.analyserResourceBundleName = analyserResourceBundleName;
     }
 
     public void setConfigProperties(Properties configProperties)

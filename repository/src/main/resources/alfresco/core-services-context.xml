@@ -620,9 +620,6 @@
         <property name="dictionaryRegistryCache">
             <ref bean="compiledModelsCache"/>
         </property>
-        <property name="defaultAnalyserResourceBundleName">
-            <value>${lucene.defaultAnalyserResourceBundleName}</value>
-        </property>
     </bean>
 
     <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="dictionaryBootstrap">

@@ -84,8 +84,6 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryDAO.class);
 
-    private String defaultAnalyserResourceBundleName;
-
     private ClassLoader resourceClassLoader;
 
     // inject dependencies
@@ -99,18 +97,6 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
             CompiledModelsCache dictionaryRegistryCache)
     {
         this.dictionaryRegistryCache = dictionaryRegistryCache;
-    }
-
-    @Override
-    public String getDefaultAnalyserResourceBundleName()
-    {
-        return defaultAnalyserResourceBundleName;
-    }
-
-    public void setDefaultAnalyserResourceBundleName(
-            String defaultAnalyserResourceBundleName)
-    {
-        this.defaultAnalyserResourceBundleName = defaultAnalyserResourceBundleName;
     }
 
     /**

@@ -31,8 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.AclReaders;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -53,11 +53,11 @@ public class AclsReadersGet extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(AclsReadersGet.class);
 
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -111,7 +111,7 @@ public class AclsReadersGet extends DeclarativeWebScript
         }
 
         // Request according to the paging query style required
-        List<AclReaders> aclsReaders = solrTrackingComponent.getAclsReaders(aclIds);
+        List<AclReaders> aclsReaders = searchTrackingComponent.getAclsReaders(aclIds);
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("aclsReaders", aclsReaders);

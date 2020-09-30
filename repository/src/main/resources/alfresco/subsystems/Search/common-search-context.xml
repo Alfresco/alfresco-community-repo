@@ -6,14 +6,14 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!-- SOLR Tracking   -->
     
-    <bean id="search.solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+    <bean id="search.trackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
         <property name="permissionService" ref="permissionService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="ownableService" ref="ownableService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="qnameDAO" ref="qnameDAO"/>
-        <property name="solrDAO" ref="solrDAO" />
+        <property name="searchDAO" ref="searchDAO" />
         <property name="dictionaryDAO" ref="dictionaryDAO" />
         <property name="aclDAO" ref="aclDAO" />
         <property name="enabled">
@@ -83,7 +83,7 @@
         <property name="queryConsistency">
             <value>${solr.query.fts.queryConsistency}</value>
         </property>
-        <property name="solrDao" ref="solrDAO"/>
+        <property name="searchDao" ref="searchDAO"/>
         <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
     </bean> 
 

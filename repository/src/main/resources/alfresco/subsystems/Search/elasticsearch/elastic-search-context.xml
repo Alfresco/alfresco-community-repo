@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <import resource="../common-search-context.xml" />
+
+    <bean id="search.indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="storeRedirectorProxyFactory">
+            <ref bean="&amp;search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.searchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.elasticIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean id="search.versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.elasticIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean id="search.elasticQueryHttpClient" class="org.alfresco.repo.search.impl.elastic.ElasticQueryHttpClientImpl">
+        <property name="host">
+            <value>${elastic.host}</value>
+        </property>    
+        <property name="port">
+            <value>${elastic.port}</value>
+        </property>    
+        <property name="baseUrl">
+            <value>${elastic.baseUrl}</value>
+        </property>    
+        <property name="secureComms">
+            <value>${elastic.secureComms}</value>
+        </property>    
+        <property name="portSsl">
+            <value>${elastic.port.ssl}</value>
+        </property>    
+    </bean>
+
+    <bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.elastic.ElasticLuceneQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>lucene</value>
+        </property>
+        <property name="elasticQueryHttpClient">
+            <ref bean="search.elasticQueryHttpClient" />
+        </property>
+    </bean>
+    
+    <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.elastic.ElasticLuceneQueryLanguage"  >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-alfresco</value>
+        </property>
+        <property name="elasticQueryHttpClient">
+            <ref bean="search.elasticQueryHttpClient" />
+        </property>
+    </bean>
+   
+    <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.elastic.ElasticLuceneQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>xpath</value>
+        </property>
+        <property name="elasticQueryHttpClient">
+            <ref bean="search.elasticQueryHttpClient" />
+        </property>
+    </bean>
+
+    <bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.elastic.ElasticLuceneQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-fts-alfresco</value>
+        </property>
+        <property name="elasticQueryHttpClient">
+            <ref bean="search.elasticQueryHttpClient" />
+        </property>
+    </bean>
+    
+    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.elastic.ElasticLuceneQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-cmis</value>
+        </property>
+        <property name="elasticQueryHttpClient">
+            <ref bean="search.elasticQueryHttpClient" />
+        </property>
+    </bean>
+ 
+    <bean id="search.indexerAndSearcherFactory" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.elasticIndexerAndSearcherFactory"></ref>
+        </property>
+    </bean>
+ 
+    <bean id="search.elasticIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.elastic.ElasticIndexerAndSearcherFactory">
+    </bean>
+    
+    <!-- Override beans from common-search-context.xml -->
+    <bean id="search.trackingComponent" class="org.alfresco.repo.search.impl.elastic.ElasticTrackingComponentImpl">
+    </bean>
+    
+</beans>

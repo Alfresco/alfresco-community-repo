@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.AlfrescoModelDiff;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,11 +57,11 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
 
     private static final String MSG_JSON_EXCEPTION = "Unable to fetch model changes from ";
 
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -122,7 +122,7 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
             models.put(QName.createQName(jsonModel.getString("name")), jsonModel.getLong("checksum"));
         }
 
-        List<AlfrescoModelDiff> diffs = solrTrackingComponent.getModelDiffs(models);
+        List<AlfrescoModelDiff> diffs = searchTrackingComponent.getModelDiffs(models);
         model.put("diffs", diffs);
 
         if (logger.isDebugEnabled())

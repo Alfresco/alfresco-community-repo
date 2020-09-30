@@ -51,10 +51,11 @@ import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.search.AspectIndexFilter;
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -89,11 +90,11 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @since 4.0
  */
-public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
+public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 {
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
-    private SOLRDAO solrDAO;
+    private SearchDAO solrDAO;
     private DictionaryDAO dictionaryDAO;
     private PermissionService permissionService;
     private AclDAO aclDAO;
@@ -130,7 +131,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.cacheAncestors = cacheAncestors;
     }
 
-    public void setSolrDAO(SOLRDAO solrDAO)
+    public void setSolrDAO(SearchDAO solrDAO)
     {
         this.solrDAO = solrDAO;
     }

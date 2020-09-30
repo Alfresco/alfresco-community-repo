@@ -1,15 +1,5 @@
 package org.alfresco.cmis;
 
-import static org.alfresco.utility.Utility.checkObjectIsInitialized;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import org.alfresco.cmis.dsl.BaseObjectType;
 import org.alfresco.cmis.dsl.CheckIn;
 import org.alfresco.cmis.dsl.CmisAssertion;
@@ -63,6 +53,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import static org.alfresco.utility.Utility.checkObjectIsInitialized;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 @Service
 @Scope(value = "prototype")
 public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentModelAction<CmisWrapper>, DSLFile<CmisWrapper>, DSLFolder<CmisWrapper>
@@ -109,6 +109,21 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
             parameter.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
             LOG.info("Using binding type [{}] to [{}] and credentials: {}", BindingType.ATOMPUB.value(), cmisURLPath, userModel.toString());
         }
+            else if (binding.equals(BindingType.WEBSERVICES.value()))
+            {
+                parameter.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_VERSIONING_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_ACL_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, cmisURLPath);
+                parameter.put(SessionParameter.BINDING_TYPE, BindingType.WEBSERVICES.value());
+                LOG.info("Using binding type [{}] to [{}] and credentials: {}", BindingType.WEBSERVICES.value(), cmisURLPath, userModel.toString());
+            }
+
         parameter.put(SessionParameter.CONNECT_TIMEOUT, "20000");
         parameter.put(SessionParameter.READ_TIMEOUT, "60000");
         List<Repository> repositories = factory.getRepositories(parameter);

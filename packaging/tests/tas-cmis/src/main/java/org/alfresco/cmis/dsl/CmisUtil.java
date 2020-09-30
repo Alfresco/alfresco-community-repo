@@ -1,16 +1,5 @@
 package org.alfresco.cmis.dsl;
 
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.cmis.exception.InvalidCmisObjectException;
 import org.alfresco.utility.LogFactory;
@@ -44,11 +33,23 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisVersioningException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.testng.collections.Lists;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.alfresco.utility.report.log.Step.STEP;
 
 /**
  * DSL utility for managing CMIS objects
@@ -511,11 +512,20 @@ public class CmisUtil
 
     public Map<String, Object> getProperties(ContentModel contentModel, String baseTypeId)
     {
-        List<Object> aspects = new ArrayList<Object>();
-        aspects.add("P:cm:titled");
+
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, baseTypeId);
         properties.put(PropertyIds.NAME, contentModel.getName());
+
+        // WebServices binding does not have SecondaryTypes and cannot be added to Object.
+        // cm:title and cm:description Policies
+        if (cmisAPI.getSession().getBinding().getBindingType().value().equals(BindingType.WEBSERVICES.value()))
+        {
+            return properties;
+        }
+
+        List<Object> aspects = new ArrayList<Object>();
+        aspects.add("P:cm:titled");
         properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, aspects);
         properties.put("cm:title", contentModel.getTitle());
         properties.put("cm:description", contentModel.getDescription());

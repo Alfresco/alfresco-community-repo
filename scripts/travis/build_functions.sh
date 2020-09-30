@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +vx
 
 function isPullRequestBuild() {
   test "${TRAVIS_PULL_REQUEST}" != "false"
@@ -11,6 +12,8 @@ function isBranchBuild() {
 function cloneRepo() {
   local REPO="${1}"
   local TAG_OR_BRANCH="${2}"
+
+  printf "Clonning \"%s\" on %s\n" "${TAG_OR_BRANCH}" "${REPO}"
 
   # clone the repository branch/tag
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../../" >/dev/null
@@ -62,7 +65,26 @@ function remoteBranchExists() {
   local REMOTE_REPO="${1}"
   local BRANCH="${2}"
 
-  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}"
+  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}" &>/dev/null
+}
+
+function identifyUpstreamSourceBranch() {
+  local UPSTREAM_REPO="${1}"
+
+  # if it's a pull request, use the source branch name (if it exists)
+  if isPullRequestBuild && remoteBranchExists "${UPSTREAM_REPO}" "${TRAVIS_PULL_REQUEST_BRANCH}" ; then
+    echo "${TRAVIS_PULL_REQUEST_BRANCH}"
+    exit 0
+  fi
+
+  # otherwise use the current branch name (or in case of PRs, the target branch name)
+  if remoteBranchExists "${UPSTREAM_REPO}" "${TRAVIS_BRANCH}" ; then
+    echo "${TRAVIS_BRANCH}"
+    exit 0
+  fi
+
+  # if none of the previous exists, use the "master" branch
+  echo "master"
 }
 
 function pullUpstreamTag() {
@@ -91,20 +113,8 @@ function pullUpstreamTagAndBuildDockerImage() {
 function pullAndBuildSameBranchOnUpstream() {
   local UPSTREAM_REPO="${1}"
   local EXTRA_BUILD_ARGUMENTS="${2}"
-  local SOURCE_BRANCH="$(isBranchBuild && echo "${TRAVIS_BRANCH}" || echo "${TRAVIS_PULL_REQUEST_BRANCH}")"
 
-  if ! remoteBranchExists "${UPSTREAM_REPO}" "${SOURCE_BRANCH}" ; then
-    printf "Branch \"%s\" not found on the %s repository\n" "${SOURCE_BRANCH}" "${UPSTREAM_REPO}"
-    #exit 1
-  fi
-
-  local SOURCE_BRANCH="${TRAVIS_BRANCH}"
-  if ! remoteBranchExists "${UPSTREAM_REPO}" "${SOURCE_BRANCH}" ; then
-    printf "Branch \"%s\" not found on the %s repository\n" "${SOURCE_BRANCH}" "${UPSTREAM_REPO}"
-    #exit 1
-  fi
-  # TODO remove this line and enable the previous "exit" commands:
-  local SOURCE_BRANCH="master"
+  local SOURCE_BRANCH="$(identifyUpstreamSourceBranch "${UPSTREAM_REPO}")"
 
   cloneRepo "${UPSTREAM_REPO}" "${SOURCE_BRANCH}"
 
@@ -118,3 +128,19 @@ function pullAndBuildSameBranchOnUpstream() {
   popd
 }
 
+function retieveLatestTag() {
+  local REPO="${1}"
+  local BRANCH="${2}"
+
+  local LOCAL_PATH="/tmp/$(basename "${REPO%.git}")"
+
+  git clone -q -b "${BRANCH}" "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REPO}" "${LOCAL_PATH}"
+
+  pushd "${LOCAL_PATH}" >/dev/null
+  git describe --abbrev=0 --tags
+  popd >/dev/null
+
+  rm -rf "${LOCAL_PATH}"
+}
+
+set -vx

@@ -6,20 +6,22 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
+#Fetch the latest changes, as Travis will only checkout the PR commit
+git fetch origin "${TRAVIS_BRANCH}"
+git checkout "${TRAVIS_BRANCH}"
+git pull
+
+# Retrieve the current Community version - latest tag on the current branch
+VERSION="$(git describe --abbrev=0 --tags)"
+
 DOWNSTREAM_REPO="github.com/Alfresco/alfresco-enterprise-repo.git"
 
 cloneRepo "${DOWNSTREAM_REPO}" "${TRAVIS_BRANCH}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${DOWNSTREAM_REPO%.git}")"
 
-# Update parent
-mvn -B versions:update-parent versions:commit
-
-VERSION="$(sed -n '/<parent>/,/<\/parent>/p' pom.xml \
-    | sed -n '/<version>/,/<\/version>/p' \
-    | tr -d '\n' \
-    | grep -oP '(?<=<version>).*(?=</version>)' \
-    | xargs)"
+# Update parent version
+mvn -B versions:update-parent versions:commit "-DparentVersion=[${VERSION}]"
 
 # Update dependency version
 mvn -B versions:set-property versions:commit \

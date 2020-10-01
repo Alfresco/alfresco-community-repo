@@ -89,9 +89,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /** root container cache */
     private SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache;
 
-    /** root records management cache */
-    private SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> rootRecordsManagementCache;
-
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
 
@@ -178,14 +175,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 	}
 
     /**
-     * @param rootRecordsManagementCache        root records management node cache
-     */
-    public void setRootRecordsManagementCache(SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> rootRecordsManagementCache)
-    {
-        this.rootRecordsManagementCache = rootRecordsManagementCache;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans(org.alfresco.service.cmr.repository.StoreRef)
      */
     @Override
@@ -196,36 +185,20 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         final Set<NodeRef> results = new HashSet<>();
         Set<QName> aspects = new HashSet<>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
-
-        Pair<StoreRef, String> key = new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
-
-        if (!rootRecordsManagementCache.contains(key))
+        getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
         {
-            getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
+            @Override
+            public boolean handle(Pair<Long, NodeRef> nodePair)
             {
-                @Override
-                public boolean handle(Pair<Long, NodeRef> nodePair)
+                NodeRef nodeRef = nodePair.getSecond();
+                if (storeRef.equals(nodeRef.getStoreRef()))
                 {
-                    NodeRef nodeRef = nodePair.getSecond();
-                    if (storeRef.equals(nodeRef.getStoreRef()))
-                    {
-                        results.add(nodeRef);
-                    }
-
-                    return true;
+                    results.add(nodeRef);
                 }
-            });
 
-            if (results.size() > 0)
-            {
-                rootRecordsManagementCache.put(key, results);
+                return true;
             }
-        }
-        else
-        {
-            return rootRecordsManagementCache.get(key);
-        }
-
+        });
         return results;
     }
 

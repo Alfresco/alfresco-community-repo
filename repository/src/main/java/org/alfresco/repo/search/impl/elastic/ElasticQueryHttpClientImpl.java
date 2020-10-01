@@ -30,6 +30,10 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Elastic Http client implementation.
+ * Supports plain http and secured https connections.
+ */
 public class ElasticQueryHttpClientImpl implements ElasticQueryHttpClient
 {
 
@@ -41,6 +45,12 @@ public class ElasticQueryHttpClientImpl implements ElasticQueryHttpClient
     private Integer portSsl;
     private String secureComms;
 
+    /**
+     * Execute a query using HTTP Client for ElasticSearch server
+     * @param searchParameters Query parameters
+     * @param language Syntax name from SearchService.LANGUAGE_* constants 
+     * @return result of the query executed
+     */
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters, String language)
     {

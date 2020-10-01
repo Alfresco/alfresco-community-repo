@@ -25,9 +25,85 @@
  */
 package org.alfresco.repo.search.impl.elastic;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 
+/**
+ * Context Factory for Elasticsearch Search subsystem.
+ * 
+ * This class includes some properties (like "Id for last TX in index" or "Approx. transactions remaining")
+ * that are NOT updateable but can be used for Administering purposes.
+ *
+ */
 public class ElasticChildApplicationContextFactory extends ChildApplicationContextFactory
 {
+    
+    /**
+     * List of administering properties
+     */
+    // TBD Define the set of properties to be obtained from Elastic Server
+    private static List<String> ADM_PROPERTY_NAMES = List.of("");
+    
+    /**
+     * Check updateable status for a property name
+     * @param name property name
+     * @return true if the name of the property is not 
+     */
+    @Override
+    public boolean isUpdateable(String name)
+    {
+        return super.isUpdateable(name) && !ADM_PROPERTY_NAMES.contains(name); 
+    }
+    
+    /**
+     * Sets the value of a property
+     * @param name property name
+     * @param value property value
+     */
+    @Override
+    public void setProperty(String name, String value)
+    {
+        if (!isUpdateable(name))
+        {
+            throw new IllegalStateException("Illegal write to property \"" + name + "\"");
+        }
+        super.setProperty(name, value);
+    }  
+    
+    /**
+     * Gets the value of a property
+     * @param name property name
+     * @return value of the property
+     */
+    @Override
+    public String getProperty(String name)
+    {
+        if (!isUpdateable(name))
+        {
+            // TODO The property value needs to be recovered from Elastic Server 
+            return null;
+        }
+        else
+        {
+            return super.getProperty(name);
+        }
+    }
+    
+    /**
+     * Gets all the property names, including administering properties
+     * @return Set of property names
+     */
+    @Override
+    public Set<String> getPropertyNames()
+    {
+        Set<String> result = new TreeSet<String>();
+        result.addAll(ADM_PROPERTY_NAMES);
+        result.addAll(super.getPropertyNames());
+        return result;
+    }
+
 
 }

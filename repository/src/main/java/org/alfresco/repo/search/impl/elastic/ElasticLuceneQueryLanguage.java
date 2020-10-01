@@ -29,6 +29,9 @@ import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+/**
+ * Query executor for Lucene syntax queries
+ */
 public class ElasticLuceneQueryLanguage extends AbstractLuceneQueryLanguage
 {
     

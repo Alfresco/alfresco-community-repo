@@ -41,6 +41,9 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Query executor for ElasticSearch servers.
+ */
 public class ElasticSearchService implements SearchService
 {
 

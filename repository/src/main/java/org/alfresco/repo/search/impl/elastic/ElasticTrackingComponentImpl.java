@@ -42,6 +42,10 @@ import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Gets search information related from database.
+ * TODO This class can be extended from SOLRTrackingComponentImpl, as the could should be similar.
+ */
 public class ElasticTrackingComponentImpl implements SearchTrackingComponent
 {
 

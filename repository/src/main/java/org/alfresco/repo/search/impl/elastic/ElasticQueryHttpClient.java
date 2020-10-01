@@ -28,7 +28,16 @@ package org.alfresco.repo.search.impl.elastic;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+/**
+ * HTTP Client for ElasticSearch servers
+ */
 public interface ElasticQueryHttpClient
 {
+    /**
+     * Execute a query using HTTP Client for ElasticSearch server
+     * @param searchParameters Query parameters
+     * @param language Syntax name from SearchService.LANGUAGE_* constants 
+     * @return result of the query executed
+     */
     public ResultSet executeQuery(final SearchParameters searchParameters, String language);
 }

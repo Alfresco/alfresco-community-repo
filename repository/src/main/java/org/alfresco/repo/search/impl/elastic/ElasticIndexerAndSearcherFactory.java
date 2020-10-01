@@ -33,9 +33,16 @@ import org.alfresco.repo.search.impl.lucene.AbstractIndexerAndSearcher;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 
+/**
+ * Factory for Indexer and Searcher instances for Elasticsearch
+ */
 public class ElasticIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
 {
 
+    /**
+     * Elasticsearch is indexing the repository listening queue messages 
+     * from an external service, so no Indexer is available for the Repository.
+     */
     @Override
     public Indexer getIndexer(StoreRef storeRef) throws IndexerException
     {
@@ -45,6 +52,7 @@ public class ElasticIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     @Override
     public SearchService getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
+        // TODO Define the services used by ElasticSearchService to inject them from this method
         return new ElasticSearchService();
     }
 

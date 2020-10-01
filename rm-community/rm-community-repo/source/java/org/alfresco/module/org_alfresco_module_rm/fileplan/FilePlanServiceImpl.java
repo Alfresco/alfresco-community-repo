@@ -42,7 +42,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -90,6 +89,9 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /** root container cache */
     private SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache;
 
+    /** root records management cache */
+    private SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> rootRecordsManagementCache;
+
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
 
@@ -101,9 +103,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
     /** Site service */
     private SiteService siteService;
-
-    /** RM container cache manager **/
-    private RMContainerCacheManager rmContainerCacheManager;
 
     /**
      * Gets the file plan role service
@@ -179,12 +178,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 	}
 
     /**
-     * @param rmContainerCacheManager        RM container cache manager
-     *
+     * @param rootRecordsManagementCache        root records management node cache
      */
-    public void setRmContainerCacheManager(RMContainerCacheManager rmContainerCacheManager)
+    public void setRootRecordsManagementCache(SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> rootRecordsManagementCache)
     {
-        this.rmContainerCacheManager = rmContainerCacheManager;
+        this.rootRecordsManagementCache = rootRecordsManagementCache;
     }
 
     /**
@@ -199,7 +197,9 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         Set<QName> aspects = new HashSet<>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
 
-        if (!rmContainerCacheManager.isCached(storeRef))
+        Pair<StoreRef, String> key = new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
+
+        if (!rootRecordsManagementCache.contains(key))
         {
             getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
             {
@@ -210,16 +210,20 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                     if (storeRef.equals(nodeRef.getStoreRef()))
                     {
                         results.add(nodeRef);
-                        rmContainerCacheManager.add(nodeRef);
                     }
 
                     return true;
                 }
             });
+
+            if (results.size() > 0)
+            {
+                rootRecordsManagementCache.put(key, results);
+            }
         }
         else
         {
-            return rmContainerCacheManager.get(storeRef);
+            return rootRecordsManagementCache.get(key);
         }
 
         return results;

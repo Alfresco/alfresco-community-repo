@@ -57,7 +57,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
-import org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -173,9 +172,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected HoldService holdService;
     protected InplaceRecordService inplaceRecordService;
     protected RelationshipService relationshipService;
-
-    /** RM Container Cache Manager */
-    protected RMContainerCacheManager rmContainerCacheManager;
 
     /** test utils */
     protected UserAndGroupsUtils userAndGroupsUtils;
@@ -428,9 +424,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         holdService = (HoldService) applicationContext.getBean("HoldService");
         inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
         relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
-
-        // RM Container Cache Manager
-        rmContainerCacheManager = (RMContainerCacheManager) applicationContext.getBean("rmContainerCacheManager");
     }
 
     /**
@@ -490,11 +483,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             if (isCollaborationSiteTest() && siteService.getSite(collabSiteId) != null)
             {
                 siteService.deleteSite(collabSiteId);
-            }
-
-            if (rmContainerCacheManager != null)
-            {
-                rmContainerCacheManager.reset();
             }
         }
         finally
@@ -948,7 +936,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         public void then() throws Exception  { /** empty implementation */ }
 
         public void after() throws Exception { /** empty implementation */ }
-        
+
         public void run() throws Exception
         {
             try

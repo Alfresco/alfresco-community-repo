@@ -6,7 +6,7 @@ outputFile="$TRAVIS_BUILD_DIR/$2/alf-installer.bin"
 host="s3-eu-west-1.amazonaws.com"
 contentType="binary/octet-stream"
 dateValue=`TZ=GMT date -R`
-stringToSign="GET\n\n${contentType}\n${dateValue}\n${S3_INSTALLER_PATH}"
+stringToSign="GET\n\n${contentType}\n${dateValue}\n$1"
 signature=`echo -en ${stringToSign} | openssl sha1 -hmac $RELEASE_AWS_SECRET_KEY -binary | base64`
 curl -H "Host: ${host}" \
      -H "Date: ${dateValue}" \

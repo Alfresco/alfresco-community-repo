@@ -22,12 +22,15 @@ import org.alfresco.util.PropertyCheck;
 
 /**
  * Stores Java keystore initialisation parameters.
- * 
+ *
+ * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
+ *
  * @since 4.0
  *
  */
 public class KeyStoreParameters
 {
+    private String id;
     private String name;
     private String type;
     private String provider;
@@ -38,8 +41,40 @@ public class KeyStoreParameters
     {
     }
 
-    public KeyStoreParameters(String name, String type, String keyStoreProvider,
+    /**
+     * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
+     *
+     * <p/>Set the unique ID of the keystore and aliases to use Java system properties lookup instead. The property lookup format is:
+     * <ul>
+     *     <li>[keystore-id].password - keystore password</li>
+     *     <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
+     *     <li>[keystore-id].[alias].keydata - key data bytes in base64</li>
+     *     <li>[keystore-id].[alias].algorithm - key algorithm</li>
+     *     <li>[keystore-id].[alias].password - key password</li>
+     * </ul>
+     *
+     * Loading of keys info from system (JVM) properties takes precedence over metadata file.
+     *
+     * @param id unique identifier of the keystore
+     * @param name human readable name of the keystore
+     * @param type type of the keystore
+     * @param keyStoreProvider keystore provider
+     * @param keyMetaDataFileLocation path to keystore metadata file on the file system
+     * @param location path to keystore on the file system
+     */
+    public KeyStoreParameters(String id, String name, String type, String keyStoreProvider,
             String keyMetaDataFileLocation, String location)
+    {
+        this(name, type, keyStoreProvider, keyMetaDataFileLocation, location);
+        this.id = id;
+    }
+
+    /**
+     * Use {@link #KeyStoreParameters(String, String, String, String, String, String)} instead
+     */
+    @Deprecated()
+    public KeyStoreParameters(String name, String type, String keyStoreProvider,
+                              String keyMetaDataFileLocation, String location)
     {
         super();
         this.name = name;
@@ -49,8 +84,13 @@ public class KeyStoreParameters
         this.location = location;
     }
 
+
     public void init()
     {
+        if (!PropertyCheck.isValidPropertyString(getId()))
+        {
+            setId(null);
+        }
         if (!PropertyCheck.isValidPropertyString(getLocation()))
         {
             setLocation(null);
@@ -67,6 +107,11 @@ public class KeyStoreParameters
         {
             setKeyMetaDataFileLocation(null);
         }        
+    }
+
+    public String getId()
+    {
+        return id;
     }
 
     public String getName()
@@ -93,7 +138,12 @@ public class KeyStoreParameters
     {
         return location;
     }
-    
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
     public void setName(String name)
     {
         this.name = name;

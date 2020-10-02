@@ -8,8 +8,8 @@ ARG resource_path=target
 # Create prerequisite to store tools and properties
 RUN mkdir -p /usr/local/tomcat/shared/classes/alfresco/extension && \
     mkdir /licenses && \
-    mkdir /usr/local/tomcat/alfresco-mmt
-RUN touch /usr/local/tomcat/shared/classes/alfresco-global.properties
+    mkdir /usr/local/tomcat/alfresco-mmt && \
+    touch /usr/local/tomcat/shared/classes/alfresco-global.properties
 
 # You need to run `mvn clean install` in the root of this project to update the following dependencies
 # Copy the WAR files to the appropriate location for your application server

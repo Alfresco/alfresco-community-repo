@@ -18,29 +18,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                   <execution>
-                      <id>copy-licenses</id>
-                      <phase>process-resources</phase>
-                      <goals>
-                          <goal>copy-resources</goal>
-                      </goals>
-                      <configuration>
-                          <resources>
-                              <resource>
-                                  <!-- Extract licenses directory -->
-                                  <directory>../distribution/src/main/resources/licenses</directory>
-                                  <filtering>false</filtering>
-                              </resource>
-                          </resources>
-                          <outputDirectory>${project.build.directory}/licenses</outputDirectory>
-                      </configuration>
-                   </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -122,6 +99,24 @@
                                     <type>amp</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/amps</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>unpack-licenses</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-community-repo-distribution</artifactId>
+                                    <type>jar</type>
+                                    <version>${project.version}</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

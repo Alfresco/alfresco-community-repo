@@ -86,7 +86,7 @@ jobs:
         - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
       script:
-        - echo "Enterprise Rest API Tests"
+        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_ENTERPRISE_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
     - name: "Community UI Tests ..."
       stage: Tests
       before_install:

@@ -27,6 +27,10 @@ install: skip
 
 services:
   - docker
+env:
+  global:
+    - RELEASE_VERSION=2.7.3
+    - DEVELOPMENT_VERSION=2.7.3-SNAPSHOT
 
 stages:
   - name: Build AGS
@@ -110,9 +114,28 @@ jobs:
        - echo "Static Analysis (SAST)"
 
     - name: "Community Release"
-      stage: Release
-      script:
-        - echo "Community Release"
+        stage: Release
+        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[community release\]/
+        script:
+          - echo "Community Release"
+          - bash scripts/release-community.sh
+        before_deploy:
+          - bash scripts/zip-artifacts.sh community
+        deploy:
+          - provider: s3
+            access_key_id: ${ARTIFACTS_KEY}
+            secret_access_key: ${ARTIFACTS_SECRET}
+            region: "eu-west-1"
+            bucket: "alfresco-artefacts-staging"
+            upload_dir: "community/alfresco-governance-services/release/${TRAVIS_BRANCH}"
+            skip_cleanup: true
+            acl: private
+            local_dir: artifacts_dir
+            on:
+              all_branches: true
+          after_deploy:
+            - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/community/alfresco-governance-services/release/${TRAVIS_BRANCH}"
+
     - name: "Enterprise Release"
       stage: Release
       script:

@@ -52,7 +52,7 @@
         <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
     
-    <bean id="solrSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+    <bean id="searchSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
     

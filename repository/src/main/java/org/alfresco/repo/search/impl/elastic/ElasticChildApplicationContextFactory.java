@@ -34,7 +34,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 /**
  * Context Factory for Elasticsearch Search subsystem.
  * 
- * This class includes some properties (like "Id for last TX in index" or "Approx. transactions remaining")
+ * This class includes some properties (like "Id for last Node in index" or "Approx. nodes remaining")
  * that are NOT updateable but can be used for Administering purposes.
  *
  */

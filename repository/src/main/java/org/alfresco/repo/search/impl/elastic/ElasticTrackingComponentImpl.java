@@ -44,7 +44,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Gets search information related from database.
- * TODO This class can be extended from SOLRTrackingComponentImpl, as the could should be similar.
+ * TODO This class can be extended from SOLRTrackingComponentImpl, as the code should be similar.
  */
 public class ElasticTrackingComponentImpl implements SearchTrackingComponent
 {

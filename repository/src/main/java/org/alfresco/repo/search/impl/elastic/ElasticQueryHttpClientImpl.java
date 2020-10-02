@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public class ElasticQueryHttpClientImpl implements ElasticQueryHttpClient
 {
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(ElasticQueryHttpClientImpl.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ElasticQueryHttpClientImpl.class);
 
     private String host;
     private String baseUrl;

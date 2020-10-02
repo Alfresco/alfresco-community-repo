@@ -295,7 +295,7 @@
    </bean>
    
    <bean id="searchDAO" class="org.alfresco.repo.domain.solr.ibatis.SearchDAOImpl" init-method="init">
-      <property name="sqlSessionTemplate" ref="solrSqlSessionTemplate"/>
+      <property name="sqlSessionTemplate" ref="searchSqlSessionTemplate"/>
       <property name="qNameDAO" ref="qnameDAO"/>
    </bean>
    

@@ -19,6 +19,7 @@ ARG TOMCAT_DIR=/usr/local/tomcat
 RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
     mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/transform/renditions && \
     mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/transform/pipelines && \
+    mkdir /licenses && \
     mkdir ${TOMCAT_DIR}/alfresco-mmt && \
     touch ${TOMCAT_DIR}/shared/classes/alfresco-global.properties
 
@@ -26,13 +27,11 @@ RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
 # Copy the WAR files to the appropriate location for your application server
 # Copy the JDBC drivers for the database you are using to the lib/ directory.
 # Copy the alfresco-mmt.jar
+# Copy Licenses to the root of the Docker image
 COPY ${resource_path}/war ${TOMCAT_DIR}/webapps
 COPY ${resource_path}/connector/* ${TOMCAT_DIR}/lib/
 COPY ${resource_path}/alfresco-mmt/* ${TOMCAT_DIR}/alfresco-mmt/
-
-# Copy Licenses to the root of the Docker image
-RUN mkdir /licenses
-COPY ${resource_path}/licenses/ /licenses/
+COPY ${resource_path}/dependency/licenses/ /licenses/
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes

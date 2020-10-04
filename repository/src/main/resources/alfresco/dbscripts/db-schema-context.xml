@@ -54,6 +54,7 @@
                 <ref bean="patch.db-V5.1-metadata-query-indexes" />
                 <ref bean="patch.db-V5.2-remove-jbpm-tables-from-db" />
                 <ref bean="patch.db-V6.0-change-set-indexes" />
+                <ref bean="patch.db-V6.3-add-indexes-node-transaction" />
             </list>
         </property>
     </bean>

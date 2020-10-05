@@ -438,7 +438,7 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
             {
                 public String convert(ChildAssociationRef source)
                 {
-                    return source.toString();
+                    return org.json.simple.JSONObject.escape(source.toString());
                 }
             });
 
@@ -454,7 +454,7 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
             {
                 public String convert(AssociationRef source)
                 {
-                    return source.toString();
+                    return org.json.simple.JSONObject.escape(source.toString());
                 }
             });
 

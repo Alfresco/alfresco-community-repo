@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -47,7 +46,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedErrorResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.DirectAccessUrlRequest;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.Rendition.RenditionStatus;
@@ -59,7 +57,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.util.TempFileProvider;
-import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -973,122 +970,5 @@ public class RenditionsTest extends AbstractBaseApiTest
     {
         return synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_WORD, -1, null,
                 MimetypeMap.MIMETYPE_PDF, Collections.emptyMap(), null, null);
-    }
-
-    @Test
-    public void testRequestContentUrl() throws Exception
-    {
-        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
-
-        // Create a folder within the site document's library
-        String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
-
-        // Create multipart request
-        String fileName = "quick.pdf";
-        File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
-        MultiPartRequest reqBody = multiPartBuilder.build();
-
-        // Upload quick.pdf file into 'folder'
-        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        String contentNodeId = document.getId();
-
-        // pause briefly
-        Thread.sleep(DELAY_IN_MS);
-
-        // Get rendition (not created yet) information for node
-        response = getSingle(getNodeRenditionsUrl(contentNodeId), "doclib", 200);
-        Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
-        assertNotNull(rendition);
-        assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
-
-        // the rendition hasn't been created yet
-        post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), null, null, 404);
-
-        // Create and get 'doclib' rendition
-        rendition = createAndGetRendition(contentNodeId, "doclib");
-        assertNotNull(rendition);
-        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
-
-        // found but direct access isn't available
-        post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), null, null, 501);
-
-        {
-            post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), toJsonAsStringNonNull(new DirectAccessUrlRequest()), null, null, null, 501);
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                directAccessUrlRequest.setValidFor(60L);
-
-                post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 400);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setValidFor(60L);
-
-                post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 501);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setValidFor(-60L);
-
-                post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 400);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 501);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setExpiresAt(DateTime.now().minusSeconds(30).toDate());
-                post(getNodeRenditionOperationUrl(contentNodeId, rendition.getId(), "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 400);
-            }
-        }
-
-        // nodeId in the path parameter does not represent a file
-        post(getNodeRenditionOperationUrl(folder_Id, "doclib", "request-content-url"), null, null, 400);
-
-        // nodeId in the path parameter does not exist
-        post(getNodeRenditionOperationUrl(UUID.randomUUID().toString(), "doclib", "request-content-url"), null, null, 404);
-
-        // renditionId in the path parameter is not registered/available
-        post(getNodeRenditionOperationUrl(contentNodeId, ("renditionId" + System.currentTimeMillis()), "request-content-url"), null, null, 404);
-
-        // Create a node without any content. Test only if OpenOffice is available
-        if (isOpenOfficeAvailable())
-        {
-            String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
-            getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 200);
-        }
-
-        // Create multipart request
-        String jpgFileName = "quick.jpg";
-        File jpgFile = getResourceFile(fileName);
-        reqBody = MultiPartBuilder.create().setFileData(new FileData(jpgFileName, jpgFile)).build();
-
-        // Upload quick.jpg file into 'folder'
-        response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document jpgImage = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        String jpgImageNodeId = jpgImage.getId();
-
-        // List all available renditions (includes those that have been created and
-        // those that are yet to be created)
-        response = getAll(getNodeRenditionsUrl(jpgImageNodeId), getPaging(0, 50), 200);
-        List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
-        // Check there is no pdf rendition is available for the jpg file
-        Rendition pdf = getRendition(renditions, "pdf");
-        assertNull(pdf);
-
-        // The renditionId (pdf) is registered but it is not applicable for the node's
-        // mimeType
-        post(getNodeRenditionOperationUrl(jpgImageNodeId, "pdf", "request-content-url"), null, null, 404);
     }
 }

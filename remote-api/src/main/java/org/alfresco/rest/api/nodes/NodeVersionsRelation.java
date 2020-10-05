@@ -31,14 +31,11 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -49,7 +46,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -280,23 +276,6 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             }
             */
         }
-    }
-
-    @Operation("request-content-url")
-    @WebApiParam(name = "directAccessUrlRequest", title = "Direct access url request", description = "Direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    @WebApiDescription(title = "Request content url",
-            description="Generates a direct access url.",
-            successStatus = HttpServletResponse.SC_OK)
-    public DirectAccessUrl requestContentUrl(String nodeId, String versionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
-    {
-        Version version = findVersion(nodeId, versionId);
-
-        if (version == null)
-        {
-            throw new EntityNotFoundException(nodeId + "-" + versionId);
-        }
-
-        return nodes.requestContentUrl(version.getFrozenStateNodeRef(), directAccessUrlRequest);
     }
 
     public Version findVersion(String nodeId, String versionLabelId)

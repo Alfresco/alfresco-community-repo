@@ -76,7 +76,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.DirectAccessUrlRequest;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
@@ -103,7 +102,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.collections.map.MultiValueMap;
-import org.joda.time.DateTime;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -4432,73 +4430,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertFalse(documentResp.getIsLocked());
 
         deleteNode(folderId);
-    }
-
-    @Test
-    public void testRequestContentUrl() throws Exception
-    {
-        setRequestContext(user1);
-
-        // create folder
-        Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
-        String folderId = folderResp.getId();
-
-        // create doc d1
-        String d1Name = "content" + RUNID + "_1l";
-        Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
-        String nodeId = d1.getId();
-
-        // node found but direct access isn't available
-        requestContentUrl(nodeId, null, 501);
-
-        // unknown alias
-        requestContentUrl("testSomeUndefinedAlias", null, 404);
-
-        // no content
-        requestContentUrl(Nodes.PATH_MY, null, 400);
-        requestContentUrl(Nodes.PATH_SHARED, null, 400);
-
-        {
-            requestContentUrl(nodeId, toJsonAsStringNonNull(new DirectAccessUrlRequest()), 501);
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                directAccessUrlRequest.setValidFor(60L);
-
-                requestContentUrl(nodeId, toJsonAsStringNonNull(directAccessUrlRequest), 400);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setValidFor(60L);
-
-                requestContentUrl(nodeId, toJsonAsStringNonNull(directAccessUrlRequest), 501);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setValidFor(-60L);
-
-                requestContentUrl(nodeId, toJsonAsStringNonNull(directAccessUrlRequest), 400);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                requestContentUrl(nodeId, toJsonAsStringNonNull(directAccessUrlRequest), 501);
-            }
-
-            {
-                DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                directAccessUrlRequest.setExpiresAt(DateTime.now().minusSeconds(30).toDate());
-                requestContentUrl(nodeId, toJsonAsStringNonNull(directAccessUrlRequest), 400);
-            }
-        }
-
-        // node not accessible
-        setRequestContext(user2);
-        requestContentUrl(nodeId, null, 403);
     }
 
     @Test

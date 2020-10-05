@@ -62,7 +62,7 @@
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.0</dependency.cxf.version>
         <dependency.opencmis.version>1.1.0</dependency.opencmis.version>
-        <dependency.pdfbox.version>2.0.20</dependency.pdfbox.version>
+        <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
         <dependency.webscripts.version>8.8</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.5.11</dependency.mockito-core.version>
@@ -81,7 +81,7 @@
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
         <dependency.tika.version>1.24.1</dependency.tika.version>
-        <dependency.spring-security.version>5.2.1.RELEASE</dependency.spring-security.version>
+        <dependency.spring-security.version>5.3.4.RELEASE</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>

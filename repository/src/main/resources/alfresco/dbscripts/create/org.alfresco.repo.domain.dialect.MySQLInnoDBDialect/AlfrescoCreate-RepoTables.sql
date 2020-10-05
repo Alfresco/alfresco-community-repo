@@ -169,7 +169,9 @@ CREATE TABLE alf_transaction
     change_txn_id VARCHAR(56) NOT NULL,
     commit_time_ms BIGINT,
     PRIMARY KEY (id),
-    KEY idx_alf_txn_ctms (commit_time_ms)
+    KEY idx_alf_txn_ctms (commit_time_ms, id),
+    KEY idx_alf_txn_ctms_sc (commit_time_ms),
+    key idx_alf_txn_id_ctms (id, commit_time_ms)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_store
@@ -210,6 +212,8 @@ CREATE TABLE alf_node
     KEY idx_alf_node_crd (audit_created, store_id, type_qname_id),
     KEY idx_alf_node_mor (audit_modifier, store_id, type_qname_id),
     KEY idx_alf_node_mod (audit_modified, store_id, type_qname_id),
+    KEY idx_alf_node_ver (version),
+    KEY idx_alf_node_txn (transaction_id),
     CONSTRAINT fk_alf_node_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
     CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES alf_store (id),
     CONSTRAINT fk_alf_node_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),

@@ -208,7 +208,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         {
             match = container.getRegistry().findWebScript(req.getMethod(), getScriptUrl(req));
         }
-        catch (NotFoundException notFoundEx)
+        catch (NotFoundException | IllegalArgumentException Ex)
         {
             getLogger().debug(req.getMethod() + " " + getScriptUrl(req) + "not found in Public API Container.");
         }

@@ -488,12 +488,6 @@
                 <artifactId>xercesImpl</artifactId>
                 <version>${dependency.xercesImpl.version}</version>
             </dependency>
-            <!-- Newer metadata-extractor, used in TIKA, see ACS-370 -->
-            <dependency>
-                <groupId>com.drewnoakes</groupId>
-                <artifactId>metadata-extractor</artifactId>
-                <version>2.13.0</version>
-            </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
                 <groupId>com.github.junrar</groupId>

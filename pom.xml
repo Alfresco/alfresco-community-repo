@@ -56,16 +56,16 @@
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.8</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.2.8.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.2.9.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.11.2</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
+        <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
         <dependency.cxf.version>3.3.7</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.20</dependency.pdfbox.version>
         <dependency.webscripts.version>8.8</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>3.4.6</dependency.mockito-core.version>
+        <dependency.mockito-core.version>3.5.11</dependency.mockito-core.version>
         <dependency.org-json.version>20090211</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.guava.version>28.2-jre</dependency.guava.version>
@@ -93,9 +93,9 @@
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
 
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.3.1</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.4.0-M1</alfresco.aos-module.version>
 
-        <dependency.postgresql.version>42.2.15</dependency.postgresql.version>
+        <dependency.postgresql.version>42.2.16</dependency.postgresql.version>
         <dependency.mysql.version>8.0.19</dependency.mysql.version>
         <dependency.mariadb.version>2.6.2</dependency.mariadb.version>
 
@@ -103,7 +103,7 @@
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
         <dependency.tas-restapi.version>1.47</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.13</dependency.tas-cmis.version>
+        <dependency.tas-cmis.version>1.14</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
@@ -243,7 +243,7 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.14</version>
+                <version>1.15</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>

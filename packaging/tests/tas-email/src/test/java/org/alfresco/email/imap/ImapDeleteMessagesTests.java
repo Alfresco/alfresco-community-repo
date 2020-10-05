@@ -21,7 +21,8 @@ public class ImapDeleteMessagesTests extends EmailTest
         adminSite = dataSite.usingAdmin().createIMAPSite();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    //    TODO uncomment once https://issues.alfresco.com/jira/browse/MNT-21648 is solved
+    /* @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
             description = "Verify message can be deleted from IMAP client by admin")
     @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
     public void adminShouldDeleteMessage() throws Exception
@@ -31,7 +32,7 @@ public class ImapDeleteMessagesTests extends EmailTest
             .and().usingResource(testFile).assertThat().existsInRepo().deleteMessage()
             .and().assertThat().doesNotContainMessages(testFile)
             .then().usingResource(testFile).assertThat().doesNotExistInRepo();
-    }
+    } */
 
     @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
             description = "Verify deleting message via IMAP client by user with MANAGER role")

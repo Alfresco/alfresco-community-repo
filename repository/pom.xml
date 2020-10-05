@@ -276,7 +276,6 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>${dependency.pdfbox.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -1068,7 +1067,6 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>win64</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -1113,7 +1111,6 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>linux</classifier>
 					<type>tgz</type>
 				</dependency>

@@ -4,7 +4,7 @@
 
 This project contains the bulk of the [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository) code.
 
-To make the development process simpler, it  brings together code historically in `alfresco-core`,
+To make the development process simpler, it brings together code historically in `alfresco-core`,
 `alfresco-data-madel`, `alfresco-repository`, `alfresco-remote-api` and repository specific
 tests and war file creation from `acs-community-packaging`. They exist as sub projects within the Maven Reactor and still
 create the same artifacts.

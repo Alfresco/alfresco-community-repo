@@ -25,12 +25,32 @@
  */
 package org.alfresco.repo.dictionary;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.averagingDouble;
+import static java.util.stream.Collectors.toMap;
+
+import static org.alfresco.repo.dictionary.M2ModelDiff.DIFF_CREATED;
+import static org.alfresco.repo.dictionary.M2ModelDiff.DIFF_DELETED;
+import static org.alfresco.repo.dictionary.M2ModelDiff.DIFF_UNCHANGED;
+import static org.alfresco.repo.dictionary.M2ModelDiff.DIFF_UPDATED;
+import static org.alfresco.repo.dictionary.M2ModelDiff.DIFF_UPDATED_INC;
+import static org.alfresco.repo.dictionary.M2ModelDiff.TYPE_ASPECT;
+import static org.alfresco.repo.dictionary.M2ModelDiff.TYPE_ASSOCIATION;
+import static org.alfresco.repo.dictionary.M2ModelDiff.TYPE_PROPERTY;
+import static org.alfresco.repo.dictionary.M2ModelDiff.TYPE_TYPE;
+
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Maps;
 
 import junit.framework.TestCase;
 
@@ -40,8 +60,10 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TraceableThreadFactory;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
+import org.apache.commons.collections4.map.UnmodifiableMap;
 
 public class DiffModelTest extends AbstractModelTest
 {
@@ -90,16 +112,11 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, null);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(6, modelDiffs.size());
-        
-        assertEquals(3, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_DELETED));
-        assertEquals(3, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_DELETED), 3,
+                new Pair(TYPE_ASPECT, DIFF_DELETED), 3);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     @SuppressWarnings("unused")
@@ -143,16 +160,11 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(null, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(6, modelDiffs.size());
-        
-        assertEquals(3, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
-        assertEquals(3, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_CREATED), 3,
+                new Pair(TYPE_ASPECT, DIFF_CREATED), 3);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testDuplicateModels()
@@ -189,28 +201,20 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff M2ModelDiff : modelDiffs)
-        {
-            System.out.println(M2ModelDiff.toString());
-        }   
-        
-        assertEquals(16, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(0, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_DELETED));
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(0, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
-        
-        assertEquals(0, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
-        assertEquals(6, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_CREATED), 1,
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 2,
+                new Pair(TYPE_TYPE, DIFF_DELETED), 1,
+
+                new Pair(TYPE_ASPECT, DIFF_CREATED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 2,
+                new Pair(TYPE_ASPECT, DIFF_DELETED), 1,
+
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 6,
+                new Pair(TYPE_PROPERTY, DIFF_UPDATED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_DELETED), 1);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testIncUpdatePropertiesAdded()
@@ -226,18 +230,13 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(8, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 4,
+                new Pair(TYPE_PROPERTY, DIFF_CREATED), 2);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
 
     public void testIncUpdateTypesAndAspectsAdded()
@@ -253,21 +252,14 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(8, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
-        
-        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_TYPE, DIFF_CREATED), 1,
+                new Pair(TYPE_ASPECT, DIFF_CREATED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 4);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testIncUpdateAssociationsAdded()
@@ -283,22 +275,14 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }
-        
-        assertEquals(12, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED_INC));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(6, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_CREATED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UPDATED_INC), 1,
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 2,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 6,
+                new Pair(TYPE_ASSOCIATION, DIFF_CREATED), 2);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testIncUpdateTitleDescription()
@@ -314,17 +298,12 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }
-        
-        assertEquals(4, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED_INC));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED_INC));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UPDATED_INC), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UPDATED_INC), 2);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testNonIncUpdatePropertiesRemoved()
@@ -340,18 +319,13 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(8, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 4,
+                new Pair(TYPE_PROPERTY, DIFF_DELETED), 2);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testNonIncUpdateTypesAndAspectsRemoved()
@@ -367,21 +341,14 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }
-        
-        assertEquals(8, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_DELETED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
-        
-        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_TYPE, DIFF_DELETED), 1,
+                new Pair(TYPE_ASPECT, DIFF_DELETED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 4);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testNonIncUpdateDefaultAspectAdded()
@@ -397,17 +364,12 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }
-        
-        assertEquals(4, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UPDATED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 2);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testNonIncUpdateAssociationsRemoved()
@@ -423,22 +385,14 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }
-        
-        assertEquals(12, modelDiffs.size());
-        
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(6, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
-        
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_DELETED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_TYPE, DIFF_UPDATED), 1,
+                new Pair(TYPE_TYPE, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 2,
+                new Pair(TYPE_PROPERTY, DIFF_UNCHANGED), 6,
+                new Pair(TYPE_ASSOCIATION, DIFF_DELETED), 2);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testIncUpdatePropertiesAddedToMandatoryAspect()
@@ -454,16 +408,11 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(3, modelDiffs.size());
-        
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 2,
+                new Pair(TYPE_PROPERTY, DIFF_CREATED), 1);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
     }
     
     public void testNonIncUpdatePropertiesRemovedFromMandatoryAspect()
@@ -479,30 +428,71 @@ public class DiffModelTest extends AbstractModelTest
         CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            System.out.println(modelDiff.toString());
-        }   
-        
-        assertEquals(3, modelDiffs.size());
-        
-        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
-    }
-    
-    private int countDiffs(List<M2ModelDiff> M2ModelDiffs, String elementType, String diffType)
-    {
-        int count = 0;
-        for (M2ModelDiff modelDiff : M2ModelDiffs)
-        {
-            if (modelDiff.getDiffType().equals(diffType) && modelDiff.getElementType().equals(elementType))
-            {
-                count++;
-            }
-        }
-        return count;
-    }
-    
-}
 
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 2,
+                new Pair(TYPE_PROPERTY, DIFF_DELETED), 1);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
+    }
+    
+    /**
+     * Changing a property from mandatory/enforced/protected to NON mandatory/enforced/protected
+     * is an incremental change and it should be allowed.
+     */
+    public void testIncChangeMandatoryProperties()
+    {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(AbstractModelTest.MODEL8_XML.getBytes());
+        M2Model model = M2Model.createModel(byteArrayInputStream);
+        QName modelName = dictionaryDAO.putModel(model);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
+        
+        byteArrayInputStream = new ByteArrayInputStream(AbstractModelTest.MODEL8_CHANGE_MANDATORY_PROPERTIES_ASPECTS_XML.getBytes());
+        model = M2Model.createModel(byteArrayInputStream);
+        modelName = dictionaryDAO.putModel(model);
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
+        
+        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UPDATED_INC), 1);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
+    }
+    
+    /**
+     * Changing a property from NOT mandatory/enforced/protected to mandatory/enforced/protected
+     * is considered to be a non incremental change.
+     */
+    public void testNonIncChangeMandatoryProperties()
+    {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(AbstractModelTest.MODEL8_CHANGE_MANDATORY_PROPERTIES_ASPECTS_XML.getBytes());
+        M2Model model = M2Model.createModel(byteArrayInputStream);
+        QName modelName = dictionaryDAO.putModel(model);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
+        
+        byteArrayInputStream = new ByteArrayInputStream(AbstractModelTest.MODEL8_XML.getBytes());
+        model = M2Model.createModel(byteArrayInputStream);
+        modelName = dictionaryDAO.putModel(model);
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
+        
+        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
+
+        Map<Pair<String, String>, Integer> expected = Map.of(
+                new Pair(TYPE_ASPECT, DIFF_UNCHANGED), 1,
+                new Pair(TYPE_PROPERTY, DIFF_UPDATED), 1);
+        assertEquals("Unexpected set of diffs found.", expected, getAllDiffCounts(modelDiffs));
+    }
+
+    /**
+     * Count the diffs grouping by element type and diff type.
+     *
+     * @param m2ModelDiffs The list of diffs returned from the dictionaryDAO.
+     * @return A map from (elementType, diffType) to the number of occurrences of matching diffs in the list.
+     */
+    private Map<Pair<String, String>, Integer> getAllDiffCounts(List<M2ModelDiff> m2ModelDiffs)
+    {
+        return m2ModelDiffs.stream()
+                           .map(modelDiff -> new Pair<>(modelDiff.getElementType(), modelDiff.getDiffType()))
+                           .collect(toMap(identity(), pair -> 1, Integer::sum));
+    }
+}

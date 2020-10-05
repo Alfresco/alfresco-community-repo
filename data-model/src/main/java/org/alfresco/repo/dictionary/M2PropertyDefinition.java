@@ -552,19 +552,43 @@ import org.springframework.util.StringUtils;
         // check mandatory
         if (isMandatory() != propDef.isMandatory())
         { 
-            isUpdated = true;
+            // Change from mandatory to NON mandatory is an incremental change
+            if (isMandatory() && !propDef.isMandatory())
+            {
+                isUpdatedIncrementally = true;
+            }
+            else
+            {
+                isUpdated = true;
+            }
         }
         
         // check mandatory enforced
         if (isMandatoryEnforced() != propDef.isMandatoryEnforced())
-        { 
-            isUpdated = true;
+        {
+            // Change from mandatory enforced to NON mandatory enforced is an incremental change
+            if (isMandatoryEnforced() && ! propDef.isMandatoryEnforced())
+            {
+                isUpdatedIncrementally = true;
+            }
+            else
+            {
+                isUpdated = true;
+            }
         }
         
         // check protected
         if (isProtected() != propDef.isProtected())
-        { 
-            isUpdated = true;
+        {
+            // Change from protected to NON protected is an incremental change
+            if (isProtected() && !propDef.isProtected())
+            {
+                isUpdatedIncrementally = true;
+            }
+            else
+            {
+                isUpdated = true;
+            }
         }
         
         //

@@ -896,6 +896,58 @@ public class AbstractModelTest extends TestCase
                     "   </aspects>" +
 
                     "</model>";
+    public static final String MODEL8_XML =
+            "<model name=\"test8:model8\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
+
+                    "   <imports>" +
+                    "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
+                    "   </imports>" +
+
+                    "   <namespaces>" +
+                    "      <namespace uri=\"http://www.alfresco.org/model/test8/1.0\" prefix=\"test8\"/>" +
+                    "   </namespaces>" +
+
+                    "   <aspects>" +
+
+                    "      <aspect name=\"test8:aspectA\">" +
+                    "         <properties> " +
+                    "            <property name=\"test8:propA1\"> " +
+                    "               <title>Prop A1</title> " +
+                    "               <type>d:text</type> " +
+                    "               <mandatory enforced=\"true\" protected =\"true\">true</mandatory> " +
+                    "            </property> " +
+                    "         </properties> " +
+                    "      </aspect>" +
+
+                    "   </aspects>" +
+
+                    "</model>";
+    public static final String MODEL8_CHANGE_MANDATORY_PROPERTIES_ASPECTS_XML =
+            "<model name=\"test8:model8\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
+
+                    "   <imports>" +
+                    "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
+                    "   </imports>" +
+
+                    "   <namespaces>" +
+                    "      <namespace uri=\"http://www.alfresco.org/model/test8/1.0\" prefix=\"test8\"/>" +
+                    "   </namespaces>" +
+
+                    "   <aspects>" +
+
+                    "      <aspect name=\"test8:aspectA\">" +
+                    "         <properties> " +
+                    "            <property name=\"test8:propA1\"> " +
+                    "               <title>Prop A1</title> " +
+                    "               <type>d:text</type> " +
+                    "               <mandatory>false</mandatory> " +
+                    "            </property> " +
+                    "         </properties> " +
+                    "      </aspect>" +
+
+                    "   </aspects>" +
+
+                    "</model>";
 
 
     public AbstractModelTest()

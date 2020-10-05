@@ -133,7 +133,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <!--
@@ -193,7 +192,6 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.0-alfresco-patched-20191004</version>
         </dependency>
         <!-- Tika -->
         <dependency>
@@ -230,13 +228,11 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>gunit</artifactId>
-            <version>3.5.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.2.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

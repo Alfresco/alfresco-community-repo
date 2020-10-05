@@ -141,7 +141,7 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
         for (QName name : keys)
         {
             // Skip rule firing on this content property for performance reasons
-            if (name.equals(ContentModel.PROP_PREFERENCE_VALUES))
+            if (name.equals(ContentModel.PROP_PREFERENCE_VALUES) || name.equals(ContentModel.PROP_CASCADE_CRC))
             {
                 continue;
             }

@@ -241,5 +241,10 @@ public class DBResultSet extends AbstractResultSet
             }
         }
     }
+    
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
 
 }

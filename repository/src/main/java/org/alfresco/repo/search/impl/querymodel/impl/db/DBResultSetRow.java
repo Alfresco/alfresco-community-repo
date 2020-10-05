@@ -25,11 +25,13 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.repo.search.AbstractResultSetRow;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Andy
@@ -82,6 +84,13 @@ public class DBResultSetRow extends AbstractResultSetRow
     public float getScore(String selectorName)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected Map<QName, Serializable> getDirectProperties()
+    {
+        DBResultSet rs = (DBResultSet) getResultSet();
+        return rs.getNodeService().getProperties(rs.getNodeRef(getIndex()));
     }
 
   

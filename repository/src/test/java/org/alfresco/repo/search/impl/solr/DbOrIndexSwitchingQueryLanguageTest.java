@@ -37,7 +37,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
@@ -68,7 +68,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
     private @Mock LuceneQueryLanguageSPI indexQueryLang;
     private @Mock SolrJSONResultSet indexResults;
     private @Mock ResultSet dbResults;
-    private @Mock SOLRDAO solrDAO;
+    private @Mock SearchDAO solrDAO;
     private List<Node> changedNodes;
     
     @Before
@@ -77,7 +77,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
         queryLang = new DbOrIndexSwitchingQueryLanguage();
         queryLang.setDbQueryLanguage(dbQueryLang);
         queryLang.setIndexQueryLanguage(indexQueryLang);
-        queryLang.setSolrDao(solrDAO);
+        queryLang.setSearchDao(solrDAO);
         searchParameters = new SearchParameters();
         changedNodes = new ArrayList<>();
         

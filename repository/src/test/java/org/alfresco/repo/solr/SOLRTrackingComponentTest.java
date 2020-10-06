@@ -45,9 +45,10 @@ import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent.NodeMetaDataQueryCallback;
+import org.alfresco.repo.search.SearchTrackingComponent.NodeQueryCallback;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
-import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -95,7 +96,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private DictionaryDAO dictionaryDAO;
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent solrTrackingComponent;
     private DbNodeServiceImpl dbNodeService;
 
     private StoreRef storeRef;
@@ -108,7 +109,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
 
-        solrTrackingComponent = (SOLRTrackingComponent) applicationContext.getBean("solrTrackingComponent");
+        solrTrackingComponent = (SearchTrackingComponent) applicationContext.getBean("searchTrackingComponent");
         nodeDAO = (NodeDAO)applicationContext.getBean("nodeDAO");
         qnameDAO = (QNameDAO) applicationContext.getBean("qnameDAO");
         dictionaryDAO =  (DictionaryDAO)applicationContext.getBean("dictionaryDAO");
@@ -208,7 +209,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
     }
 
     /**
-     * Call {@link SOLRTrackingComponent#getTransactions(Long, Long, Long, Long, int)} in a transaction
+     * Call {@link SearchTrackingComponent#getTransactions(Long, Long, Long, Long, int)} in a transaction
      */
     private List<Transaction> getTransactions(
             final Long minTxnId, final Long fromCommitTime,
@@ -227,7 +228,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
     }
 
     /**
-     * Call {@link SOLRTrackingComponent#getNodes(NodeParameters, NodeQueryCallback)} in a transaction
+     * Call {@link SearchTrackingComponent#getNodes(NodeParameters, NodeQueryCallback)} in a transaction
      */
     private void getNodes(final NodeParameters nodeParameters, final SOLRTest bt)
     {
@@ -249,7 +250,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
     }
 
     /**
-     * Call {@link SOLRTrackingComponent#getAcls(List, Long, int)} in a transaction
+     * Call {@link SearchTrackingComponent#getAcls(List, Long, int)} in a transaction
      */
     @SuppressWarnings("unused")
     private List<Acl> getAcls(final List<Long> aclChangeSetIds, final Long minAclId, final int maxResults)
@@ -266,7 +267,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
     }
 
     /**
-     * Call {@link SOLRTrackingComponent#getAclChangeSets(Long, Long, Long, Long, int)} in a transaction
+     * Call {@link SearchTrackingComponent#getAclChangeSets(Long, Long, Long, Long, int)} in a transaction
      */
     private List<AclChangeSet> getAclChangeSets(
             final Long minAclChangeSetId, final Long fromCommitTime,

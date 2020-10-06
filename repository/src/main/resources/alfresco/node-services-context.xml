@@ -323,7 +323,7 @@
     <bean id="cascadeUpdateAspect" class="org.alfresco.repo.node.CascadeUpdateAspect" init-method="init">
         <property name="nodeService" ref="nodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="solrTrackingComponent" ref="solrTrackingComponent" />
+        <property name="searchTrackingComponent" ref="searchTrackingComponent" />
     </bean>   
        
 </beans>

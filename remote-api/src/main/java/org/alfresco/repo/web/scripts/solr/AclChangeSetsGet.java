@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.AclChangeSet;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -46,11 +46,11 @@ public class AclChangeSetsGet extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(AclChangeSetsGet.class);
 
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -67,18 +67,18 @@ public class AclChangeSetsGet extends DeclarativeWebScript
         Long toTime = (toTimeParam == null ? null : Long.valueOf(toTimeParam));
         int maxResults = (maxResultsParam == null ? 1024 : Integer.valueOf(maxResultsParam));
         
-        List<AclChangeSet> changesets = solrTrackingComponent.getAclChangeSets(fromId, fromTime, toId, toTime, maxResults);
+        List<AclChangeSet> changesets = searchTrackingComponent.getAclChangeSets(fromId, fromTime, toId, toTime, maxResults);
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("aclChangeSets", changesets);
 
-        Long maxChangeSetCommitTime = solrTrackingComponent.getMaxChangeSetCommitTime();
+        Long maxChangeSetCommitTime = searchTrackingComponent.getMaxChangeSetCommitTime();
         if(maxChangeSetCommitTime != null)
         {
             model.put("maxChangeSetCommitTime", maxChangeSetCommitTime);
         }
         
-        Long maxChangeSetId = solrTrackingComponent.getMaxChangeSetId();
+        Long maxChangeSetId = searchTrackingComponent.getMaxChangeSetId();
         if(maxChangeSetId != null)
         {
             model.put("maxChangeSetId", maxChangeSetId);

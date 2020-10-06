@@ -67,7 +67,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @since 4.0
  */
 @Category({OwnJVMTestsCategory.class, DBTests.class})
-public class SOLRDAOTest extends TestCase
+public class SearchDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
 
@@ -77,13 +77,13 @@ public class SOLRDAOTest extends TestCase
     private TransactionService transactionService;
     private NodeService nodeService;
     private AclDAO aclDaoComponent;
-    private SOLRDAO solrDAO;
+    private SearchDAO searchDAO;
     private NodeDAO nodeDAO;
     
     @Override
     public void setUp() throws Exception
     {
-        solrDAO = (SOLRDAO)ctx.getBean("solrDAO");
+        searchDAO = (SearchDAO)ctx.getBean("searchDAO");
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         
@@ -103,7 +103,7 @@ public class SOLRDAOTest extends TestCase
             @Override
             public List<Node> execute() throws Throwable
             {
-                return solrDAO.getNodes(nodeParameters, null, null);
+                return searchDAO.getNodes(nodeParameters, null, null);
             }
         }, true);
     }
@@ -115,7 +115,7 @@ public class SOLRDAOTest extends TestCase
             @Override
             public List<Acl> execute() throws Throwable
             {
-                return solrDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
+                return searchDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
             }
         }, true);
     }
@@ -130,7 +130,7 @@ public class SOLRDAOTest extends TestCase
             @Override
             public List<Transaction> execute() throws Throwable
             {
-                return solrDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
+                return searchDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
             }
         }, true);
     }
@@ -145,7 +145,7 @@ public class SOLRDAOTest extends TestCase
             @Override
             public List<AclChangeSet> execute() throws Throwable
             {
-                return solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
+                return searchDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
             }
         }, true);
     }
@@ -449,7 +449,7 @@ public class SOLRDAOTest extends TestCase
 
             List<Long> aclChangeSetIds = new ArrayList<Long>();
             aclChangeSetIds.add(aclProps.getAclChangeSetId());
-            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 1000);
+            List<Acl> acls = searchDAO.getAcls(aclChangeSetIds, null, 1000);
             assertTrue("Shared Acl should be found by solrDAO so that it can be indexed", containsAclId(acls, sharedAclId));
         }
         finally

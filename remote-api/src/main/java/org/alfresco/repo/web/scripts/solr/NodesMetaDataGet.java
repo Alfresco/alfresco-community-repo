@@ -38,11 +38,11 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.repo.solr.MetaDataResultsFilter;
 import org.alfresco.repo.solr.NodeMetaData;
 import org.alfresco.repo.solr.NodeMetaDataParameters;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
-import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -74,12 +74,12 @@ public class NodesMetaDataGet extends DeclarativeWebScript
     private static final int INITIAL_DEFAULT_SIZE = 100;
     private static final int BATCH_SIZE = 50;
     
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     private SOLRSerializer solrSerializer;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     public void setSolrSerializer(SOLRSerializer solrSerializer)
@@ -188,7 +188,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             params.setToNodeId(toNodeId);
             params.setMaxResults(maxResults);
 
-            solrTrackingComponent.getNodesMetadata(params, filter, new NodeMetaDataQueryCallback()
+            searchTrackingComponent.getNodesMetadata(params, filter, new NodeMetaDataQueryCallback()
             {
                 private int counter = BATCH_SIZE;
                 private int numBatches = 0;

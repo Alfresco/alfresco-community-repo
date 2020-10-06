@@ -36,7 +36,7 @@ import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.AclEntity;
 import org.alfresco.repo.domain.solr.NodeParametersEntity;
-import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.domain.solr.SOLRTrackingParameters;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.solr.Acl;
@@ -55,7 +55,7 @@ import org.mybatis.spring.SqlSessionTemplate;
  * 
  * @since 4.0
  */
-public class SOLRDAOImpl implements SOLRDAO
+public class SearchDAOImpl implements SearchDAO
 {
     private static final String SELECT_CHANGESETS_SUMMARY = "alfresco.solr.select_ChangeSets_Summary";
     private static final String SELECT_ACLS_BY_CHANGESET_IDS = "alfresco.solr.select_AclsByChangeSetIds";

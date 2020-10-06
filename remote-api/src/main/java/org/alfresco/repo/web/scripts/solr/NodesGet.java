@@ -35,11 +35,10 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.search.impl.QueryParserUtils;
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent.NodeQueryCallback;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.solr.NodeParameters;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
-import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -67,15 +66,15 @@ public class NodesGet extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(NodesGet.class);
     
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     
     private TenantService tenantService;
     
     private QNameDAO qnameDAO;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
     
     public void setTenantService(TenantService tenantService)
@@ -202,7 +201,7 @@ public class NodesGet extends DeclarativeWebScript
             
             WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults, storeRef, tenantService, qnameDAO);
 
-            solrTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
+            searchTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
             
             Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
             List<NodeRecord> nodes = nodeQueryCallback.getNodes();

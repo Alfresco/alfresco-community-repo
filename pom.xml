@@ -61,7 +61,7 @@
         <dependency.jackson.version>2.11.2</dependency.jackson.version>
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.0</dependency.cxf.version>
-        <dependency.opencmis.version>1.1.0</dependency.opencmis.version>
+        <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
         <dependency.webscripts.version>8.8</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>

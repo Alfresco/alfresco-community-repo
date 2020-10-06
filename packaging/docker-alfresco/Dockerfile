@@ -4,7 +4,6 @@ FROM alfresco/alfresco-base-tomcat:8.5.28-java-8-oracle-centos-7
 
 # Create prerequisite to store tools and properties
 RUN mkdir -p /usr/local/tomcat/shared/classes/alfresco/extension && \
-    mkdir /licenses && \
     mkdir /usr/local/tomcat/alfresco-mmt && \
     touch /usr/local/tomcat/shared/classes/alfresco-global.properties
 
@@ -12,11 +11,9 @@ RUN mkdir -p /usr/local/tomcat/shared/classes/alfresco/extension && \
 # Copy the WAR files to the appropriate location for your application server
 # Copy the JDBC drivers for the database you are using to the lib/ directory.
 # Copy the alfresco-mmt.jar
-# Copy Licenses to the root of the Docker image
 COPY target/war /usr/local/tomcat/webapps
 COPY target/connector/* /usr/local/tomcat/lib/
 COPY target/alfresco-mmt/* /usr/local/tomcat/alfresco-mmt/
-COPY target/dependency/licenses/ /licenses/
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes

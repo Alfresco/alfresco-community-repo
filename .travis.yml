@@ -115,7 +115,9 @@ jobs:
 
     - name: "Community Release"
         stage: Release
-        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[community release\]/
+        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[.*release .*\]/
+        before_script:
+          bash scripts/set-release-variables.sh
         script:
           - echo "Community Release"
           - bash scripts/release-community.sh
@@ -126,15 +128,16 @@ jobs:
             access_key_id: ${ARTIFACTS_KEY}
             secret_access_key: ${ARTIFACTS_SECRET}
             region: "eu-west-1"
-            bucket: "alfresco-artefacts-staging"
-            upload_dir: "community/alfresco-governance-services/release/${TRAVIS_BRANCH}"
+            bucket: ${ARTIFACTS_UPLOAD_BUCKET}
+            upload_dir: ${ARTIFACTS_UPLOAD_DIR}
             skip_cleanup: true
             acl: private
             local_dir: artifacts_dir
             on:
               all_branches: true
           after_deploy:
-            - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/community/alfresco-governance-services/release/${TRAVIS_BRANCH}"
+            - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
+
 
     - name: "Enterprise Release"
       stage: Release

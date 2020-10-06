@@ -64,7 +64,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.domain.patch.AppliedPatchDAOTest.class,
     org.alfresco.repo.domain.permissions.AclCrudDAOTest.class,
     org.alfresco.repo.domain.usage.UsageDAOTest.class,
-    org.alfresco.repo.domain.solr.SOLRDAOTest.class,
+    org.alfresco.repo.domain.solr.SearchDAOTest.class,
     org.alfresco.repo.domain.tenant.TenantAdminDAOTest.class,
 
     // REPO-1012 : run AuditDAOTest and PropertyValueCleanupTest near the end

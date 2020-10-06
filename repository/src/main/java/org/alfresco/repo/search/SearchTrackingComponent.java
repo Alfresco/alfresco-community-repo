@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.solr;
+package org.alfresco.repo.search;
 
 import java.util.List;
 import java.util.Map;
@@ -31,14 +31,24 @@ import java.util.Map;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.index.shard.ShardState;
+import org.alfresco.repo.solr.Acl;
+import org.alfresco.repo.solr.AclChangeSet;
+import org.alfresco.repo.solr.AclReaders;
+import org.alfresco.repo.solr.AlfrescoModel;
+import org.alfresco.repo.solr.AlfrescoModelDiff;
+import org.alfresco.repo.solr.MetaDataResultsFilter;
+import org.alfresco.repo.solr.NodeMetaData;
+import org.alfresco.repo.solr.NodeMetaDataParameters;
+import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Interface for component to provide tracking data for SOLR.
+ * Interface for component to provide tracking data for Search Subsystem.
  * 
  * @since 4.0
  */
-public interface SOLRTrackingComponent
+public interface SearchTrackingComponent
 {   
     /**
      * Get the ACL changesets for given range parameters

@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @since 4.0
  */
-public interface SOLRDAO
+public interface SearchDAO
 {
     /**
      * Get the ACL changesets summary (rollup count) with paging options

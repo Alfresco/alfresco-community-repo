@@ -4,6 +4,9 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <!-- Required to import Enterprise-Only Search Subsystems (like "elasticsearch") -->
+    <import resource="classpath*:alfresco/enterprise/search-enterprise-context.xml" />
+    
     <!-- Core and miscellaneous bean definitions -->
 
     <!--                    -->
@@ -998,7 +1001,7 @@
             </list>
         </property>
     </bean>
-
+    
     <bean id="solr" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
@@ -1291,16 +1294,16 @@
       </property>
    </bean>
 
-    <bean id="solrTrackingComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+    <bean id="searchTrackingComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
       </property>
       <property name="sourceBeanName">
-         <value>search.solrTrackingComponent</value>
+         <value>search.trackingComponent</value>
       </property>
       <property name="interfaces">
          <list>
-            <value>org.alfresco.repo.solr.SOLRTrackingComponent</value>
+            <value>org.alfresco.repo.search.SearchTrackingComponent</value>
          </list>
       </property>
    </bean>

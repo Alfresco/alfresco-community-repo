@@ -37,11 +37,11 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.AclReaders;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -77,7 +77,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     protected static final Log logger = LogFactory.getLog(SOLRWebScriptTest.class);
 
     private ApplicationContext ctx;
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     private NodeDAO nodeDAO;
     private TransactionService transactionService;
     private NodeService nodeService;
@@ -107,7 +107,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         namespaceService = serviceRegistry.getNamespaceService();
         txnHelper = transactionService.getRetryingTransactionHelper();
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
-        solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
+        searchTrackingComponent = (SearchTrackingComponent) ctx.getBean("searchTrackingComponent");
 
         admin = AuthenticationUtil.getAdminUserName();
 
@@ -165,7 +165,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     public void testAclsGet() throws Exception
     {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 100);
+        List<AclChangeSet> aclChangeSets = searchTrackingComponent.getAclChangeSets(null, null, null, null, 100);
         if (aclChangeSets.size() == 0)
         {
             return;         // Can't test, but very unlikely
@@ -203,7 +203,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         JSONArray acls = json.getJSONArray("acls");
         
         // Check
-        List<Acl> aclsCheck = solrTrackingComponent.getAcls(aclChangeSetIds, null, 512);
+        List<Acl> aclsCheck = searchTrackingComponent.getAcls(aclChangeSetIds, null, 512);
         assertEquals("Script and API returned different number of results", aclsCheck.size(), acls.length());
     }
     
@@ -223,7 +223,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     
     private void aclReadersGetImpl() throws Exception
     {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 1024);
+        List<AclChangeSet> aclChangeSets = searchTrackingComponent.getAclChangeSets(null, null, null, null, 1024);
         List<Long> aclChangeSetIds = new ArrayList<Long>(50);
         for (AclChangeSet aclChangeSet : aclChangeSets)
         {
@@ -237,7 +237,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         {
             // No ACLs; not likely
         }
-        List<Acl> acls = solrTrackingComponent.getAcls(aclChangeSetIds, null, 1024);
+        List<Acl> acls = searchTrackingComponent.getAcls(aclChangeSetIds, null, 1024);
         List<Long> aclIds = new ArrayList<Long>(acls.size());
         JSONObject json = new JSONObject();
         JSONArray aclIdsJSON = new JSONArray();
@@ -250,7 +250,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         json.put("aclIds", aclIdsJSON);
         
         // Now get the readers
-        List<AclReaders> aclsReaders = solrTrackingComponent.getAclsReaders(aclIds);
+        List<AclReaders> aclsReaders = searchTrackingComponent.getAclsReaders(aclIds);
         assertEquals("Should have same number of ACLs as supplied", aclIds.size(), aclsReaders.size());
         assertTrue("Must have *some* ACLs here", aclIds.size() > 0);
         Map<Long, Set<String>> readersByAclId = new HashMap<Long, Set<String>>();

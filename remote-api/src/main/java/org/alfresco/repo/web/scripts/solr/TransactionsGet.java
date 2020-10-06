@@ -32,7 +32,7 @@ import java.util.Map;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.index.shard.ShardStateBuilder;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
@@ -50,11 +50,11 @@ public class TransactionsGet extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(TransactionsGet.class);
 
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -128,7 +128,7 @@ public class TransactionsGet extends DeclarativeWebScript
                 }
             }
             
-            solrTrackingComponent.registerShardState(shardState);
+            searchTrackingComponent.registerShardState(shardState);
    
         }
         
@@ -139,18 +139,18 @@ public class TransactionsGet extends DeclarativeWebScript
         Long toCommitTime = (toCommitTimeParam == null ? null : Long.valueOf(toCommitTimeParam));
         int maxResults = (maxResultsParam == null ? 1024 : Integer.valueOf(maxResultsParam));
         
-        List<Transaction> transactions = solrTrackingComponent.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
+        List<Transaction> transactions = searchTrackingComponent.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("transactions", transactions);
         
-        Long maxTxnCommitTime = solrTrackingComponent.getMaxTxnCommitTime();
+        Long maxTxnCommitTime = searchTrackingComponent.getMaxTxnCommitTime();
         if(maxTxnCommitTime != null)
         {
             model.put("maxTxnCommitTime", maxTxnCommitTime);
         }
         
-        Long maxTxnIdOnServer = solrTrackingComponent.getMaxTxnId();
+        Long maxTxnIdOnServer = searchTrackingComponent.getMaxTxnId();
         if(maxTxnIdOnServer != null)
         {
             model.put("maxTxnId", maxTxnIdOnServer);

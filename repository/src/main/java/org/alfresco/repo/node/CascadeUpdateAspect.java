@@ -32,7 +32,7 @@ import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -46,7 +46,7 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
 {
     private PolicyComponent policyComponent;
     private NodeService nodeService;
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
 
   
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -59,9 +59,9 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
         this.nodeService = nodeService;
     }
  
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     /**
@@ -112,7 +112,7 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
     private void markCascadeUpdate(NodeRef nodeRef)
     {
         Status status = nodeService.getNodeStatus(nodeRef);
-        nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_CRC, solrTrackingComponent.getCRC(status.getDbId()));
+        nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_CRC, searchTrackingComponent.getCRC(status.getDbId()));
         nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_TX, status.getDbTxnId());   
     }
 }

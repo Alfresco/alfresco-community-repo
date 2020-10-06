@@ -26,10 +26,9 @@
 package org.alfresco.repo.web.scripts.solr;
 
 import java.io.IOException;
-import java.util.Map;
 
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.AlfrescoModel;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -52,11 +51,11 @@ public class AlfrescoModelGet extends AbstractWebScript
     protected static final Log logger = LogFactory.getLog(AlfrescoModelGet.class);
 
     private NamespaceService namespaceService;
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
 
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.searchTrackingComponent = searchTrackingComponent;
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -92,7 +91,7 @@ public class AlfrescoModelGet extends AbstractWebScript
         }
 
         ModelDefinition.XMLBindingType bindingType = ModelDefinition.XMLBindingType.DEFAULT;
-        AlfrescoModel model = solrTrackingComponent.getModel(QName.createQName(modelQName));
+        AlfrescoModel model = searchTrackingComponent.getModel(QName.createQName(modelQName));
         res.setHeader("XAlfresco-modelChecksum", String.valueOf(model.getModelDef().getChecksum(bindingType)));
         model.getModelDef().toXML(bindingType, res.getOutputStream());
     }

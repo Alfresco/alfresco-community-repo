@@ -1159,13 +1159,13 @@
    <bean id="webscript.org.alfresco.repository.solr.aclChangeSets.get"
          class="org.alfresco.repo.web.scripts.solr.AclChangeSetsGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.acls.post"
          class="org.alfresco.repo.web.scripts.solr.AclsGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.acls.get"
@@ -1174,7 +1174,7 @@
    <bean id="webscript.org.alfresco.repository.solr.aclsReaders.post"
          class="org.alfresco.repo.web.scripts.solr.AclsReadersGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.aclsReaders.get" 
@@ -1183,7 +1183,7 @@
    <bean id="webscript.org.alfresco.repository.solr.transactions.get"
          class="org.alfresco.repo.web.scripts.solr.TransactionsGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.stats.get"
@@ -1225,7 +1225,7 @@
    <bean id="webscript.org.alfresco.repository.solr.nodes.post"
          class="org.alfresco.repo.web.scripts.solr.NodesGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
@@ -1233,7 +1233,7 @@
    <bean id="webscript.org.alfresco.repository.solr.nodesMetaData.post"
          class="org.alfresco.repo.web.scripts.solr.NodesMetaDataGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
       <property name="solrSerializer" ref="solrSerializer"/>
    </bean>
 
@@ -1250,14 +1250,14 @@
    <bean id="webscript.org.alfresco.repository.solr.model.get"
          class="org.alfresco.repo.web.scripts.solr.AlfrescoModelGet"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
       <property name="namespaceService" ref="namespaceService"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.modelsdiff.post"
          class="org.alfresco.repo.web.scripts.solr.AlfrescoModelsDiff"
          parent="webscript">
-      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="searchTrackingComponent" ref="searchTrackingComponent"/>
    </bean>
    
 	<!-- /api/solr webscript returning the min txId and the max TxId in a nodeId range -->
@@ -1266,7 +1266,7 @@
 		parent="webscript">
 		<property name="nodeDAO" ref="nodeDAO" />
 	</bean>
-	
+
 	<!-- /api/solr webscript returning the min txId in a nodeId range -->
 	<bean id="webscript.org.alfresco.repository.solr.nextTransactionCommitTime.get"
 		class="org.alfresco.repo.web.scripts.solr.NextTransactionGet"

@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
@@ -65,7 +65,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     
     private NodeService nodeService;
     
-    private SOLRDAO solrDao;
+    private SearchDAO searchDao;
     
     private boolean hybridEnabled;
     
@@ -101,9 +101,9 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.nodeService = nodeService;
     }
 
-    public void setSolrDao(SOLRDAO solrDao)
+    public void setSearchDao(SearchDAO searchDao)
     {
-        this.solrDao = solrDao;
+        this.searchDao = searchDao;
     }
 
     public void setHybridEnabled(boolean hybridEnabled)
@@ -333,7 +333,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         // TODO: setToTxnId(null) when SolrDAO behaviour is fixed.
         nodeParameters.setToTxnId(Long.MAX_VALUE);
         stopWatch.start("get changed nodes");
-        List<Node> changedNodeList = solrDao.getNodes(nodeParameters, null, null);
+        List<Node> changedNodeList = searchDao.getNodes(nodeParameters, null, null);
         stopWatch.stop();
         if (logger.isDebugEnabled())
         {

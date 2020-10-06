@@ -36,14 +36,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.coci.CheckOutCheckInServiceImpl;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -51,10 +49,11 @@ import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.search.AspectIndexFilter;
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -89,11 +88,11 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @since 4.0
  */
-public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
+public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 {
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
-    private SOLRDAO solrDAO;
+    private SearchDAO searchDAO;
     private DictionaryDAO dictionaryDAO;
     private PermissionService permissionService;
     private AclDAO aclDAO;
@@ -130,9 +129,9 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.cacheAncestors = cacheAncestors;
     }
 
-    public void setSolrDAO(SOLRDAO solrDAO)
+    public void setSearchDAO(SearchDAO searchDAO)
     {
-        this.solrDAO = solrDAO;
+        this.searchDAO = searchDAO;
     }
 
     public void setNodeDAO(NodeDAO nodeDAO)
@@ -200,7 +199,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
      */    
     public void init()
     {
-        PropertyCheck.mandatory(this, "solrDAO", solrDAO);
+        PropertyCheck.mandatory(this, "solrDAO", searchDAO);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
@@ -219,7 +218,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         if(enabled)
         {
-            List<AclChangeSet> changesets = solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
+            List<AclChangeSet> changesets = searchDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
             return changesets;
         }
         else
@@ -233,7 +232,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         if(enabled)
         {
-            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
+            List<Acl> acls = searchDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
             return acls;
         }
         else
@@ -305,7 +304,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             List<Long> aclChangeSetIds = new ArrayList<Long>(1);
             aclChangeSetIds.add(aclChangeSetId);
             
-            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 1024);
+            List<Acl> acls = searchDAO.getAcls(aclChangeSetIds, null, 1024);
             for (Acl acl : acls)
             {
                 tenantDomain = getAclTenant(acl.getId());
@@ -347,7 +346,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         if(enabled)
         {
-            List<Transaction> txns = solrDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
+            List<Transaction> txns = searchDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
             return txns;
         }
         else
@@ -392,7 +391,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 	        }
 
 
-	        List<Node> nodes = solrDAO.getNodes(nodeParameters, shardPropertQName, shardPropertyType);
+	        List<Node> nodes = searchDAO.getNodes(nodeParameters, shardPropertQName, shardPropertyType);
 
 	        for (Node node : nodes)
 	        {

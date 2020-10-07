@@ -83,7 +83,7 @@ jobs:
           if [[ ${TRAVIS_BRANCH} == *community* ]]; then
             bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
           else
-            bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+            bash scripts/start-compose.sh "${ENTERPRISE_REPO_PATH}/docker-compose-travis.yml"
           fi
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
@@ -94,7 +94,7 @@ jobs:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
-        - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+        - bash scripts/start-compose.sh "${ENTERPRISE_REPO_PATH}/docker-compose-travis.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script:
         - mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false

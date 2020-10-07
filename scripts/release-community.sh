@@ -1,15 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
-
-GIT_COMMITTER_NAME=alfresco-build
-GIT_COMMITTER_EMAIL=info@alfresco.com
 
 # Use full history for release
 git checkout -B "${TRAVIS_BRANCH}"
 # Add email to link commits to user
 git config user.email "${GIT_COMMITTER_EMAIL}"
 git config user.name "${GIT_COMMITTER_NAME}"
-
 
 if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ];
     then echo "Please provide a Release and Development verison"

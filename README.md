@@ -138,3 +138,12 @@ Unzip it and change to the "solr" folder within it. Start the Solr server using 
 solr start -a "-Dcreate.alfresco.defaults=alfresco,archive"
 ```
 Start your repository
+
+## Release process
+
+In order to release a new community or enterprise version you need to:
+* make sure you are either on a release branch or on master branch
+* push a new commit message containing the following [$release_type release $release_version $development_version] where
+    * release_type should contain one of the following: *internal community*/*internal enterprise* -> for internal releases or _community_/_enterprise_
+    * release_version must contain the desired release version
+    * development_version must contain the next development version

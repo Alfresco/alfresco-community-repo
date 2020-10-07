@@ -1,7 +1,5 @@
 import:
   - source: travis-env-vars.yml
-arch: arm64-graviton2
-virt: vm
 os: linux
 dist: xenial
 language: java

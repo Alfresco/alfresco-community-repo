@@ -432,7 +432,7 @@ public class RecordAspect extends    AbstractDisposableItem
         {
             return;
         }
-        else if (!EqualsHelper.nullSafeEquals(contentBefore, contentAfter))
+        else if (contentBefore != null && !contentBefore.equals(contentAfter))
         {
                 throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
         }

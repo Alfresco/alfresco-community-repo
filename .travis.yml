@@ -27,10 +27,6 @@ install: skip
 
 services:
   - docker
-env:
-  global:
-    - RELEASE_VERSION=2.7.3
-    - DEVELOPMENT_VERSION=2.7.3-SNAPSHOT
 
 stages:
   - name: Build AGS

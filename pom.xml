@@ -174,11 +174,6 @@
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-pdf-renderer</artifactId>
-                <version>${dependency.alfresco-pdf-renderer.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-server-root</artifactId>
                 <version>${dependency.alfresco-server-root.version}</version>
                 <type>war</type>

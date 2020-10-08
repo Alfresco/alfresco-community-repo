@@ -34,7 +34,7 @@ COPY ${resource_path}/war ${TOMCAT_DIR}/webapps
 COPY ${resource_path}/connector/* ${TOMCAT_DIR}/lib/
 COPY ${resource_path}/alfresco-mmt/* ${TOMCAT_DIR}/alfresco-mmt/
 COPY ${resource_path}/dependency/licenses/ /licenses/
-COPY ${resource_path}/dependency/keystore/metadata-keystore ${TOMCAT_DIR}/shared/classes/alfresco/extension/keystore/
+COPY ${resource_path}/dependency/keystore/metadata-keystore/keystore ${TOMCAT_DIR}/shared/classes/alfresco/extension/keystore
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes

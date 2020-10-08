@@ -7,7 +7,7 @@ if [ ! -n "$release_message" ]; then
   exit 0
 fi
 
-export RELEASE_VERSION=$(echo $release_message | ggrep -Po '\g<1>(\d\.)+(\d|[a-z])')
+export RELEASE_VERSION=$(echo $release_message | ggrep -Po '\g<1>(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}')
 export DEVELOPMENT_VERSION=$(echo $release_message | ggrep -Po '(\d\.)+\d-SNAPSHOT')
 
 echo "Release version is set to $RELEASE_VERSION"
@@ -20,7 +20,7 @@ if [[ $release_type =~ "community" ]]; then
   if [[ $release_type =~ "internal" ]]; then
     echo "Setting ARTIFACTS_UPLOAD_BUCKET and ARTIFACTS_UPLOAD_DIR for the Internal release"
     export ARTIFACTS_UPLOAD_BUCKET="alfresco-artefacts-staging"
-    export ARTIFACTS_UPLOAD_DIR="community/alfresco-governance-services/release/${TRAVIS_BRANCH}"
+    export ARTIFACTS_UPLOAD_DIR="community/RM/${RELEASE_VERSION}"
   else
     echo "Setting ARTIFACTS_UPLOAD_BUCKET and ARTIFACTS_UPLOAD_DIR for the release"
     export ARTIFACTS_UPLOAD_BUCKET="eu.dl.alfresco.com"
@@ -31,7 +31,7 @@ elif [[ $release_type =~ "enterprise" ]]; then
   if [[ $release_type =~ "internal" ]]; then
     echo "Setting ARTIFACTS_UPLOAD_BUCKET and ARTIFACTS_UPLOAD_DIR for the Internal release"
     export ARTIFACTS_UPLOAD_BUCKET="alfresco-artefacts-staging"
-    export ARTIFACTS_UPLOAD_DIR="enterprise/alfresco-governance-services/release/${TRAVIS_BRANCH}"
+    export ARTIFACTS_UPLOAD_DIR="enterprise/RM/${RELEASE_VERSION}"
   else
     echo "Setting ARTIFACTS_UPLOAD_BUCKET and ARTIFACTS_UPLOAD_DIR for the release"
     export ARTIFACTS_UPLOAD_BUCKET="eu.dl.alfresco.com"

@@ -111,7 +111,7 @@ jobs:
 
     - name: "Community Release"
         stage: Release
-        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[.*release .*\]/
+        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ ^\[.*community release.*\]$
         before_script:
           bash scripts/set-release-variables.sh
         script:

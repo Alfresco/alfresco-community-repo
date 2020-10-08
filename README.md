@@ -142,8 +142,16 @@ Start your repository
 ## Release process
 
 In order to release a new community or enterprise version you need to:
-* make sure you are either on a release branch or on master branch
-* push a new commit message containing the following [$release_type release $release_version $development_version] where
+* make sure you use either a release branch or the master branch
+* the branch involved in the release should not be forked and should not have an open PR 
+* push a new commit message containing the following pattern [$release_type release $release_version $development_version] where
     * release_type should contain one of the following: *internal community*/*internal enterprise* -> for internal releases or _community_/_enterprise_
     * release_version must contain the desired release version
     * development_version must contain the next development version
+
+Release commit message examples:
+ * internal enterprise version:
+    _[internal enterprise release 3.4.a-A1 3.5.0-SNAPSHOT]_
+ * community version:
+    _[community release 3.4.a 3.5.0-SNAPSHOT]_
+    

@@ -153,8 +153,7 @@ public class RecordAspectUnitTest
     public void testOnUpdatePropertiesContentMovedToAnotherStore()
     {
         Map<QName, Serializable> before = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl1", "text" +
-                "/plain", 0L, "UTF" +
-                "-8", Locale.UK));
+                "/plain", 0L, "UTF-8", Locale.UK));
         Map<QName, Serializable> after = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl2", "text" +
                 "/plain", 0L, "UTF-8", Locale.UK), PROP_STORE_NAME, "store2");
         recordAspect.onUpdateProperties(NODE_REF, before, after);

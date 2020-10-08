@@ -8,4 +8,4 @@ env:
     - ENTERPRISE_REPO_PATH=rm-enterprise/rm-enterprise-repo
     - ENTERPRISE_SHARE_PATH=rm-enterprise/rm-enterprise-share
     - MVN_SKIP='-Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests'
-    - TRAVIS_WORKER_DOCKER_MEMORY=6.5G
+    - TRAVIS_WORKER_DOCKER_MEMORY=7G

@@ -96,19 +96,7 @@ jobs:
       before_script:
         - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
-        - docker stats --no-stream
-        - docker update --memory=2Gb --memory-swap -1 rm-enterprise-repo_alfresco_1
-        - docker update --memory=1.5Gb --memory-swap -1 rm-enterprise-repo_search_1
-        - docker update --memory=1Gb --memory-swap -1 rm-enterprise-repo_zeppelin_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_postgres_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_transform-router_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_imagemagick_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_alfresco-pdf-renderer_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_shared-file-store_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_tika_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_libreoffice_1
-        - docker update --memory=512Mb --memory-swap -1 rm-enterprise-repo_activemq_1
-        - docker stats --no-stream
+        - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
       script:
         - travis_wait 30 mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false

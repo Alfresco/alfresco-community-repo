@@ -9,5 +9,11 @@ if [ $1 == 'community' ]; then
     cd artifacts_dir
     zip alfresco-rm-community-${RELEASE_VERSION}.zip *amp
     ls artifacts_dir
-#elif [ $1 == "enterprise" ]; then
+elif [ $1 == "enterprise" ]; then
+  mkdir "artifacts_dir"
+    cp rm-enterprise/rm-enterprise-repo/target/alfresco-rm-*enterprise*amp artifacts_dir
+    cp rm-enterprise/rm-enterprise-share/target/alfresco-rm-*enterprise*amp artifacts_dir
+    cd artifacts_dir
+    zip alfresco-rm-enterprise-${RELEASE_VERSION}.zip *amp
+    ls artifacts_dir
 fi

@@ -19,7 +19,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
-            <version>${dependency.alfresco-jlan.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -40,7 +39,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-heartbeat-data-sender</artifactId>
-            <version>${dependency.alfresco-hb-data-sender.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -55,17 +53,14 @@
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
-            <version>1.4-DBCP330</version>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -75,17 +70,14 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.14</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -129,7 +121,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>${dependency.spring.version}</version>
             <!-- exclude spring-jcl which is brought in by spring-core -->
             <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
             <exclusions>
@@ -142,7 +133,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
-            <version>${dependency.spring.version}</version>
             <!-- exclude spring-jcl which is brought in by spring-orm -->
             <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
             <exclusions>
@@ -155,17 +145,14 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${dependency.spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-            <version>${dependency.spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${dependency.spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.subethamail</groupId>
@@ -226,12 +213,10 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.0-alfresco-patched-20191004</version>
         </dependency>
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
-            <version>2.7.2-alfresco</version>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>
@@ -272,7 +257,6 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>${dependency.pdfbox.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -379,7 +363,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -392,19 +375,16 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${dependency.jackson-databind.version}</version>
         </dependency>
 
         <!-- Spring Surf -->
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-surf-core-configservice</artifactId>
-            <version>${dependency.webscripts.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun</groupId>
@@ -427,7 +407,6 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts-api</artifactId>
-            <version>${dependency.webscripts.version}</version>
         </dependency>
 
         <!-- Chemistry -->
@@ -451,7 +430,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>28.2-jre</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -800,13 +778,11 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${dependency.spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -850,19 +826,16 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${dependency.postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>${dependency.mysql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>${dependency.mariadb.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -874,13 +847,11 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>gunit</artifactId>
-            <version>${dependency.antlr.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -938,7 +909,6 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>win64</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -983,7 +953,6 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>linux</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -1008,54 +977,6 @@
 										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
 											<arg value="xf" />
 											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-linux.tgz" />
-										</exec>
-									</target>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-			<properties>
-				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
-			</properties>
-		</profile>
-		<profile>
-			<id>osx-alfresco-pdf-renderer-test</id>
-			<activation>
-				<os>
-					<family>mac</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.alfresco</groupId>
-					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${dependency.alfresco-pdf-renderer.version}</version>
-					<classifier>osx</classifier>
-					<type>tgz</type>
-				</dependency>
-			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<inherited>false</inherited>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>extract-alfresco-pdf-renderer-test</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-								<configuration>
-									<skip>${skipTests}</skip>
-									<target>
-										<echo message="Extracting alfresco-pdf-renderer (OS-X) for testing..." />
-										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
-											<arg value="xf" />
-											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-osx.tgz" />
 										</exec>
 									</target>
 								</configuration>

@@ -994,6 +994,30 @@ public class DBQueryTest  implements DictionaryListener
         results.getResultSetMetaData();
         results.close();
     }
+    
+    @Test
+    public void testGetValueForTransactionalQuery()
+    {
+        String query = "=TYPE:\"cm:folder\" ";
+        queryUsingGetValue(SearchService.LANGUAGE_FTS_ALFRESCO, query);
+    }
+    
+    public void queryUsingGetValue(String ql, String query)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(ql);
+        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+        sp.setQuery(query);
+        sp.addStore(rootNodeRef.getStoreRef());
+        ResultSet results = serviceRegistry.getSearchService().query(sp);
+        
+        for (int i = 0; i < results.length(); i++) {
+            ResultSetRow row = results.getRow(i);
+            assertNotNull(row.getValue(ContentModel.PROP_NODE_UUID));
+        }
+        results.getResultSetMetaData();
+        results.close();
+    }
 
     private static class UnknownDataType implements Serializable
     {

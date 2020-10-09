@@ -54,6 +54,7 @@ import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.ServiceUnavailableException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
@@ -881,6 +882,16 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                             childAssocs.add("GROUP_" + nameAttribute.get());
                                             continue;
                                         }
+                                    }
+                                    catch (ServiceUnavailableException | CommunicationException e)
+                                    {
+                                        // MNT-21614: Check & fail if communication breaks due to ServiceUnavailableException or CommunicationException
+                                        if (e.getMessage() != null)
+                                        {
+                                            Object[] params = {e.getLocalizedMessage() };
+                                            throw new AlfrescoRuntimeException("synchronization.err.ldap.search", params, e);
+                                        }
+                                        continue;
                                     }
                                     catch (NamingException e)
                                     {

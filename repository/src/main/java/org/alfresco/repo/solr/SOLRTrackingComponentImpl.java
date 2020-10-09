@@ -691,20 +691,18 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return new ArrayList<Long>(visited);
     }    
 
-
+    /** Get properties that we want to be indexed. */
     protected Map<QName, Serializable> getProperties(Long nodeId)
     {
-        Map<QName, Serializable> props = null;
-
         // ALF-10641
-        // Residual properties are un-indexed -> break serlialisation
+        // Residual properties are un-indexed -> break serialisation
         nodeDAO.setCheckNodeConsistency();
         Map<QName, Serializable> sourceProps = nodeDAO.getNodeProperties(nodeId);
-        props = new HashMap<QName, Serializable>((int)(sourceProps.size() * 1.3));
+        Map<QName, Serializable> props = new HashMap<>(sourceProps.size());
         for(QName propertyQName : sourceProps.keySet())
         {
             PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
-            if(propDef != null)
+            if(propDef != null && propDef.isIndexed())
             {
                 props.put(propertyQName, sourceProps.get(propertyQName));
             }
@@ -865,7 +863,22 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 }
                 else
                 {
-                   throw new AlfrescoRuntimeException("Nodes with no type are ignored by SOLR");
+                    QName typeQName = null;
+                    TypeDefinition typeDefinition = null;
+                    
+                    String errorMessage = "NodeId " + nodeId + " with nodeRef " + nodeRef;
+
+                    typeQName = nodeDAO.getNodeType(nodeId);
+                    if (typeQName != null)
+                    {
+                        errorMessage += " has type " + typeQName + ", but this type is not registered in DictionaryService.";
+                    }
+                    else
+                    {
+                        errorMessage += " has no type.";
+                    }
+                    
+                    throw new AlfrescoRuntimeException(errorMessage + " It will be ignored by SOLR.");
                 }
             }
 

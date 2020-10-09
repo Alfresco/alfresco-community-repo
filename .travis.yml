@@ -116,7 +116,7 @@ jobs:
           bash scripts/set-release-variables.sh
         script:
           - echo "Community Release"
-          - bash scripts/release-community.sh
+          - bash scripts/release.sh community
         before_deploy:
           - bash scripts/zip-artifacts.sh community
         deploy:

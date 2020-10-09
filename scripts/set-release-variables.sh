@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
-release_message=$(echo $TRAVIS_COMMIT_MESSAGE | ggrep -Po '\[(internal )*(community|enterprise)\srelease\s(\d\.)+(\d|[a-z])\s(\d\.)+\d-SNAPSHOT\]')
+release_message=$(echo $TRAVIS_COMMIT_MESSAGE | grep -Po '\[(internal )*(community|enterprise)\srelease\s(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}\s(\d\.)+\d-SNAPSHOT\]')
 
 if [ ! -n "$release_message" ]; then
   echo "The commit message is in the wrong format or it does not contain all the required properties."
-  exit 0
+  exit 1
 fi
 
-export RELEASE_VERSION=$(echo $release_message | ggrep -Po '\g<1>(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}')
-export DEVELOPMENT_VERSION=$(echo $release_message | ggrep -Po '(\d\.)+\d-SNAPSHOT')
+export RELEASE_VERSION=$(echo $release_message | grep -Po '(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}' | head -1)
+export DEVELOPMENT_VERSION=$(echo $release_message | grep -Po '(\d\.)+\d-SNAPSHOT')
 
 echo "Release version is set to $RELEASE_VERSION"
 echo "Development version is set to $DEVELOPMENT_VERSION"
 
-release_type=$(echo $release_message | ggrep -Po '(internal\s)*(community|enterprise)')
+release_type=$(echo $release_message | grep -Po '(internal\s)*(community|enterprise)')
 
 if [[ $release_type =~ "community" ]]; then
   echo "Setting Community Release variables..."

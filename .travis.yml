@@ -33,8 +33,7 @@ stages:
   - name: Tests
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
-  - name: Release
-  - name: Publish
+  - name: Release and Publish
 
 jobs:
   include:
@@ -110,7 +109,7 @@ jobs:
        - echo "Static Analysis (SAST)"
 
     - name: "Community Release"
-        stage: Release
+        stage: Release and Publish
         if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ ^\[.*community release.*\]$
         before_script:
           bash scripts/set-release-variables.sh
@@ -136,11 +135,6 @@ jobs:
 
 
     - name: "Enterprise Release"
-      stage: Release
+      stage: Release and Publish
       script:
         - echo "Enterprise Release"
-
-    - name: "Copy to S3 Release Bucket"
-      stage: Publish
-      script:
-        - echo "Copy to S3 Release Bucket"

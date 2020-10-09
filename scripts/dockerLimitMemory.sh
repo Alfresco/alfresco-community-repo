@@ -5,8 +5,8 @@ set -x
 docker stats --no-stream
 
 #limit memory used by each container
-docker update --memory=2Gb --memory-swap -1 $(docker ps -a | grep '_alfresco_' | awk '{print $1}')
-docker update --memory=1.5Gb --memory-swap -1 $(docker ps -a | grep '_search_' | awk '{print $1}')
+docker update --memory=2.5Gb --memory-swap -1 $(docker ps -a | grep '_alfresco_' | awk '{print $1}')
+docker update --memory=2Gb --memory-swap -1 $(docker ps -a | grep '_search_' | awk '{print $1}')
 docker update --memory=1Gb --memory-swap -1 $(docker ps -a | grep '_zeppelin_' | awk '{print $1}')
 docker update --memory=512Mb --memory-swap -1 $(docker ps -a | grep '_postgres_' | awk '{print $1}')
 docker update --memory=512Mb --memory-swap -1 $(docker ps -a | grep '_transform-router_' | awk '{print $1}')

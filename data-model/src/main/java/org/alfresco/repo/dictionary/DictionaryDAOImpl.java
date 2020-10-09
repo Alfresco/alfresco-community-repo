@@ -84,6 +84,8 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryDAO.class);
 
+    private String defaultAnalyserResourceBundleName;
+
     private ClassLoader resourceClassLoader;
 
     // inject dependencies

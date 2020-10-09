@@ -54,6 +54,7 @@ public class M2Property
     private Boolean isStoredInIndex = null;
     private Boolean isFacetable = null;
     private IndexTokenisationMode indexTokenisationMode = null;
+    private String  analyserResourceBundleName;
     private List<M2Constraint> constraints = new ArrayList<M2Constraint>();
     private Properties configProperties = new Properties();
 

@@ -26,7 +26,10 @@
 package org.alfresco.repo.dictionary;
 
 import java.util.Locale;
+import java.util.ResourceBundle;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.StringUtils;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -51,6 +54,7 @@ import org.alfresco.service.namespace.QName;
     private ModelDefinition model;
     private QName name;
     private M2DataType dataType;
+    private String  analyserResourceBundleName;
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
     
     

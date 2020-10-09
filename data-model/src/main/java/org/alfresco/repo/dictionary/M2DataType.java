@@ -37,7 +37,10 @@ public class M2DataType
     private String name = null;
     private String title = null;
     private String description = null;
+    private String defaultAnalyserClassName = null;
     private String javaClassName = null;
+    private String analyserResourceBundleName = null;
+
 
     /*package*/ M2DataType()
     {

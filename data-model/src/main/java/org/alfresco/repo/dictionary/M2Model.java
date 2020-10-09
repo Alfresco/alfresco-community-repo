@@ -60,6 +60,7 @@ public class M2Model
     private String author = null;
     private Date published = null;
     private String version;
+    private String  analyserResourceBundleName = null;
 
     private List<M2Namespace> namespaces = new ArrayList<M2Namespace>();
     private List<M2Namespace> imports = new ArrayList<M2Namespace>();

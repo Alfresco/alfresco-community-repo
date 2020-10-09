@@ -19,10 +19,12 @@
    <data-types>
 
       <data-type name="d:any">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
          <java-class>java.lang.Object</java-class>
       </data-type>
 
       <data-type name="d:encrypted">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.EmptyAnalyser</default-analyser-class>
          <java-class>javax.crypto.SealedObject</java-class>
       </data-type>
 

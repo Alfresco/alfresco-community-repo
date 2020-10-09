@@ -94,6 +94,7 @@ import org.alfresco.util.EqualsHelper;
     private Boolean inheritedArchive = null;
     private Boolean includedInSuperTypeQuery = null;
     private Boolean inheritedIncludedInSuperTypeQuery = null;
+    private String  analyserResourceBundleName;
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
     
     /**

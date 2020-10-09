@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -46,6 +47,9 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.StringUtils;
+
 
 /**
  * Compiled Property Definition
@@ -59,6 +63,7 @@ import org.alfresco.util.EqualsHelper;
     private QName name;
     private QName propertyTypeName;
     private DataTypeDefinition dataType;
+    private String  analyserResourceBundleName;
     private List<ConstraintDefinition> constraintDefs = Collections.emptyList();
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
     

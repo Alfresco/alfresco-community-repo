@@ -17,6 +17,8 @@
    <data-types>
 
       <data-type name="test:datatype">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+          <analyserResourceBundleName>alfresco/model/dataTypeAnalyzers</analyserResourceBundleName>
          <java-class>java.lang.Object</java-class>
       </data-type>
 

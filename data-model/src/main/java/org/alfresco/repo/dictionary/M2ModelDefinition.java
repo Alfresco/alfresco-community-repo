@@ -47,6 +47,7 @@ public class M2ModelDefinition implements ModelDefinition
 {
     private QName name;
     private M2Model model;
+    private String  analyserResourceBundleName;
     private DictionaryDAO dictionaryDAO;
     
     

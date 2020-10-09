@@ -47,7 +47,8 @@ public abstract class M2Class
     private String parentName = null;
     private Boolean archive = null;
     private Boolean includedInSuperTypeQuery = null;
-    
+    private String analyserResourceBundleName = null;
+
     private List<M2Property> properties = new ArrayList<M2Property>();
     private List<M2PropertyOverride> propertyOverrides = new ArrayList<M2PropertyOverride>();
     private List<M2ClassAssociation> associations = new ArrayList<M2ClassAssociation>();

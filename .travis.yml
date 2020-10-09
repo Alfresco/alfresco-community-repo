@@ -1,7 +1,7 @@
 import:
   - source: travis-env-vars.yml
-os: linux
 dist: xenial
+sudo: required
 language: java
 jdk:
   - openjdk11
@@ -164,6 +164,8 @@ jobs:
       install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh
+        - bash scripts/dockerLimitMemory.sh
+        - sudo free -m -t
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 

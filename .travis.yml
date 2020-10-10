@@ -99,7 +99,7 @@ jobs:
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
       script:
-        - travis_wait 30 mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
+        - travis_wait 90 mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
     - name: "Community UI Tests ..."
       stage: Tests

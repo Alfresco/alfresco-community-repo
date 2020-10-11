@@ -27,28 +27,21 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Renditions;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.BinaryProperties;
-import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -122,15 +115,4 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
         return renditions.getContent(nodeRef, versionId, renditionId, parameters);
     }
 
-    @Operation("request-content-url")
-    @WebApiParam(name = "directAccessUrlRequest", title = "Direct access url request", description = "Direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    @WebApiDescription(title = "Request content url",
-            description="Generates a direct access url.",
-            successStatus = HttpServletResponse.SC_OK)
-    public DirectAccessUrl requestContentUrl(String nodeId, String versionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
-    {
-        String renditionId = parameters.getRelationship2Id();
-
-        return renditions.requestContentUrl(nodeId, versionId, renditionId, directAccessUrlRequest);
-    }
 }

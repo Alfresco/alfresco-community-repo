@@ -1408,4 +1408,16 @@
             <value>classpath:alfresco/dbscripts/upgrade/6.3/${db.script.dialect}/remove-alf_server-table.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.db-V6.3-add-indexes-node-transaction" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V6.3-add-indexes-node-transaction</value></property>
+        <property name="description"><value>patch.db-V6.3-add-indexes-node-transaction.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>14001</value></property>
+        <property name="targetSchema"><value>14002</value></property>
+        <property name="ignored"><value>${system.new-node-transaction-indexes.ignored}</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/6.3/${db.script.dialect}/add-indexes-node-transaction.sql</value>
+        </property>
+    </bean>
 </beans>

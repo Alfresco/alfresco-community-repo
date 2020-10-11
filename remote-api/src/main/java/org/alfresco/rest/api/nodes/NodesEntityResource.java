@@ -32,13 +32,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
@@ -47,7 +45,6 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -190,16 +187,6 @@ public class NodesEntityResource implements
     public Node unlock(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
         return nodes.unlock(nodeId, parameters);
-    }
-
-    @Operation("request-content-url")
-    @WebApiParam(name = "directAccessUrlRequest", title = "Direct access url request", description = "Direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    @WebApiDescription(title = "Request content url",
-            description="Generates a direct access url.",
-            successStatus = HttpServletResponse.SC_OK)
-    public DirectAccessUrl requestContentUrl(String nodeId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
-    {
-        return nodes.requestContentUrl(nodeId, directAccessUrlRequest);
     }
 
 }

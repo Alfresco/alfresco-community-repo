@@ -25,7 +25,10 @@
  */
 package org.alfresco.repo.domain.permissions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -41,6 +44,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -69,6 +73,7 @@ public class FixedAclUpdaterTest extends TestCase
     private Repository repository;
     private FixedAclUpdater fixedAclUpdater;
     private NodeRef folderAsyncCallNodeRef;
+    private NodeRef folderAsyncCallWithCreateNodeRef;
     private NodeRef folderSyncCallNodeRef;
     private PermissionsDaoComponent permissionsDaoComponent;
     private PermissionService permissionService;
@@ -99,6 +104,10 @@ public class FixedAclUpdaterTest extends TestCase
         RetryingTransactionCallback<NodeRef> cb2 = createFolderHierchyCallback(home, fileFolderService, "rootFolderSyncCall",
                 filesPerLevel);
         folderSyncCallNodeRef = txnHelper.doInTransaction(cb2);
+
+        RetryingTransactionCallback<NodeRef> cb3 = createFolderHierchyCallback(home, fileFolderService,
+                "rootFolderAsyncWithCreateCall", filesPerLevel);
+        folderAsyncCallWithCreateNodeRef = txnHelper.doInTransaction(cb3);
 
         // change setFixedAclMaxTransactionTime to lower value so setInheritParentPermissions on created folder
         // hierarchy require async call
@@ -147,8 +156,10 @@ public class FixedAclUpdaterTest extends TestCase
                 aspect.add(ContentModel.ASPECT_TEMPORARY);
                 nodeDAO.addNodeAspects(nodeDAO.getNodePair(folderAsyncCallNodeRef).getFirst(), aspect);
                 nodeDAO.addNodeAspects(nodeDAO.getNodePair(folderSyncCallNodeRef).getFirst(), aspect);
+                nodeDAO.addNodeAspects(nodeDAO.getNodePair(folderAsyncCallWithCreateNodeRef).getFirst(), aspect);
                 fileFolderService.delete(folderAsyncCallNodeRef);
                 fileFolderService.delete(folderSyncCallNodeRef);
+                fileFolderService.delete(folderAsyncCallWithCreateNodeRef);
                 return null;
             }, false, true);
         }
@@ -189,7 +200,34 @@ public class FixedAclUpdaterTest extends TestCase
         testWork(folderAsyncCallNodeRef, true);
     }
 
+    @Test
+    public void testAsyncWithNodeCreation()
+    {
+        testWorkWithNodeCreation(folderAsyncCallWithCreateNodeRef, true);
+    }
+
     private void testWork(NodeRef folderRef, boolean asyncCall)
+    {
+        setPermissionsOnTree(folderRef, asyncCall);
+        triggerFixedACLJob(folderRef);
+    }
+
+    private void testWorkWithNodeCreation(NodeRef folderRef, boolean asyncCall)
+    {
+        setPermissionsOnTree(folderRef, asyncCall);
+
+        // MNT-21847 - Create a new content in folder that has the aspect applied
+        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            NodeRef folderWithPendingAcl = getFirstFolderWithAclPending(folderRef);
+            assertNotNull("No children folders were found with pendingFixACl aspect", folderWithPendingAcl);
+            createFile(fileFolderService, folderWithPendingAcl, "NewFile", ContentModel.TYPE_CONTENT);
+            return null;
+        }, false, true);
+
+        triggerFixedACLJob(folderRef);
+    }
+
+    private void setPermissionsOnTree(NodeRef folderRef, boolean asyncCall)
     {
         // kick it off by setting inherit parent permissions == false
         txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
@@ -203,21 +241,61 @@ public class FixedAclUpdaterTest extends TestCase
             assertTrue("There are no nodes to process", getNodesCountWithPendingFixedAclAspect() > 0);
             return null;
         }, false, true);
+    }
 
-        // run the fixedAclUpdater until there is nothing more to fix (running the updater
-        // may create more to fix up)
+    private void triggerFixedACLJob(NodeRef folder)
+    {
+        // run the fixedAclUpdater until there is nothing more to fix (running the updater may create more to fix up) or
+        // the count doesn't change, meaning we have a problem.
         txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
             int count = 0;
+            int previousCount = 0;
             do
             {
+                previousCount = count;
                 count = fixedAclUpdater.execute();
-            } while (count > 0);
+            } while (count > 0 && previousCount != count);
             return null;
         }, false, true);
 
         // check if nodes with ASPECT_PENDING_FIX_ACL are processed
         txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
             assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+            //Remove the tree that failed so it does not influence the other test results
+            removeNodesWithPendingAcl(folder);
+            return null;
+        }, false, true);
+    }
+
+    private NodeRef getFirstFolderWithAclPending(NodeRef parentNodeRef)
+    {
+        NodeRef folderWithPendingFixedAcl = null;
+        List<FileInfo> primaryChildFolders = fileFolderService.listFolders(parentNodeRef);
+        for (int i = 0; i < primaryChildFolders.size(); i++)
+        {
+            NodeRef thisChildFolder = primaryChildFolders.get(i).getNodeRef();
+            Long thisChildNodeId = nodeDAO.getNodePair(thisChildFolder).getFirst();
+            if (nodeDAO.hasNodeAspect(thisChildNodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                folderWithPendingFixedAcl = thisChildFolder;
+                break;
+            }
+
+            if (folderWithPendingFixedAcl == null)
+            {
+                folderWithPendingFixedAcl = getFirstFolderWithAclPending(thisChildFolder);
+            }
+        }
+        return folderWithPendingFixedAcl;
+    }
+
+    private void removeNodesWithPendingAcl(NodeRef folder)
+    {
+        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            Set<QName> aspect = new HashSet<>();
+            aspect.add(ContentModel.ASPECT_TEMPORARY);
+            nodeDAO.addNodeAspects(nodeDAO.getNodePair(folder).getFirst(), aspect);
+            fileFolderService.delete(folder);
             return null;
         }, false, true);
     }

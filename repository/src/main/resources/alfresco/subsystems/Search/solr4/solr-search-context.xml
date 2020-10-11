@@ -153,18 +153,15 @@
     </bean>
 
     <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init">
-      <property name="solrHost" value="${solr.host}"/>
-      <property name="solrPort" value="${solr.port}"/>
-      <property name="solrsslPort" value="${solr.port.ssl}"/>
-      <property name="solrUser" value="${solr.solrUser}"/>
-      <property name="solrPassword" value="${solr.solrPassword}"/>
       <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>
-      <property name="solrConnectTimeout" value="${solr.solrConnectTimeout}"/>
-      <property name="httpClientFactory" ref="solrHttpClientFactory"/>
       <property name="baseUrl" value="${solr.baseUrl}"/>
       <property name="scheduler">
         <ref bean="searchSchedulerFactory" />
       </property>
+      <property name="storeMappings">
+        <ref bean="solr4.store.mappings" />
+      </property>
+      <property name="useDynamicShardRegistration" value="${solr.useDynamicShardRegistration}" />
     </bean>
     
     

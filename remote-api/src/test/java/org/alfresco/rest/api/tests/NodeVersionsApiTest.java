@@ -33,13 +33,11 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
-import org.alfresco.rest.api.tests.client.data.DirectAccessUrlRequest;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
-import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -1307,91 +1305,6 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(2, expectedPaging.getSkipCount().intValue());
             assertEquals(3, expectedPaging.getMaxItems().intValue());
             assertTrue(expectedPaging.getTotalItems() >= cnt);
-        }
-        finally
-        {
-            if (f1Id != null)
-            {
-                // some cleanup
-                setRequestContext(user1);
-                deleteNode(f1Id, true, 204);
-            }
-        }
-    }
-
-    @Test
-    public void testRequestContentUrl() throws Exception
-    {
-        // create folder
-        setRequestContext(user1);
-
-        String f1Id = null;
-
-        try
-        {
-            f1Id = createFolder(Nodes.PATH_MY, "testRequestContentUrl-f1").getId();
-
-            String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
-            String contentName = "content-1";
-
-            int cnt = 6;
-            Pair<String, String> pair = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, 0, null, null);
-            String versionLabel = pair.getFirst();
-            String docId = pair.getSecond();
-
-            assertEquals("1.5", versionLabel); // 1.0, 1.1, ... 1.5
-
-            // node and version found but direct access isn't available
-            requestContentUrl(docId, "1.2", null,501);
-            requestContentUrl(docId, "1.5", null,501);
-
-            // node not found
-            requestContentUrl("testSomeUndefinedAlias", "1.6", null,404);
-
-            // version not found
-            requestContentUrl(docId, "1.6", null,404);
-
-            {
-                requestContentUrl(docId, "1.5", toJsonAsStringNonNull(new DirectAccessUrlRequest()), 501);
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                    directAccessUrlRequest.setValidFor(60L);
-
-                    requestContentUrl(docId, "1.5", toJsonAsStringNonNull(directAccessUrlRequest), 400);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setValidFor(60L);
-
-                    requestContentUrl(docId, "1.5", toJsonAsStringNonNull(directAccessUrlRequest), 501);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setValidFor(-60L);
-
-                    requestContentUrl(docId, "1.5", toJsonAsStringNonNull(directAccessUrlRequest), 400);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                    requestContentUrl(docId, "1.5", toJsonAsStringNonNull(directAccessUrlRequest), 501);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setExpiresAt(DateTime.now().minusSeconds(30).toDate());
-                    requestContentUrl(docId, "1.5", toJsonAsStringNonNull(directAccessUrlRequest), 400);
-                }
-            }
-
-            // node not accessible
-            setRequestContext(user2);
-            requestContentUrl(docId, "1.5", null,403);
         }
         finally
         {

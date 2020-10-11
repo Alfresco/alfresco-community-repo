@@ -51,7 +51,6 @@ import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.DirectAccessUrl;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
@@ -847,30 +846,6 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
-    protected DirectAccessUrl requestContentUrl(String nodeId, String body, int expectedStatus) throws Exception
-    {
-        HttpResponse response = post(getNodeOperationUrl(nodeId, "request-content-url"), body, null, null, null, expectedStatus);
-
-        if (response.getJsonResponse().get("error") != null)
-        {
-            return null;
-        }
-
-        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DirectAccessUrl.class);
-    }
-
-    protected DirectAccessUrl requestContentUrl(String nodeId, String versionId, String body, int expectedStatus) throws Exception
-    {
-        HttpResponse response = post(getNodeVersionsOperationUrl(nodeId, versionId, "request-content-url"), body, null, null, null, expectedStatus);
-
-        if (response.getJsonResponse().get("error") != null)
-        {
-            return null;
-        }
-
-        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DirectAccessUrl.class);
-    }
-
     /**
      * This test helper method uses "update binary content" to create one or more new versions. The file must already exist.
      *
@@ -1042,21 +1017,6 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
     }
 
-    protected String getNodeRenditionOperationUrl(String nodeId, String renditionId, String operation)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS+ "/" + renditionId + "/" + operation;
-    }
-
-    protected String getNodeVersionsUrl(String nodeId, String versionId)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId;
-    }
-
-    protected String getNodeVersionsOperationUrl(String nodeId, String versionId, String operation)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + operation;
-    }
-
     protected String getNodeVersionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS;
@@ -1065,11 +1025,6 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getNodeVersionRenditionsUrl(String nodeId, String versionId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS;
-    }
-
-    protected String getNodeVersionRenditionsOperationUrl(String nodeId, String versionId, String renditionId, String operation)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS + "/" + renditionId + "/" + operation;
     }
 
     protected String getNodeChildrenUrl(String nodeId)

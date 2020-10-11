@@ -37,7 +37,6 @@ import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -45,7 +44,6 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -267,10 +265,6 @@ public interface Nodes
      * @return
      */
     Node unlock(String nodeId, Parameters parameters);
-
-    DirectAccessUrl requestContentUrl(String nodeId, DirectAccessUrlRequest directAccessUrlRequest);
-
-    DirectAccessUrl requestContentUrl(NodeRef nodeRef, DirectAccessUrlRequest directAccessUrlRequest);
 
     /**
      * Convert from node properties (map of QName to Serializable) retrieved from

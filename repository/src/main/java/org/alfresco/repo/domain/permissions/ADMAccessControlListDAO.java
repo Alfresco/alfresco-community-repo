@@ -430,8 +430,8 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
 //                    {
 //                        setFixedAcls(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false);
 //                    }
-                    // Already replaced
-                    if(acl.equals(sharedAclToReplace))
+                    // Still has old shared ACL or already replaced
+                    if(acl.equals(sharedAclToReplace) || acl.equals(mergeFrom))
                     {
                         propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
                     }

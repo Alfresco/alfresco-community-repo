@@ -26,14 +26,12 @@
 
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.util.List;
@@ -188,7 +186,5 @@ public interface Renditions
      * @return the rendition stream
      */
     BinaryResource getContentNoValidation(NodeRef nodeRef, String versionId, String renditionId, Parameters parameters);
-
-    DirectAccessUrl requestContentUrl(String nodeId, String versionId, String renditionId, DirectAccessUrlRequest directAccessUrlRequest);
 }
 

@@ -31,17 +31,14 @@ import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.DirectAccessUrlRequest;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.*;
 
-import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.util.*;
@@ -368,113 +365,5 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     public String getScope()
     {
         return "public";
-    }
-
-    @Test
-    public void testRequestContentUrl() throws Exception
-    {
-        setRequestContext(user1);
-
-        String myFolderNodeId = getMyNodeId();
-
-        // create folder
-        String f1Id = createFolder(myFolderNodeId, "f1").getId();
-
-        try
-        {
-            int verCnt = 1;
-            int cnt = 1;
-            String versionLabel = "1.0";
-
-            String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
-            String contentName = "content-2-" + System.currentTimeMillis();
-            String content = textContentSuffix + cnt;
-
-            // request minor version on upload (& no pre-request for renditions for live node)
-            Boolean majorVersion = true;
-            Map<String, String> params = new HashMap<>();
-            params.put("majorVersion", majorVersion.toString());
-
-            // create a new file
-            Document documentResp = createTextFile(f1Id, contentName, content, "UTF-8", params);
-            String docId = documentResp.getId();
-            assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
-            assertNotNull(documentResp.getProperties());
-            assertEquals(versionLabel, documentResp.getProperties().get("cm:versionLabel"));
-
-            cnt = 2;
-            versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, majorVersion, versionLabel);
-            verCnt = verCnt+cnt;
-
-            assertEquals("3.0", versionLabel);
-            assertEquals(3, verCnt);
-
-            // check version history count
-            HttpResponse response = getAll(getNodeVersionsUrl(docId), null, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(verCnt, nodes.size());
-
-            // pause briefly
-            Thread.sleep(DELAY_IN_MS);
-
-            // found but direct access isn't available
-            checkCreateAndGetVersionRendition(docId, "1.0", "doclib");
-            post(getNodeVersionRenditionsOperationUrl(docId, "1.0", "doclib", "request-content-url"), null, null, 501);
-
-            checkCreateAndGetVersionRendition(docId, "3.0", "doclib");
-            post(getNodeVersionRenditionsOperationUrl(docId, "3.0", "doclib", "request-content-url"), null, null, 501);
-
-            checkCreateAndGetVersionRendition(docId, "2.0", "doclib");
-            post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), null, null, 501);
-
-            {
-                post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), toJsonAsStringNonNull(new DirectAccessUrlRequest()), null, null, null,
-                        501);
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                    directAccessUrlRequest.setValidFor(60L);
-
-                    post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 400);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setValidFor(60L);
-
-                    post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 501);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setValidFor(-60L);
-
-                    post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 400);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setExpiresAt(DateTime.now().plusSeconds(30).toDate());
-                    post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 501);
-                }
-
-                {
-                    DirectAccessUrlRequest directAccessUrlRequest = new DirectAccessUrlRequest();
-                    directAccessUrlRequest.setExpiresAt(DateTime.now().minusSeconds(30).toDate());
-                    post(getNodeVersionRenditionsOperationUrl(docId, "2.0", "doclib", "request-content-url"), toJsonAsStringNonNull(directAccessUrlRequest), null, null, null, 400);
-                }
-            }
-
-            // also live node
-            checkCreateAndGetVersionRendition(docId, null, "doclib");
-            post(getNodeVersionRenditionsOperationUrl(docId, null, "doclib", "request-content-url"), null, null, 501);
-        }
-        finally
-        {
-            // some cleanup
-            setRequestContext(user1);
-            deleteNode(f1Id, true, 204);
-        }
     }
 }

@@ -39,7 +39,6 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.ContentInfo;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.Rendition.RenditionStatus;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
@@ -62,7 +61,6 @@ import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -718,18 +716,5 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return status;
     }
 
-    @Override
-    public DirectAccessUrl requestContentUrl(String nodeId, String versionId, String renditionId, DirectAccessUrlRequest directAccessUrlRequest)
-    {
-        final NodeRef validatedNodeRef = validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId, versionId, null);
-        NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, null);
-
-        if (renditionNodeRef == null)
-        {
-            throw new NotFoundException("The rendition with id: " + renditionId + " was not found.");
-        }
-
-        return nodes.requestContentUrl(renditionNodeRef, directAccessUrlRequest);
-    }
 }
 

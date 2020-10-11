@@ -1739,6 +1739,16 @@
             <columnname>id</columnname>
           </columnnames>
         </index>
+        <index name="idx_alf_node_ver" unique="false">
+          <columnnames>
+            <columnname>version</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_node_txn" unique="false">
+          <columnnames>
+            <columnname>transaction_id</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="alf_node_aspects">
@@ -2701,6 +2711,17 @@
           <columnnames>
             <columnname>commit_time_ms</columnname>
             <columnname>id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_txn_ctms_sc" unique="false">
+          <columnnames>
+            <columnname>commit_time_ms</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_txn_id_ctms" unique="false">
+          <columnnames>
+            <columnname>id</columnname>
+            <columnname>commit_time_ms</columnname>
           </columnnames>
         </index>
       </indexes>

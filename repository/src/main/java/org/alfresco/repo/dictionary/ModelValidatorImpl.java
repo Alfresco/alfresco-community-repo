@@ -44,12 +44,15 @@ import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.CustomModelException;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -79,6 +82,7 @@ public class ModelValidatorImpl implements ModelValidator
     private WorkflowService workflowService;
     private TenantService tenantService;
     private TenantAdminService tenantAdminService;
+    private CustomModelService customModelService;
     private boolean enforceTenantInNamespace = false;
 
     public void setEnforceTenantInNamespace(boolean enforceTenantInNamespace)
@@ -124,6 +128,11 @@ public class ModelValidatorImpl implements ModelValidator
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    public void setCustomModelService(CustomModelService customModelService)
+    {
+        this.customModelService = customModelService;
     }
 
     private void checkCustomModelNamespace(M2Model model, String tenantDomain)
@@ -526,4 +535,27 @@ public class ModelValidatorImpl implements ModelValidator
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void validateModelNamespacePrefix(NodeRef modelNodeRef)
+    {
+        String errorMsg = "Namespace error: ";
+        try
+        {
+            M2Model m2Model = customModelService.getM2Model(modelNodeRef);
+            // if there is no model then there is no namespace prefix to validate
+            if (m2Model != null)
+            {
+                errorMsg = "Duplicate namespace prefix: ";
+                customModelService.validateModelNamespacePrefix(modelNodeRef);
+            }
+        }
+        catch (CustomModelException ce)
+        {
+            logger.error(errorMsg + ce);
+            throw ce;
+        }
+    }
 }

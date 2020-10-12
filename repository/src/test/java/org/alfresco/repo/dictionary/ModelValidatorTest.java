@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.dictionary;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -37,7 +38,11 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
+import org.alfresco.service.cmr.dictionary.CustomModelException;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -51,6 +56,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +69,11 @@ import org.springframework.context.ApplicationContext;
  */
 public class ModelValidatorTest
 {
+    private static final String TEST_MODEL_URI_PART1 = "http://www.alfresco.org/model/testmodelvalidatoramespace";
+    private static final String TEST_MODEL_URI_PART2 = "/1.0";
+    private static final String TEST_MODEL_DESC = "This is test custom model desc";
+    private static final String TEST_MODEL_AUTHOR = "John Doe";
+
     private ApplicationContext ctx;
 
     private String testNamespace;
@@ -78,6 +89,7 @@ public class ModelValidatorTest
     private VersionService versionService;
     private TransactionService transactionService;
     private NodeArchiveService nodeArchiveService;
+    private CustomModelService customModelService;
 
     private M2Model model;
     private QName modelQName;
@@ -100,6 +112,7 @@ public class ModelValidatorTest
         this.versionService = (VersionService)ctx.getBean("VersionService");
         this.transactionService = (TransactionService)ctx.getBean("TransactionService");
         this.nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
+        this.customModelService = (CustomModelService)ctx.getBean("customModelService");
 
         this.modelName = "modelvalidatortest" + System.currentTimeMillis();
         addModel();
@@ -507,5 +520,124 @@ public class ModelValidatorTest
         {
             //expected
         }
+    }
+
+    /**
+     * For ACS-701
+     * Tests that validating the model namespace prefix succeeds for both inactive and active models with a
+     * unique namespace prefix.
+     */
+    @Test
+    public void testValidatePrefixForModelWithValidPrefix() throws Exception
+    {
+        // authenticate
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        // create and validate models
+        final String inactiveModelName = "testCustomModel1" + System.currentTimeMillis();
+        final String activeModelName = "testCustomModel2" + System.currentTimeMillis();
+
+        // create inactive model with unique prefix
+        final String inactiveModelPrefix = "testmodelvalidatorpfx1" + "-" + System.currentTimeMillis();
+        createAndVerifyTestModel(inactiveModelName, inactiveModelPrefix, false);
+
+        // create active model with unique preifx
+        final String activeModelPrefix = "testmodelvalidatorpfx2" + "-" + System.currentTimeMillis();
+        createAndVerifyTestModel(activeModelName, activeModelPrefix, true);
+
+        // validate model prefixes
+        validatePrefix(inactiveModelName);
+        validatePrefix(activeModelName);
+    }
+
+    /**
+     * For ACS-701
+     * Tests that validating the model namespace prefix throws an error for a model with
+     *  a prefix in use by another model.
+     */
+    @Test
+    public void testValidatePrefixForModelWithDuplicatePrefix() throws Exception
+    {
+        // authenticate
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        // create and validate models
+        final String customModel1Name = "testCustomModel1" + System.currentTimeMillis();
+        final String customModel2Name = "testCustomModel2" + System.currentTimeMillis();
+        final String modelPrefix = "acs701-prefix01" + "-" + System.currentTimeMillis();
+
+        // create model with unique prefix
+        createAndVerifyTestModel(customModel1Name, modelPrefix, false);
+        validatePrefix(customModel1Name);
+
+        try
+        {
+            // create model with duplicate prefix
+            createAndVerifyTestModel(customModel2Name, modelPrefix, true);
+            fail("Expected a CustomModelException for model with a duplicate namespace prefix");
+        }
+        catch (CustomModelException ex)
+        {
+            // expected exception
+        }
+    }
+
+    private void createAndVerifyTestModel(String testModelName, String prefix, boolean activate)
+    {
+        // Create the M2Model
+        String uri = TEST_MODEL_URI_PART1 + System.currentTimeMillis() + TEST_MODEL_URI_PART2;
+        Pair<String, String> namespacePair = new Pair<String, String>(uri, prefix);
+        M2Model model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + testModelName);
+        model.createNamespace(namespacePair.getFirst(), namespacePair.getSecond());
+        model.setDescription(TEST_MODEL_DESC);
+        model.setAuthor(TEST_MODEL_AUTHOR);
+
+        // Create the model definition
+        CustomModelDefinition modelDefinition = createModel(model, activate);
+
+        // Assert model is created as expected
+        assertNotNull(modelDefinition);
+        assertEquals(testModelName, modelDefinition.getName().getLocalName());
+
+        NamespaceDefinition namespaceDefinition = modelDefinition.getNamespaces().iterator().next();
+        assertNotNull(namespaceDefinition);
+        assertEquals(namespacePair.getFirst(), namespaceDefinition.getUri());
+        assertEquals(namespacePair.getSecond(), namespaceDefinition.getPrefix());
+
+        // Assert model activation status
+        NodeRef modelNodeRef = customModelService.getModelNodeRef(testModelName);
+        boolean isActive = Boolean.TRUE.equals(nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE));
+        assertEquals(activate, isActive);
+    }
+
+    private CustomModelDefinition createModel(final M2Model m2Model, final boolean activate)
+    {
+        RetryingTransactionCallback<CustomModelDefinition> createModelCallback = new RetryingTransactionCallback<CustomModelDefinition>()
+        {
+            public CustomModelDefinition execute() throws Throwable
+            {
+                CustomModelDefinition cmd;
+                cmd = customModelService.createCustomModel(m2Model, activate);
+                return cmd;
+            }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(createModelCallback, false, true);
+    }
+
+    private void validatePrefix(String modelName)
+    {
+        // validate the model namespace prefix
+        RetryingTransactionCallback<Void> validateInactiveModelPrefixCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                NodeRef modelNodeRef = customModelService.getModelNodeRef(modelName);
+                modelValidator.validateModelNamespacePrefix(modelNodeRef);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateInactiveModelPrefixCallback, false, true);
     }
 }

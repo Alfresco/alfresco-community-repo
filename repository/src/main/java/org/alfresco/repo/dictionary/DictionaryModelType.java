@@ -330,6 +330,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         
         if (beforeValue == null && afterValue != null)
         {
+            // if trying to activate the model, check the namespace prefix is not a duplicate
+            if (afterValue)
+            {
+                modelValidator.validateModelNamespacePrefix(nodeRef);
+            }
             queueModel(nodeRef);
         }
         else if (afterValue == null && beforeValue != null)
@@ -339,6 +344,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
         else if (beforeValue != null && afterValue != null && beforeValue.equals(afterValue) == false)
         {
+            // if trying to activate the model, check the namespace prefix is not a duplicate
+            if (afterValue)
+            {
+                modelValidator.validateModelNamespacePrefix(nodeRef);
+            }
             queueModel(nodeRef);
         }
     }

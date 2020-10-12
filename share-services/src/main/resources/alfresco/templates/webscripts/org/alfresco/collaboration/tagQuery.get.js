@@ -49,8 +49,11 @@ function tagQuery()
    query += "ASPECT:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
    //MNT-2118 Share inconsistencies when displaying locked files with tags
    query += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+
+   // MNT-20091 check to prevent cm:taggable with NULL
+   query += " AND ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
    
-   if (search.searchSubsystem == "solr4")
+   if (search.searchSubsystem.startsWith("solr"))
    {
       // MNT-11511: use facet search
       var queryDef = {

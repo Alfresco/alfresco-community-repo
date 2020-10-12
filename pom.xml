@@ -66,7 +66,7 @@
         <dependency.webscripts.version>8.8</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.5.11</dependency.mockito-core.version>
-        <dependency.org-json.version>20090211</dependency.org-json.version>
+        <dependency.org-json.version>20200518</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.guava.version>28.2-jre</dependency.guava.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>

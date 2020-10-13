@@ -1,7 +1,7 @@
 import:
   - source: travis-env-vars.yml
-os: linux
 dist: xenial
+sudo: required
 language: java
 jdk:
   - openjdk11
@@ -46,17 +46,17 @@ jobs:
 
     - name: "Build AGS Enterprise"
       stage: Build AGS
-      before_script: source scripts/setUpMavenPhase.sh
       install:
         - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      before_script: source scripts/setUpMavenPhase.sh
       script:
         - travis_retry travis_wait 80 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Build AGS Benchmark"
       stage: Build AGS
-      before_script: source scripts/setUpMavenPhase.sh
       install:
         - travis_retry travis_wait 80 mvn -B -q clean install $MVN_SKIP -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      before_script: source scripts/setUpMavenPhase.sh
       script:
         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
@@ -90,13 +90,17 @@ jobs:
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
     - name: "Enterprise Rest API Tests"
       stage: Tests
-      before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
       install:
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
+      before_script:
         - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
+        - bash scripts/dockerLimitMemory.sh
+        - sudo free -m -t
       script:
-        - echo "Enterprise Rest API Tests"
+        - mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
+      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
     - name: "Community UI Tests ..."
       stage: Tests
       before_install:

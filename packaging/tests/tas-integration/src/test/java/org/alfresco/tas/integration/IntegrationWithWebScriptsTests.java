@@ -1,28 +1,21 @@
 package org.alfresco.tas.integration;
 
-import static org.alfresco.utility.report.log.Step.STEP;
-
 import io.restassured.RestAssured;
-import io.restassured.http.Cookie;
-import io.restassured.response.Response;
-import java.net.URLDecoder;
-import java.util.HashMap;
-
-import java.util.List;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestPersonModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.HashMap;
+
+import static org.alfresco.utility.report.log.Step.STEP;
 
 public class IntegrationWithWebScriptsTests extends IntegrationTest
 {
@@ -34,9 +27,9 @@ public class IntegrationWithWebScriptsTests extends IntegrationTest
         STEP("1.Upload the CSV File that contains the users.");
         restAPI.authenticateUser(dataUser.getAdminUser()).configureRequestSpec().addMultiPart("filedata",
                 Utility.getResourceTestDataFile("userCSV.csv"));
-        String fileCreationWebScript = "alfresco/s/api/people/upload";
-        RestAssured.basePath = "";
+        RestAssured.basePath = "alfresco";
         restAPI.configureRequestSpec().setBasePath(RestAssured.basePath);
+        String fileCreationWebScript = "s/api/people/upload";
         RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, fileCreationWebScript);
         restAPI.authenticateUser(dataUser.getAdminUser()).process(request);
         restAPI.assertStatusCodeIs(HttpStatus.OK);

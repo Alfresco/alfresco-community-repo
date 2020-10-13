@@ -82,9 +82,8 @@ public class JacksonHelper implements InitializingBean
         //Configure the objectMapper ready for use
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(module);
-        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.configOverride(java.util.Map.class)
-                        .setInclude(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, null));
+        objectMapper.setDefaultPropertyInclusion(
+            JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.ALWAYS));
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         DateFormat DATE_FORMAT_ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         DATE_FORMAT_ISO8601.setTimeZone(TimeZone.getTimeZone("UTC"));

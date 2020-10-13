@@ -65,6 +65,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String DELETE_ENTRIES_BY_ID = "alfresco.audit.delete_AuditEntriesById";
     private static final String INSERT_ENTRY = "alfresco.audit.insert.insert_AuditEntry";
     private static final String SELECT_MINMAX_ENTRY_FOR_APP = "alfresco.audit.select_MinMaxAuditEntryId";
+    private static final String SELECT_COUNT_ENTRIES_FOR_APP = "alfresco.audit.select_CountAuditEntryId";
     
     @SuppressWarnings("unused")
     private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
@@ -219,6 +220,17 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         params.put("auditAppId", appId);
 
         HashMap<String, Long> result = template.selectOne(SELECT_MINMAX_ENTRY_FOR_APP, params);
+
+        return result;
+    }
+
+    @Override
+    public int getAuditEntriesCountByApp(long applicationId)
+    {
+        Map<String, Object> params = new HashMap<>();
+        params.put("auditAppId", applicationId);
+
+        int result = template.selectOne(SELECT_COUNT_ENTRIES_FOR_APP, params);
 
         return result;
     }

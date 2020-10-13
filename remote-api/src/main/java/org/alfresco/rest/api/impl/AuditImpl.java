@@ -280,21 +280,28 @@ public class AuditImpl implements Audit
 
         // clear null elements
         entriesAudit.removeAll(Collections.singleton(null));
-        int totalItems = entriesAudit.size();
+        int totalRetrievedItems = entriesAudit.size();
+        int end = Math.min(limit - 1, totalRetrievedItems);
+        boolean hasMoreItems = totalRetrievedItems > end;
 
-        if (skipCount >= totalItems)
+        String omitTotalItemsParameter = parameters.getParameter("omitTotalItems");
+        boolean omitTotalItems = (null != omitTotalItemsParameter) && Boolean.parseBoolean(omitTotalItemsParameter);
+
+        Integer totalItems;
+
+        if (omitTotalItems)
         {
-            List<AuditEntry> empty = Collections.emptyList();
-            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+            totalItems = null;
         }
         else
         {
-            int end = Math.min(limit - 1, totalItems);
-            boolean hasMoreItems = totalItems > end;
-
-            entriesAudit = entriesAudit.subList(skipCount, end);
-            return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
+            totalItems = hasMoreItems ? getAuditEntriesCountByApp(auditApplication) : totalRetrievedItems;
         }
+
+        entriesAudit = (skipCount >= totalRetrievedItems)
+                        ? Collections.emptyList()
+                        : entriesAudit.subList(skipCount, end);
+        return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
     }
 
     /**
@@ -881,5 +888,11 @@ public class AuditImpl implements Audit
             return toTime;
         }
 
+    }
+
+    public int getAuditEntriesCountByApp(AuditService.AuditApplication auditApplication)
+    {
+        final String applicationName = auditApplication.getKey().substring(1);
+        return auditService.getAuditEntriesCountByApp(applicationName);
     }
 }

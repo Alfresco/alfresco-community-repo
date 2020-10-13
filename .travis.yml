@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - fix/MNT-21879
 
 env:
   global:

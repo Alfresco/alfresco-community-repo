@@ -21,6 +21,7 @@ branches:
   only:
     - master
     - /release\/.*/
+    - merge/700_A8
 
 env:
   global:

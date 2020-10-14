@@ -114,7 +114,7 @@ jobs:
         before_script:
           bash scripts/set-release-variables.sh
         script:
-#          - bash scripts/release.sh ${RELEASE_TYPE}
+          - bash scripts/release.sh ${RELEASE_TYPE}
         before_deploy:
           - bash scripts/zip-artifacts.sh ${RELEASE_TYPE}
         deploy:

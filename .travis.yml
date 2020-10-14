@@ -10,7 +10,7 @@ branches:
   only:
     - /release\/V2.7.*/
     - /feature-2.7\/.*/
-    - merge-2.7\/.*/
+    - /merge-2.7\/.*/
     - /hotfix-2.7\/.*/
 
 cache:
@@ -110,7 +110,7 @@ jobs:
 
     - name: "Release"
         stage: Release and Publish
-        if: fork = false AND (branch = master OR branch =~ /release\/.*/ OR branch =~ merge.*) AND type != pull_request AND commit_message =~ ^\[.*release.*\]$
+        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ ^\[.*release.*\]$
         before_script:
           bash scripts/set-release-variables.sh
         script:

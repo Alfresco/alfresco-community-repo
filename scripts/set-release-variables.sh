@@ -17,6 +17,7 @@ release_type=$(echo $release_message | grep -Po '(internal\s)*(community|enterpr
 
 if [[ $release_type =~ "community" ]]; then
   echo "Setting Community Release variables..."
+  export RELEASE_TYPE="community"
   if [[ $release_type =~ "internal" ]]; then
     echo "Setting ARTIFACTS_UPLOAD_BUCKET and ARTIFACTS_UPLOAD_DIR for the Internal release"
     export ARTIFACTS_UPLOAD_BUCKET="alfresco-artefacts-staging"
@@ -28,6 +29,7 @@ if [[ $release_type =~ "community" ]]; then
   fi
 elif [[ $release_type =~ "enterprise" ]]; then
   echo "Setting Enterprise Release variables..."
+  export RELEASE_TYPE="enterprise"
   if [[ $release_type =~ "internal" ]]; then
     echo "Setting ARTIFACTS_UPLOAD_BUCKET and ARTIFACTS_UPLOAD_DIR for the Internal release"
     export ARTIFACTS_UPLOAD_BUCKET="alfresco-artefacts-staging"

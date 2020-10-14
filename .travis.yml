@@ -108,43 +108,15 @@ jobs:
       script:
        - echo "Static Analysis (SAST)"
 
-    - name: "Community Release"
+    - name: "Release"
         stage: Release and Publish
-        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ ^\[.*community release.*\]$
+        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ ^\[.*release.*\]$
         before_script:
           bash scripts/set-release-variables.sh
         script:
-          - echo "Community Release"
-          - bash scripts/release.sh community
+          - bash scripts/release.sh ${RELEASE_TYPE}
         before_deploy:
-          - bash scripts/zip-artifacts.sh community
-        deploy:
-          - provider: s3
-            access_key_id: ${ARTIFACTS_KEY}
-            secret_access_key: ${ARTIFACTS_SECRET}
-            region: "eu-west-1"
-            bucket: ${ARTIFACTS_UPLOAD_BUCKET}
-            upload_dir: ${ARTIFACTS_UPLOAD_DIR}
-            skip_cleanup: true
-            acl: private
-            local_dir: artifacts_dir
-            on:
-              all_branches: true
-          after_deploy:
-            - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
-
-
-    - name: "Enterprise Release"
-      stage: Release and Publish
-        stage: Release
-        if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[.*release .*\]/
-        before_script:
-          bash scripts/set-release-variables.sh
-        script:
-          - echo "Enterprise Release"
-          - bash scripts/release.sh enterprise
-        before_deploy:
-          - bash scripts/zip-artifacts.sh enterprise
+          - bash scripts/zip-artifacts.sh ${RELEASE_TYPE}
         deploy:
           - provider: s3
             access_key_id: ${ARTIFACTS_KEY}

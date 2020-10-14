@@ -16,9 +16,11 @@ docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -
 docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_tika_' | awk '{print $1}')
 docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_libreoffice_' | awk '{print $1}')
 docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_activemq_' | awk '{print $1}')
+docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_transform-misc_' | awk '{print $1}')
 
-#stop not needed container
+#stop not needed containers
 docker stop $(docker ps -a | grep '_zeppelin_' | awk '{print $1}')
+docker stop $(docker ps -a | grep '_sync-service_' | awk '{print $1}')
 
 # Display containers resources usage after limitation
 docker stats --no-stream

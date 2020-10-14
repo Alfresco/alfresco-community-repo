@@ -10,7 +10,7 @@ branches:
   only:
     - /release\/V2.7.*/
     - /feature-2.7\/.*/
-    - /merge-2.7\/.*/
+    - merge-2.7\/.*/
     - /hotfix-2.7\/.*/
 
 cache:

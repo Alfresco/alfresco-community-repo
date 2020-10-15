@@ -6,9 +6,6 @@ language: java
 jdk:
   - openjdk8
 
-addons:
-  firefox: "43.0.1"
-
 branches:
   only:
     - /release\/V2.7.*/
@@ -33,7 +30,7 @@ services:
   - docker
 
 stages:
-  - name: Build AGS
+#  - name: Build AGS
   - name: Tests
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
@@ -42,36 +39,36 @@ stages:
 
 jobs:
   include:
-    - name: "Build AGS Community"
-      stage: Build AGS
-      before_script: source scripts/setUpMavenPhase.sh
-      script:
-        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - name: "Build AGS Enterprise"
-      stage: Build AGS
-      before_script: source scripts/setUpMavenPhase.sh
-      install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-      script:
-        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - name: "Build AGS Benchmark"
-      stage: Build AGS
-      before_script: source scripts/setUpMavenPhase.sh
-      install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-      script:
-        - travis_retry travis_wait 35 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - name: "Community Integrations Tests on MySQL"
-      stage: Tests
-      script:
-        - echo "Community Integrations Tests on MySQL"
-    - name: "Enterprise Integrations Tests on MySQL"
-      stage: Tests
-      script:
-        - echo "Enterprise Integrations Tests on MySQL"
+#    - name: "Build AGS Community"
+#      stage: Build AGS
+#      before_script: source scripts/setUpMavenPhase.sh
+#      script:
+#        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#
+#    - name: "Build AGS Enterprise"
+#      stage: Build AGS
+#      before_script: source scripts/setUpMavenPhase.sh
+#      install:
+#        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#      script:
+#        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#
+#    - name: "Build AGS Benchmark"
+#      stage: Build AGS
+#      before_script: source scripts/setUpMavenPhase.sh
+#      install:
+#        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#      script:
+#        - travis_retry travis_wait 35 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#
+#    - name: "Community Integrations Tests on MySQL"
+#      stage: Tests
+#      script:
+#        - echo "Community Integrations Tests on MySQL"
+#    - name: "Enterprise Integrations Tests on MySQL"
+#      stage: Tests
+#      script:
+#        - echo "Enterprise Integrations Tests on MySQL"
 
     - name: "Community Rest API Tests"
       stage: Tests
@@ -106,7 +103,7 @@ jobs:
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeInPlaceRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeInPlaceRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Community Smoke UI Tests for actions in RM site"
       stage: Tests
@@ -142,14 +139,22 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise UI Tests ..."
+    - name: "Enterprise Level 2 UI Tests"
       stage: Tests
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - echo "Enterprise UI Tests ..."
+        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans

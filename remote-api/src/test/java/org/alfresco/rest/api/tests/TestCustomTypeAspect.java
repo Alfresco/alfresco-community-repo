@@ -59,6 +59,35 @@ import org.junit.Test;
  */
 public class TestCustomTypeAspect extends BaseCustomModelApiTest
 {
+    @Test
+    public void testCreateCustomModel() throws Exception
+    {
+        setRequestContext(customModelAdmin);
+
+        String modelName = "testModel" + System.currentTimeMillis();
+        Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
+        // Create the model as a Model Administrator
+        createCustomModel(modelName, namespacePair, ModelStatus.ACTIVE);
+
+        // Retrieve the created model
+        HttpResponse response = getSingle("cmm", modelName, 200);
+        CustomModel returnedModel = RestApiUtil
+            .parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+        assertNull(returnedModel.getTypes());
+        assertNull(returnedModel.getAspects());
+
+        // Retrieve the created model with its types and aspects 
+        // - empty arrays expected as we did not set any aspects, types or constraints
+        response = getSingle("cmm", modelName + SELECT_ALL, 200);
+        returnedModel = RestApiUtil
+            .parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+        assertNotNull(returnedModel.getTypes());
+        assertTrue(returnedModel.getTypes().isEmpty());
+        assertNotNull(returnedModel.getAspects());
+        assertTrue(returnedModel.getAspects().isEmpty());
+        assertNotNull(returnedModel.getConstraints());
+        assertTrue(returnedModel.getConstraints().isEmpty());
+    }
 
     @Test
     public void testCreateAspectsAndTypes_ExistingModel() throws Exception

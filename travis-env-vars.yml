@@ -4,3 +4,7 @@ env:
     - AUTOMATION_ENTERPRISE_PATH=rm-automation/rm-automation-enterprise-rest-api
     - AUTOMATION_UI_PATH=rm-automation/rm-automation-ui
     - S3_INSTALLER_PATH=/eu.dl.alfresco.com/release/enterprise/5.2/5.2.7/5.2.7.4/alfresco-content-services-installer-5.2.7.4-linux-x64.bin
+    - ALFRESCO_URL="http://localhost:8080/alfresco"
+    - SHARE_URL="http://localhost:8080/share"
+    - DISPLAY=:99.0
+    - WEBDRIVER_ARGUMENTS='-Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dwebdriver.element.wait.time=20000 -Dwebdriver.page.render.wait.time=60000'

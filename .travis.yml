@@ -6,6 +6,9 @@ language: java
 jdk:
   - openjdk8
 
+addons:
+  firefox: "43.0.1"
+
 branches:
   only:
     - /release\/V2.7.*/
@@ -26,6 +29,7 @@ before_install:
 install: skip
 
 services:
+  - xvfb
   - docker
 
 stages:
@@ -68,6 +72,7 @@ jobs:
       stage: Tests
       script:
         - echo "Enterprise Integrations Tests on MySQL"
+
     - name: "Community Rest API Tests"
       stage: Tests
       before_install:
@@ -76,6 +81,7 @@ jobs:
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:
@@ -84,14 +90,27 @@ jobs:
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_ENTERPRISE_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-    - name: "Community UI Tests ..."
+
+    - name: "Community UI Tests"
       stage: Tests
+      env:
+        - testSuiteName: communitySmokeInPlaceRecords.xml
+        - testSuiteName: communitySmokeRMSite.xml
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - echo "Community UI Tests ..."
+        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$testSuiteName -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
     - name: "Enterprise UI Tests ..."
       stage: Tests
       before_install:
@@ -100,6 +119,7 @@ jobs:
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
         - echo "Enterprise UI Tests ..."
+
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
       script:

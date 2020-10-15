@@ -59,6 +59,10 @@
         <parameter property="min" jdbcType="VARCHAR" javaType="String"/>
         <parameter property="max" jdbcType="VARCHAR" javaType="String"/>
     </parameterMap>
+
+    <parameterMap id="parameter_AuditAppId" type="map">
+        <parameter property="auditAppId" jdbcType="BIGINT" javaType="Long"/>
+    </parameterMap>
   
     <!--                -->
     <!-- SQL Snippets   -->
@@ -276,6 +280,16 @@
         <include refid="select_AuditEntriesWhereSnippet"/>
         <include refid="select_AuditEntriesOrderBySnippet"/>
     </sql>
+
+    <!-- Get the count of audit entries for application -->
+    <select id="select_CountAuditEntryId" parameterMap="parameter_AuditAppId" resultType="int">
+        select
+            COUNT(id)
+        from
+        alf_audit_entry
+        where
+        alf_audit_entry.audit_app_id = #{auditAppId}
+    </select>
 
     <!-- Get the maximum/minimum audit entry id for application -->
     <select id="select_MinMaxAuditEntryId" parameterMap="parameter_IdMinMaxMap" resultMap="result_minMaxMap">

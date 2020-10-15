@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -404,6 +405,31 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         {
             validateAuditEntryFields(ae, auditApp);
         }
+
+        // MNT-21936 Audit query Rest API does not return the correct totalItems
+        int auditEntriesTotalItems = auditEntries.getPaging().getTotalItems();
+
+        // set maxItems to 1
+        Map<String, String> params = new HashMap<>();
+        params.put("maxItems","1");
+
+        auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
+            HttpServletResponse.SC_OK);
+
+        int AuditEntriesTotalItemsAfterLimit = auditEntries.getPaging().getTotalItems();
+        int retrievedAuditEntriesCount = auditEntries.getPaging().getCount();
+        // When totalItems are retrieved using getAuditEntriesCountByApp() method that was introduced in MNT-21936
+        // 2 audit entries will be created.
+        assertEquals(auditEntriesTotalItems + 2, AuditEntriesTotalItemsAfterLimit);
+        assertEquals(1, retrievedAuditEntriesCount);
+
+        // set omitTotalItems to true.
+        params.put("omitTotalItems", "true");
+        auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
+            HttpServletResponse.SC_OK);
+
+        // verify that totalItems is null.
+        assertNull(auditEntries.getPaging().getTotalItems());
 
         // Negative tests
         // 401

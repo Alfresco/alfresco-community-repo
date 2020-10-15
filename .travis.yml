@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - fix/MNT-21871_jackson-databind-vulnerabilities-7.0.N
 
 env:
   global:

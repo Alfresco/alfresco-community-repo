@@ -163,10 +163,10 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/reports
             - ./rm-automation/rm-automation-ui/target/screenshots
           target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
+      before_script:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+        - travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 

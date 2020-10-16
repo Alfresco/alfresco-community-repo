@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +79,7 @@ public class DictionaryDAOTest
     private static final String TEST_URL = "http://www.alfresco.org/test/dictionarydaotest/1.0";
     private static final String TEST2_URL = "http://www.alfresco.org/test/dictionarydaotest2/1.0";
     private static final String TEST_MODEL = "org/alfresco/repo/dictionary/dictionarydaotest_model.xml";
-    private static final String TEST_MODEL_OLD_FORMAT = "org/alfresco/repo/dictionary/dictionarydaotest_model_old_format.xml";
+    private static final String TEST_MODEL_NEW_FORMAT = "org/alfresco/repo/dictionary/dictionarydaotest_model_new_format.xml";
     private static final String TEST_NS_CLASH_MODEL = "org/alfresco/repo/dictionary/nstest_model.xml";
     private static final String TEST_BUNDLE = "org/alfresco/repo/dictionary/dictionarydaotest_model";
     private static final String TEST_COMMON_NS_PARENT_MODEL = "org/alfresco/repo/dictionary/commonpropertynsparent_model.xml";
@@ -193,7 +192,7 @@ public class DictionaryDAOTest
         }
     }
     @Test
-    public void testNamespaceClashResultsInSensibleErrorWithOldFormat()
+    public void testNamespaceClashResultsInSensibleErrorWithNewFormat()
     {
         TenantService tenantService = new SingleTServiceImpl();
 
@@ -204,8 +203,8 @@ public class DictionaryDAOTest
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
 
-        bootstrapModels.add("alfresco/model/dictionaryModel_old_format.xml");
-        bootstrapModels.add(TEST_MODEL_OLD_FORMAT);
+        bootstrapModels.add("alfresco/model/dictionaryModel_new_format.xml");
+        bootstrapModels.add(TEST_MODEL_NEW_FORMAT);
         bootstrapModels.add(TEST_NS_CLASH_MODEL);
 
         bootstrap.setModels(bootstrapModels);
@@ -247,7 +246,7 @@ public class DictionaryDAOTest
     }
 
     @Test
-    public void testUseImportedNamespacesWithOldFormat()
+    public void testUseImportedNamespacesWithNewFormat()
     {
         TenantService tenantService = new SingleTServiceImpl();
 
@@ -258,7 +257,7 @@ public class DictionaryDAOTest
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
 
-        bootstrapModels.add("alfresco/model/dictionaryModel_old_format.xml");
+        bootstrapModels.add("alfresco/model/dictionaryModel_new_format.xml");
         bootstrapModels.add(TEST_COMMON_NS_PARENT_MODEL);
         bootstrapModels.add(TEST_COMMON_NS_CHILD_MODEL);
 

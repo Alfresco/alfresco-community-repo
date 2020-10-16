@@ -330,6 +330,14 @@ public class EventConsolidator implements EventSupportedPolicies
             }
         }
 
+        // Handle case where the content does not exist on the propertiesBefore
+        if (propertiesBefore != null && !propertiesBefore.containsKey(ContentModel.PROP_CONTENT) &&
+                propertiesAfter.containsKey(ContentModel.PROP_CONTENT))
+        {
+            builder.setContent(new ContentInfo());
+            resourceBeforeAllFieldsNull = false;
+        }
+
         Set<String> aspectsBefore = getMappedAspectsBefore(after.getAspectNames());
         if (!aspectsBefore.isEmpty())
         {
@@ -406,6 +414,16 @@ public class EventConsolidator implements EventSupportedPolicies
         // Get before values that changed
         Map<K, V> beforeDelta = new HashMap<>(before);
         beforeDelta.entrySet().removeAll(after.entrySet());
+
+        // Add nulls for before properties
+        Set<K> beforeKeys = before.keySet();
+        Set<K> newKeys = after.keySet();
+        newKeys.removeAll(beforeKeys);
+
+        for (K key : newKeys)
+        {
+            beforeDelta.put(key, null);
+        }
 
         return beforeDelta;
     }

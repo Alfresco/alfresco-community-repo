@@ -106,60 +106,34 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_ENTERPRISE_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-    - name: "Community Smoke UI Tests for In place Records"
-      stage: Tests
-      env: # no environment variables - overwrite with empty
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeInPlaceRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-
     - name: "Community Smoke UI Tests for actions in RM site"
       stage: Tests
-      env: # no environment variables - overwrite with empty
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+      env: TEST_SUITE=communitySmokeRMSite.xml
+      - &community_shared_UI_configuration
+        addons:
+          firefox: "43.0.1"
+          artifacts:
+            paths:
+              - ./rm-automation/rm-automation-ui/target/surefire-reports
+              - ./rm-automation/rm-automation-ui/target/reports
+              - ./rm-automation/rm-automation-ui/target/screenshots
+            target_paths: $TRAVIS_BUILD_NUMBER
+        before_install:
+          - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+          - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+        install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
+        script:
+          - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
+    - name: "Community Smoke UI Tests for In place Records"
+      stage: Tests
+      env: TEST_SUITE=communitySmokeInPlaceRecords.xml
+      - <<: *community_shared_UI_configuration
+          
     - name: "Community Level 2 UI Tests"
       stage: Tests
-      env: # no environment variables - overwrite with empty
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-
+      env: TEST_SUITE=communityLevel2Tests.xml
+      - <<: *community_shared_UI_configuration
 #    - name: "Community Smoke UI Tests for In place Records"
 #      stage: Tests
 #      env: PROFILE=apply-rm-community TEST_SUITE=communitySmokeInPlaceRecords.xml

@@ -29,15 +29,6 @@ services:
   - xvfb
   - docker
 
-env:
-  matrix:
-    - TEST_SUITE=enterpriseLevel2Tests.xml
-    - TEST_SUITE=enterpriseLevel2ClassificationTests.xml
-    - TEST_SUITE=enterpriseClassificationTests.xml
-    - TEST_SUITE=enterpriseGuidesTests.xml
-    - TEST_SUITE=enterpriseSecurityMarksTests.xml
-    - TEST_SUITE=enterpriseConsoleAndConfigurationTests.xml
-
 stages:
 #  - name: Build AGS
   - name: Tests
@@ -45,6 +36,22 @@ stages:
   - name: Security Scans
   - name: Release
   - name: Publish
+
+_shared_job: &enterprise_UI_shared_configuration
+    addons:
+      firefox: "43.0.1"
+      artifacts:
+        paths:
+          - ./rm-automation/rm-automation-ui/target/surefire-reports
+          - ./rm-automation/rm-automation-ui/target/reports
+          - ./rm-automation/rm-automation-ui/target/screenshots
+        target_paths: $TRAVIS_BUILD_NUMBER
+    before_install:
+      - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+      - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+    install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xm
+    script:
+      - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
 jobs:
   include:
@@ -153,22 +160,15 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise UI Tests"
+    - name: "Enterprise Level 2 UI Tests"
       stage: Tests
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      script:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-        - travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+      env: TEST_SUITE=enterpriseLevel2Tests.xml
+      <<: *enterprise_UI_shared_configuration
 
+    - name: "Enterprise Classification Level 2 UI Tests"
+      stage: Tests
+      env: TEST_SUITE=enterpriseLevel2ClassificationTests.xml
+      <<: *enterprise_UI_shared_configuration
 #    - name: "Enterprise Classification Level 2 UI Tests"
 #      stage: Tests
 #      addons:

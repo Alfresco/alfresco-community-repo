@@ -29,6 +29,15 @@ services:
   - xvfb
   - docker
 
+env:
+  matrix:
+    - TEST_SUITE=enterpriseLevel2Tests.xml
+    - TEST_SUITE=enterpriseLevel2ClassificationTests.xml
+    - TEST_SUITE=enterpriseClassificationTests.xml
+    - TEST_SUITE=enterpriseGuidesTests.xml
+    - TEST_SUITE=enterpriseSecurityMarksTests.xml
+    - TEST_SUITE=enterpriseConsoleAndConfigurationTests.xml
+
 stages:
 #  - name: Build AGS
   - name: Tests
@@ -72,6 +81,7 @@ jobs:
 
     - name: "Community Rest API Tests"
       stage: Tests
+      env: # no environment variables - overwrite with empty
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
@@ -81,6 +91,7 @@ jobs:
 
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      env: # no environment variables - overwrite with empty
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_ENTERPRISE_PATH/target
@@ -90,6 +101,7 @@ jobs:
 
     - name: "Community Smoke UI Tests for In place Records"
       stage: Tests
+      env: # no environment variables - overwrite with empty
       addons:
         firefox: "43.0.1"
         artifacts:
@@ -107,6 +119,7 @@ jobs:
 
     - name: "Community Smoke UI Tests for actions in RM site"
       stage: Tests
+      env: # no environment variables - overwrite with empty
       addons:
         firefox: "43.0.1"
         artifacts:
@@ -124,6 +137,7 @@ jobs:
 
     - name: "Community Level 2 UI Tests"
       stage: Tests
+      env: # no environment variables - overwrite with empty
       addons:
         firefox: "43.0.1"
         artifacts:
@@ -139,7 +153,7 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise Level 2 UI Tests"
+    - name: "Enterprise UI Tests"
       stage: Tests
       addons:
         firefox: "43.0.1"
@@ -154,112 +168,117 @@ jobs:
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise Classification Level 2 UI Tests"
-      stage: Tests
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+#    - name: "Enterprise Classification Level 2 UI Tests"
+#      stage: Tests
+#      addons:
+#        firefox: "43.0.1"
+#        artifacts:
+#          paths:
+#            - ./rm-automation/rm-automation-ui/target/surefire-reports
+#            - ./rm-automation/rm-automation-ui/target/reports
+#            - ./rm-automation/rm-automation-ui/target/screenshots
+#          target_paths: $TRAVIS_BUILD_NUMBER
+#      before_install:
+#        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+#        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+#      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+#      script:
+#        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise Classification UI Tests"
-      stage: Tests
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+#    - name: "Enterprise Classification UI Tests"
+#      stage: Tests
+#      addons:
+#        firefox: "43.0.1"
+#        artifacts:
+#          paths:
+#            - ./rm-automation/rm-automation-ui/target/surefire-reports
+#            - ./rm-automation/rm-automation-ui/target/reports
+#            - ./rm-automation/rm-automation-ui/target/screenshots
+#          target_paths: $TRAVIS_BUILD_NUMBER
+#      before_install:
+#        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+#        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+#      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+#      script:
+#        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise Guides UI Tests"
-      stage: Tests
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+#    - name: "Enterprise Guides UI Tests"
+#      stage: Tests
+#      addons:
+#        firefox: "43.0.1"
+#        artifacts:
+#          paths:
+#            - ./rm-automation/rm-automation-ui/target/surefire-reports
+#            - ./rm-automation/rm-automation-ui/target/reports
+#            - ./rm-automation/rm-automation-ui/target/screenshots
+#          target_paths: $TRAVIS_BUILD_NUMBER
+#      before_install:
+#        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+#        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+#      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+#      script:
+#        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-    - name: "Enterprise Security Marks UI Tests"
-      stage: Tests
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-
-    - name: "Enterprise Console and Configuration UI Tests"
-      stage: Tests
-      addons:
-        firefox: "43.0.1"
-        artifacts:
-          paths:
-            - ./rm-automation/rm-automation-ui/target/surefire-reports
-            - ./rm-automation/rm-automation-ui/target/reports
-            - ./rm-automation/rm-automation-ui/target/screenshots
-          target_paths: $TRAVIS_BUILD_NUMBER
-      before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-      script:
-        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+#    - name: "Enterprise Security Marks UI Tests"
+#      stage: Tests
+#      addons:
+#        firefox: "43.0.1"
+#        artifacts:
+#          paths:
+#            - ./rm-automation/rm-automation-ui/target/surefire-reports
+#            - ./rm-automation/rm-automation-ui/target/reports
+#            - ./rm-automation/rm-automation-ui/target/screenshots
+#          target_paths: $TRAVIS_BUILD_NUMBER
+#      before_install:
+#        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+#        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+#      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+#      script:
+#        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+#
+#    - name: "Enterprise Console and Configuration UI Tests"
+#      stage: Tests
+#      addons:
+#        firefox: "43.0.1"
+#        artifacts:
+#          paths:
+#            - ./rm-automation/rm-automation-ui/target/surefire-reports
+#            - ./rm-automation/rm-automation-ui/target/reports
+#            - ./rm-automation/rm-automation-ui/target/screenshots
+#          target_paths: $TRAVIS_BUILD_NUMBER
+#      before_install:
+#        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+#        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+#      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+#      script:
+#        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
+      env: # no environment variables - overwrite with empty
       script:
        - echo "Source Clear Scan (SCA)"
     - name: "Static Analysis (SAST)"
       stage: Security Scans
+      env: # no environment variables - overwrite with empty
       script:
        - echo "Static Analysis (SAST)"
 
     - name: "Community Release"
       stage: Release
+      env: # no environment variables - overwrite with empty
       script:
         - echo "Community Release"
     - name: "Enterprise Release"
       stage: Release
+      env: # no environment variables - overwrite with empty
       script:
         - echo "Enterprise Release"
 
     - name: "Copy to S3 Release Bucket"
       stage: Publish
+      env: # no environment variables - overwrite with empty
       script:
         - echo "Copy to S3 Release Bucket"

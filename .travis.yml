@@ -37,7 +37,7 @@ stages:
   - name: Release
   - name: Publish
 
-_shared_job: &shared_UI_configuration
+_shared_job: &enterprise_shared_UI_configuration
     addons:
       firefox: "43.0.1"
       artifacts:
@@ -49,7 +49,7 @@ _shared_job: &shared_UI_configuration
     before_install:
       - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
       - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-    install: travis_wait 20 mvn -B install -PinstallAlfresco,$PROFILE -q -f $AUTOMATION_UI_PATH/pom.xml
+    install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
     script:
       - travis_wait 60 mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
@@ -178,32 +178,32 @@ jobs:
     - name: "Enterprise Level 2 UI Tests"
       stage: Tests
       env: TEST_SUITE=enterpriseLevel2Tests.xml
-      <<: *shared_UI_configuration
+      <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Classification Level 2 UI Tests"
       stage: Tests
       env: TEST_SUITE=enterpriseLevel2ClassificationTests.xml
-      <<: *shared_UI_configuration
+      <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Classification UI Tests"
       stage: Tests
       env: TEST_SUITE=enterpriseClassificationTests.xml
-      <<: *shared_UI_configuration
+      <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Guides UI Tests"
       stage: Tests
       env: TEST_SUITE=enterpriseGuidesTests.xml
-      <<: *shared_UI_configuration
+      <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Security Marks UI Tests"
       stage: Tests
       env: TEST_SUITE=enterpriseSecurityMarksTests.xml
-      <<: *shared_UI_configuration
+      <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Console and Configuration UI Tests"
       stage: Tests
       env: TEST_SUITE=enterpriseConsoleAndConfigurationTests.xml
-      <<: *shared_UI_configuration
+      <<: *enterprise_shared_UI_configuration
 
 #    - name: "Enterprise Classification Level 2 UI Tests"
 #      stage: Tests

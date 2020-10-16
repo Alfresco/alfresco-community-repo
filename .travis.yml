@@ -49,7 +49,13 @@ _shared_job: &shared_UI_configuration
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+      install:
+        - |
+          if [[ ${TRAVIS_JOB_NAME} == *Community* ]]; then
+            travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
+          else
+            travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+          fi
       script:
         - travis_wait 60 mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
@@ -109,19 +115,16 @@ jobs:
     - name: "Community Smoke UI Tests for actions in RM site"
       stage: Tests
       env: TEST_SUITE=communitySmokeRMSite.xml
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       <<: *shared_UI_configuration
 
     - name: "Community Smoke UI Tests for In place Records"
       stage: Tests
       env: TEST_SUITE=communitySmokeInPlaceRecords.xml
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       <<: *shared_UI_configuration
 
     - name: "Community Level 2 UI Tests"
       stage: Tests
       env: TEST_SUITE=communityLevel2Tests.xml
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       <<: *shared_UI_configuration
 
 #    - name: "Community Smoke UI Tests for In place Records"

@@ -171,18 +171,15 @@ public class NodeResourceHelper implements InitializingBean
         Map<String, Serializable> filteredProps = new HashMap<>(props.size());
 
         props.forEach((k, v) -> {
-            if (!nodePropertyFilter.isExcluded(k) && v != null)
+            if (!nodePropertyFilter.isExcluded(k))
             {
-                if (v instanceof MLText)
+                if (v != null && v instanceof MLText)
                 {
                     //TODO - should we send all of the values if multiple locales exist?
                     v = ((MLText) v).getDefaultValue();
                 }
 
-                if (isNotEmptyString(v))
-                {
-                    filteredProps.put(getQNamePrefixString(k), v);
-                }
+                filteredProps.put(getQNamePrefixString(k), v);
             }
         });
 

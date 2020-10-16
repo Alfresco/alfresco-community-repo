@@ -173,7 +173,7 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-  - name: "Enterprise Classification UI Tests"
+    - name: "Enterprise Classification UI Tests"
       stage: Tests
       addons:
         firefox: "43.0.1"
@@ -190,7 +190,7 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-  - name: "Enterprise Guides UI Tests"
+    - name: "Enterprise Guides UI Tests"
       stage: Tests
       addons:
         firefox: "43.0.1"
@@ -207,7 +207,7 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-  - name: "Enterprise Security Marks UI Tests"
+    - name: "Enterprise Security Marks UI Tests"
       stage: Tests
       addons:
         firefox: "43.0.1"
@@ -224,7 +224,7 @@ jobs:
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
-  - name: "Enterprise Console and Configuration UI Tests"
+    - name: "Enterprise Console and Configuration UI Tests"
       stage: Tests
       addons:
         firefox: "43.0.1"

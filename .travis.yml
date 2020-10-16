@@ -110,19 +110,19 @@ jobs:
       stage: Tests
       env: TEST_SUITE=communitySmokeRMSite.xml
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
-      - <<: *shared_UI_configuration
+      <<: *shared_UI_configuration
 
     - name: "Community Smoke UI Tests for In place Records"
       stage: Tests
       env: TEST_SUITE=communitySmokeInPlaceRecords.xml
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
-      - <<: *shared_UI_configuration
+      <<: *shared_UI_configuration
 
     - name: "Community Level 2 UI Tests"
       stage: Tests
       env: TEST_SUITE=communityLevel2Tests.xml
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
-      - <<: *shared_UI_configuration
+      <<: *shared_UI_configuration
 
 #    - name: "Community Smoke UI Tests for In place Records"
 #      stage: Tests

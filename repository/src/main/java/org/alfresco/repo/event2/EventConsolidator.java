@@ -332,7 +332,7 @@ public class EventConsolidator implements EventSupportedPolicies
 
         // Handle case where the content does not exist on the propertiesBefore
         if (propertiesBefore != null && !propertiesBefore.containsKey(ContentModel.PROP_CONTENT) &&
-                propertiesAfter.containsKey(ContentModel.PROP_CONTENT))
+                propertiesAfter != null && propertiesAfter.containsKey(ContentModel.PROP_CONTENT))
         {
             builder.setContent(new ContentInfo());
             resourceBeforeAllFieldsNull = false;

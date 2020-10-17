@@ -165,9 +165,14 @@ jobs:
       env: TEST_SUITE=enterpriseLevel2ClassificationTests.xml
       <<: *enterprise_shared_UI_configuration
 
-    - name: "Enterprise Classification UI Tests"
+    - name: "Enterprise Content Classification UI Tests"
       stage: Tests
-      env: TEST_SUITE=enterpriseClassificationTests.xml
+      env: TEST_SUITE=enterpriseContentClassificationTests.xml
+      <<: *enterprise_shared_UI_configuration
+
+    - name: "Enterprise Folders Classification UI Tests"
+      stage: Tests
+      env: TEST_SUITE=enterpriseFoldersClassificationTests.xml
       <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Guides UI Tests"

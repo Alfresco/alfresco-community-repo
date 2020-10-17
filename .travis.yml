@@ -50,9 +50,8 @@ _shared_job: &enterprise_shared_UI_configuration
       - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
       - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
     install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
-    before-script: xvfb-run --server-args="-screen 0 1024x768x24" make test
     script:
-      - travis_wait 60 mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+      - travis_wait 60 xvfb-run --server-args="-screen 0 1024x768x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=$TEST_SUITE -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
 jobs:
   include:
@@ -171,10 +170,10 @@ jobs:
       env: TEST_SUITE=enterpriseContentClassificationTests.xml
       <<: *enterprise_shared_UI_configuration
 
-    - name: "Enterprise Folders Classification UI Tests"
-      stage: Tests
-      env: TEST_SUITE=enterpriseFoldersClassificationTests.xml
-      <<: *enterprise_shared_UI_configuration
+#    - name: "Enterprise Folders Classification UI Tests"
+#      stage: Tests
+#      env: TEST_SUITE=enterpriseFoldersClassificationTests.xml
+#      <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Guides UI Tests"
       stage: Tests

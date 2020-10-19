@@ -142,7 +142,11 @@ jobs:
       <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Classification UI Tests"
-      env: TEST_SUITE=enterpriseClassificationTests.xml
+      env: TEST_SUITE=enterpriseContentClassificationTests.xml
+      <<: *enterprise_shared_UI_configuration
+
+    - name: "Enterprise Folders Classification UI Tests"
+      env: TEST_SUITE=enterpriseFoldersClassificationTests.xml
       <<: *enterprise_shared_UI_configuration
 
     - name: "Enterprise Guides UI Tests"

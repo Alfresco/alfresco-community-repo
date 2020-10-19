@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - feature/search-2454-remove-old-lucene
 
 env:
   global:

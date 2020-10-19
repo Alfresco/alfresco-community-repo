@@ -23,8 +23,7 @@ if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ];
          exit 1
 else
     mvn --batch-mode \
-    -Dusername="${GITHUB_USERNAME}" \
-    -Dpassword="${GITHUB_API_TOKEN}" \
+    -settings .travis.settings.xml \
     -DreleaseVersion=${RELEASE_VERSION} \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
     -DskipTests -D${release_type} -DuseReleaseProfile=false \

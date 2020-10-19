@@ -13,11 +13,6 @@
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-legacy-lucene</artifactId>
-            <version>${dependency.alfresco-legacy-lucene.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
             <exclusions>
                 <exclusion>
@@ -943,13 +938,6 @@
                     <artifactId>geronimo-jta_1.1_spec</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-legacy-lucene</artifactId>
-            <version>${dependency.alfresco-legacy-lucene.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

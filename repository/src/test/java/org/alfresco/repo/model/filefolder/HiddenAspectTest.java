@@ -54,7 +54,6 @@ import org.alfresco.repo.imap.AlfrescoImapFolder;
 import org.alfresco.repo.imap.AlfrescoImapUser;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;

@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.index.shard.ShardInstance;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.util.Pair;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpClient;
@@ -131,7 +131,7 @@ public class DynamicSolrStoreMappingWrapperFactory
             }
             catch (UnsupportedEncodingException e)
             {
-                throw new LuceneQueryParserException("", e);
+                throw new QueryParserException("", e);
             }
         }
         

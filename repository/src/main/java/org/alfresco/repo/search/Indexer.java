@@ -27,7 +27,6 @@ package org.alfresco.repo.search;
 
 import java.util.Collection;
 
-import org.alfresco.repo.search.impl.lucene.LuceneIndexException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;

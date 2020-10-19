@@ -26,7 +26,7 @@
 
 package org.alfresco.repo.search.impl;
 
-import org.alfresco.repo.search.impl.lucene.SolrSuggesterResult;
+import org.alfresco.repo.search.impl.solr.SolrSuggesterResult;
 import org.alfresco.service.cmr.search.SuggesterParameters;
 import org.alfresco.service.cmr.search.SuggesterResult;
 import org.alfresco.service.cmr.search.SuggesterService;

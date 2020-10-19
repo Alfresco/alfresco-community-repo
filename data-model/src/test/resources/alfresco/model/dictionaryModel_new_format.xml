@@ -1,0 +1,111 @@
+<model name="d:dictionary" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Dictionary Model</description>
+   <author>Alfresco</author>
+   <published>2005-09-29</published>
+   <version>1.0</version>
+   <analyserResourceBundleName>alfresco/model/dataTypeAnalyzers</analyserResourceBundleName>
+
+   <namespaces>
+      <!-- Default Namespace -->
+      <namespace uri="" prefix=""/>
+      <!-- Default Alfresco Namespace -->
+      <namespace uri="http://www.alfresco.org" prefix="alf"/>
+      <!-- Dictionary Namespace -->
+      <namespace uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- View Namespace -->
+      <namespace uri="http://www.alfresco.org/view/repository/1.0" prefix="view"/>
+   </namespaces>
+
+   <data-types>
+
+      <data-type name="d:any">
+         <java-class>java.lang.Object</java-class>
+      </data-type>
+
+      <data-type name="d:encrypted">
+         <java-class>javax.crypto.SealedObject</java-class>
+      </data-type>
+
+      <data-type name="d:text">
+         <java-class>java.lang.String</java-class>
+      </data-type>
+
+      <data-type name="d:mltext">
+         <java-class>org.alfresco.service.cmr.repository.MLText</java-class>
+      </data-type>
+
+      <data-type name="d:content">
+         <java-class>org.alfresco.service.cmr.repository.ContentData</java-class>
+      </data-type>
+
+      <data-type name="d:int">
+         <java-class>java.lang.Integer</java-class>
+      </data-type>
+
+      <data-type name="d:long">
+         <java-class>java.lang.Long</java-class>
+      </data-type>
+
+      <data-type name="d:float">
+         <java-class>java.lang.Float</java-class>
+      </data-type>
+
+      <data-type name="d:double">
+         <java-class>java.lang.Double</java-class>
+      </data-type>
+
+      <data-type name="d:date">
+         <java-class>java.util.Date</java-class>
+      </data-type>
+
+      <data-type name="d:datetime">
+         <java-class>java.util.Date</java-class>
+      </data-type>
+
+      <data-type name="d:boolean">
+         <java-class>java.lang.Boolean</java-class>
+      </data-type>
+
+      <data-type name="d:qname">
+         <java-class>org.alfresco.service.namespace.QName</java-class>
+      </data-type>
+
+      <data-type name="d:noderef">
+         <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
+      </data-type>
+
+      <data-type name="d:childassocref">
+         <java-class>org.alfresco.service.cmr.repository.ChildAssociationRef</java-class>
+      </data-type>
+
+      <data-type name="d:assocref">
+         <java-class>org.alfresco.service.cmr.repository.AssociationRef</java-class>
+      </data-type>
+
+      <data-type name="d:path">
+         <java-class>org.alfresco.service.cmr.repository.Path</java-class>
+      </data-type>
+
+      <data-type name="d:category">
+         <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
+      </data-type>
+
+      <data-type name="d:locale">
+         <java-class>java.util.Locale</java-class>
+      </data-type>
+
+      <data-type name="d:version">
+         <java-class>org.alfresco.util.VersionNumber</java-class>
+      </data-type>
+
+      <data-type name="d:period">
+         <java-class>org.alfresco.service.cmr.repository.Period</java-class>
+      </data-type>
+
+   </data-types>
+
+
+   <!-- TODO: Define dictionary meta model -->
+
+</model>

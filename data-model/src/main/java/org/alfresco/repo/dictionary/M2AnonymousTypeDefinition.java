@@ -235,15 +235,6 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getAnalyserResourceBundleName()
-     */
-    @Override
-    public String getAnalyserResourceBundleName()
-    {
-       return type.getAnalyserResourceBundleName();
-    }
-
-    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getParentClassDefinition()
      */
     @Override

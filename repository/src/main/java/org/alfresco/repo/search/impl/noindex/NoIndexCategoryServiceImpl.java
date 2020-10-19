@@ -28,7 +28,7 @@ package org.alfresco.repo.search.impl.noindex;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl;
+import org.alfresco.repo.search.impl.AbstractCategoryServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -38,7 +38,7 @@ import org.alfresco.util.Pair;
  * @author Andy
  *
  */
-public class NoIndexCategoryServiceImpl extends LuceneCategoryServiceImpl
+public class NoIndexCategoryServiceImpl extends AbstractCategoryServiceImpl
 {
 
     @Override

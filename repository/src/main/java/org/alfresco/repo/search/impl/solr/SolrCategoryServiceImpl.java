@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl;
+import org.alfresco.repo.search.impl.AbstractCategoryServiceImpl;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -46,7 +46,7 @@ import org.alfresco.util.Pair;
  * @author Andy
  *
  */
-public class SolrCategoryServiceImpl extends LuceneCategoryServiceImpl
+public class SolrCategoryServiceImpl extends AbstractCategoryServiceImpl
 {
 
     @Override

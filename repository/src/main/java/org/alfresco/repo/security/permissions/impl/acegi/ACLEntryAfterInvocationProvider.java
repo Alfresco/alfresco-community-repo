@@ -45,7 +45,7 @@ import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
-import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;

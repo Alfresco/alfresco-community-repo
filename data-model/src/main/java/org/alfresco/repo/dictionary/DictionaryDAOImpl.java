@@ -101,18 +101,6 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
         this.dictionaryRegistryCache = dictionaryRegistryCache;
     }
 
-    @Override
-    public String getDefaultAnalyserResourceBundleName()
-    {
-        return defaultAnalyserResourceBundleName;
-    }
-
-    public void setDefaultAnalyserResourceBundleName(
-            String defaultAnalyserResourceBundleName)
-    {
-        this.defaultAnalyserResourceBundleName = defaultAnalyserResourceBundleName;
-    }
-
     /**
      * Construct
      * 

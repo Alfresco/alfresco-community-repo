@@ -206,8 +206,6 @@ import org.alfresco.util.EqualsHelper;
                 defaultAspectNames.add(name);
             }
         }
-        
-        this.analyserResourceBundleName = m2Class.getAnalyserResourceBundleName();
     }
     
     @Override
@@ -759,15 +757,6 @@ import org.alfresco.util.EqualsHelper;
         }
         
         return modelDiffs;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getAnalyserResourceBundleName()
-     */
-    @Override
-    public String getAnalyserResourceBundleName()
-    {
-        return analyserResourceBundleName;
     }
 
     /* (non-Javadoc)

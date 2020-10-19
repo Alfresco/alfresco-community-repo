@@ -99,32 +99,7 @@ public interface DataTypeDefinition
     public String getDescription(MessageLookup messageLookup);
     
     /**
-     * Get the name of the property bundle that defines analyser mappings for this data type (keyed by the type of the property) 
-     * @return the resource or null if not set.
-     */
-    public String getAnalyserResourceBundleName();
-
-    /**
      * @return the equivalent java class name (or null, if not mapped) 
      */
     public String getJavaClassName();
-    
-    /**
-     * Get the default analyser class - used when no resource bundles can be found and no repository default is set.
-     * @return String
-     */
-    public String getDefaultAnalyserClassName();
-
-    /**
-     * @param locale
-     * @return String
-     */
-    public String resolveAnalyserClassName(Locale locale);
-    
-    /**
-     * 
-     * @return String
-     */
-    public String resolveAnalyserClassName();
-    
 }

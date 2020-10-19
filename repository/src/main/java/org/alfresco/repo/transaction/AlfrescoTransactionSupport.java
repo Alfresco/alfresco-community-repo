@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.transaction.TransactionListener;
 import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
@@ -216,32 +215,6 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
         if (logger.isDebugEnabled())
         {
             logBoundService(integrityChecker, bound); 
-        }
-    }
-
-    /**
-     * Method that registers a <tt>LuceneIndexerAndSearcherFactory</tt> against
-     * the transaction.
-     * <p>
-     * Setting this will ensure that the pre- and post-commit operations perform
-     * the necessary cleanups against the <tt>LuceneIndexerAndSearcherFactory</tt>.
-     * <p>
-     * Although bound within a <tt>Set</tt>, it would still be better for the caller
-     * to only bind once per transaction, if possible.
-     * 
-     * @param indexerAndSearcher the Lucene indexer to perform transaction completion
-     *      tasks on
-     */
-    public static void bindLucene(LuceneIndexerAndSearcher indexerAndSearcher)
-    {
-        LuceneIndexerAndSearcherAdapter adapter = new LuceneIndexerAndSearcherAdapter(indexerAndSearcher);
-        
-        boolean bound = bindListener(adapter, COMMIT_ORDER_LUCENE);
-       
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logBoundService(indexerAndSearcher, bound); 
         }
     }
     

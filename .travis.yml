@@ -26,11 +26,10 @@ before_install:
 install: skip
 
 services:
-#  - xvfb
   - docker
 
 stages:
-#  - name: Build AGS
+  - name: Build AGS
   - name: Tests
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
@@ -39,36 +38,36 @@ stages:
 
 jobs:
   include:
-#    - name: "Build AGS Community"
-#      stage: Build AGS
-#      before_script: source scripts/setUpMavenPhase.sh
-#      script:
-#        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-#
-#    - name: "Build AGS Enterprise"
-#      stage: Build AGS
-#      before_script: source scripts/setUpMavenPhase.sh
-#      install:
-#        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-#      script:
-#        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-#
-#    - name: "Build AGS Benchmark"
-#      stage: Build AGS
-#      before_script: source scripts/setUpMavenPhase.sh
-#      install:
-#        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-#      script:
-#        - travis_retry travis_wait 35 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-#
-#    - name: "Community Integrations Tests on MySQL"
-#      stage: Tests
-#      script:
-#        - echo "Community Integrations Tests on MySQL"
-#    - name: "Enterprise Integrations Tests on MySQL"
-#      stage: Tests
-#      script:
-#        - echo "Enterprise Integrations Tests on MySQL"
+    - name: "Build AGS Community"
+      stage: Build AGS
+      before_script: source scripts/setUpMavenPhase.sh
+      script:
+        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+    - name: "Build AGS Enterprise"
+      stage: Build AGS
+      before_script: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      script:
+        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+    - name: "Build AGS Benchmark"
+      stage: Build AGS
+      before_script: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      script:
+        - travis_retry travis_wait 35 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+    - name: "Community Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Community Integrations Tests on MySQL"
+    - name: "Enterprise Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Enterprise Integrations Tests on MySQL"
 
     - name: "Community Rest API Tests"
       stage: Tests

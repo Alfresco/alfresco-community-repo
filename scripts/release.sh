@@ -8,6 +8,7 @@ git config user.email "${GIT_COMMITTER_EMAIL}"
 git config user.name "${GIT_COMMITTER_NAME}"
 
 release_type=$1
+echo Release type: "$release_type"
 
 if [ -z $release_type ]; then
     echo "Please provide a release type."
@@ -21,11 +22,11 @@ if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ];
     then echo "Please provide a Release and Development verison"
          exit 1
 else
-    mvn --batch-mode
+    mvn --batch-mode \
     -Dusername="${GITHUB_USERNAME}" \
-    -Dpassword="${GITHUB_PASSWORD}" \
+    -Dpassword="${GITHUB_API_TOKEN}" \
     -DreleaseVersion=${RELEASE_VERSION} \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
     -DskipTests -D${release_type} -DuseReleaseProfile=false \
-    -Prelease-${release_type} release:clean release:prepare release:perform
+    -P${release_type}-release release:clean release:prepare release:perform
 fi

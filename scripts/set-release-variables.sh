@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-release_message=$(echo $TRAVIS_COMMIT_MESSAGE | grep -Po '\[(internal )*(community|enterprise)\srelease\s(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}\s(\d\.)+\d-SNAPSHOT\]')
+echo "Travis commit message: $TRAVIS_COMMIT_MESSAGE"
+release_message=$(echo $TRAVIS_COMMIT_MESSAGE | grep -Po '(\[(internal )*(community|enterprise)\srelease\s(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}\s(\d\.)+\d-SNAPSHOT\])')
 
 if [ ! -n "$release_message" ]; then
   echo "The commit message is in the wrong format or it does not contain all the required properties."

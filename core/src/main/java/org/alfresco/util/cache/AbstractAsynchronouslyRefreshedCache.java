@@ -184,6 +184,9 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
          */
         public void forceInChangesForThisUncommittedTransaction(String key)
         {
+            liveLock.writeLock().lock();
+            try
+            {
             if (logger.isDebugEnabled())
             {
                 logger.debug("Building cache for tenant " + key + " on " + this);
@@ -194,9 +197,9 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
                 logger.debug("Cache built for tenant " + key + " on " + this);
             }
 
-            liveLock.writeLock().lock();
-            try
-            {
+//            liveLock.writeLock().lock();
+//            try
+//            {
                 live.put(key, cache);
             }
             finally
@@ -298,6 +301,8 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
             {
                 return;
             }
+            
+            List<Refresh> refreshList = new LinkedList<>();
             refreshLock.writeLock().lock();
             try
             {
@@ -472,6 +477,9 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
         
         private void doRefresh(Refresh refresh)
         {
+            liveLock.writeLock().lock();
+            try
+            {
             if (logger.isDebugEnabled())
             {
                 logger.debug("Building cache for tenant" + refresh.getKey() + ": " + this);
@@ -482,9 +490,9 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
                 logger.debug(".... cache built for tenant" + refresh.getKey());
             }
 
-            liveLock.writeLock().lock();
-            try
-            {
+//            liveLock.writeLock().lock();
+//            try
+//            {
                 live.put(refresh.getKey(), cache);
             }
             finally

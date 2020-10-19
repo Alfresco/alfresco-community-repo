@@ -21,6 +21,7 @@ branches:
   only:
     - master
     - /release\/.*/
+    - fix/MNT-20250_tx_aware_broadcast
 
 env:
   global:

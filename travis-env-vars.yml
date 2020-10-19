@@ -7,4 +7,4 @@ env:
     - ALFRESCO_URL="http://localhost:8080/alfresco"
     - SHARE_URL="http://localhost:8080/share"
     - DISPLAY=:99.0
-    - WEBDRIVER_ARGUMENTS='-Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dorg.alfresco.rm.timeout_seconds.MEDIUM=30'
+    - WEBDRIVER_ARGUMENTS='-Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dwebdriver.element.wait.time=20000 -Dwebdriver.page.render.wait.time=60000'

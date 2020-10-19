@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - fix/acs_701
 
 env:
   global:

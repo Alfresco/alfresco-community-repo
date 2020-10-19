@@ -611,6 +611,7 @@
         <property name="transactionService" ref="transactionService"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="enforceTenantInNamespace" value="${models.enforceTenantInNamespace}"/>
+        <property name="customModelService" ref="customModelService"/>
     </bean>
 
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">

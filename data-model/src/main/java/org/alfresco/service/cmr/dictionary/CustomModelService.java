@@ -33,6 +33,7 @@ import org.alfresco.repo.dictionary.CustomModelsInfo;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Custom model service configuration API.
@@ -106,6 +107,14 @@ public interface CustomModelService
     public NodeRef getModelNodeRef(String modelFileName);
 
     /**
+     * Gets custom model
+     *
+     * @param modelNodeRef the {@code NodeRef} of the custom model
+     * @return m2Model the {@code M2Model} object
+     */
+    public M2Model getM2Model(NodeRef modelNodeRef);
+
+    /**
      * Creates custom model
      *
      * @param m2Model the {@code M2Model} object
@@ -167,6 +176,8 @@ public interface CustomModelService
      */
     public boolean isNamespaceUriExists(String modelNamespaceUri);
 
+    public boolean isNamespacePrefixExists(NodeRef modelNodeRef);
+
     /**
      * Whether a model with the given name exists or not
      *
@@ -176,9 +187,34 @@ public interface CustomModelService
     public boolean isModelExists(String modelFileName);
 
     /**
+     *  Gets custom models' namespace URI and prefix
+     *
+     * @param model the {@code M2Model} object
+     * @return the custom model URI and prefix as a {@code Pair<String, String}
+     * @throws CustomModelException if no namespace or more than one namespace exists
+     */
+    public Pair<String, String> getModelNamespaceUriPrefix(M2Model model);
+
+    /**
+     *  Validates the custom models' namespace prefix
+     *
+     * @param prefix the namespace prefix {@code String}
+     * @throws CustomModelException if the namespace prefix is already in use by another model
+     */
+    public void validateModelNamespacePrefix(String prefix);
+
+    /**
+     *  Validates the custom models' namespace prefix
+     *
+     * @param modelNodeRef the nodeRef of the model whose namespace prefix is to be validated {@code NodeRef}
+     * @throws CustomModelException if the namespace prefix is already in use by another model
+     */
+    public void validateModelNamespacePrefix(NodeRef modelNodeRef);
+
+    /**
      * Whether the given namespace prefix has already been used or not
      *
-     * @param modelNamespaceUri the model namespace prefix
+     * @param modelNamespacePrefix the model namespace prefix
      * @return true if the prefix has been used, false otherwise
      */
     public boolean isNamespacePrefixExists(String modelNamespacePrefix);

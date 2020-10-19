@@ -43,6 +43,9 @@ import org.junit.runners.Suite;
     // needs a clean DB to run
     org.alfresco.repo.calendar.CalendarServiceImplTest.class,
 
+    // needs a clean(ish) db to run, otherwise fails with workspace issues
+    org.alfresco.repo.dictionary.ModelValidatorTest.class,
+
     org.alfresco.RepositoryStartupTest.class,
     org.alfresco.repo.content.cleanup.ContentStoreCleanerTest.class,
     org.alfresco.repo.content.RoutingContentServiceTest.class,
@@ -58,7 +61,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.descriptor.DescriptorServiceTest.class,
     org.alfresco.repo.dictionary.DictionaryModelTypeTest.class,
     org.alfresco.repo.dictionary.DictionaryRepositoryBootstrapTest.class,
-    org.alfresco.repo.dictionary.ModelValidatorTest.class,
     org.alfresco.repo.dictionary.types.period.PeriodTest.class,
     org.alfresco.repo.exporter.RepositoryExporterComponentTest.class,
     org.alfresco.repo.i18n.MessageServiceImplTest.class,

@@ -34,7 +34,6 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
@@ -77,7 +76,17 @@ public class RMContainerCacheManager implements RecordsManagementModel
      */
     public boolean isCached(StoreRef storeRef)
     {
-        return cache.contains(getKey(storeRef));
+        boolean isCached = true;
+        Pair<StoreRef, String> key = getKey(storeRef);
+        Set<NodeRef> values = cache.get(key);
+        if (values == null || values.size() == 0)
+        {
+            if (values != null) {
+              cache.remove(key);
+            }
+            isCached = false;
+        }
+        return isCached;
     }
 
     /**
@@ -117,7 +126,10 @@ public class RMContainerCacheManager implements RecordsManagementModel
                 entries.add(nodeRef);
             }
 
-            cache.put(key, entries);
+            if (entries.size() > 0)
+            {
+              cache.put(key, entries);
+            }
         }
     }
 
@@ -136,6 +148,9 @@ public class RMContainerCacheManager implements RecordsManagementModel
                 if (cache.contains(key))
                 {
                     cache.get(key).remove(nodeRef);
+                    if (cache.get(key).size() == 0) {
+                        cache.remove(key);
+                    }
                 }
             }
         }

@@ -4,6 +4,8 @@ set -e
 # Use full history for release
 git checkout -B "${TRAVIS_BRANCH}"
 
+git config user.email "build@alfresco.com"
+
 release_type=$1
 echo Release type: "$release_type"
 
@@ -15,15 +17,15 @@ elif [ $release_type != "community" -a $release_type != "enterprise" ]; then
     exit 1
 fi
 
-if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ];
-    then echo "Please provide a Release and Development verison"
-         exit 1
-else
-    mvn --batch-mode \
+if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ]; then
+    echo "Please provide a Release and Development verison"
+    exit 1
+fi
+
+mvn --batch-mode \
     -Dusername="${GIT_USERNAME}" \
     -Dpassword="${GIT_PASSWORD}" \
     -DreleaseVersion=${RELEASE_VERSION} \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
     -DskipTests -D${release_type} -DuseReleaseProfile=false \
     -P${release_type}-release release:clean release:prepare release:perform
-fi

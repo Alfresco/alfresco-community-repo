@@ -46,11 +46,6 @@
          <password>${env.DOCKERHUB_PASSWORD}</password>
       </server>
       <server>
-         <id>github</id>
-         <username>${env.GIT_USERNAME}</username>
-         <password>${env.GIT_PASSWORD}</password>
-      </server>
-      <server>
          <id>alfresco-internal</id>
          <username>${env.MAVEN_USERNAME}</username>
          <password>${env.MAVEN_PASSWORD}</password>

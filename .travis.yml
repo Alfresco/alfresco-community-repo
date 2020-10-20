@@ -140,7 +140,8 @@ jobs:
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Classification Level 2 UI Tests"
-      env: TEST_SUITE=enterpriseLevel2ClassificationTests.xml
+      script:
+        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Content Classification UI Tests"
@@ -154,15 +155,18 @@ jobs:
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Guides UI Tests"
-      env: TEST_SUITE=enterpriseGuidesTests.xml
+      script:
+        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Security Marks UI Tests"
-      env: TEST_SUITE=enterpriseSecurityMarksTests.xml
+      script:
+        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Console and Configuration UI Tests"
-      env: TEST_SUITE=enterpriseConsoleAndConfigurationTests.xml
+      script:
+        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans

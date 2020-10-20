@@ -76,15 +76,12 @@ public class RMContainerCacheManager implements RecordsManagementModel
      */
     public boolean isCached(StoreRef storeRef)
     {
-        boolean isCached = true;
         Pair<StoreRef, String> key = getKey(storeRef);
         Set<NodeRef> values = cache.get(key);
-        if (values == null || values.size() == 0)
+        boolean isCached = (values != null && !values.isEmpty());
+        if (!isCached)
         {
-            if (values != null) {
-              cache.remove(key);
-            }
-            isCached = false;
+            cache.remove(key);
         }
         return isCached;
     }
@@ -128,7 +125,7 @@ public class RMContainerCacheManager implements RecordsManagementModel
 
             if (entries.size() > 0)
             {
-              cache.put(key, entries);
+                cache.put(key, entries);
             }
         }
     }
@@ -148,7 +145,8 @@ public class RMContainerCacheManager implements RecordsManagementModel
                 if (cache.contains(key))
                 {
                     cache.get(key).remove(nodeRef);
-                    if (cache.get(key).size() == 0) {
+                    if (cache.get(key).size() == 0)
+                    {
                         cache.remove(key);
                     }
                 }

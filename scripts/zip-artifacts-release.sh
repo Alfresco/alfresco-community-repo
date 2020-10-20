@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -evx
+set -ev
 
 release_type=$1
 
@@ -24,4 +24,4 @@ cd artifacts_dir
 zip alfresco-rm-${release_type}-${RELEASE_VERSION}.zip *
 
 # rm *.amp *.war -f
-ls artifacts_dir
+ls

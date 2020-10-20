@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -evx
+set -ev
 
 echo "Travis commit message: $TRAVIS_COMMIT_MESSAGE"
 release_message=$(echo $TRAVIS_COMMIT_MESSAGE | grep -Po '(\[(community|enterprise)\srelease\s(\d\.)+(\d|[a-z])(-[A-Z]\d){0,1}\s(\d\.)+\d-SNAPSHOT\])')

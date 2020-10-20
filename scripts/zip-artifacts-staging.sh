@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -evx
+set -ev
 
 release_type=$1
 

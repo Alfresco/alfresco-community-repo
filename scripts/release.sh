@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ev
 
 # Use full history for release
 git checkout -B "${TRAVIS_BRANCH}"
@@ -27,5 +27,6 @@ mvn --batch-mode \
     -Dpassword="${GIT_PASSWORD}" \
     -DreleaseVersion=${RELEASE_VERSION} \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
+    -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
     -DskipTests -D${release_type} -DuseReleaseProfile=false \
     -P${release_type}-release release:clean release:prepare release:perform

@@ -51,7 +51,6 @@
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <argLine>-Xms1024m -Xmx2G</argLine>
                <redirectTestOutputToFile>false</redirectTestOutputToFile>
                <suiteXmlFiles>
                   <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>

@@ -67,16 +67,16 @@ import java.util.regex.Pattern;
 public class AdminUiTransformerDebug extends TransformerDebug implements ApplicationContextAware
 {
     protected TransformServiceRegistry remoteTransformServiceRegistry;
-    protected LocalTransformServiceRegistry localTransformServiceRegistryImpl;
+    protected LocalTransformServiceRegistry localTransformServiceRegistry;
     private ApplicationContext applicationContext;
     private ContentService contentService;
     private SynchronousTransformClient synchronousTransformClient;
     private Repository repositoryHelper;
     private TransactionService transactionService;
 
-    public void setLocalTransformServiceRegistryImpl(LocalTransformServiceRegistry localTransformServiceRegistryImpl)
+    public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
     {
-        this.localTransformServiceRegistryImpl = localTransformServiceRegistryImpl;
+        this.localTransformServiceRegistry = localTransformServiceRegistry;
     }
 
     public void setRemoteTransformServiceRegistry(TransformServiceRegistry remoteTransformServiceRegistry)
@@ -108,7 +108,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     {
         if (synchronousTransformClient == null)
         {
-            synchronousTransformClient = (SynchronousTransformClient) applicationContext.getBean("legacySynchronousTransformClient");
+            synchronousTransformClient = (SynchronousTransformClient) applicationContext.getBean("synchronousTransformClient");
         }
         return synchronousTransformClient;
     }
@@ -150,7 +150,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-        PropertyCheck.mandatory(this, "localTransformServiceRegistryImpl", localTransformServiceRegistryImpl);
+        PropertyCheck.mandatory(this, "localTransformServiceRegistry", localTransformServiceRegistry);
         PropertyCheck.mandatory(this, "remoteTransformServiceRegistry", remoteTransformServiceRegistry);
     }
 
@@ -160,12 +160,8 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
      * @param sourceExtension restricts the list to one source extension. Unrestricted if null.
      * @param targetExtension restricts the list to one target extension. Unrestricted if null.
      * @param toString indicates that a String value should be returned in addition to any debug.
-     * @param format42 ignored
-     * @param onlyNonDeterministic ignored
-     * @param renditionName ignored
      */
-    public String transformationsByExtension(String sourceExtension, String targetExtension, boolean toString,
-                                             boolean format42, boolean onlyNonDeterministic, String renditionName)
+    public String transformationsByExtension(String sourceExtension, String targetExtension, boolean toString)
     {
         // Do not generate this type of debug if already generating other debug to a StringBuilder
         // (for example a test transform).
@@ -174,10 +170,10 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
             return null;
         }
 
-        Collection<String> sourceMimetypes = format42 || sourceExtension != null
+        Collection<String> sourceMimetypes = sourceExtension != null
                 ? getSourceMimetypes(sourceExtension)
                 : mimetypeService.getMimetypes();
-        Collection<String> targetMimetypes = format42 || targetExtension != null
+        Collection<String> targetMimetypes =  targetExtension != null
                 ? getTargetMimetypes(sourceExtension, targetExtension, sourceMimetypes)
                 : mimetypeService.getMimetypes();
 
@@ -200,9 +196,9 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                             ? false
                             : remoteTransformServiceRegistry.isSupported(sourceMimetype,
                             -1, targetMimetype, Collections.emptyMap(), null);
-                    List<SupportedTransform> localTransformers = localTransformServiceRegistryImpl == null
+                    List<SupportedTransform> localTransformers = localTransformServiceRegistry == null
                             ? Collections.emptyList()
-                            : localTransformServiceRegistryImpl.findTransformers(sourceMimetype,
+                            : localTransformServiceRegistry.findTransformers(sourceMimetype,
                                     targetMimetype, Collections.emptyMap(), null);
                     if (!localTransformers.isEmpty() || supportedByTransformService)
                     {
@@ -327,9 +323,9 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     }
 
 
-    public String testTransform(String sourceExtension, String targetExtension, String renditionName)
+    public String testTransform(String sourceExtension, String targetExtension)
     {
-        return new TestTransform().run(sourceExtension, targetExtension, renditionName);
+        return new TestTransform().run(sourceExtension, targetExtension);
     }
 
     public String[] getTestFileExtensionsAndMimetypes()
@@ -369,7 +365,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     {
         protected LinkedList<NodeRef> nodesToDeleteAfterTest = new LinkedList<NodeRef>();
 
-        String run(String sourceExtension, String targetExtension, String renditionName)
+        String run(String sourceExtension, String targetExtension)
         {
             RetryingTransactionHelper.RetryingTransactionCallback<String> makeNodeCallback = new RetryingTransactionHelper.RetryingTransactionCallback<String>()
             {
@@ -403,7 +399,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
             }
             catch (Exception e)
             {
-                logger.debug("Unexpected test transform error", e);
+                sb.append(e.getMessage());
             }
             finally
             {

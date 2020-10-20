@@ -6,7 +6,7 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <bean id="synchronousTransformClient" class="org.alfresco.repo.rendition2.TestSynchronousTransformClient">
-      <constructor-arg name="delegate" ref="switchingSynchronousTransformClient" />
+      <constructor-arg name="delegate" ref="localSynchronousTransformClient" />
    </bean>
 
    <bean id="transformServiceRegistry" class="org.alfresco.repo.rendition2.TestTransformServiceRegistry">

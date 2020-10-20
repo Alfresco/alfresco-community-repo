@@ -44,17 +44,13 @@ import org.mockito.MockitoAnnotations;
  * Test class for TransformerLogger.
  * 
  * @author Alan Davis
- *
- * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
-@Deprecated
 public class TransformerLoggerTest
 {
     @Mock
     private TransformerDebug transformerDebug;
     
-    @Mock
-    private TransformerConfig transformerConfig;
+    private Properties properties = new Properties();
     
     private TransformerLogger<String> log;
 
@@ -62,12 +58,12 @@ public class TransformerLoggerTest
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        
-        log = newLogger(new AtomicInteger(1), transformerDebug, transformerConfig);
+
+        log = newLogger(new AtomicInteger(1), transformerDebug, properties);
     }
 
     private TransformerLogger<String> newLogger(final AtomicInteger numberOfMessagesToAdd,
-            TransformerDebug transformerDebug, TransformerConfig transformerConfig)
+            TransformerDebug transformerDebug, Properties properties)
     {
         TransformerLogger<String> log = new TransformerLogger<String>()
         {
@@ -109,21 +105,21 @@ public class TransformerLoggerTest
             }
         };
         log.setTransformerDebug(transformerDebug);
-        log.setTransformerConfig(transformerConfig);
+        log.setProperties(properties);
         return log;
     }
 
     @Test
     public void propertyExistsTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("5");
+        properties.setProperty("property.name", "5");
         assertEquals("property.name=5  # default=0", log.getPropertyAndValue(null));
     }
 
     @Test
     public void propertyExistsAndDefaultSetTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("5");
+        properties.setProperty("property.name", "5");
         Properties properties = new Properties();
         properties.setProperty("property.name", "23");
         assertEquals("property.name=5  # default=23", log.getPropertyAndValue(properties));
@@ -138,21 +134,21 @@ public class TransformerLoggerTest
     @Test
     public void propertyNegativeTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("-2");
+        properties.setProperty("property.name", "-2");
         assertEquals("# property.name=0", log.getPropertyAndValue(null));
     }
 
     @Test
     public void propertyGreaterThanMax()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("1000");
+        properties.setProperty("property.name", "1000");
         assertEquals("property.name=176  # default=0", log.getPropertyAndValue(null));
     }
 
     @Test
     public void propertyBadTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("abc");
+        properties.setProperty("property.name", "abc");
         assertEquals("# property.name=0", log.getPropertyAndValue(null));
     }
     
@@ -166,7 +162,7 @@ public class TransformerLoggerTest
     @Test
     public void isDebugEnabled5EntriesTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("5");
+        properties.setProperty("property.name", "5");
         assertTrue(log.isDebugEnabled());
     }
     
@@ -174,14 +170,14 @@ public class TransformerLoggerTest
     public void isDebugEnabledHasStringBuilderTest()
     {
         when(transformerDebug.getStringBuilder()).thenReturn(new StringBuilder());
-        when(transformerConfig.getProperty("property.name")).thenReturn("5");
+        properties.setProperty("property.name", "5");
         assertFalse(log.isDebugEnabled());
     }
     
     @Test
     public void noEntriesTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
         assertArrayEquals(new String[] {}, log.getEntries(10));
     }
     
@@ -194,7 +190,7 @@ public class TransformerLoggerTest
     @Test
     public void oneEntryTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
         log.debug("one");
         
         assertArrayEquals(new String[] {"one"}, log.getEntries(10));
@@ -204,7 +200,7 @@ public class TransformerLoggerTest
     // newest entry first
     public void fiveEntryTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
 
         log.debug("one");
         log.debug("two");
@@ -219,7 +215,7 @@ public class TransformerLoggerTest
     // <= 0 indicates return all
     public void limit0Test()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
 
         log.debug("one");
         log.debug("two");
@@ -233,7 +229,7 @@ public class TransformerLoggerTest
     // < 0 indicates return all - most current first
     public void limitAllTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
 
         log.debug("one");
         log.debug("two");
@@ -246,7 +242,7 @@ public class TransformerLoggerTest
     // Returns latest
     public void limit1Test()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
 
         log.debug("one");
         log.debug("two");
@@ -258,7 +254,7 @@ public class TransformerLoggerTest
     @Test
     public void limitMoreThanEntriesTest()
     {
-        when(transformerConfig.getProperty("property.name")).thenReturn("3");
+        properties.setProperty("property.name", "3");
 
         log.debug("one");
         log.debug("two");
@@ -272,8 +268,8 @@ public class TransformerLoggerTest
     public void addTwoEntriesTest()
     {
         AtomicInteger numberOfMessagesToAdd = new AtomicInteger(2);
-        log = newLogger(numberOfMessagesToAdd, transformerDebug, transformerConfig);
-        when(transformerConfig.getProperty("property.name")).thenReturn("5");
+        log = newLogger(numberOfMessagesToAdd, transformerDebug, properties);
+        properties.setProperty("property.name", "5");
 
         log.debug("one");
         assertArrayEquals(new String[] {"one", "one"}, log.getEntries(10));
@@ -290,8 +286,8 @@ public class TransformerLoggerTest
     {
         // Same as addTwoEntriesTest but without hitting the buffer limit
         AtomicInteger numberOfMessagesToAdd = new AtomicInteger(2);
-        log = newLogger(numberOfMessagesToAdd, transformerDebug, transformerConfig);
-        when(transformerConfig.getProperty("property.name")).thenReturn("10");
+        log = newLogger(numberOfMessagesToAdd, transformerDebug, properties);
+        properties.setProperty("property.name", "10");
         log.debug("one");
         log.debug("two");
         log.debug("three");

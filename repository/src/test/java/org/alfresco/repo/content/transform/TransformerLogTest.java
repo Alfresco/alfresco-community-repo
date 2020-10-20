@@ -29,6 +29,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class TransformerLogTest
     private TransformerDebug transformerDebug;
     
     @Mock
-    private TransformerConfig transformerConfig;
+    private Properties properties;
     
     private TransformerLog log;
 
@@ -57,7 +58,7 @@ public class TransformerLogTest
         
         log = new TransformerLog();
         log.setTransformerDebug(transformerDebug);
-        log.setTransformerConfig(transformerConfig);
+        log.setProperties(properties);
     }
 
     static String[] stripDateStamp(String[] actual)
@@ -84,7 +85,7 @@ public class TransformerLogTest
     @Test
     public void oneEntryTest()
     {
-        when(transformerConfig.getProperty("transformer.log.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.log.entries")).thenReturn("3");
         log.debug("one");
         
         assertLogEntriesEquals(new String[] {"one"}, log.getEntries(10));
@@ -93,7 +94,7 @@ public class TransformerLogTest
     @Test
     public void fiveEntryTest()
     {
-        when(transformerConfig.getProperty("transformer.log.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.log.entries")).thenReturn("3");
 
         log.debug("one");
         log.debug("two");

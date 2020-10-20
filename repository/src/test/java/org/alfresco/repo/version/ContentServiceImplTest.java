@@ -50,7 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 
 /**
- * Tests for retrieving frozen content from a verioned node
+ * Tests for getting content readers and writers.
  * 
  * @author Roy Wetherall
  */
@@ -110,57 +110,6 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         assertEquals(UPDATED_CONTENT, contentReader2.getContentString());
     }
 
-    @Test
-    @Deprecated
-    public void testTransformAndNulls()
-    {
-        NodeRef versionableNode = createNewVersionableNode();
-        ContentReader contentReader = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
-        ContentWriter contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, false);
-
-       // this.nodeService.setProperty(versionableNode, ContentModel.PROP_NAME, "for debugTransformers.txt");
-        try
-        {
-            this.contentService.transform(new MimetypeMapTest.DummyContentReader(MimetypeMap.MIMETYPE_TEXT_PLAIN),
-                    new MimetypeMapTest.DummyContentWriter(MimetypeMap.MIMETYPE_IMAGE_PNG),
-                    new TransformationOptions(versionableNode,ContentModel.PROP_NAME, null, null));
-        } catch (NoTransformerException nte)
-        {
-            nte.getMessage().contains("No transformation exists");
-        }
-
-        try
-        {
-            this.contentService.transform(null, null, new TransformationOptions());
-            fail("Should throw exception");
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            are.getMessage().contains("The content reader must be set");
-        }
-
-        ContentReader empty = new EmptyContentReader("empty.txt");
-        try
-        {
-            this.contentService.transform(empty, null, new TransformationOptions());
-            fail("Should throw exception");
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            are.getMessage().contains("The content reader mimetype must be set");
-        }
-
-        try
-        {
-            contentWriter.setMimetype(null);
-            this.contentService.transform(contentReader, contentWriter, new TransformationOptions());
-            fail("Should throw exception");
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            are.getMessage().contains("The content writer mimetype must be set");
-        }
-    }
     /**
      * Test getWriter
      */

@@ -49,33 +49,4 @@
       </property>
    </bean>
 
-   <bean id="transformer.worker.JodConverter" class="org.alfresco.repo.content.transform.JodContentTransformer">
-      <property name="mimetypeService">
-         <ref bean="mimetypeService" />
-      </property>
-      <property name="enabled" value="${legacy.transform.service.enabled}" />
-      <property name="jodConverter">
-         <ref bean="jodconverter.shared.instance" />
-      </property>
-      <property name="documentFormatsConfiguration">
-         <value>classpath:alfresco/mimetype/jodconverter-document-formats.json</value>
-      </property>
-      <property name="transformerDebug">
-         <ref bean="transformerDebug" />
-      </property>
-       <property name="remoteTransformerClient">
-           <bean class="org.alfresco.repo.content.transform.RemoteTransformerClient">
-               <constructor-arg>
-                   <value>LibreOffice</value>
-               </constructor-arg>
-               <constructor-arg>
-                   <value>${jodconverter.url}</value>
-               </constructor-arg>
-               <property name="startupRetryPeriodSeconds">
-                   <value>${jodconverter.startupRetryPeriodSeconds}</value>
-               </property>
-           </bean>
-       </property>
-   </bean>
-
 </beans>

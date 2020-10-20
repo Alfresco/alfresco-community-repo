@@ -41,7 +41,6 @@ import org.alfresco.repo.content.AbstractJodConverterBasedTest;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;

@@ -304,9 +304,6 @@ public class JodConverterSharedInstance implements InitializingBean, DisposableB
             logger.debug("  officeHome = " + officeHome);
             logger.debug("  enabled = " + isEnabled());
             logger.debug("  portNumbers = " + getString(portNumbers));
-            logger.debug("    ooo.exe = " + deprecatedOooExe);
-            logger.debug("    ooo.enabled = " + deprecatedOooEnabled);
-            logger.debug("    ooo.port = " + getString(deprecatedOooPortNumbers));
             logger.debug("    jodConverter.enabled = " + enabled);
             logger.debug("    jodconverter.portNumbers = " + getString(this.portNumbers));
             logger.debug("  jodconverter.officeHome = " + this.officeHome);

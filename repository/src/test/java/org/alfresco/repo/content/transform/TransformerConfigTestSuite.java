@@ -37,27 +37,14 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    TransformerConfigStatisticsTest.class,
-    TransformerConfigLimitsTest.class,
-    TransformerConfigSupportedTest.class,
-    TransformerConfigPropertyTest.class,
-    TransformerPropertyNameExtractorTest.class,
-    TransformerPropertyGetterTest.class,
-    TransformerPropertySetterTest.class,
-    TransformerConfigDynamicTransformersTest.class,
-
     LogAdapterTest.class,
     LogTeeTest.class,
     
     TransformerLoggerTest.class,
     TransformerLogTest.class,
     TransformerDebugLogTest.class,
-    LegacyTransformerDebugTest.class,
-    
-    TransformerConfigImplTest.class,
-    TransformerConfigMBeanImplTest.class,
 
-    TransformerSelectorImplTest.class})
+    TransformerConfigMBeanImplTest.class})
 
 /**
  * Test classes in the Transformers subsystem

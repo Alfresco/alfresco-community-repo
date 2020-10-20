@@ -46,32 +46,6 @@ import org.springframework.context.ApplicationContext;
     // Minimum context [classpath:alfresco/minimal-context.xml]
     // ----------------------------------------------------------------------
 
-    // Limits
-    org.alfresco.repo.content.transform.AbstractContentTransformerLimitsTest.class,
-
-    // Transform tests
-    org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest.class,
-    org.alfresco.repo.content.transform.ComplexContentTransformerTest.class,
-    org.alfresco.repo.content.transform.ContentTransformerRegistryTest.class,
-    org.alfresco.repo.content.transform.HtmlParserContentTransformerTest.class,
-    org.alfresco.repo.content.transform.MailContentTransformerTest.class,
-    org.alfresco.repo.content.transform.EMLTransformerTest.class,
-    org.alfresco.repo.content.transform.MediaWikiContentTransformerTest.class,
-    org.alfresco.repo.content.transform.OpenOfficeContentTransformerTest.class,
-    // Requires a transformer to be installed in the system
-    //org.alfresco.repo.content.transform.PdfBoxContentTransformerTest.class,
-    org.alfresco.repo.content.transform.PoiContentTransformerTest.class,
-    org.alfresco.repo.content.transform.PoiHssfContentTransformerTest.class,
-    org.alfresco.repo.content.transform.PoiOOXMLContentTransformerTest.class,
-    org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerTest.class,
-    org.alfresco.repo.content.transform.StringExtractingContentTransformerTest.class,
-    org.alfresco.repo.content.transform.TextMiningContentTransformerTest.class,
-    org.alfresco.repo.content.transform.TextToPdfContentTransformerTest.class,
-    org.alfresco.repo.content.transform.TikaAutoContentTransformerTest.class,
-    org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest.class,
-    org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest.class,
-    org.alfresco.repo.content.transform.ArchiveContentTransformerTest.class,
-
     // Metadata tests
     org.alfresco.repo.content.metadata.DWGMetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest.class,
@@ -95,7 +69,7 @@ import org.springframework.context.ApplicationContext;
         // if/when we decide to move the transformations in a separate component
         // ----------------------------------------------------------------------
 
-        // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
+        // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/rendition2/test-transform-context.xml]
         // some tests fail locally - on windows
         org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
 

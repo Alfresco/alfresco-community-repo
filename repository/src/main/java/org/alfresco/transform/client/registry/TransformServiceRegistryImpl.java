@@ -34,6 +34,7 @@ import org.quartz.CronExpression;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -174,6 +175,25 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
         getLog().error(msg);
     }
 
+    @Override
+    public String findTransformerName(final String sourceMimetype, final long sourceSizeInBytes,
+                                      final String targetMimetype, final Map<String, String> actualOptions,
+                                      final String renditionName)
+    {
+        return enabled
+            ? super.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName)
+            : null;
+    }
+
+    @Override
+    public long findMaxSize(final String sourceMimetype, final String targetMimetype,
+                            final Map<String, String> actualOptions, final String renditionName)
+    {
+        return enabled
+            ? super.findMaxSize(sourceMimetype, targetMimetype, actualOptions, renditionName)
+            : 0;
+    }
+
     /**
      * Works out an ordered list of transformer that will be used to transform content of a given source mimetype
      * into a target mimetype given a list of actual transform option names and values (Strings) plus the data contained
@@ -191,7 +211,8 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
                                                      final Map<String, String> actualOptions,
                                                      final String renditionName)
     {
-        return retrieveTransformListBySize(getData(), sourceMimetype, targetMimetype, actualOptions,
-                renditionName);
+        return enabled
+            ? retrieveTransformListBySize(getData(), sourceMimetype, targetMimetype, actualOptions, renditionName)
+            : Collections.emptyList();
     }
 }

@@ -484,16 +484,19 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             transformerDebug.debug("Local transforms "+getData()+" are " + (enabled ? "enabled" : "disabled"));
         }
 
-        return enabled
-                ? super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName)
-                : 0;
+        return super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
     }
 
     public LocalTransform getLocalTransform(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
     {
+        LocalTransform localTransform = null;
         String name = findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        LocalData data = getData();
-        Map<String, LocalTransform> localTransforms = data.localTransforms;
-        return localTransforms.get(name);
+        if (name != null)
+        {
+            LocalData data = getData();
+            Map<String, LocalTransform> localTransforms = data.localTransforms;
+            localTransform = localTransforms.get(name);
+        }
+        return localTransform;
     }
 }

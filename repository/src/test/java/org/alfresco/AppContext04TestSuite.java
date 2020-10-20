@@ -88,9 +88,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.module.ModuleComponentHelperTest.class,
     org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class,
 
-    // the following test fails locally - on windows
-    org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class,
-
     org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class,
     org.alfresco.service.ServiceRegistryTest.class,
 

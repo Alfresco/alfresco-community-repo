@@ -37,10 +37,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * {@link TransformerConfigMBean#getTransformationLog(int)}.<p>
  * 
  * @author Alan Davis
- *
- * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
-@Deprecated
 @AlfrescoPublicApi
 public class TransformerLog extends TransformerLogger<String>
 {
@@ -60,7 +57,7 @@ public class TransformerLog extends TransformerLogger<String>
     @Override
     protected String getPropertyName()
     {
-        return TransformerConfig.LOG_ENTRIES;
+        return "transformer.log.entries";
     }
 
     @Override

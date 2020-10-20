@@ -59,8 +59,13 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
                                Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
     {
         boolean supported = true;
-        if (!sourceMimetype.equals(TEST_FAILING_MIME_TYPE) && !sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) &&
-            !targetMimetype.equals(TEST_FAILING_MIME_TYPE) && !targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE))
+        if (!sourceMimetype.equals(TEST_FAILING_MIME_TYPE) &&
+            !sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) &&
+            !sourceMimetype.equals(TEST_USER_MIME_TYPE) &&
+
+            !targetMimetype.equals(TEST_FAILING_MIME_TYPE) &&
+            !targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) &&
+            !targetMimetype.equals(TEST_USER_MIME_TYPE))
         {
             supported = delegate.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
                     transformName, sourceNodeRef);

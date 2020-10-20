@@ -284,13 +284,6 @@
         </property>
     </bean>
 
-    <!--  Start third party transformer Subsystem. -->
-    <bean id="thirdparty" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
-        <property name="autoStart">
-            <value>true</value>
-        </property>
-    </bean>
-
     <!--  Start jodconverter extractor/transformer Subsystem. -->
     <bean id="OOoJodconverter" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

@@ -7,4 +7,6 @@ env:
     - ALFRESCO_URL="http://localhost:8080/alfresco"
     - SHARE_URL="http://localhost:8080/share"
     - DISPLAY=:99.0
+    - MAVEN_SKIP_RC=true
+    - MAVEN_OPTS="-Xms1024m -Xmx2G -noverify"
     - WEBDRIVER_ARGUMENTS='-Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dorg.alfresco.rm.timeout_seconds.MEDIUM=30'

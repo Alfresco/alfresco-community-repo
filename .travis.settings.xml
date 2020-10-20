@@ -47,8 +47,8 @@
       </server>
       <server>
          <id>github</id>
-         <username>${env.GITHUB_USERNAME}</username>
-         <password>${env.GITHUB_API_TOKEN}</password>
+         <username>${env.GIT_USERNAME}</username>
+         <password>${env.GIT_PASSWORD}</password>
       </server>
       <server>
          <id>alfresco-internal</id>

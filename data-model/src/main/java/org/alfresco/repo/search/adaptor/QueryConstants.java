@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.adaptor.lucene;
+package org.alfresco.repo.search.adaptor;
 
 /**
  * This class defines 

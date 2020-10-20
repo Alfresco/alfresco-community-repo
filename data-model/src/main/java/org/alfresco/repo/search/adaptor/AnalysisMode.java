@@ -23,20 +23,23 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.adaptor.lucene;
+package org.alfresco.repo.search.adaptor;
 
-/**
- * @author Andy
- *
- */
-public interface LuceneQueryParserExpressionAdaptor<Q, E extends Throwable>
+public enum AnalysisMode
 {
-    public void addRequired(Q q) throws E;
-    public void addExcluded(Q q) throws E;
-    public void addOptional(Q q) throws E;
-    public void addRequired(Q q, float boost) throws E;
-    public void addExcluded(Q q, float boost) throws E;
-    public void addOptional(Q q, float boost) throws E;
-    public Q getQuery() throws E;
-    public Q getNegatedQuery() throws E;
+    DEFAULT
+    ,
+    TOKENISE
+    ,
+    IDENTIFIER
+    ,
+    FUZZY
+    ,
+    PREFIX
+    , 
+    WILD
+    ,
+    LIKE
+    ;
+
 }

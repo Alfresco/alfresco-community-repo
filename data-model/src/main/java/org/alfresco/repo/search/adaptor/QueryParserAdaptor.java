@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.adaptor.lucene;
+package org.alfresco.repo.search.adaptor;
 
 import java.util.List;
 
@@ -33,8 +33,8 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * Adaptor class principally to wrap lucene parser implementations and encapsulate changes between lucene versions
- * of query building.
+ * Adaptor class to wrap search parser implementations and encapsulate changes between search versions of query
+ * building.
  * 
  * @param <Q> the query type used by the query engine implementation
  * @param <S> the sort type used by the query engine implementation
@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
  * @author Andy
  *
  */
-public interface LuceneQueryParserAdaptor<Q, S, E extends Throwable>
+public interface QueryParserAdaptor<Q, S, E extends Throwable>
 {
 
     /**
@@ -215,9 +215,9 @@ public interface LuceneQueryParserAdaptor<Q, S, E extends Throwable>
     
     /**
      * Utility to build conjunctions, disjunctions and negation
-     * @return LuceneQueryParserExpressionAdaptor
+     * @return QueryParserExpressionAdaptor
      */
-    LuceneQueryParserExpressionAdaptor<Q, E> getExpressionAdaptor();
+    QueryParserExpressionAdaptor<Q, E> getExpressionAdaptor();
 
     /**
      * A query that matches all alfresco nodes (not extra stuff that may be in the underlying index)

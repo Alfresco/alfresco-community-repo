@@ -28,13 +28,13 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSProximity;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 
 /**
  * Proximity
@@ -59,10 +59,10 @@ public class LuceneFTSProximity<Q, S, E extends Throwable> extends FTSProximity 
      *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
      *      java.lang.String)
      */
-    public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
+    public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
-        LuceneQueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
+        QueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
         Argument argument = functionArgs.get(ARG_FIRST);
         String first = (String) argument.getValue(functionContext);
         argument = functionArgs.get(ARG_LAST);

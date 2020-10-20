@@ -23,26 +23,20 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.querymodel.impl.lucene;
-
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
+package org.alfresco.repo.search.adaptor;
 
 /**
  * @author Andy
  *
  */
-public interface LuceneQueryBuilderContext<Q, S, E extends Throwable>
+public interface QueryParserExpressionAdaptor<Q, E extends Throwable>
 {
-
-    /**
-     * @return - the parser
-     */
-    public abstract LuceneQueryParserAdaptor<Q, S, E> getLuceneQueryParserAdaptor();
-
-    /**
-     * @return - the namespace prefix resolver
-     */
-    public abstract NamespacePrefixResolver getNamespacePrefixResolver();
-
+    public void addRequired(Q q) throws E;
+    public void addExcluded(Q q) throws E;
+    public void addOptional(Q q) throws E;
+    public void addRequired(Q q, float boost) throws E;
+    public void addExcluded(Q q, float boost) throws E;
+    public void addOptional(Q q, float boost) throws E;
+    public Q getQuery() throws E;
+    public Q getNegatedQuery() throws E;
 }

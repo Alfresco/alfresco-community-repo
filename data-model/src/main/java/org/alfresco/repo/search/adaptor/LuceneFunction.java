@@ -23,23 +23,30 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.adaptor.lucene;
 
-public enum AnalysisMode
+package org.alfresco.repo.search.adaptor;
+
+/**
+ * Functions that can be applied to lucene fields
+ * 
+ * Currently upper and lower that perform a case insensitive match for untokenised fields.
+ * (If the field is tokenised the match should already be case insensitive.)
+ * 
+ * @author andyh
+ *
+ */
+public enum LuceneFunction
 {
-    DEFAULT
-    ,
-    TOKENISE
-    ,
-    IDENTIFIER
-    ,
-    FUZZY
-    ,
-    PREFIX
-    , 
-    WILD
-    ,
-    LIKE
-    ;
-
-}
+    /**
+     * Match as if the field was converted to upper case.
+     */
+    UPPER, 
+    /**
+     * Match as if the field was converted to lower case.
+     */
+    LOWER, 
+    /**
+     * A normal lucene field match.
+     */
+    FIELD;
+}   

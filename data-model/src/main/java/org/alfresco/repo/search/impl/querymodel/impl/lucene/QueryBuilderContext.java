@@ -23,30 +23,26 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
-package org.alfresco.repo.search.adaptor.lucene;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 
 /**
- * Functions that can be applied to lucene fields
- * 
- * Currently upper and lower that perform a case insensitive match for untokenised fields.
- * (If the field is tokenised the match should already be case insensitive.)
- * 
- * @author andyh
+ * @author Andy
  *
  */
-public enum LuceneFunction
+public interface QueryBuilderContext<Q, S, E extends Throwable>
 {
+
     /**
-     * Match as if the field was converted to upper case.
+     * @return - the parser
      */
-    UPPER, 
+    public abstract QueryParserAdaptor<Q, S, E> getLuceneQueryParserAdaptor();
+
     /**
-     * Match as if the field was converted to lower case.
+     * @return - the namespace prefix resolver
      */
-    LOWER, 
-    /**
-     * A normal lucene field match.
-     */
-    FIELD;
-}   
+    public abstract NamespacePrefixResolver getNamespacePrefixResolver();
+
+}

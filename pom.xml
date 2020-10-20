@@ -57,7 +57,7 @@
 
         <dependency.spring.version>5.2.9.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
-        <dependency.jackson.version>2.11.2</dependency.jackson.version>
+        <dependency.jackson.version>2.11.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
         <dependency.cxf.version>3.3.7</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>

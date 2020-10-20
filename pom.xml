@@ -195,7 +195,7 @@
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <argLine>-Xmx2g -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
       <!-- Prevent the module from being added to inappropriate versions of the WAR file !-->

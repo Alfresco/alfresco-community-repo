@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ev
+set -e
 
 # Use full history for release
 git checkout -B "${TRAVIS_BRANCH}"

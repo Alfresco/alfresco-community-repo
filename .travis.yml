@@ -34,9 +34,9 @@ stages:
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
-    if: fork = false AND (branch = master OR branch =~ /release\/.*/ OR branch =~ /merge-2.7\/.*/) AND type != pull_request AND commit_message =~ /\[(community|enterprise) release .*\]/
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[(community|enterprise) release .*\]/
   - name: Publish
-    if: fork = false AND (branch = master OR branch =~ /release\/.*/ OR branch =~ /merge-2.7\/.*/) AND type != pull_request AND commit_message =~ /\[publish\]/ #TODO
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[publish\]/
 
 jobs:
   include:

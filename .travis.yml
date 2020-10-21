@@ -133,7 +133,7 @@ jobs:
           on:
             all_branches: true
       after_deploy:
-        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/community/RM/${RELEASE_VERSION}"
 
     - name: "Enterprise Release and Publish to S3 Staging Bucket"
       stage: Release
@@ -157,7 +157,7 @@ jobs:
           on:
             all_branches: true
       after_deploy:
-        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/enterprise/RM/${RELEASE_VERSION}"
 
     - name: "Community Publish to S3 Release Bucket"
       stage: Publish
@@ -178,8 +178,7 @@ jobs:
           on:
             all_branches: true
       after_deploy:
-        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
-
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/community/RM/${RELEASE_VERSION}"
     - name: "Enterprise Publish to S3 Release Bucket"
       stage: Publish
       if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/
@@ -199,4 +198,4 @@ jobs:
           on:
             all_branches: true
       after_deploy:
-        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/enterprise/RM/${RELEASE_VERSION}"

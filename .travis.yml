@@ -122,8 +122,8 @@ jobs:
         - bash scripts/zip-artifacts-staging.sh "community"
       deploy:
         - provider: s3
-          access_key_id: ${ARTIFACTS_KEY}
-          secret_access_key: ${ARTIFACTS_SECRET}
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
           region: "eu-west-1"
           bucket: "alfresco-artefacts-staging"
           upload_dir: "community/RM/${RELEASE_VERSION}"
@@ -146,8 +146,8 @@ jobs:
         - bash scripts/zip-artifacts-staging.sh "enterprise"
       deploy:
         - provider: s3
-          access_key_id: ${ARTIFACTS_KEY}
-          secret_access_key: ${ARTIFACTS_SECRET}
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
           region: "eu-west-1"
           bucket: "alfresco-artefacts-staging"
           upload_dir: "enterprise/RM/${RELEASE_VERSION}"
@@ -167,8 +167,8 @@ jobs:
       before_deploy: bash scripts/zip-artifacts-release.sh "community"
       deploy:
         - provider: s3
-          access_key_id: ${ARTIFACTS_KEY}
-          secret_access_key: ${ARTIFACTS_SECRET}
+          access_key_id: ${RELEASE_AWS_ACCESS_KEY}
+          secret_access_key: $RELEASE_AWS_ACCESS_SECRET}
           region: "eu-west-1"
           bucket: "eu.dl.alfresco.com"
           upload_dir: "release/community/RM/${RELEASE_VERSION}"
@@ -180,7 +180,7 @@ jobs:
       after_deploy:
         - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/${ARTIFACTS_UPLOAD_BUCKET}/${ARTIFACTS_UPLOAD_DIR}"
 
-    - name: "Enterprise Publish to S3 Staging Bucket"
+    - name: "Enterprise Publish to S3 Release Bucket"
       stage: Publish
       if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/
       before_script: source scripts/set-release-variables.sh
@@ -188,8 +188,8 @@ jobs:
       before_deploy: bash scripts/zip-artifacts-release.sh "enterprise"
       deploy:
         - provider: s3
-          access_key_id: ${ARTIFACTS_KEY}
-          secret_access_key: ${ARTIFACTS_SECRET}
+          access_key_id: ${RELEASE_AWS_ACCESS_KEY}
+          secret_access_key: ${RELEASE_AWS_ACCESS_SECRET}
           region: "eu-west-1"
           bucket: "eu.dl.alfresco.com"
           upload_dir: "release/enterprise/RM/${RELEASE_VERSION}"

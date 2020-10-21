@@ -103,17 +103,17 @@ jobs:
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeInPlaceRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeInPlaceRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *community_shared_UI_config
       name: "Community Smoke UI Tests for actions in RM site"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1280x1024x24" mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *community_shared_UI_config
       name: "Community Level 2 UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - &enterprise_shared_UI_configuration
       name: "Enterprise Level 2 UI Tests"
@@ -131,37 +131,37 @@ jobs:
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Classification Level 2 UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Content Classification UI Tests"
       script:
-        - travis_wait 60 xvfb-run mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Folders Classification UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Guides UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Security Marks UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Console and Configuration UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args=${XVFB_ARGS} mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans

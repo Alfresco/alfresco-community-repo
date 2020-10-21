@@ -8,5 +8,4 @@ env:
     - SHARE_URL="http://localhost:8080/share"
     - DISPLAY=:99.0
     - XVFB_ARGS="-screen 0 1920x1080x24"
-    - _JAVA_OPTIONS="-Xmx2048m -Xms1024m"
     - WEBDRIVER_ARGUMENTS='-Dwebdriver.local.grid=true -Dwebdriver.browser=RemoteFireFox -Dwebdriver.localGrid=false -Dorg.alfresco.rm.timeout_seconds.MEDIUM=30'

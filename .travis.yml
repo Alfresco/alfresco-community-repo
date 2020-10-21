@@ -88,7 +88,7 @@ jobs:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_ENTERPRISE_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - &community_shared_UI_config
-      name: "Community Smoke UI Tests for In place Records"
+      name: "Community Smoke UI Tests for Records"
       stage: Tests
       addons:
         firefox: "43.0.1"

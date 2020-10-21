@@ -141,7 +141,7 @@ jobs:
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Content Classification UI Tests"
       script:
-        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" _JAVA_OPTIONS="-Xmx2048m -Xms1024m" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 60 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Folders Classification UI Tests"

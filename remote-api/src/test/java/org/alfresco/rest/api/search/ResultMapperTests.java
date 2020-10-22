@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.alfresco.repo.search.EmptyResultSet;
-import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;

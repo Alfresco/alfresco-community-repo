@@ -33,7 +33,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.index.shard.ShardInstance;
 import org.alfresco.repo.index.shard.ShardRegistry;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -95,7 +95,7 @@ public class SolrClientUtil
                 SolrStoreMappingWrapper mappings = mappingLookup.get(store);
                 if (mappings == null)
                 {
-                    throw new LuceneQueryParserException("No solr query support for store " + store);
+                    throw new QueryParserException("No solr query support for store " + store);
                 }
                 return mappings;
             }
@@ -107,7 +107,7 @@ public class SolrClientUtil
 
             if (mappings == null)
             {
-                throw new LuceneQueryParserException("No solr query support for store " + store);
+                throw new QueryParserException("No solr query support for store " + store);
             }
             return mappings;
         }

@@ -611,6 +611,7 @@
         <property name="transactionService" ref="transactionService"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="enforceTenantInNamespace" value="${models.enforceTenantInNamespace}"/>
+        <property name="customModelService" ref="customModelService"/>
     </bean>
 
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">
@@ -619,9 +620,6 @@
         </property>
         <property name="dictionaryRegistryCache">
             <ref bean="compiledModelsCache"/>
-        </property>
-        <property name="defaultAnalyserResourceBundleName">
-            <value>${lucene.defaultAnalyserResourceBundleName}</value>
         </property>
     </bean>
 
@@ -1262,20 +1260,6 @@
       <property name="interfaces">
          <list>
             <value>org.alfresco.service.cmr.search.CategoryService</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="adm.luceneQueryEngineImpl" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.adm.luceneQueryEngineImpl</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
          </list>
       </property>
    </bean>

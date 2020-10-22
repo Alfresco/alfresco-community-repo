@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserExpressionAdaptor;
+import org.alfresco.repo.search.adaptor.QueryParserExpressionAdaptor;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
@@ -67,9 +67,9 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
      * 
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildQuery()
      */
-    public Q buildQuery(Set<String> selectors, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
+    public Q buildQuery(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
-        LuceneQueryParserExpressionAdaptor<Q, E> expressionBuilder = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
+        QueryParserExpressionAdaptor<Q, E> expressionBuilder = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
 
         boolean must = false;
         boolean must_not = false;
@@ -148,10 +148,10 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
      * (non-Javadoc)
      * 
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildSort(java.lang.String,
-     *      org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
+     *      org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext,
      *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
-    public S buildSort(Set<String> selectors, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
+    public S buildSort(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
         if ((getOrderings() == null) || (getOrderings().size() == 0))
         {
@@ -161,7 +161,7 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
         return luceneContext.getLuceneQueryParserAdaptor().buildSort(getOrderings(), functionContext);
     }
     
-    public List<SortDefinition> buildSortDefinitions(Set<String> selectors, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
+    public List<SortDefinition> buildSortDefinitions(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
     {
         if ((getOrderings() == null) || (getOrderings().size() == 0))
         {

@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -219,7 +219,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                 // Did not find the property in JSON or the core is turned off
                 return "Unavailable";
             }
-            catch (LuceneQueryParserException lqe)
+            catch (QueryParserException lqe)
             {
                 return "Unavailable: " + lqe.getMessage();
             }

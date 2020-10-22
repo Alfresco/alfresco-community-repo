@@ -39,7 +39,7 @@ import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
-import org.alfresco.repo.search.impl.lucene.QueryParameterisationException;
+import org.alfresco.repo.search.impl.QueryParameterisationException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;

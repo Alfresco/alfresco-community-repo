@@ -106,12 +106,6 @@ public interface ModelDefinition
     public long getChecksum(XMLBindingType bindingType);
     
     /**
-     * Get the name of the property bundle that defines analyser mappings for this model (keyed by the type of the property) 
-     * @return the resource or null if not set.
-     */
-    public String getAnalyserResourceBundleName();
-
-    /**
      * @return DictionaryDAO
      */
     public DictionaryDAO getDictionaryDAO();

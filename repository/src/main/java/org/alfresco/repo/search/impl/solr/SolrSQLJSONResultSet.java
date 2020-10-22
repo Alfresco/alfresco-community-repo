@@ -30,10 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
-import org.alfresco.repo.search.impl.lucene.JSONResult;
+import org.alfresco.repo.search.impl.JSONResult;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;

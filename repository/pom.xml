@@ -7,15 +7,10 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.303-SNAPSHOT</version>
+        <version>8.306-SNAPSHOT</version>
     </parent>
 
     <dependencies>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-legacy-lucene</artifactId>
-            <version>${dependency.alfresco-legacy-lucene.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
@@ -943,13 +938,6 @@
                     <artifactId>geronimo-jta_1.1_spec</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-legacy-lucene</artifactId>
-            <version>${dependency.alfresco-legacy-lucene.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

@@ -36,11 +36,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.index.shard.ShardRegistry;
-import org.alfresco.repo.search.impl.lucene.JSONAPIResult;
-import org.alfresco.repo.search.impl.lucene.JSONAPIResultFactory;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
-import org.alfresco.repo.search.impl.lucene.SolrActionStatusResult;
-import org.alfresco.repo.search.impl.lucene.SolrCommandBackupResult;
+import org.alfresco.repo.search.QueryParserException;
+import org.alfresco.repo.search.impl.JSONAPIResult;
+import org.alfresco.repo.search.impl.JSONAPIResultFactory;
+import org.alfresco.repo.search.impl.solr.SolrActionStatusResult;
+import org.alfresco.repo.search.impl.solr.SolrCommandBackupResult;
 import org.alfresco.repo.search.impl.solr.AbstractSolrAdminHTTPClient;
 import org.alfresco.repo.search.impl.solr.ExplicitSolrStoreMappingWrapper;
 import org.alfresco.repo.search.impl.solr.SolrAdminClientInterface;
@@ -223,7 +223,7 @@ public class SOLRAdminClient extends AbstractSolrAdminHTTPClient
         }
         catch (IOException e)
         {
-            throw new LuceneQueryParserException("action", e);
+            throw new QueryParserException("action", e);
         }
         
     }
@@ -289,7 +289,7 @@ public class SOLRAdminClient extends AbstractSolrAdminHTTPClient
         }
         catch (IOException e)
         {
-            throw new LuceneQueryParserException("action", e);
+            throw new QueryParserException("action", e);
         }
         
         

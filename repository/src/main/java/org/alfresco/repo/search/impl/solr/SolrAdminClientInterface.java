@@ -28,8 +28,8 @@ package org.alfresco.repo.search.impl.solr;
 import java.util.Collections;
 import java.util.Map;
 
-import org.alfresco.repo.search.impl.lucene.JSONAPIResult;
-import org.alfresco.repo.search.impl.lucene.JSONAPIResultFactory;
+import org.alfresco.repo.search.impl.JSONAPIResult;
+import org.alfresco.repo.search.impl.JSONAPIResultFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 

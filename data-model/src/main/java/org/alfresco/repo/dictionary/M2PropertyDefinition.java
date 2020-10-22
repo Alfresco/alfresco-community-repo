@@ -78,7 +78,6 @@ import org.springframework.util.StringUtils;
         // Resolve Names
         this.name = QName.createQName(m2Property.getName(), prefixResolver);
         this.propertyTypeName = QName.createQName(m2Property.getType(), prefixResolver);
-        this.analyserResourceBundleName = m2Property.getAnalyserResourceBundleName();
     }
     
     
@@ -688,120 +687,5 @@ import org.springframework.util.StringUtils;
         }
         
         return modelDiffs;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getAnalyserResourceBundleName()
-     */
-    @Override
-    public String getAnalyserResourceBundleName()
-    {
-       return analyserResourceBundleName;
-    }
-    
-    @Override
-    public String resolveAnalyserClassName()
-    { 
-        return resolveAnalyserClassName(I18NUtil.getLocale());
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getAnalyserClassName(java.lang.String, java.util.Locale)
-     */
-    @Override
-    public String resolveAnalyserClassName(Locale locale
-)
-    {   
-        ClassLoader resourceBundleClassLoader = getModel().getDictionaryDAO().getResourceClassLoader();
-        if(resourceBundleClassLoader == null)
-        {
-            resourceBundleClassLoader = this.getClass().getClassLoader();
-        }
-        
-        StringBuilder keyBuilder = new StringBuilder(64);
-        keyBuilder.append(getDataType().getModel().getName().toPrefixString());
-        keyBuilder.append(".datatype");
-        keyBuilder.append(".").append(getDataType().getName().toPrefixString());
-        keyBuilder.append(".analyzer");
-        String key = StringUtils.replace(keyBuilder.toString(), ":", "_");
-        
-        String analyserClassName = null;
-        
-        String analyserResourceBundleName = getAnalyserResourceBundleName();
-        if(analyserResourceBundleName != null)
-        {
-            ResourceBundle bundle = ResourceBundle.getBundle(analyserResourceBundleName, locale, resourceBundleClassLoader);
-            if(bundle.containsKey(key))
-            {
-                analyserClassName = bundle.getString(key);
-            }
-        }
-        
-        // walk containing class and its hierarchy
-        
-        ClassDefinition classDefinition = null;
-        ClassDefinition parentClassDefinition = null;
-        while(analyserClassName == null)
-        {
-            if(classDefinition == null)
-            {
-                classDefinition = getContainerClass();
-            }
-            else
-            {
-                if(parentClassDefinition == null)
-                {
-                    break;
-                }
-                else
-                {
-                    classDefinition = parentClassDefinition;
-                }
-            }
-        
-            parentClassDefinition = classDefinition.getParentClassDefinition();
-            
-            analyserResourceBundleName = classDefinition.getAnalyserResourceBundleName();
-            if(analyserResourceBundleName != null)
-            {
-                ResourceBundle bundle = ResourceBundle.getBundle(analyserResourceBundleName, locale, resourceBundleClassLoader);
-                if(bundle.containsKey(key))
-                {
-                    analyserClassName = bundle.getString(key);
-                }
-            }
-            if(analyserClassName == null)
-            {
-                if((parentClassDefinition == null) || !classDefinition.getModel().getName().equals(parentClassDefinition.getModel().getName()))
-                {
-                    analyserResourceBundleName = classDefinition.getModel().getAnalyserResourceBundleName();
-                    if(analyserResourceBundleName != null)
-                    {
-                        ResourceBundle bundle = ResourceBundle.getBundle(analyserResourceBundleName, locale, resourceBundleClassLoader);
-                        if(bundle.containsKey(key))
-                        {
-                            analyserClassName = bundle.getString(key);
-                        }
-                    }
-                }
-            }
-        }
-        String defaultAnalyserResourceBundleName = this.getContainerClass().getModel().getDictionaryDAO().getDefaultAnalyserResourceBundleName();
-        if(analyserClassName == null)
-        {
-            if(defaultAnalyserResourceBundleName != null)
-            {
-                ResourceBundle bundle = ResourceBundle.getBundle(defaultAnalyserResourceBundleName, locale, resourceBundleClassLoader);
-                if(bundle.containsKey(key))
-                {
-                    analyserClassName = bundle.getString(key);
-                }
-            }
-        }
-        if(analyserClassName == null)
-        {
-            analyserClassName = getDataType().resolveAnalyserClassName(locale);
-        }
-        return analyserClassName;
     }
 }

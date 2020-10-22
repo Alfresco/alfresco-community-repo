@@ -27,7 +27,6 @@ package org.alfresco.repo.search.impl.solr;
 
 import static org.junit.Assert.*;
 
-import org.alfresco.repo.search.impl.lucene.SolrStatsResult;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONException;
 import org.json.JSONObject;

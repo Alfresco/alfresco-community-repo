@@ -4,11 +4,11 @@
    <author>Alfresco</author>
    <published>2005-05-30</published>
    <version>1.0</version>
-   
+
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
    </imports>
-   
+
    <namespaces>
       <namespace uri="http://www.alfresco.org/test/dictionarydaotest/1.0" prefix="test"/>
       <namespace uri="http://www.alfresco.org/test/dictionarydaotest2/1.0" prefix="test2"/>
@@ -18,12 +18,12 @@
 
       <data-type name="test:datatype">
          <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
-          <analyserResourceBundleName>alfresco/model/dataTypeAnalyzers</analyserResourceBundleName>
+         <analyserResourceBundleName>alfresco/model/dataTypeAnalyzers</analyserResourceBundleName>
          <java-class>java.lang.Object</java-class>
       </data-type>
 
    </data-types>
-   
+
    <constraints>
       <constraint name="test:registered1" type="REGISTERED">
          <parameter name="registeredName"><value>cm:reg1</value></parameter>
@@ -57,40 +57,40 @@
          <title>List1 title</title>
          <description>List1 description</description>
          <parameter name="allowedValues">
-             <list>
-                 <value>ABC</value>
-                 <value>DEF</value>
-                 <value>VALUE WITH SPACES</value>
-                 <value>VALUE WITH TRAILING SPACE </value>
-             </list>
+            <list>
+               <value>ABC</value>
+               <value>DEF</value>
+               <value>VALUE WITH SPACES</value>
+               <value>VALUE WITH TRAILING SPACE </value>
+            </list>
          </parameter>
          <parameter name="caseSensitive"><value>true</value></parameter>
       </constraint>
       <constraint name="test:list2" type="LIST">
          <parameter name="allowedValues">
-             <list>
-                 <value>HIJ</value>
-             </list>
+            <list>
+               <value>HIJ</value>
+            </list>
          </parameter>
          <parameter name="caseSensitive"><value>true</value></parameter>
       </constraint>
       <constraint name="test2:list3" type="LIST">
          <parameter name="allowedValues">
-             <list>
-                 <value>XYZ</value>
-             </list>
+            <list>
+               <value>XYZ</value>
+            </list>
          </parameter>
          <parameter name="caseSensitive"><value>true</value></parameter>
       </constraint>
    </constraints>
 
    <types>
-      
+
       <type name="test:base">
          <title>Base</title>
          <description>The Base Type</description>
          <parent></parent>
-         
+
          <properties>
             <property name="test:prop1">
                <type>d:text</type>
@@ -99,14 +99,14 @@
                <constraints>
                   <constraint ref="test:regex1"/>
                   <constraint ref="test:stringLength1">
-                      <title>Prop1 Strlen1 title</title>
-                      <description>Prop1 Strlen1 description</description>
+                     <title>Prop1 Strlen1 title</title>
+                     <description>Prop1 Strlen1 description</description>
                   </constraint>
                   <constraint ref="test:registered1"/>
                </constraints>
             </property>
          </properties>
-         
+
          <associations>
             <association name="test:assoc1">
                <source>
@@ -158,16 +158,16 @@
                <propagateTimestamps>true</propagateTimestamps>
             </child-association>
          </associations>
-         
+
          <mandatory-aspects>
             <aspect>test:referenceable</aspect>
          </mandatory-aspects>
       </type>
-   
+
       <type name="test:file">
          <parent>test:base</parent>
          <archive>true</archive>
-         
+
          <properties>
             <property name="test:fileprop">
                <type>d:text</type>
@@ -202,12 +202,12 @@
       <type name="test:file-derived">
          <parent>test:file</parent>
       </type>
-      
+
       <type name="test:file-derived-no-archive">
          <parent>test:file</parent>
          <archive>false</archive>
       </type>
-      
+
       <type name="test:folder">
          <parent>test:base</parent>
          <properties>
@@ -218,7 +218,7 @@
             </property>
          </properties>
       </type>
-      
+
       <type name="test:enforced">
          <parent>test:base</parent>
          <properties>
@@ -236,39 +236,39 @@
             </property>
          </properties>
       </type>
-      
+
       <type name="test:overridetype1">
-        <properties>
+         <properties>
             <property name="test:propoverride">
-                <type>d:text</type>
-                <default>one</default>
+               <type>d:text</type>
+               <default>one</default>
             </property>
-        </properties>
+         </properties>
       </type>
-      
+
       <type name="test:overridetype2">
-        <parent>test:overridetype1</parent>
-        <overrides>
+         <parent>test:overridetype1</parent>
+         <overrides>
             <property name="test:propoverride">
-                <default>two</default>
+               <default>two</default>
             </property>
-        </overrides>
+         </overrides>
       </type>
-      
+
       <type name="test:overridetype3">
-        <parent>test:overridetype2</parent>
-        <overrides>
+         <parent>test:overridetype2</parent>
+         <overrides>
             <property name="test:propoverride">
-                <default>three</default>
+               <default>three</default>
             </property>
-        </overrides>
+         </overrides>
       </type>
-      
+
       <type name="test:typeWithNamedPropConstraint">
          <title>Type with named property-defined constraint.</title>
          <description>A type with a named constraint defined within one of its properties.</description>
          <parent></parent>
-         
+
          <properties>
             <property name="test:constrainedProp">
                <type>d:text</type>
@@ -278,28 +278,28 @@
                   <constraint name="test:inlineConstraint" type="LIST">
                      <title>Inline constraint</title>
                      <description>An inline constraint</description>
-                        <parameter name="allowedValues">
-                           <list>
-                              <value>ALPHA</value>
-                              <value>BETA</value>
-                              <value>GAMMA, DELTA</value>
-                              <value>OMEGA</value>
-                           </list>
-                        </parameter>
-                        <parameter name="caseSensitive"><value>true</value></parameter>
+                     <parameter name="allowedValues">
+                        <list>
+                           <value>ALPHA</value>
+                           <value>BETA</value>
+                           <value>GAMMA, DELTA</value>
+                           <value>OMEGA</value>
+                        </list>
+                     </parameter>
+                     <parameter name="caseSensitive"><value>true</value></parameter>
                   </constraint>
                </constraints>
             </property>
          </properties>
       </type>
    </types>
-   
+
    <aspects>
       <aspect name="test:referenceable">
          <title>Referenceable</title>
          <description>The referenceable aspect</description>
          <parent></parent>
-         
+
          <properties>
             <property name="test:id">
                <type>d:int</type>
@@ -362,5 +362,5 @@
          </overrides>
       </aspect>
    </aspects>
-   
+
 </model>

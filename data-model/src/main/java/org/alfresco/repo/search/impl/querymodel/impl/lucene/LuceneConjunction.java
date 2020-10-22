@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserExpressionAdaptor;
+import org.alfresco.repo.search.adaptor.QueryParserExpressionAdaptor;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
@@ -52,14 +52,14 @@ public class LuceneConjunction<Q, S, E extends Throwable> extends BaseConjunctio
      * (non-Javadoc)
      * 
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String,
-     *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
+     *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext,
      *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
-    public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
+    public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
        
-        LuceneQueryParserExpressionAdaptor<Q, E> expressionAdaptor = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
+        QueryParserExpressionAdaptor<Q, E> expressionAdaptor = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
         boolean must = false;
         boolean must_not = false;
         for (Constraint constraint : getConstraints())

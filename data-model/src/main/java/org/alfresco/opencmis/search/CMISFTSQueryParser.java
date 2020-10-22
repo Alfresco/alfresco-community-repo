@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.adaptor.lucene.AnalysisMode;
+import org.alfresco.repo.search.adaptor.AnalysisMode;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSLexer;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryException;

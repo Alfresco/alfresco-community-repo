@@ -281,11 +281,6 @@ public interface DictionaryDAO extends ModelQuery
     boolean isModelInherited(QName name);
 
     /**
-     * @return String
-     */
-    String getDefaultAnalyserResourceBundleName();
-
-    /**
      * @return ClassLoader
      */
     ClassLoader getResourceClassLoader();

@@ -44,7 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;

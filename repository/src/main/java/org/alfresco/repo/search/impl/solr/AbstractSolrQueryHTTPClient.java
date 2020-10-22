@@ -33,7 +33,7 @@ import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -105,7 +105,7 @@ public abstract class AbstractSolrQueryHTTPClient
             }
             if (post.getStatusCode() != HttpServletResponse.SC_OK)
             {
-                throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
+                throw new QueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
             }
 
             Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));

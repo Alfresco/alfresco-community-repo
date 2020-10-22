@@ -26,6 +26,10 @@
                   <groupId>javax.servlet</groupId>
                   <artifactId>jstl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -81,6 +85,10 @@
                   <groupId>javax.servlet</groupId>
                   <artifactId>jstl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -96,6 +104,12 @@
             <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

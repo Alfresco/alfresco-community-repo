@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,6 +33,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceTransientException;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -71,6 +74,8 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     // Size limitations (in KBytes) indexed by mimetype for thumbnail creation
     private HashMap<String,Long> mimetypeMaxSourceSizeKBytes;
 
+    private RenditionService2 renditionService2;
+
     /** Action name and parameters */
     public static final String NAME = "create-thumbnail";
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
@@ -104,7 +109,12 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     {
         this.mimetypeMaxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes;
     }
-    
+
+    public void setRenditionService2(RenditionService2 renditionService2)
+    {
+        this.renditionService2 = renditionService2;
+    }
+
     /**
      * Enable thumbnail creation at all regardless of mimetype.
      * @param generateThumbnails a {@code false} value turns off all thumbnail creation.
@@ -187,33 +197,47 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                     }
                 }
             }
-            
-            // Create the thumbnail
-            try
+
+            boolean async = action.getExecuteAsychronously();
+            RenditionDefinition2 renditionDefinition = null;
+            if (async)
             {
-                TransformationOptions options = details.getTransformationOptions();
-                this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), options, thumbnailName, null);
+                RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+                renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
             }
-            catch (ContentServiceTransientException cste)
+            if (async && renditionDefinition != null)
             {
-                // any transient failures in the thumbnail creation must be handled as transient failures of the action to execute.
-                StringBuilder msg = new StringBuilder();
-                msg.append("Creation of thumbnail '") .append(details.getName()) .append("' declined");
-                if (logger.isDebugEnabled())
+                renditionService2.render(actionedUponNodeRef, thumbnailName);
+            }
+            else
+            {
+                // Create the thumbnail
+                try
                 {
-                    logger.debug(msg.toString());
+                    TransformationOptions options = details.getTransformationOptions();
+                    this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), options, thumbnailName, null);
                 }
-                
-                throw new ActionServiceTransientException(msg.toString(), cste);
-            }
-            catch (Exception exception)
-            {
-                final String msg = "Creation of thumbnail '" + details.getName() + "' failed";
-                logger.info(msg);
-                
-                // We need to rethrow in order to trigger the compensating action.
-                // See AddFailedThumbnailActionExecuter
-                throw new AlfrescoRuntimeException(msg, exception);
+                catch (ContentServiceTransientException cste)
+                {
+                    // any transient failures in the thumbnail creation must be handled as transient failures of the action to execute.
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("Creation of thumbnail '").append(details.getName()).append("' declined");
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(msg.toString());
+                    }
+
+                    throw new ActionServiceTransientException(msg.toString(), cste);
+                }
+                catch (Exception exception)
+                {
+                    final String msg = "Creation of thumbnail '" + details.getName() + "' failed";
+                    logger.info(msg);
+
+                    // We need to rethrow in order to trigger the compensating action.
+                    // See AddFailedThumbnailActionExecuter
+                    throw new AlfrescoRuntimeException(msg, exception);
+                }
             }
         }
     }

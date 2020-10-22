@@ -1,0 +1,5 @@
+{
+  "sys:overwritePolicy": "PRAGMATIC",
+  "{http://www.unknown}name": "ignored",
+  "{http://www.alfresco.org/model/content/1.0}author": "Used"
+}

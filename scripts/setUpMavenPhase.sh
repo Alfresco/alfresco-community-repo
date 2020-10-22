@@ -8,4 +8,3 @@ then
 else
     export MAVEN_PHASE="verify"
 fi
-

@@ -217,7 +217,7 @@ public class SqlSessionMetricsWrapper implements SqlSession
         PassThroughMetricsResultsHandler passThroughHandler = new PassThroughMetricsResultsHandler(handler, startTime, statement);
         try
         {
-            this.select(statement, passThroughHandler);
+            this.sqlSession.select(statement, passThroughHandler);
         }
         finally
         {

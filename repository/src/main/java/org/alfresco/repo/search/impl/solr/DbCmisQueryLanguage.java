@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -123,7 +123,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         functionContext.setValidScopes(validScopes);
 
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
-        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = parser.parse(new DBQueryModelFactory(), functionContext);
+        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = parser.parse(queryEngine.getQueryModelFactory(), functionContext);
 
 // TODO: Remove as this appears to be dead code
 //        // build lucene query

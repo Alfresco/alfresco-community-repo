@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import org.alfresco.repo.search.adaptor.LuceneFunction;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Andy
@@ -42,11 +43,13 @@ public class DBQueryBuilderPredicatePartCommand
 
     String alias;
     
-    private DBQueryBuilderJoinCommandType joinCommandType;
-
-    private LuceneFunction function;
+    QName propertyQName;
     
-    private Long qnameId;
+    DBQueryBuilderJoinCommandType joinCommandType;
+
+    LuceneFunction function;
+    
+    Long qnameId;
 
     /**
      * @return the qnameId
@@ -198,5 +201,14 @@ public class DBQueryBuilderPredicatePartCommand
             return alias +"." +fieldName;
         }
     }
-    
+
+    public void setPropertyQName(QName propertyQName)
+    {
+        this.propertyQName = propertyQName;
+    }
+
+    public QName getPropertyQName()
+    {
+        return this.propertyQName;
+    }
 }

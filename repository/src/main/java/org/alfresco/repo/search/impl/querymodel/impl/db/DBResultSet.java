@@ -25,11 +25,11 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.util.Pair;
 
 /**
  * @author Andy
@@ -50,9 +49,7 @@ import org.alfresco.util.Pair;
  */
 public class DBResultSet extends AbstractResultSet
 {
-    private List<Long> dbids;
-    
-    private NodeRef[] nodeRefs;
+    private List<Node> nodes;
     
     private NodeDAO nodeDao;
     
@@ -64,14 +61,16 @@ public class DBResultSet extends AbstractResultSet
     
     private BitSet prefetch;
     
-    public DBResultSet(SearchParameters searchParameters, List<Long> dbids, NodeDAO nodeDao,  NodeService nodeService, TenantService tenantService, int maximumResultsFromUnlimitedQuery)
+    private int numberFound;
+    
+    public DBResultSet(SearchParameters searchParameters, List<Node> nodes, NodeDAO nodeDao,  NodeService nodeService, TenantService tenantService, int maximumResultsFromUnlimitedQuery)
     {
         this.nodeDao = nodeDao;
-        this.dbids = dbids;
+        this.nodes = nodes;
         this.nodeService = nodeService;
         this.tenantService = tenantService;
-        this.prefetch = new BitSet(dbids.size());
-        nodeRefs= new NodeRef[(dbids.size())];
+        this.prefetch = new BitSet(nodes.size());
+        this.numberFound = nodes.size();
         
         final LimitBy limitBy;
         int maxResults = -1;
@@ -96,9 +95,10 @@ public class DBResultSet extends AbstractResultSet
         }
         
         this.resultSetMetaData = new SimpleResultSetMetaData(
-                maxResults > 0 && dbids.size() < maxResults ? LimitBy.UNLIMITED : limitBy,
+                maxResults > 0 && nodes.size() < maxResults ? LimitBy.UNLIMITED : limitBy,
                 PermissionEvaluationMode.EAGER, searchParameters);
     }
+    
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.search.ResultSetSPI#length()
@@ -106,7 +106,12 @@ public class DBResultSet extends AbstractResultSet
     @Override
     public int length()
     {
-        return dbids.size();
+        return nodes.size();
+    }
+    
+    public void setNumberFound(int numFound)
+    {
+        this.numberFound = numFound;
     }
 
     /* (non-Javadoc)
@@ -115,7 +120,7 @@ public class DBResultSet extends AbstractResultSet
     @Override
     public long getNumberFound()
     {
-        return dbids.size();
+        return numberFound;
     }
 
     /* (non-Javadoc)
@@ -124,8 +129,9 @@ public class DBResultSet extends AbstractResultSet
     @Override
     public NodeRef getNodeRef(int n)
     {
-        prefetch(n);
-        return nodeRefs[n];
+        NodeRef nodeRef = nodes.get(n).getNodeRef();
+        nodeRef = tenantService.getBaseName(nodeRef);
+        return nodeRef;
     }
 
     /* (non-Javadoc)
@@ -190,61 +196,13 @@ public class DBResultSet extends AbstractResultSet
         return new DBResultSetRowIterator(this);
     }
     
-    private void prefetch(int n)
-    {
-       
-        if (prefetch.get(n))
-        {
-            // The document was already processed
-            return;
-        }
-        // Start at 'n' and process the the next bulk set
-        int bulkFetchSize = getBulkFetchSize();
-        if (bulkFetchSize < 1)
-        {
-            Pair<Long, NodeRef> nodePair = nodeDao.getNodePair(dbids.get(n));
-            NodeRef nodeRef = nodePair == null ? null : nodePair.getSecond();
-            nodeRefs[n] = nodeRef == null ? null : tenantService.getBaseName(nodeRef);
-            return;
-        }
-        
-        List<Long> fetchList = new ArrayList<Long>(bulkFetchSize);
-        BitSet done = new BitSet(bulkFetchSize);
-        int totalHits = dbids.size();
-        for (int i = 0; i < bulkFetchSize; i++)
-        {
-            int next = n + i;
-            if (next >= totalHits)
-            {
-                // We've hit the end
-                break;
-            }
-            if (prefetch.get(next))
-            {
-                // This one is in there already
-                continue;
-            }
-            // We store the node and mark it as prefetched
-            prefetch.set(next);
-            
-            fetchList.add(dbids.get(next));
-            done.set(next);
-        }
-        // Now bulk fetch
-        if (fetchList.size() > 1)
-        {
-            nodeDao.cacheNodesById(fetchList);
-            for (int i = done.nextSetBit(0); i >= 0; i = done.nextSetBit(i+1)) 
-            {
-                NodeRef nodeRef = nodeDao.getNodePair(fetchList.get(i)).getSecond();
-                nodeRefs[n+1] = nodeRef == null ? null : tenantService.getBaseName(nodeRef);
-            }
-        }
-    }
-    
     public NodeService getNodeService()
     {
         return nodeService;
     }
-
+    
+    public Node getNode(int n)
+    {
+        return nodes.get(n);
+    }
 }

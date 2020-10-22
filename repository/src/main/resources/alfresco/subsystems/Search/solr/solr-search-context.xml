@@ -165,7 +165,7 @@
         
     </bean>
     
-    <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+    <bean id="search.index.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />
@@ -208,7 +208,7 @@
         </property>
     </bean>
     
-    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+    <bean id="search.index.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />

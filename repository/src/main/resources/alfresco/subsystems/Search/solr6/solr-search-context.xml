@@ -203,7 +203,7 @@
         
     </bean>
     
-    <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+    <bean id="search.index.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />
@@ -246,7 +246,7 @@
         </property>
     </bean>
     <!-- Adding solr SQL language. -->
-    <bean id="search.solr.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage">
+    <bean id="search.index.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage">
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />
@@ -259,7 +259,7 @@
             <ref bean="search.solrSQLQueryHTTPCLient" />
         </property>
     </bean>
-    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+    <bean id="search.index.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />

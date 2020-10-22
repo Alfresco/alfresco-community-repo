@@ -123,7 +123,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
     public SearchParameters buildSearchParameters(SearchSQLQuery searchQuery)
     {
         SearchParameters sparams = new SearchParameters();
-        sparams.setLanguage(SearchService.LANGUAGE_SOLR_SQL);
+        sparams.setLanguage(SearchService.LANGUAGE_INDEX_SQL);
         sparams.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         if(StringUtils.isEmpty(searchQuery.getStmt()))
         {

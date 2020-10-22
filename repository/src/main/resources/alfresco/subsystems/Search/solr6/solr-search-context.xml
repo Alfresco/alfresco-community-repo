@@ -52,12 +52,12 @@
         <property name="languageMappings">
             <map>
                 <entry key="lucene" value="alfresco" />
-                <entry key="solr-alfresco" value="alfresco" />
+                <entry key="index-alfresco" value="alfresco" />
                 <entry key="cmis-strict" value="cmis" />
                 <entry key="cmis-alfresco" value="cmis" />
-                <entry key="solr-cmis" value="cmis" />
+                <entry key="index-cmis" value="cmis" />
                 <entry key="fts-alfresco" value="afts" />
-                <entry key="solr-fts-alfresco" value="afts" />
+                <entry key="index-fts-alfresco" value="afts" />
             </map>
         </property>
         <property name="storeMappings">
@@ -210,7 +210,7 @@
             </list>
         </property>
         <property name="name">
-            <value>solr-alfresco</value>
+            <value>index-alfresco</value>
         </property>
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrQueryHTTPCLient" />
@@ -239,7 +239,7 @@
             </list>
         </property>
         <property name="name">
-            <value>solr-fts-alfresco</value>
+            <value>index-fts-alfresco</value>
         </property>
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrQueryHTTPCLient" />
@@ -253,7 +253,7 @@
             </list>
         </property>
         <property name="name">
-            <value>solr-sql</value>
+            <value>index-sql</value>
         </property>
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrSQLQueryHTTPCLient" />
@@ -266,7 +266,7 @@
             </list>
         </property>
         <property name="name">
-            <value>solr-cmis</value>
+            <value>index-cmis</value>
         </property>
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrQueryHTTPCLient" />

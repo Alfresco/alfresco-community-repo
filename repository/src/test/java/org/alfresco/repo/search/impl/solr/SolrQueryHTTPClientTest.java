@@ -94,9 +94,9 @@ public class SolrQueryHTTPClientTest
     public static void setUpBeforeClass() throws Exception
     {
         Map<String, String> languageMappings = new HashMap<String, String>();
-        languageMappings.put("solr-alfresco", "alfresco");
-        languageMappings.put("solr-fts-alfresco", "afts");
-        languageMappings.put("solr-cmis", "cmis");
+        languageMappings.put("index-alfresco", "alfresco");
+        languageMappings.put("index-fts-alfresco", "afts");
+        languageMappings.put("index-cmis", "cmis");
 
         NamespaceDAO namespaceDAO = mock(NamespaceDAO.class);
         DictionaryService dictionaryService = mock(DictionaryService.class);
@@ -165,7 +165,7 @@ public class SolrQueryHTTPClientTest
         StringBuilder luceneQuery = new StringBuilder();
         luceneQuery.append(" +TYPE:\"" + ContentModel.TYPE_CONTENT + "\"");
         String filterQuery = "ANCESTOR:\"workspace://SpacesStore/a1c1a0a1-9d68-4912-b853-b3b277f31288\"";
-        StatsParameters params = new StatsParameters(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO, luceneQuery.toString(), filterQuery, false);
+        StatsParameters params = new StatsParameters(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO, luceneQuery.toString(), filterQuery, false);
         params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, "contentsize", false));
         params.addStatsParameter(StatsParameters.PARAM_FIELD, "contentsize");
         params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX + ContentModel.PROP_CREATED.toString());

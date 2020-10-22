@@ -81,7 +81,7 @@ public class SolrCategoryServiceImpl extends LuceneCategoryServiceImpl
         String field = "@" + catProperty;
         
         SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO);
+        sp.setLanguage(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO);
         sp.addStore(storeRef);
         sp.setQuery(catProperty+":*");
         FieldFacet ff = new FieldFacet(field);

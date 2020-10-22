@@ -55,7 +55,7 @@ public class SolrStatsService implements StatsService
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         
         LuceneQueryLanguageSPI language = searcher.getQueryLanguages().get(searchParameters.getLanguage().toLowerCase());
-        if (language != null && SearchService.LANGUAGE_SOLR_FTS_ALFRESCO.equals(language.getName()))
+        if (language != null && SearchService.LANGUAGE_INDEX_FTS_ALFRESCO.equals(language.getName()))
         {
             SolrQueryLanguage solr = (SolrQueryLanguage) language;
             return solr.executeStatsQuery(searchParameters);

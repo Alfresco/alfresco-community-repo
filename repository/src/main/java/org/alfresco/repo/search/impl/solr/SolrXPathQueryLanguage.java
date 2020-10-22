@@ -42,7 +42,7 @@ public class SolrXPathQueryLanguage extends AbstractLuceneQueryLanguage
     {
         String query = "PATH:\""+searchParameters.getQuery()+"\"";
         SearchParameters sp = searchParameters.copy();
-        sp.setLanguage(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO);
+        sp.setLanguage(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO);
         sp.setQuery(query);
         return solrQueryLanguage.executeQuery(sp);
     }

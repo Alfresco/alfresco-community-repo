@@ -1010,6 +1010,7 @@
         <property name="helper" ref="webscriptHelper" />
         <property name="resultMapper" ref="searchapiResultMapper" />
         <property name="searchMapper" ref="searchapiSearchMapper" />
+        <property name="statsEnabled" value="${webscripts.stats.enabled}" />
     </bean>
     
     <bean id="webscript.org.alfresco.api.SearchSQLApiWebscript.post"

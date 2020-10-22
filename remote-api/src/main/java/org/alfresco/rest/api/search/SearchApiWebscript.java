@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.api.search;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
@@ -45,14 +49,14 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.util.StopWatch;
+import org.springframework.util.StopWatch.TaskInfo;
 
 /**
  * An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/search endpoint
@@ -62,12 +66,15 @@ import java.util.List;
 public class SearchApiWebscript extends AbstractWebScript implements RecognizedParamsExtractor, RequestReader, ResponseWriter,
                                                                 InitializingBean
 {
+    protected static final Log logger = LogFactory.getLog(SearchApiWebscript.class);
+            
     private ServiceRegistry serviceRegistry;
     private SearchService searchService;
     private SearchMapper searchMapper;
     private ResultMapper resultMapper;
     protected ApiAssistant assistant;
     protected ResourceWebScriptHelper helper;
+    private boolean statsEnabled;
 
     @Override
     public void afterPropertiesSet()
@@ -82,7 +89,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     @Override
     public void execute(WebScriptRequest webScriptRequest, WebScriptResponse webScriptResponse) throws IOException
     {
-
+        StopWatch sw = new StopWatch();
         try {
             //Turn JSON into a Java object respresentation
             SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
@@ -97,12 +104,23 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
 
             //Call searchService
+            sw.start("nodes");
             ResultSet results = searchService.query(searchParams);
+            sw.stop();
 
             //Turn solr results into JSON
+            sw.start("props");
             CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, searchRequestContext, searchQuery, results);
+            sw.stop();
+
             //Post-process the request and pass in params, eg. params.getFilter()
             Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
+            
+            // store execution stats in a special header if enabled
+            if (statsEnabled) 
+            {
+                addStatisticsHeader(webScriptResponse, sw);
+            }
 
             //Write response
             setResponse(webScriptResponse, DEFAULT_SUCCESS);
@@ -111,6 +129,29 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         } catch (Exception exception) {
             renderException(exception,webScriptResponse,assistant);
         }
+    }
+
+    private void addStatisticsHeader(WebScriptResponse webScriptResponse, StopWatch sw)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("total=")
+        .append(sw.getTotalTimeMillis())
+        .append("ms; ");
+ 
+        for (TaskInfo task : sw.getTaskInfo()) {
+            sb.append(task.getTaskName())
+            .append("=")
+            .append(task.getTimeMillis())
+            .append("ms");
+        
+            int pc = Math.round(100 * task.getTimeNanos() / sw.getTotalTimeNanos());
+            sb.append("(")
+            .append(pc).append("%")
+            .append("); ");
+        }
+        
+        webScriptResponse.addHeader("X-Response-Stats", sb.toString());
     }
 
     /**
@@ -165,4 +206,11 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     {
         this.helper = helper;
     }
+    
+    // receiving as a string because of known issue: https://jira.spring.io/browse/SPR-9989
+    public void setStatsEnabled(String enabled) {
+        this.statsEnabled = Boolean.valueOf(enabled);
+        logger.info("API stats header: " + (this.statsEnabled ? "enabled" : "disabled"));
+    }
+    
 }

@@ -242,6 +242,7 @@ jobs:
             all_branches: true
       after_deploy:
         - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/community/RM/${RELEASE_VERSION}"
+
     - name: "Enterprise Publish to S3 Release Bucket"
       stage: Publish
       if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/

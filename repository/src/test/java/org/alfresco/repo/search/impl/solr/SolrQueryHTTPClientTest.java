@@ -98,6 +98,11 @@ public class SolrQueryHTTPClientTest
         languageMappings.put("index-fts-alfresco", "afts");
         languageMappings.put("index-cmis", "cmis");
 
+        // Old solr language names
+        languageMappings.put("solr-alfresco", "alfresco");
+        languageMappings.put("solr-fts-alfresco", "afts");
+        languageMappings.put("solr-cmis", "cmis");
+
         NamespaceDAO namespaceDAO = mock(NamespaceDAO.class);
         DictionaryService dictionaryService = mock(DictionaryService.class);
 

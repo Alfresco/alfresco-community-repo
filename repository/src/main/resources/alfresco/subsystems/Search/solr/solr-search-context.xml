@@ -57,6 +57,10 @@
                 <entry key="index-cmis" value="cmis" />
                 <entry key="fts-alfresco" value="afts" />
                 <entry key="index-fts-alfresco" value="afts" />
+<!--                Old solr language names-->
+                <entry key="solr-fts-alfresco" value="afts" />
+                <entry key="solr-cmis" value="cmis" />
+                <entry key="solr-alfresco" value="alfresco" />
             </map>
         </property>
         <property name="storeMappings">
@@ -177,8 +181,8 @@
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrQueryHTTPCLient" />
         </property>
-        
     </bean>
+
    
     <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.solr.SolrXPathQueryLanguage" >
         <property name="solrQueryLanguage" >
@@ -207,7 +211,9 @@
             <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
-    
+
+
+<!--queryLanguage instances with legacy names-->
     <bean id="search.index.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
         <property name="factories">
             <list>
@@ -216,6 +222,48 @@
         </property>
         <property name="name">
             <value>index-cmis</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+
+    <bean id="search.fts.alfresco.solr" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-fts-alfresco</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+
+    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-cmis</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+
+    <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-alfresco</value>
         </property>
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrQueryHTTPCLient" />

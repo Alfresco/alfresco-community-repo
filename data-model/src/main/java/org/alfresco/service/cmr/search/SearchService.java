@@ -55,18 +55,31 @@ public interface SearchService
     String LANGUAGE_XPATH = "xpath";
 
     String LANGUAGE_FTS_ALFRESCO = "fts-alfresco";
-    
+
     String LANGUAGE_CMIS_STRICT = "cmis-strict";
-    
+
     String LANGUAGE_CMIS_ALFRESCO = "cmis-alfresco";
 
     String LANGUAGE_INDEX_CMIS = "index-cmis";
 
     String LANGUAGE_INDEX_ALFRESCO = "index-alfresco";
-    
+
     String LANGUAGE_INDEX_SQL = "index-sql";
 
     String LANGUAGE_INDEX_FTS_ALFRESCO = "index-fts-alfresco";
+
+    // Old language names for solr subsystems retro compatibility
+    @Deprecated
+    String LANGUAGE_SOLR_FTS_ALFRESCO = "solr-fts-alfresco";
+
+    @Deprecated
+    String LANGUAGE_SOLR_CMIS = "solr-cmis";
+
+    @Deprecated
+    String LANGUAGE_SOLR_ALFRESCO = "solr-alfresco";
+
+    @Deprecated
+    String LANGUAGE_SOLR_SQL = "solr-sql";
 
     /**
      * Search against a store. Pulls back all attributes on each node. Does not

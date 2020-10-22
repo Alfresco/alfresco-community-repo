@@ -34,7 +34,9 @@ stages:
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[(community|enterprise) release .*\]/
   - name: Publish
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[publish\]/
 
 jobs:
   include:
@@ -109,16 +111,92 @@ jobs:
       script:
        - echo "Static Analysis (SAST)"
 
-    - name: "Community Release"
+    - name: "Community Release and Publish to S3 Staging Bucket"
       stage: Release
+      if: commit_message =~ /\[community release .*\]/
+      before_script:
+        - source scripts/set-release-variables.sh
       script:
-        - echo "Community Release"
-    - name: "Enterprise Release"
-      stage: Release
-      script:
-        - echo "Enterprise Release"
+        - bash scripts/release.sh "community"
+      before_deploy:
+        - bash scripts/zip-artifacts-staging.sh "community"
+      deploy:
+        - provider: s3
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          upload_dir: "community/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/community/RM/${RELEASE_VERSION}"
 
-    - name: "Copy to S3 Release Bucket"
-      stage: Publish
+    - name: "Enterprise Release and Publish to S3 Staging Bucket"
+      stage: Release
+      if: commit_message =~ /\[enterprise release .*\]/
+      before_script:
+        - source scripts/set-release-variables.sh
       script:
-        - echo "Copy to S3 Release Bucket"
+        - bash scripts/release.sh "enterprise"
+      before_deploy:
+        - bash scripts/zip-artifacts-staging.sh "enterprise"
+      deploy:
+        - provider: s3
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          upload_dir: "enterprise/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/enterprise/RM/${RELEASE_VERSION}"
+
+    - name: "Community Publish to S3 Release Bucket"
+      stage: Publish
+      if: commit_message =~ /\[community release .*\]/ AND commit_message =~ /\[publish\]/
+      before_script: source scripts/set-release-variables.sh
+      script: skip
+      before_deploy: bash scripts/zip-artifacts-release.sh "community"
+      deploy:
+        - provider: s3
+          access_key_id: ${RELEASE_AWS_ACCESS_KEY}
+          secret_access_key: $RELEASE_AWS_ACCESS_SECRET}
+          region: "eu-west-1"
+          bucket: "eu.dl.alfresco.com"
+          upload_dir: "release/community/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/community/RM/${RELEASE_VERSION}"
+
+    - name: "Enterprise Publish to S3 Release Bucket"
+      stage: Publish
+      if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/
+      before_script: source scripts/set-release-variables.sh
+      script: skip
+      before_deploy: bash scripts/zip-artifacts-release.sh "enterprise"
+      deploy:
+        - provider: s3
+          access_key_id: ${RELEASE_AWS_ACCESS_KEY}
+          secret_access_key: ${RELEASE_AWS_ACCESS_SECRET}
+          region: "eu-west-1"
+          bucket: "eu.dl.alfresco.com"
+          upload_dir: "release/enterprise/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/enterprise/RM/${RELEASE_VERSION}"

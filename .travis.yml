@@ -68,6 +68,7 @@ jobs:
       stage: Tests
       script:
         - echo "Enterprise Integrations Tests on MySQL"
+
     - name: "Community Rest API Tests"
       stage: Tests
       before_install:
@@ -76,6 +77,7 @@ jobs:
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:
@@ -84,22 +86,83 @@ jobs:
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
       script:
         - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_ENTERPRISE_PATH/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-    - name: "Community UI Tests ..."
+
+    - &community_shared_UI_configuration
+      name: "Community Smoke UI Tests for Records"
       stage: Tests
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - echo "Community UI Tests ..."
-    - name: "Enterprise UI Tests ..."
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *community_shared_UI_configuration
+      name: "Community Smoke UI Tests for actions in RM site"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *community_shared_UI_configuration
+      name: "Community Level 2 UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - &enterprise_shared_UI_configuration
+      name: "Enterprise Level 2 UI Tests"
       stage: Tests
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - echo "Enterprise UI Tests ..."
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Classification Level 2 UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Content Classification UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Folders Classification UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Guides UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Security Marks UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Console and Configuration UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_UI_PATH/pom.xml -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
       script:

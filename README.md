@@ -113,20 +113,20 @@ and `acs-community-packaging` in a single Intellij IDEA project. They depend on 
 want to make changes to both of them if you are changing the repository code.
 
 ~~~
-$ mkdir work
-$ cd work
-$ git clone git@github.com:Alfresco/alfresco-community-repo.git
-$ git clone git@github.com:Alfresco/acs-community-packaging.git
+mkdir work
+cd works
+git clone git@github.com:Alfresco/alfresco-community-repo.git
+git clone git@github.com:Alfresco/acs-community-packaging.git
 ~~~
 If you wish to build these projects from the command line, use the following commands.
 ~~~
-$ cd alfresco-community-repo
-$ mvn clean install -PcommunityDocker -DskipTests=true -Dversion.edition=Community
-$ cd ..
+cd alfresco-community-repo
+mvn clean install -PcommunityDocker -DskipTests=true -Dversion.edition=Community
+cd ..
 
-$ cd acs-community-packaging
-$ mvn clean install -PcommunityDocker -Dmaven.javadoc.skip=true
-$ cd ..
+cd acs-community-packaging
+mvn clean install -PcommunityDocker -Dmaven.javadoc.skip=true
+cd ..
 ~~~
 In Itellij IDEA, create a new project using the `work` directory as the source.
 * File > New Project from Existing Sources > .../work > Maven
@@ -143,7 +143,7 @@ to enable experimental features in your Docker Engine.
 ~~~
 ## Branches
 As multiple projects have been combined, branch names use the ACS version they are targeting.
-For example the code used to create the repository in ACS 6.2.1 in a branch called `releases/6.2.1`.
+For example the code used to create the repository in ACS 6.2.1 is a branch called `releases/6.2.1`.
 
 The actual version number of the **repository artifacts** created by `alfresco-community-repo` are however different.
 For example `release/6.2.1` artifacts are `7.183.x`. This adds some complexity, but ensures that

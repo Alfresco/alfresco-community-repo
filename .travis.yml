@@ -106,6 +106,7 @@ jobs:
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
       install:
         - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh
@@ -135,6 +136,7 @@ jobs:
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
       install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh

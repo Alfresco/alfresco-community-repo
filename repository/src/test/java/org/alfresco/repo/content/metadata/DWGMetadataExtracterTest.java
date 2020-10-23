@@ -177,5 +177,5 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
       
        assertEquals("Custom DWG property not found", "valueforcustomprop1", properties.get(TIKA_CUSTOM_TEST_PROPERTY));
    }
-    
+
 }

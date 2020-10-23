@@ -34,7 +34,9 @@ stages:
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[(community|enterprise) release .*\]/
   - name: Publish
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[publish\]/
 
 jobs:
   include:
@@ -68,6 +70,7 @@ jobs:
       stage: Tests
       script:
         - echo "Enterprise Integrations Tests on MySQL"
+
     - name: "Community Rest API Tests"
       stage: Tests
       install:
@@ -78,6 +81,7 @@ jobs:
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-rm-automation-community-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+
     - name: "Enterprise Rest API Tests"
       stage: Tests
       install:
@@ -89,24 +93,83 @@ jobs:
       script:
         - mvn -B test -pl :alfresco-rm-automation-enterprise-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
-    - name: "Community UI Tests ..."
+    - &community_shared_UI_configuration
+      name: "Community Smoke UI Tests for Records"
       stage: Tests
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
       install:
         - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh
       script:
-        - echo "Community UI Tests ..."
-    - name: "Enterprise UI Tests ..."
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *community_shared_UI_configuration
+      name: "Community Smoke UI Tests for actions in RM site"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *community_shared_UI_configuration
+      name: "Community Level 2 UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - &enterprise_shared_UI_configuration
+      name: "Enterprise Level 2 UI Tests"
       stage: Tests
+      addons:
+        firefox: "43.0.1"
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-ui/target/surefire-reports
+            - ./rm-automation/rm-automation-ui/target/reports
+            - ./rm-automation/rm-automation-ui/target/screenshots
+          target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
       install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh
       script:
-        - echo "Enterprise UI Tests ..."
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Classification Level 2 UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Content Classification UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Folders Classification UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Guides UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Security Marks UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+
+    - <<: *enterprise_shared_UI_configuration
+      name: "Enterprise Console and Configuration UI Tests"
+      script:
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
@@ -117,16 +180,92 @@ jobs:
       script:
        - echo "Static Analysis (SAST)"
 
-    - name: "Community Release"
+    - name: "Community Release and Publish to S3 Staging Bucket"
       stage: Release
+      if: commit_message =~ /\[community release .*\]/
+      before_script:
+        - source scripts/set-release-variables.sh
       script:
-        - echo "Community Release"
-    - name: "Enterprise Release"
-      stage: Release
-      script:
-        - echo "Enterprise Release"
+        - bash scripts/release.sh "community"
+      before_deploy:
+        - bash scripts/zip-artifacts-staging.sh "community"
+      deploy:
+        - provider: s3
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          upload_dir: "community/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/community/RM/${RELEASE_VERSION}"
 
-    - name: "Copy to S3 Release Bucket"
-      stage: Publish
+    - name: "Enterprise Release and Publish to S3 Staging Bucket"
+      stage: Release
+      if: commit_message =~ /\[enterprise release .*\]/
+      before_script:
+        - source scripts/set-release-variables.sh
       script:
-        - echo "Copy to S3 Release Bucket"
+        - bash scripts/release.sh "enterprise"
+      before_deploy:
+        - bash scripts/zip-artifacts-staging.sh "enterprise"
+      deploy:
+        - provider: s3
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          upload_dir: "enterprise/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/enterprise/RM/${RELEASE_VERSION}"
+
+    - name: "Community Publish to S3 Release Bucket"
+      stage: Publish
+      if: commit_message =~ /\[community release .*\]/ AND commit_message =~ /\[publish\]/
+      before_script: source scripts/set-release-variables.sh
+      script: skip
+      before_deploy: bash scripts/zip-artifacts-release.sh "community"
+      deploy:
+        - provider: s3
+          access_key_id: ${RELEASE_AWS_ACCESS_KEY}
+          secret_access_key: $RELEASE_AWS_ACCESS_SECRET}
+          region: "eu-west-1"
+          bucket: "eu.dl.alfresco.com"
+          upload_dir: "release/community/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/community/RM/${RELEASE_VERSION}"
+
+    - name: "Enterprise Publish to S3 Release Bucket"
+      stage: Publish
+      if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/
+      before_script: source scripts/set-release-variables.sh
+      script: skip
+      before_deploy: bash scripts/zip-artifacts-release.sh "enterprise"
+      deploy:
+        - provider: s3
+          access_key_id: ${RELEASE_AWS_ACCESS_KEY}
+          secret_access_key: ${RELEASE_AWS_ACCESS_SECRET}
+          region: "eu-west-1"
+          bucket: "eu.dl.alfresco.com"
+          upload_dir: "release/enterprise/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/eu.dl.alfresco.com/release/enterprise/RM/${RELEASE_VERSION}"

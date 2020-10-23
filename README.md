@@ -138,3 +138,4 @@ Unzip it and change to the "solr" folder within it. Start the Solr server using 
 solr start -a "-Dcreate.alfresco.defaults=alfresco,archive"
 ```
 Start your repository
+    

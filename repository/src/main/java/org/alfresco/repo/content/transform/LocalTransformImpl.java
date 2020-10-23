@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -189,7 +188,6 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = "targetMimetype";
         args[i++] = targetMimetype;
 
-        targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, log, args);
     }

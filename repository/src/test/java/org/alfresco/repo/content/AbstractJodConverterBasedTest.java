@@ -63,13 +63,11 @@ import org.junit.Ignore;
 import org.springframework.context.ApplicationContext;
 
 /**
- * @deprecated The JodConverterMetadataExtracter has not been in use since 6.0.1 and the transformer is also deprecated.
- *
+ * 
  * @author Neil McErlean
  * @since 3.3
  */
 @Ignore("This is an abstract class so don't instaniate it or run it in Junit")
-@Deprecated
 public abstract class AbstractJodConverterBasedTest
 {
     private static Log log = LogFactory.getLog(AbstractJodConverterBasedTest.class);

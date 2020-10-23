@@ -73,22 +73,18 @@ public class MetadataExtracterRegistry
     private List<MetadataExtracter> extracters;
     private Map<String, List<MetadataExtracter>> extracterCache;
     private Map<String, List<MetadataEmbedder>> embedderCache;
-    private AsynchronousExtractor asynchronousExtractor;
 
     /** Controls read access to the cache */
     private Lock extracterCacheReadLock;
     /** controls write access to the cache */
     private Lock extracterCacheWriteLock;
 
-    private boolean asyncExtractEnabled = true;
-    private boolean asyncEmbedEnabled = true;
-
     public MetadataExtracterRegistry()
     {
         // initialise lists
-        extracters = new ArrayList<>(11);
-        extracterCache = new HashMap<>(18);
-        embedderCache = new HashMap<>(18);
+        extracters = new ArrayList<MetadataExtracter>(10);
+        extracterCache = new HashMap<String, List<MetadataExtracter>>(17);
+        embedderCache = new HashMap<String, List<MetadataEmbedder>>(17);
 
         // create lock objects for access to the cache
         ReadWriteLock extractionCacheLock = new ReentrantReadWriteLock();
@@ -129,14 +125,7 @@ public class MetadataExtracterRegistry
         extracterCacheWriteLock.lock();
         try
         {
-            if (extracter instanceof AsynchronousExtractor)
-            {
-                asynchronousExtractor = (AsynchronousExtractor)extracter;
-            }
-            else
-            {
-                extracters.add(extracter);
-            }
+            extracters.add(extracter);
             extracterCache.clear();
             embedderCache.clear();
         }
@@ -144,32 +133,6 @@ public class MetadataExtracterRegistry
         {
             extracterCacheWriteLock.unlock();
         }
-    }
-
-    public void setAsyncExtractEnabled(boolean asyncExtractEnabled)
-    {
-        this.asyncExtractEnabled = asyncExtractEnabled;
-    }
-
-    public void setAsyncEmbedEnabled(boolean asyncEmbedEnabled)
-    {
-        this.asyncEmbedEnabled = asyncEmbedEnabled;
-    }
-
-    /**
-     * Returns the {@link AsynchronousExtractor} if it is able to perform the extraction and is enabled. Failing that it
-     * calls {@link #getExtracter(String)}.
-     *
-     * @param sourceSizeInBytes size of the source content.
-     * @param sourceMimetype the source MIMETYPE of the extraction
-     * @return Returns a metadata extractor that can extract metadata from the chosen MIME type.
-     */
-    public MetadataExtracter getExtractor(String sourceMimetype, long sourceSizeInBytes)
-    {
-        return asyncExtractEnabled && asynchronousExtractor != null &&
-               asynchronousExtractor.isSupported(sourceMimetype, sourceSizeInBytes)
-            ? asynchronousExtractor
-            : getExtracter(sourceMimetype);
     }
 
     /**
@@ -265,7 +228,7 @@ public class MetadataExtracterRegistry
             logger.debug("Finding extractors for " + sourceMimetype);
         }
 
-        List<MetadataExtracter> extractors = new ArrayList<>(1);
+        List<MetadataExtracter> extractors = new ArrayList<MetadataExtracter>(1);
 
         for (MetadataExtracter extractor : extracters)
         {
@@ -290,23 +253,7 @@ public class MetadataExtracterRegistry
         }
         return extractors;
     }
-
-    /**
-     * Returns the {@link AsynchronousExtractor} if it is able to perform the embedding and is enabled. Failing that it
-     * calls {@link #getEmbedder(String)}.
-     *
-     * @param sourceSizeInBytes size of the source content.
-     * @param sourceMimetype the source MIMETYPE of the extraction
-     * @return Returns a metadata extractor that can extract metadata from the chosen MIME type.
-     */
-    public MetadataEmbedder getEmbedder(String sourceMimetype, long sourceSizeInBytes)
-    {
-        return asyncEmbedEnabled && asynchronousExtractor != null &&
-               asynchronousExtractor.isEmbedderSupported(sourceMimetype, sourceSizeInBytes)
-                ? asynchronousExtractor
-                : getEmbedder(sourceMimetype);
-    }
-
+    
     /**
      * Gets the best metadata embedder. This is a combination of the most
      * reliable and the most performant embedder.

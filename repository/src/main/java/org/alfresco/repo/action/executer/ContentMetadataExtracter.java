@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -86,22 +86,23 @@ import org.apache.commons.logging.LogFactory;
 public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(ContentMetadataExtracter.class);
-    
+
     public static final String EXECUTOR_NAME = "extract-metadata";
-    
+
     private NodeService nodeService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private TaggingService taggingService;
     private MetadataExtracterRegistry metadataExtracterRegistry;
     private boolean carryAspectProperties = true;
-    
-    
+
+
     private boolean enableStringTagging = false;
-    
+
     // Default list of separators (when enableStringTagging is enabled)
-    protected List<String> stringTaggingSeparators = Arrays.asList(",", ";", "\\|");
-    
+    public final static List<String> DEFAULT_STRING_TAGGING_SEPARATORS = Arrays.asList(",", ";", "\\|");
+    protected List<String> stringTaggingSeparators = DEFAULT_STRING_TAGGING_SEPARATORS;
+
     public ContentMetadataExtracter()
     {
     }
@@ -121,7 +122,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * @param dictService  The DictionaryService to set.
      */
@@ -148,7 +149,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 
     /**
      * Whether or not aspect-related properties must be carried to the new version of the node
-     * 
+     *
      * @param carryAspectProperties     <tt>true</tt> (default) to carry all aspect-linked
      *                                  properties forward.  <tt>false</tt> will clean the
      *                                  aspect of any unextracted values.
@@ -157,12 +158,12 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     {
         this.carryAspectProperties = carryAspectProperties;
     }
-    
+
     /**
      * Whether or not to enable mapping of simple strings to cm:taggable tags
-     * 
-     * @param enableStringTagging       <tt>true</tt> find or create tags for each string 
-     *                                  mapped to cm:taggable.  <tt>false</tt> (default) 
+     *
+     * @param enableStringTagging       <tt>true</tt> find or create tags for each string
+     *                                  mapped to cm:taggable.  <tt>false</tt> (default)
      *                                  ignore mapping strings to tags.
      */
     public void setEnableStringTagging(boolean enableStringTagging)
@@ -172,7 +173,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 
     /**
      * List of string separators - note: all will be applied to a given string
-     * 
+     *
      * @param stringTaggingSeparators
      */
     public void setStringTaggingSeparators(List<String> stringTaggingSeparators)
@@ -188,14 +189,21 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
      * the taggable property should still contain raw string values.
      * <p>
      * Mixing of NodeRefs and string values is permitted so each raw value is
-     * checked for a valid NodeRef representation and if so, converts to a NodeRef, 
+     * checked for a valid NodeRef representation and if so, converts to a NodeRef,
      * if not, adds as a tag via the {@link TaggingService}.
-     * 
+     *
      * @param actionedUponNodeRef The NodeRef being actioned upon
      * @param propertyDef the PropertyDefinition of the taggable property
      * @param rawValue the raw value from the metadata extracter
      */
     protected void addTags(NodeRef actionedUponNodeRef, PropertyDefinition propertyDef, Serializable rawValue)
+    {
+        addTags(actionedUponNodeRef, propertyDef, rawValue, nodeService, stringTaggingSeparators, taggingService);
+    }
+
+    private static void addTags(NodeRef actionedUponNodeRef, PropertyDefinition propertyDef, Serializable rawValue,
+                                NodeService nodeService, List<String> stringTaggingSeparators,
+                                TaggingService taggingService)
     {
         if (rawValue == null)
         {
@@ -231,7 +239,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                                 logger.trace("adding string tag name'" + tagName + "' (from tag nodeRef "+nodeRef+") to " + actionedUponNodeRef);
                             }
 
-                            tags.addAll(splitTag(tagName));
+                            tags.addAll(splitTag(tagName, stringTaggingSeparators));
                         }
                         catch (InvalidNodeRefException e)
                         {
@@ -250,7 +258,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                             logger.trace("adding string tag name'" + singleValue + "' to " + actionedUponNodeRef);
                         }
 
-                        tags.addAll(splitTag((String)singleValue));
+                        tags.addAll(splitTag((String)singleValue, stringTaggingSeparators));
                     }
                 }
                 else if (singleValue instanceof NodeRef)
@@ -263,7 +271,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                         logger.trace("adding string tag name'" + tagName + "' (for nodeRef "+nodeRef+") to " + actionedUponNodeRef);
                     }
 
-                    tags.addAll(splitTag(tagName));
+                    tags.addAll(splitTag(tagName, stringTaggingSeparators));
                 }
             }
         }
@@ -273,8 +281,8 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             {
                 logger.trace("adding string tag name'" + (String)rawValue + "' to " + actionedUponNodeRef);
             }
-            
-            tags.addAll(splitTag((String)rawValue));
+
+            tags.addAll(splitTag((String)rawValue, stringTaggingSeparators));
         }
 
         if (logger.isDebugEnabled())
@@ -297,6 +305,11 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     }
 
     protected List<String> splitTag(String str)
+    {
+        return splitTag(str, stringTaggingSeparators);
+    }
+
+    private static List<String> splitTag(String str, List<String> stringTaggingSeparators)
     {
         List<String> result = new ArrayList<>();
         if ((str != null) && (!str.equals("")))
@@ -323,7 +336,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 
         return result;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action,
      *      NodeRef)
@@ -347,7 +360,8 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             return;
         }
         String mimetype = reader.getMimetype();
-        MetadataExtracter extracter = metadataExtracterRegistry.getExtracter(mimetype);
+        long sourceSizeInBytes = reader.getSize();
+        MetadataExtracter extracter = metadataExtracterRegistry.getExtractor(mimetype, sourceSizeInBytes);
         if (extracter == null)
         {
             if(logger.isDebugEnabled())
@@ -372,6 +386,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         try
         {
             modifiedProperties = extracter.extract(
+                    actionedUponNodeRef,
                     reader,
                     /*OverwritePolicy.PRAGMATIC,*/
                     nodeProperties);
@@ -408,11 +423,22 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         {
             return;
         }
-        
+
+        addExtractedMetadataToNode(actionedUponNodeRef, nodeProperties, modifiedProperties,
+                nodeService, dictionaryService, taggingService, enableStringTagging, carryAspectProperties,
+                stringTaggingSeparators);
+    }
+
+    public static void addExtractedMetadataToNode(NodeRef actionedUponNodeRef, Map<QName, Serializable> nodeProperties,
+                                                   Map<QName, Serializable> modifiedProperties,
+                                                   NodeService nodeService, DictionaryService dictionaryService,
+                                                   TaggingService taggingService, boolean enableStringTagging,
+                                                   boolean carryAspectProperties, List<String> stringTaggingSeparators)
+    {
         // Check that all properties have the appropriate aspect applied
         Set<QName> requiredAspectQNames = new HashSet<QName>(3);
         Set<QName> aspectPropertyQNames = new HashSet<QName>(17);
-        
+
         /**
          * The modified properties contain null values as well.  As we are only interested
          * in the keys, this will force aspect aspect properties to be removed even if there
@@ -432,9 +458,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                 if (enableStringTagging && propertyContainerDef.getName().equals(ContentModel.ASPECT_TAGGABLE))
                 {
                     Serializable oldValue = nodeProperties.get(propertyQName);
-                    addTags(actionedUponNodeRef, propertyDef, oldValue);
+                    addTags(actionedUponNodeRef, propertyDef, oldValue,
+                            nodeService, stringTaggingSeparators, taggingService);
                     // Replace the raw value with the created tag NodeRefs
-                    nodeProperties.put(ContentModel.PROP_TAGS, 
+                    nodeProperties.put(ContentModel.PROP_TAGS,
                             nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TAGS));
                 }
                 else
@@ -447,7 +474,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                 }
             }
         }
-        
+
         if (!carryAspectProperties)
         {
             // Remove any node properties that are defined on the aspects but were not extracted
@@ -465,10 +492,14 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                 }
             }
         }
-        
+
+        // The following code can result in a postCommit to extract the metadata again via JavaBehaviour
+        // (such as ImapContentPolicy.onAddAspect). Not very efficient, but I cannot think of a way to
+        // avoid it that does not risk memory leaks or disabling behaviour we want.
+
         // Add all the properties to the node BEFORE we add the aspects
         nodeService.setProperties(actionedUponNodeRef, nodeProperties);
-        
+
         // Add each of the aspects, as required
         for (QName requiredAspectQName : requiredAspectQNames)
         {

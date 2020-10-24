@@ -12,7 +12,7 @@
       <value name="published" field="published" usage="optional"/>
       <value name="version" field="version" usage="optional"/>
       <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
-      
+
       <structure name="imports" usage="optional">
          <collection field="imports" factory="org.alfresco.repo.dictionary.M2Model.createList">
             <structure name="import" type="org.alfresco.repo.dictionary.M2Namespace" usage="optional">
@@ -37,7 +37,7 @@
                <value style="attribute" name="name" field="name"/>
                <value name="title" field="title" usage="optional"/>
                <value name="description" field="description" usage="optional"/>
-               <value name="default-analyser-class" field="defaultAnalyserClassName"/>
+               <value name="default-analyser-class" field="defaultAnalyserClassName" usage="optional"/>
                <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
                <value name="java-class" field="javaClassName"/>
             </structure>

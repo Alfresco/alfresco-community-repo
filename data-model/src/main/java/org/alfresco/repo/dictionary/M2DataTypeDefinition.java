@@ -67,7 +67,6 @@ import org.alfresco.service.namespace.QName;
             throw new DictionaryException(ERR_NOT_DEFINED_NAMESPACE, name.toPrefixString(), name.getNamespaceURI(), model.getName().toPrefixString());
         }
         this.dataType = propertyType;
-        this.analyserResourceBundleName = dataType.getAnalyserResourceBundleName();
     }
 
 
@@ -147,107 +146,8 @@ import org.alfresco.service.namespace.QName;
     }
    
     @Override
-    public String getDefaultAnalyserClassName()
-    {
-        return dataType.getDefaultAnalyserClassName();
-    }
-
-    @Override
     public String getJavaClassName()
     {
         return dataType.getJavaClassName();
     }
-
-    @Override
-    public String getAnalyserResourceBundleName()
-    {
-        return analyserResourceBundleName;
-    }
-    
-    @Override
-    public String resolveAnalyserClassName()
-    { 
-        return resolveAnalyserClassName(I18NUtil.getLocale());
-    }
-    
-    /**
-     * @param locale Locale
-     * @return String
-     */
-    @Override
-    public String resolveAnalyserClassName(Locale locale)
-    {
-        ClassLoader resourceBundleClassLoader = getModel().getDictionaryDAO().getResourceClassLoader();
-        if(resourceBundleClassLoader == null)
-        {
-            resourceBundleClassLoader = this.getClass().getClassLoader();
-        }
-        
-        StringBuilder keyBuilder = new StringBuilder(64);
-        keyBuilder.append(getModel().getName().toPrefixString());
-        keyBuilder.append(".datatype");
-        keyBuilder.append(".").append(getName().toPrefixString());
-        keyBuilder.append(".analyzer");
-        String key = StringUtils.replace(keyBuilder.toString(), ":", "_");
-        
-        String analyserClassName = null;
-        
-        String defaultAnalyserResourceBundleName = this.getModel().getDictionaryDAO().getDefaultAnalyserResourceBundleName();
-        if(defaultAnalyserResourceBundleName != null)
-        {
-            ResourceBundle bundle = ResourceBundle.getBundle(defaultAnalyserResourceBundleName, locale, resourceBundleClassLoader);
-            if(bundle.containsKey(key))
-            {
-                analyserClassName = bundle.getString(key);
-            }
-        }
-        
-        String analyserResourceBundleName;
-        if(analyserClassName == null)
-        {
-            analyserResourceBundleName = dataType.getAnalyserResourceBundleName();
-            if(analyserResourceBundleName != null)
-            {
-                ResourceBundle bundle = ResourceBundle.getBundle(analyserResourceBundleName, locale, resourceBundleClassLoader);
-                if(bundle.containsKey(key))
-                {
-                    analyserClassName = bundle.getString(key);
-                }
-            }
-        }
-        
-        if(analyserClassName == null)
-        {
-            analyserResourceBundleName = getModel().getAnalyserResourceBundleName();
-            if(analyserResourceBundleName != null)
-            {
-                ResourceBundle bundle = ResourceBundle.getBundle(analyserResourceBundleName, locale, resourceBundleClassLoader);
-                if(bundle.containsKey(key))
-                {
-                    analyserClassName = bundle.getString(key);
-                }
-            }
-        }
-        
-        if(analyserClassName == null)
-        {
-            // MLTEXT should fall back to TEXT for analysis 
-            if(name.equals(DataTypeDefinition.MLTEXT))
-            {
-                analyserClassName = model.getDictionaryDAO().getDataType(DataTypeDefinition.TEXT).resolveAnalyserClassName(locale);
-                if(analyserClassName == null)
-                {
-                    analyserClassName = dataType.getDefaultAnalyserClassName();
-                }
-            }
-            else
-            {
-                analyserClassName = dataType.getDefaultAnalyserClassName();
-            }
-        }
-        
-        return analyserClassName;
-    }
-
-    
 }

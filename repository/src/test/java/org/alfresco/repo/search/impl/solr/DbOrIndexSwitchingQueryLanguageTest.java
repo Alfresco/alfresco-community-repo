@@ -39,7 +39,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
-import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;

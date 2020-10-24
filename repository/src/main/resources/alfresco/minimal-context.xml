@@ -25,6 +25,8 @@
 
     <!-- Required by RepositoryStartStopTest which may apply the CalendarAllDayEventDatesCorrectingPatch -->
     <import resource="classpath:alfresco/calendar-services-context.xml"/>
+    <import resource="classpath:alfresco/custom-model-management-services-context.xml"/>
+    <import resource="classpath:alfresco/download-services-context.xml"/>
 
     <!--
          Import all modules and related components.

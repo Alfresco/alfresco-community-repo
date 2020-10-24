@@ -312,20 +312,6 @@ public class M2Property
             }
         }
     }
-
-    /**
-     * @return String
-     */
-    public String getAnalyserResourceBundleName()
-    {
-        return analyserResourceBundleName;
-    }
-
-
-    public void setAnalyserResourceBundleName(String analyserResourceBundleName)
-    {
-        this.analyserResourceBundleName = analyserResourceBundleName;
-    }
     
     public void setConfigProperties(Properties configProperties)
     {

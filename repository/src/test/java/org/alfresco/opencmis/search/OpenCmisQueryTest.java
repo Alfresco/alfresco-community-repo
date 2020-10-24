@@ -74,7 +74,6 @@ import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
-import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryException;
@@ -246,8 +245,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     private String contentUrl0;
 
-    private boolean usesDateTimeAnalyser;
-
     @Override
     public void setUp() throws Exception
     {
@@ -256,10 +253,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
         cmisConnector.destroy(); // clean cached NodeRefs
         cmisConnector.setStore(storeRef.toString());
         cmisConnector.setRootPath("/");
-
-        DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.DATETIME);
-        String analyserClassName = dataType.resolveAnalyserClassName();
-        usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
 
         base = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Base Folder", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(base, ContentModel.PROP_NAME, "Base Folder");
@@ -1859,228 +1852,114 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         Date date = testQuery("SELECT cmis:lastModificationDate FROM cmis:document", -1, false, "cmis:lastModificationDate", new Date(), false);
         today.setTime(date);
-        if(!usesDateTimeAnalyser)
-        {
-            today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-        }
+        today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
 
         String sDate = df.format(today.getTime());
         String sDate2 = sDate.substring(0, sDate.length() - 1) + "+00:00";
 
         // Today (assuming al ws created today)
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate + "'", doc_count, false, "cmis:objectId", new String(),
+                false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate2 + "'", doc_count, false, "cmis:objectId", new String(),
+                false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
 
-        if(usesDateTimeAnalyser)
-        {
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate + "'", 1, false, "cmis:objectId", new String(),
-                    false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate2 + "'", 1, false, "cmis:objectId", new String(),
-                    false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count-1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count-1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(),
-                    true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", 0, false,
+                "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", doc_count-1, false,
-                    "cmis:objectId", new String(), true);
+        // using yesterday
 
-            // using yesterday
+        date = Duration.subtract(date, new Duration("P1D"));
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.setTime(date);
+        yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        sDate = df.format(yesterday.getTime());
 
-            date = Duration.subtract(date, new Duration("P1D"));
-            Calendar yesterday = Calendar.getInstance();
-            yesterday.setTime(date);
-            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(yesterday.getTime());
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
-                    true);
+        // using tomorrow
 
-            // using tomorrow
+        date = Duration.add(date, new Duration("P2D"));
+        Calendar tomorrow = Calendar.getInstance();
+        tomorrow.setTime(date);
+        tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        sDate = df.format(tomorrow.getTime());
 
-            date = Duration.add(date, new Duration("P2D"));
-            Calendar tomorrow = Calendar.getInstance();
-            tomorrow.setTime(date);
-            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(tomorrow.getTime());
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
-                    true);
-        }
-        else
-        {
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate + "'", doc_count, false, "cmis:objectId", new String(),
-                    false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate2 + "'", doc_count, false, "cmis:objectId", new String(),
-                    false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
-                    true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", 0, false,
-                    "cmis:objectId", new String(), true);
-
-            // using yesterday
-
-            date = Duration.subtract(date, new Duration("P1D"));
-            Calendar yesterday = Calendar.getInstance();
-            yesterday.setTime(date);
-            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(yesterday.getTime());
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
-                    true);
-
-            // using tomorrow
-
-            date = Duration.add(date, new Duration("P2D"));
-            Calendar tomorrow = Calendar.getInstance();
-            tomorrow.setTime(date);
-            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(tomorrow.getTime());
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
-                    true);
-        }
-
-
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                true);
     }
 
     @Category(RedundantTests.class)
@@ -2215,213 +2094,106 @@ public class OpenCmisQueryTest extends BaseCMISTest
         // start.set(Calendar.HOUR_OF_DAY, start.getMinimum(Calendar.HOUR_OF_DAY));
         // start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
         // start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
-        if(!usesDateTimeAnalyser)
-        {
-            today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-        }
+        today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
 
         String sDate = df.format(today.getTime());
 
         // Today (assuming al ws created today)
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
 
-        if(usesDateTimeAnalyser)
-        {
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count-1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count-1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", 0, false, "cmis:objectId",
+                new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", doc_count-1, false, "cmis:objectId",
-                    new String(), true);
+        // using yesterday
 
-            // using yesterday
+        date = Duration.subtract(date, new Duration("P1D"));
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.setTime(date);
+        yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        sDate = df.format(yesterday.getTime());
 
-            date = Duration.subtract(date, new Duration("P1D"));
-            Calendar yesterday = Calendar.getInstance();
-            yesterday.setTime(date);
-            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(yesterday.getTime());
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
+        // using tomorrow
 
-            // using tomorrow
+        date = Duration.add(date, new Duration("P2D"));
+        Calendar tomorrow = Calendar.getInstance();
+        tomorrow.setTime(date);
+        tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        sDate = df.format(tomorrow.getTime());
 
-            date = Duration.add(date, new Duration("P2D"));
-            Calendar tomorrow = Calendar.getInstance();
-            tomorrow.setTime(date);
-            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(tomorrow.getTime());
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
 
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
-        }
-        else
-        {
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", 0, false, "cmis:objectId",
-                    new String(), true);
-
-            // using yesterday
-
-            date = Duration.subtract(date, new Duration("P1D"));
-            Calendar yesterday = Calendar.getInstance();
-            yesterday.setTime(date);
-            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(yesterday.getTime());
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
-
-            // using tomorrow
-
-            date = Duration.add(date, new Duration("P2D"));
-            Calendar tomorrow = Calendar.getInstance();
-            tomorrow.setTime(date);
-            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-            sDate = df.format(tomorrow.getTime());
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
-
-        }
-
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
     }
 
     @Category(RedundantTests.class)

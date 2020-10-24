@@ -42,5 +42,5 @@ public interface LuceneQueryBuilderComponent<Q, S, E extends Throwable>
      * @return - the lucene query fragment for this component
      * @throws E
      */
-    public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E;
+    public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E;
 }

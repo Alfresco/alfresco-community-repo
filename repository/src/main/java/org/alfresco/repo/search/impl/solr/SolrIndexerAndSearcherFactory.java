@@ -30,7 +30,7 @@ import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NoActionIndexer;
-import org.alfresco.repo.search.impl.lucene.AbstractIndexerAndSearcher;
+import org.alfresco.repo.search.impl.AbstractIndexerAndSearcher;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;

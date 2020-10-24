@@ -46,7 +46,7 @@ import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQue
 import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQuery;
 import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.search.impl.lucene.LuceneUtils;
+import org.alfresco.repo.search.LuceneUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteServiceImpl;

@@ -47,7 +47,7 @@ public interface LuceneQueryBuilder <Q, S, E extends Throwable>
      * @return - the query
      * @throws E
      */
-    public Q buildQuery(Set<String> selectors,  LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E;
+    public Q buildQuery(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E;
 
     /**
      * Build the matching lucene sort
@@ -55,12 +55,12 @@ public interface LuceneQueryBuilder <Q, S, E extends Throwable>
      * @return - the sort spec
      * @throws E 
      */
-    public S buildSort(Set<String> selectors, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E;
+    public S buildSort(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E;
     
     /**
      * Build a sort definition for a sorted result set wrapper
      * @param functionContext FunctionEvaluationContext
      */
-    public List<SortDefinition> buildSortDefinitions(Set<String> selectors, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext);
+    public List<SortDefinition> buildSortDefinitions(Set<String> selectors, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext);
 
 }

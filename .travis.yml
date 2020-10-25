@@ -149,9 +149,9 @@ jobs:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
-      name: "Enterprise Content Classification UI Tests"
+      name: "Enterprise Records Classification UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseContentClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseRecordsClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Folders Classification UI Tests"
@@ -159,9 +159,9 @@ jobs:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
-      name: "Enterprise Guides UI Tests"
+      name: "Enterprise Documents Classification UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseGuidesTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseDocumentsClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Security Marks UI Tests"
@@ -169,9 +169,9 @@ jobs:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
-      name: "Enterprise Console and Configuration UI Tests"
+      name: "Enterprise Console, Guides and Configuration UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseConsoleAndConfigurationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseConsoleGuidesAndConfiguration.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans

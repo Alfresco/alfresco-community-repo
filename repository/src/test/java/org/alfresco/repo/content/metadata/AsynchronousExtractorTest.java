@@ -90,7 +90,7 @@ import static org.alfresco.repo.rendition2.RenditionService2Impl.SOURCE_HAS_NO_C
 
 /**
  * Tests the asynchronous extract and embed of metadata. This is normally performed in a T-Engine, but in this test
- * class is mocked using a separate Thread that returns well known values. What make the AsynchronousExtractor
+ * class is mocked using a separate Thread that returns well known values. What makes the AsynchronousExtractor
  * different from other {@link AbstractMappingMetadataExtracter} sub classes is that the calling Thread does not
  * do the work of updating properties or the content, as the T-Engine will reply at some later point.
  *

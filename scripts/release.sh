@@ -29,4 +29,4 @@ mvn --batch-mode \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
     -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
     -DskipTests -D${release_type} -DuseReleaseProfile=false \
-    -P${release_type}-release release:clean release:prepare release:perform
+    release:clean release:prepare release:perform

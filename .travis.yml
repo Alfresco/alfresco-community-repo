@@ -119,6 +119,7 @@ jobs:
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - |
+          echo ${TRAVIS_COMMIT_MESSAGE}
           if [[ ${TRAVIS_COMMIT_MESSAGE} =~ '"[tests on community]"' ]]; then
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
           else

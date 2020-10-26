@@ -74,16 +74,27 @@ jobs:
     - name: "Community Rest API Tests"
       stage: Tests
       install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
+        - |
+          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
+          else
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
+          fi
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-community-rest-api -am
       before_script:
-        - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
+        - |
+          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+            bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
+          else
+            bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+          fi
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-rm-automation-community-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      if: commit_message !~ /\[tests on community\]/
       install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-enterprise-rest-api -am
@@ -107,7 +118,7 @@ jobs:
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - |
-          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
           else
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
@@ -115,7 +126,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
       install:
         - |
-          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
             bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
           else
             bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
@@ -137,6 +148,7 @@ jobs:
     - &enterprise_shared_UI_configuration
       name: "Enterprise Level 2 UI Tests"
       stage: Tests
+      if: commit_message !~ /\[tests on community\]/
       addons:
         firefox: "43.0.1"
         artifacts:

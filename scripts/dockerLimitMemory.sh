@@ -12,6 +12,10 @@ docker update --memory=512Mb --memory-swap -1 $(docker ps -a | grep '_imagemagic
 docker update --memory=512Mb --memory-swap -1 $(docker ps -a | grep '_alfresco-pdf-renderer_' | awk '{print $1}')
 docker update --memory=512Mb --memory-swap -1 $(docker ps -a | grep '_libreoffice_' | awk '{print $1}')
 
+shareContainerId=$(docker ps -a | grep '_share_' | awk '{print $1}')
+if [ -n "$shareContainerId" ]; then
+   docker update --memory=1Gb --memory-swap -1 --restart on-failure $shareContainerId
+fi
 #stop not needed container
 docker stop $(docker ps -a | grep '_zeppelin_' | awk '{print $1}')
 

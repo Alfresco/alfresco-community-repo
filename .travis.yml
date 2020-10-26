@@ -93,6 +93,7 @@ jobs:
       script:
         - mvn -B test -pl :alfresco-rm-automation-enterprise-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+
     - &community_shared_UI_configuration
       name: "Community Smoke UI Tests for Records"
       stage: Tests
@@ -105,10 +106,20 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/screenshots
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+        - |
+          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+          else
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
+          fi
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
       install:
-        - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
+        - |
+          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+            bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
+          else
+            bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
+          fi
         - bash scripts/waitForAlfrescoToStart.sh
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}

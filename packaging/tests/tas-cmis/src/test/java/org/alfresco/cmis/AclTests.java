@@ -64,7 +64,7 @@ public class AclTests extends CmisTest
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFile(testFile).and().assertThat().existsInRepo();
         cmisApi.usingResource(testFile).addAcl(inviteUser, UserRole.SiteContributor, AclPropagation.REPOSITORYDETERMINED)
-            .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -76,7 +76,7 @@ public class AclTests extends CmisTest
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFolder(testFolder).and().assertThat().existsInRepo();
         cmisApi.usingResource(testFolder).addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.PROPAGATE)
-            .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteConsumer);
+                .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteConsumer);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -88,7 +88,7 @@ public class AclTests extends CmisTest
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFolder(testFolder).and().assertThat().existsInRepo();
         cmisApi.usingResource(testFolder).addAcl(inviteUser, UserRole.SiteCollaborator, AclPropagation.OBJECTONLY)
-            .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteCollaborator);
+                .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteCollaborator);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -102,7 +102,7 @@ public class AclTests extends CmisTest
         cmisApi.usingResource(testFolder).addAcl(inviteUser, UserRole.SiteCollaborator, AclPropagation.OBJECTONLY)
                 .then().applyAcl(inviteUser, UserRole.SiteConsumer, UserRole.SiteCollaborator, AclPropagation.OBJECTONLY)
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteConsumer)
-                    .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteCollaborator);
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteCollaborator);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -114,7 +114,7 @@ public class AclTests extends CmisTest
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFile(testFile).and().assertThat().existsInRepo()
                 .then().addAcl(inviteUser, UserRole.SiteCollaborator, AclPropagation.OBJECTONLY)
-                    .then().applyAcl(inviteUser, UserRole.SiteConsumer, UserRole.SiteManager, AclPropagation.OBJECTONLY);
+                .then().applyAcl(inviteUser, UserRole.SiteConsumer, UserRole.SiteManager, AclPropagation.OBJECTONLY);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
@@ -127,8 +127,8 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.PROPAGATE)
                 .when().applyAcl(inviteUser, UserRole.SiteManager, UserRole.SiteConsumer, AclPropagation.PROPAGATE)
-                    .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager)
-                        .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
+                .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager)
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -141,8 +141,8 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
                 .when().applyAcl(inviteUser, UserRole.SiteManager, UserRole.SiteConsumer, AclPropagation.REPOSITORYDETERMINED)
-                    .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager)
-                        .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
+                .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager)
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
     }
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -155,7 +155,7 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
                 .when().removeAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.REPOSITORYDETERMINED)
-                    .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
@@ -168,7 +168,7 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteManager, AclPropagation.OBJECTONLY)
                 .when().removeAcl(inviteUser, UserRole.SiteManager, AclPropagation.PROPAGATE)
-                    .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteManager);
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteManager);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -181,7 +181,7 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteContributor, AclPropagation.OBJECTONLY)
                 .when().removeAcl(inviteUser, UserRole.SiteContributor, AclPropagation.OBJECTONLY)
-                    .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -215,8 +215,8 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.PDF, "content");
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile, VersioningState.CHECKEDOUT)
-            .usingPWCDocument().addAcl(inviteUser, UserRole.SiteContributor, AclPropagation.PROPAGATE)
+                .createFile(testFile, VersioningState.CHECKEDOUT)
+                .usingPWCDocument().addAcl(inviteUser, UserRole.SiteContributor, AclPropagation.PROPAGATE)
                 .then().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
@@ -227,8 +227,7 @@ public class AclTests extends CmisTest
     {
         FolderModel folder = FolderModel.getRandomFolderModel();
         folder.setCmisLocation("/" + folder.getName() + "/");
-        cmisApi.authenticateUser(testUser)
-            .usingResource(folder)
+        cmisApi.authenticateUser(testUser).usingResource(folder)
                 .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
@@ -242,8 +241,8 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
                 .when().applyAcl(inviteUser, UserRole.SiteManager, UserRole.SiteConsumer, null)
-                    .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager)
-                        .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
+                .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager)
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteConsumer);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -253,10 +252,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile)
-            .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
-            .then().checkOut().assertThat().documentIsCheckedOut()
-            .usingPWCDocument().applyAcl(inviteUser, UserRole.SiteManager, UserRole.SiteConsumer)
+                .createFile(testFile)
+                .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
+                .then().checkOut().assertThat().documentIsCheckedOut()
+                .usingPWCDocument().applyAcl(inviteUser, UserRole.SiteManager, UserRole.SiteConsumer)
                 .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteManager);
     }
     
@@ -270,7 +269,7 @@ public class AclTests extends CmisTest
                 .createFile(testFile)
                 .and().addAcl(inviteUser, UserRole.SiteContributor, AclPropagation.OBJECTONLY)
                 .when().removeAcl(inviteUser, UserRole.SiteContributor)
-                    .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -280,10 +279,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile)
-            .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
+                .createFile(testFile)
+                .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY)
                 .assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteConsumer)
-            .when().authenticateUser(unauthorizedUser)
+                .when().authenticateUser(unauthorizedUser)
                 .removeAcl(inviteUser, UserRole.SiteConsumer);
     }
     
@@ -294,8 +293,8 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile)
-            .then().authenticateUser(unauthorizedUser)
+                .createFile(testFile)
+                .then().authenticateUser(unauthorizedUser)
                 .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY);
     }
     
@@ -306,9 +305,9 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile)
-            .and().addAcl(inviteUser, UserRole.SiteConsumer)
-            .when().authenticateUser(unauthorizedUser)
+                .createFile(testFile)
+                .and().addAcl(inviteUser, UserRole.SiteConsumer)
+                .when().authenticateUser(unauthorizedUser)
                 .and().applyAcl(inviteUser, UserRole.SiteManager, UserRole.SiteConsumer);
     }
     
@@ -320,10 +319,10 @@ public class AclTests extends CmisTest
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFile(testFile, VersioningState.CHECKEDOUT).and().assertThat().existsInRepo()
-                    .and().assertThat().documentIsCheckedOut()
-                    .then().usingResource(testFile)
-                        .addAcl(inviteUser, UserRole.SiteContributor)
-                            .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().documentIsCheckedOut()
+                .then().usingResource(testFile)
+                .addAcl(inviteUser, UserRole.SiteContributor)
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -333,9 +332,9 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -345,8 +344,8 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .addAcl(inviteUser, UserRole.SiteContributor);
     }
     
@@ -357,11 +356,11 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .usingResource(testFile).refreshResource()
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -371,10 +370,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                        .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -384,10 +383,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                        .removeAcl(inviteUser, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .removeAcl(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -397,9 +396,9 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -409,8 +408,8 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
                 .addAcl(inviteUser, UserRole.SiteCollaborator);
     }
     
@@ -421,11 +420,11 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
                 .usingResource(testFile).refreshResource()
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -435,10 +434,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                        .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -448,10 +447,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                        .removeAcl(inviteUser, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .removeAcl(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -461,8 +460,8 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .addAcl(inviteUser, UserRole.SiteCollaborator);
     }
     
@@ -473,11 +472,11 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .usingResource(testFile).refreshResource()
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -487,10 +486,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                        .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -500,10 +499,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                        .removeAcl(inviteUser, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .removeAcl(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -513,8 +512,8 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(privateSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .addAcl(inviteUser, UserRole.SiteCollaborator);
     }
     
@@ -525,11 +524,11 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(privateSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
-            .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .usingResource(testFile).refreshResource()
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -539,12 +538,12 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(privateSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
                 .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor)
-                    .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteCollaborator)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                        .applyAcl(inviteUser, UserRole.SiteContributor, UserRole.SiteCollaborator);
+                .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteCollaborator)
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .applyAcl(inviteUser, UserRole.SiteContributor, UserRole.SiteCollaborator);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -554,11 +553,11 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(privateSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .addAcl(inviteUser, UserRole.SiteContributor)
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor)
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                        .removeAcl(inviteUser, UserRole.SiteContributor);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .removeAcl(inviteUser, UserRole.SiteContributor);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -568,11 +567,11 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().addAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT)
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().addAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT)
                 .assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
-                    .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
-                        .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
+                .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
+                .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -582,12 +581,12 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
                 .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value())
-                    .then().applyAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT, PermissionMapping.CAN_DELETE_OBJECT)
-                        .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
-                        .and().assertThat().permissionIsNotSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
+                .then().applyAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT, PermissionMapping.CAN_DELETE_OBJECT)
+                .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -598,12 +597,12 @@ public class AclTests extends CmisTest
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFile(testFile).and().assertThat().existsInRepo()
-       .then().addAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT)
-           .assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
-               .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
-                   .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value())
-                   .then().removeAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
-                       .and().assertThat().permissionIsNotSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
+                .then().addAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT)
+                .assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
+                .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
+                .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value())
+                .then().removeAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
+                .and().assertThat().permissionIsNotSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -614,10 +613,10 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .then().addAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT)
-                    .assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
-                        .then().removeAcl(inviteUser, PermissionMapping.CAN_CHECKIN_DOCUMENT);
+                .assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
+                .then().removeAcl(inviteUser, PermissionMapping.CAN_CHECKIN_DOCUMENT);
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -628,9 +627,9 @@ public class AclTests extends CmisTest
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
-            .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .then().addAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
                 .and().assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value())
-                    .then().applyAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT, PermissionMapping.CAN_CREATE_FOLDER_FOLDER);
+                .then().applyAcl(inviteUser, PermissionMapping.CAN_UPDATE_PROPERTIES_OBJECT, PermissionMapping.CAN_CREATE_FOLDER_FOLDER);
     }
 }

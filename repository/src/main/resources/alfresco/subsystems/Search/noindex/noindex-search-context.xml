@@ -107,7 +107,7 @@
             </list>
         </property>
         <property name="name">
-            <value>solr-fts-alfresco</value>
+            <value>index-fts-alfresco</value>
         </property>
     </bean>
     
@@ -118,7 +118,7 @@
             </list>
         </property>
         <property name="name">
-            <value>solr-cmis</value>
+            <value>index-cmis</value>
         </property>
     </bean>
     

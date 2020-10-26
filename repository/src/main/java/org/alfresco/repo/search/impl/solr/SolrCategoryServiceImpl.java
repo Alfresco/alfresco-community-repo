@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -81,7 +81,7 @@ public class SolrCategoryServiceImpl extends AbstractCategoryServiceImpl
         String field = "@" + catProperty;
         
         SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO);
+        sp.setLanguage(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO);
         sp.addStore(storeRef);
         sp.setQuery(catProperty+":*");
         FieldFacet ff = new FieldFacet(field);

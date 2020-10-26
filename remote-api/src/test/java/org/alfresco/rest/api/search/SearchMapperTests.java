@@ -377,7 +377,7 @@ public class SearchMapperTests
 
         try
         {
-            searchParameters.setLanguage(SearchService.LANGUAGE_SOLR_ALFRESCO);
+            searchParameters.setLanguage(SearchService.LANGUAGE_INDEX_ALFRESCO);
             searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null, null)));
             fail();
         }

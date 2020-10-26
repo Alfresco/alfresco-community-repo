@@ -41,7 +41,7 @@
 			</list>
         </property>
         <property name="name">
-            <value>solr-cmis</value>
+            <value>index-cmis</value>
         </property>
         <property name="solrQueryHTTPClient">
             <ref bean="search.solrQueryHTTPCLient" />

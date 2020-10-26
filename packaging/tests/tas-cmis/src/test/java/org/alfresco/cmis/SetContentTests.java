@@ -34,10 +34,10 @@ public class SetContentTests extends CmisTest
         publicSite = dataSite.usingUser(siteManager).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
-    
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY, 
-                description = "Verify site manager is able to set content to a valid document in DocumentLibrary with CMIS")
+
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY,
+            description = "Verify site manager is able to set content to a valid document in DocumentLibrary with CMIS")
     public void siteManagerSetFileContentForFileCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "first content");

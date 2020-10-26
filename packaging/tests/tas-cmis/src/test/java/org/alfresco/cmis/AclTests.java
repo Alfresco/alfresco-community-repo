@@ -2,22 +2,13 @@ package org.alfresco.cmis;
 
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.data.PermissionMapping;
 import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
+import org.apache.chemistry.opencmis.commons.exceptions.*;
 import org.apache.chemistry.opencmis.commons.impl.jaxb.EnumBasicPermissions;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -55,7 +46,7 @@ public class AclTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Site manager can get the acls for valid folder")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
     public void siteManagerShouldGetFolderAcls() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -115,7 +106,7 @@ public class AclTests extends CmisTest
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
-            description = "Verify appply acl with invalid role that will be removed")
+            description = "Verify apply acl with invalid role that will be removed")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
     public void applyAclWithInvalidAddedRole() throws Exception
     {
@@ -375,7 +366,7 @@ public class AclTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with collaborator role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
     public void collaboratorCannotApplyAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

@@ -49,7 +49,7 @@ public class GetAllVersionsTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can not get all versions for a document that was deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" }, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerShouldNotGetAllVersionsForADeletedDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

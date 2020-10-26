@@ -107,7 +107,7 @@ public class AddObjectToFolderTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to add document object to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
     public void siteManagerCanAddDocumentWithVersionsToFolderWithTrueAllVersions() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -122,7 +122,7 @@ public class AddObjectToFolderTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add document object to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisInvalidArgumentException.class,
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" }, expectedExceptions=CmisInvalidArgumentException.class,
             expectedExceptionsMessageRegExp="Only allVersions=true supported!*")
     public void siteManagerCannotAddDocumentToFolderWithFalseAllVersions() throws Exception
     {

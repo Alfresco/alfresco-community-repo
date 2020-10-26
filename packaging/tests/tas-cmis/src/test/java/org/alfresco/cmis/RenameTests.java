@@ -196,7 +196,7 @@ public class RenameTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to rename document with multiple versions")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
     public void siteManagerCanRenameDocumentWithMultipleVersions() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);

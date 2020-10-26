@@ -317,7 +317,7 @@ public class GetCommentsTests extends RestTest
         
         restClient.authenticateUser(user1).withCoreAPI().usingResource(file).addComment(comment);    
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
-        comments.getOneRandomEntry().onModel().getCreatedBy().assertThat().field("firstName").is(user1.getUsername() + " FirstName")
+        comments.getOneRandomEntry().onModel().getCreatedBy().assertThat().field("firstName").is("FN-" + user1.getUsername())
             .assertThat().field("lastName").is("LN-" + user1.getUsername());        
     }
     
@@ -393,7 +393,7 @@ public class GetCommentsTests extends RestTest
         comments.assertThat().paginationField("totalItems").is("2");
         
         comments.getEntries().get(0).onModel().getCreatedBy()
-            .assertThat().field("firstName").is(usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername() + " FirstName")
+            .assertThat().field("firstName").is("FN-" + usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername())
             .assertThat().field("lastName").is("LN-" + usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername());     
         
         comments.getEntries().get(1).onModel().getCreatedBy()

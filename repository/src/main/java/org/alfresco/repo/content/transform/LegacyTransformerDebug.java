@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.transform.client.registry.SupportedTransform;
@@ -100,8 +99,9 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
     public void blacklistTransform(ContentTransformer transformer, String sourceMimetype,
                                    String targetMimetype, TransformationOptions options)
     {
-        log("Blacklist "+getName(transformer)+" "+ getSourceAndTargetExt(sourceMimetype, targetMimetype));
+        log("Blacklist "+getName(transformer)+" "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype));
     }
+
 
     @Deprecated
     public void pushTransform(ContentTransformer transformer, String fromUrl, String sourceMimetype,
@@ -265,10 +265,7 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
         }
         String i = Integer.toString(mimetypePairCount);
         String priority = gePriority(transformer, sourceMimetype, targetMimetype);
-        String sourceExt = getMimetypeExt(sourceMimetype);
-        String targetExt = getMimetypeExt(targetMimetype);
-        targetExt = AsynchronousExtractor.getExtension(targetMimetype, sourceExt, targetExt);
-        log(spaces(5-i.length())+mimetypePairCount+") "+ sourceExt + targetExt +
+        log(spaces(5-i.length())+mimetypePairCount+") "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)+
                 priority +
                 ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
                 (maxSourceSizeKBytes == 0 ? " disabled" : ""));

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -242,13 +242,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         targetMimetype.add("image/gif");
         targetMimetype.add("image/tiff");
         imagemagickSupportedTransformation.put("image/tiff", targetMimetype);
-        targetMimetype = new ArrayList<>(targetMimetype);
         targetMimetype.add("image/png");
         targetMimetype.add("image/jpeg");
         imagemagickSupportedTransformation.put("image/gif", targetMimetype);
         imagemagickSupportedTransformation.put("image/jpeg", targetMimetype);
-        targetMimetype = new ArrayList<>(targetMimetype);
-        targetMimetype.add("alfresco-metadata-extract"); // Metadata extract and embed types should be excluded from pipeline cartesian products
         imagemagickSupportedTransformation.put("image/png", targetMimetype);
         targetMimetype = new ArrayList<>();
         targetMimetype.add("target1");
@@ -336,7 +333,8 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     @Override
     public void testJsonConfig() throws IOException
     {
-        internalTestJsonConfig(64, 70);
+        // Not 60, 60 as we have added source->target1..3 to three transformers
+        internalTestJsonConfig(63, 69);
     }
 
     @Test
@@ -370,7 +368,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             switch (t.transformer.getTransformerName())
             {
                 case "imagemagick":
-                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 18, t.transformer.getSupportedSourceAndTargetList().size());
+                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 17, t.transformer.getSupportedSourceAndTargetList().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform option names", 1, t.transformer.getTransformOptions().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform options", 6, countTopLevelOptions(t.transformer.getTransformOptions()));
                     assertEquals(t.transformer.getTransformerName() + " expected to not be a transformer pipeline", t.transformer.getTransformerPipeline().size(), 0);
@@ -430,7 +428,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
                     break;
 
                 case "officeToImageViaPdf":
-                    // Note we will get 35 entries in getSupportedSourceAndTargetList() if the metadata transforms are not excluded
                     assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 28, t.transformer.getSupportedSourceAndTargetList().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform option names", 2, t.transformer.getTransformOptions().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform options", 11, countTopLevelOptions(t.transformer.getTransformOptions()));

@@ -55,7 +55,6 @@
         {"sourceMediaType": "image/png",  "targetMediaType": "image/jpeg"},
         {"sourceMediaType": "image/png",  "targetMediaType": "image/png" },
         {"sourceMediaType": "image/png",  "targetMediaType": "image/tiff"},
-        {"sourceMediaType": "image/png",  "targetMediaType": "alfresco-metadata-extract"},
 
         {"sourceMediaType": "image/tiff", "targetMediaType": "image/gif" },
         {"sourceMediaType": "image/tiff", "targetMediaType": "image/tiff"},

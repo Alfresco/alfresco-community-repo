@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.content.JodConverter;
+import org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.TempFileProvider;
@@ -59,17 +60,7 @@ import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
 
 /**
- * Extracts values from Open Office documents into the following:
- * <pre>
- *   <b>author:</b>                 --      cm:author
- *   <b>title:</b>                  --      cm:title
- *   <b>description:</b>            --      cm:description
- * </pre>
- *
- * @deprecated The JodConverterMetadataExtracter has not been in use since 6.0.1
  * @deprecated OOTB extractors are being moved to T-Engines.
- *
- * @author Neil McErlean
  */
 @Deprecated
 public class JodConverterMetadataExtracterWorker implements

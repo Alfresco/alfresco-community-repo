@@ -276,8 +276,7 @@
       <property name="mimetypeMaxSourceSizeKBytes">
           <ref bean="mimetypeMaxSourceSizeKBytes" />
       </property>
-      <property name="renditionService2" ref="renditionService2" />
-    </bean>
+    </bean> 
     
     <!-- Update Thumbnail Action -->
     <bean id="update-thumbnail" class="org.alfresco.repo.thumbnail.UpdateThumbnailActionExecuter" parent="action-executer">

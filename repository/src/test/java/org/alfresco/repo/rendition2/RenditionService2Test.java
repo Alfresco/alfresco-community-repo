@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,7 +27,6 @@ package org.alfresco.repo.rendition2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
@@ -47,9 +46,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.CronExpression;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +61,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -88,7 +90,6 @@ public class RenditionService2Test
     @Mock private RuleService ruleService;
     @Mock private TransformServiceRegistryImpl transformServiceRegistry;
     @Mock private TransformReplyProvider transformReplyProvider;
-    @Mock private AsynchronousExtractor asynchronousExtractor;
 
     private NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
     private NodeRef nodeRefMissing = new NodeRef("workspace://spacesStore/bad-test-id");
@@ -153,7 +154,6 @@ public class RenditionService2Test
         renditionService2.setTransformReplyProvider(transformReplyProvider);
         renditionService2.setEnabled(true);
         renditionService2.setThumbnailsEnabled(true);
-        renditionService2.setAsynchronousExtractor(asynchronousExtractor);
 
         renditionDefinitionRegistry2.setRenditionConfigDir("alfresco/renditions/test");
         renditionDefinitionRegistry2.afterPropertiesSet();

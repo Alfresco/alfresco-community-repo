@@ -60,7 +60,6 @@ import org.alfresco.util.PropertyCheck;
  * @since 2.1
  * @author Derek Hulley
  */
-@Deprecated
 public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
 {
     public static String[] SUPPORTED_MIMETYPES = new String[] { MimetypeMap.MIMETYPE_XML };

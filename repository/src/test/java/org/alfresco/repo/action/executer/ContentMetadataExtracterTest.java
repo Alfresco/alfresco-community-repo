@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,11 +43,16 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -62,17 +67,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * Test of the ActionExecuter for extracting metadata. Note: This test makes
@@ -90,7 +88,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
     private NodeService nodeService;
     private ContentService contentService;
-    private MetadataExtracterRegistry registry;
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
@@ -104,10 +101,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     {
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
-        registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
-        registry.setAsyncExtractEnabled(false);
-        registry.setAsyncEmbedEnabled(false);
-
+        
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -130,13 +124,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
         // Get the executer instance
         this.executer = (ContentMetadataExtracter) this.applicationContext.getBean("extract-metadata");
-    }
-
-    @After
-    public void after()
-    {
-        registry.setAsyncExtractEnabled(true);
-        registry.setAsyncEmbedEnabled(true);
     }
 
     /**
@@ -202,6 +189,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     @Test
     public void testUnknownProperties()
     {
+        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
         TestUnknownMetadataExtracter extracterUnknown = new TestUnknownMetadataExtracter();
         extracterUnknown.setRegistry(registry);
         extracterUnknown.register();
@@ -259,6 +247,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     @Test
     public void testNullExtractedValues_ALF1823()
     {
+        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
         TestNullPropMetadataExtracter extractor = new TestNullPropMetadataExtracter();
         extractor.setRegistry(registry);
         extractor.register();

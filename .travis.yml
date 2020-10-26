@@ -75,7 +75,7 @@ jobs:
       stage: Tests
       install:
         - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} =~ /\[tests on community\]/ ]]; then
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
           else
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
@@ -83,7 +83,8 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-community-rest-api -am
       before_script:
         - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+          echo ${TRAVIS_COMMIT_MESSAGE}
+          if [[ ${TRAVIS_COMMIT_MESSAGE} =~ /\[tests on community\]/ ]]; then
             bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
           else
             bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
@@ -118,7 +119,7 @@ jobs:
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
         - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} =~ /\[tests on community\]/ ]]; then
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
           else
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
@@ -126,7 +127,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
       install:
         - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} =~ /\[tests on community\]/ ]]; then
             bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
           else
             bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH

@@ -148,6 +148,13 @@
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
                 <version>2.7.2-alfresco</version>
+                <exclusions>
+                    <!-- [ACS-544] Excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c.org -->
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.services</groupId>
@@ -490,6 +497,13 @@
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>${dependency.xercesImpl.version}</version>
+                <exclusions>
+                    <!-- [ACS-544] Excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c.org -->
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- Newer metadata-extractor, used in TIKA, see ACS-370 -->
             <dependency>
@@ -697,4 +711,3 @@
     </build>
 
 </project>
-

@@ -249,11 +249,7 @@
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
         </dependency>
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.4.01</version>
-        </dependency>
+        <!-- [ACS-544] xml-apis dependency excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c. -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
@@ -424,6 +420,11 @@
               <exclusion>
                 <groupId>org.codehaus.woodstox</groupId>
                 <artifactId>woodstox-core-asl</artifactId>
+              </exclusion>
+              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
+              <exclusion>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-jta_1.1_spec</artifactId>
               </exclusion>
             </exclusions>
         </dependency>
@@ -1004,6 +1005,11 @@
               <exclusion>
                   <groupId>javax.annotation</groupId>
                   <artifactId>javax.annotation-api</artifactId>
+              </exclusion>
+              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
+              <exclusion>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-jta_1.1_spec</artifactId>
               </exclusion>
             </exclusions>
         </dependency>

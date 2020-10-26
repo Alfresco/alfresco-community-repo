@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -48,6 +49,7 @@ public class CancelCheckOutTests extends CmisTest
                 .and().assertThat().documentIsNotCheckedOut();
     }
 
+    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a document that isn't checked out")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisRuntimeException.class)
@@ -73,6 +75,7 @@ public class CancelCheckOutTests extends CmisTest
                 .then().cancelCheckOut();
     }
     
+    @Bug(id = "REPO-5383")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisRuntimeException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a pwc twice")

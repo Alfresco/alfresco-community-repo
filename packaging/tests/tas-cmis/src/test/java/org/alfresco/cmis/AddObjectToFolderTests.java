@@ -8,6 +8,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
@@ -120,6 +121,7 @@ public class AddObjectToFolderTests extends CmisTest
                         .and().assertThat().documentHasVersion(1.2);
     }
     
+    @Bug(id = "REPO-5383")
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add document object to folder")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" }, expectedExceptions=CmisInvalidArgumentException.class,

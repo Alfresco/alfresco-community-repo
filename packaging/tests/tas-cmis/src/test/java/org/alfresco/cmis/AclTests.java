@@ -3,6 +3,7 @@ package org.alfresco.cmis;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.data.PermissionMapping;
@@ -104,7 +105,8 @@ public class AclTests extends CmisTest
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteConsumer)
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteCollaborator);
     }
-    
+
+    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify apply acl with invalid role that will be removed")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
@@ -184,6 +186,7 @@ public class AclTests extends CmisTest
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
     }
     
+    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Remove Acl for valid folder with AclPropagation set to REPOSITORYDETERMINED")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
@@ -605,6 +608,7 @@ public class AclTests extends CmisTest
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
     }
     
+    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Remove invalid Acl(that was not set) for valid document with PermissionMapping")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class,
@@ -619,6 +623,7 @@ public class AclTests extends CmisTest
                 .then().removeAcl(inviteUser, PermissionMapping.CAN_CHECKIN_DOCUMENT);
     }
     
+    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply invalid Acl(that was not set) for valid document with PermissionMapping")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class,

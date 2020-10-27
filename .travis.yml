@@ -237,7 +237,6 @@ jobs:
       if: commit_message =~ /\[enterprise release .*\]/
       before_script:
         - source scripts/set-release-variables.sh
-        - bash scripts/check-existing-tags.sh "alfresco/alfresco-governance-share-enterprise"
       script:
         - bash scripts/release.sh "enterprise"
       before_deploy:
@@ -262,7 +261,7 @@ jobs:
       stage: Publish
       if: commit_message =~ /\[community release .*\]/ AND commit_message =~ /\[publish\]/
       before_script: source scripts/set-release-variables.sh
-      script: skip
+      script: travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -PbuildDockerImage -Prelease-community
       before_deploy: bash scripts/zip-artifacts-release.sh "community"
       deploy:
         - provider: s3
@@ -283,7 +282,7 @@ jobs:
       stage: Publish
       if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/
       before_script: source scripts/set-release-variables.sh
-      script: skip
+      script: travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -PbuildDockerImage -Prelease-enterprise
       before_deploy: bash scripts/zip-artifacts-release.sh "enterprise"
       deploy:
         - provider: s3

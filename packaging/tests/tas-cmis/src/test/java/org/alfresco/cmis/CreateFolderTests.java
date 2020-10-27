@@ -15,12 +15,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
+import org.apache.chemistry.opencmis.commons.exceptions.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -105,7 +100,9 @@ public class CreateFolderTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is not able to create folder with cmis:document base type id with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS},
+            expectedExceptions = { CmisConstraintException.class, CmisRuntimeException.class},
+            expectedExceptionsMessageRegExp = ".*is not a folder.*")
     public void siteManagerCannotCreateFolderWithDocumentTypeId() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();

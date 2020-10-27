@@ -17,17 +17,17 @@ elif [ $release_type != "community" -a $release_type != "enterprise" ]; then
     exit 1
 fi
 
-# Check if it's a hotfix version by counting the number of dots in the version number.
-if [ `echo "${RELEASE_VERSION}" | grep -o "\." | wc -l` == 3 -a ${release_type} == "enterprise" ];
-then
-  deploymentRepository="hotfix-release"
-else
-  deploymentRepository="${release_type}-release"
-fi
-
 if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ]; then
     echo "Please provide a Release and Development verison"
     exit 1
+fi
+
+# Check if it's a hotfix version by counting the number of dots in the version number.
+if [ `echo "${RELEASE_VERSION}" | grep -o "\." | wc -l` == 3 -a ${release_type} == "enterprise" ];
+then
+  deployment_repository="hotfix-release"
+else
+  deployment_repository="${release_type}-release"
 fi
 
 mvn --batch-mode \
@@ -37,4 +37,5 @@ mvn --batch-mode \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
     -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
     -DskipTests -D${release_type} -DuseReleaseProfile=false \
-    -P${deploymentRepository} release:clean release:prepare release:perform
+    -P${deployment_repository} -Prelease-${release_type} \
+    release:clean release:prepare release:perform

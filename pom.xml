@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.308-SNAPSHOT</version>
+    <version>8.309-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -59,7 +59,7 @@
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.11.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.3.7</dependency.cxf.version>
+        <dependency.cxf.version>3.4.0</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
         <dependency.webscripts.version>8.10</dependency.webscripts.version>
@@ -80,7 +80,7 @@
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
         <dependency.tika.version>1.24.1</dependency.tika.version>
-        <dependency.spring-security.version>5.3.4.RELEASE</dependency.spring-security.version>
+        <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
@@ -101,8 +101,8 @@
         <dependency.tas-utility.version>3.0.34</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
-        <dependency.tas-restapi.version>1.47</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.14</dependency.tas-cmis.version>
+        <dependency.tas-restapi.version>1.48</dependency.tas-restapi.version>
+        <dependency.tas-cmis.version>1.17</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
@@ -468,7 +468,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.65</version>
+                <version>1.66</version>
 <!--                <version>${dependency.bouncycastle.version}</version>-->
             </dependency>
             <dependency>
@@ -614,7 +614,7 @@
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
-                <version>2.10.6</version>
+                <version>2.10.8</version>
             </dependency>
 
             <!-- provided dependencies -->

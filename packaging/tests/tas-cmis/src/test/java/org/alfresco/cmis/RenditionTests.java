@@ -17,7 +17,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedExceptio
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS})
+@Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS })
 public class RenditionTests extends CmisTest
 {
     private SiteModel testSite;

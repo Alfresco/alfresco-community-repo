@@ -69,7 +69,7 @@ public class DeleteTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete file with multiple versions with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     public void siteManagerCanDeleteFileWithVersions() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();

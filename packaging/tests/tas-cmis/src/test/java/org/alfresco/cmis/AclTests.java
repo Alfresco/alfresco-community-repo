@@ -47,7 +47,7 @@ public class AclTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Site manager can get the acls for valid folder")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     public void siteManagerShouldGetFolderAcls() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();

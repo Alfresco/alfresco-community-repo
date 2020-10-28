@@ -88,7 +88,7 @@ public class MoveTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to move file that has multiple versions with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     public void siteManagerShouldMoveFileWithMultipleVersions() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();

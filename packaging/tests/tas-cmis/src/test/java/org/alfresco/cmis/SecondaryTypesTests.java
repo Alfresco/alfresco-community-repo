@@ -43,7 +43,7 @@ public class SecondaryTypesTests extends CmisTest
                 .createFolder(managerFolder);
     }
     
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to get secondary types for Document")
     public void userCanGetSecondaryTypesForDocument() throws Exception
@@ -52,7 +52,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to get secondary types for Folder")
     public void userCanGetSecondaryTypesForFolder() throws Exception
@@ -61,7 +61,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = { CmisObjectNotFoundException.class })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to get secondary types for Folder")
@@ -74,7 +74,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to get invalid secondary type for Folder")
     public void invalidSecondaryTypeIsNotAvailableForFolder() throws Exception
@@ -86,7 +86,7 @@ public class SecondaryTypesTests extends CmisTest
                 .and().assertThat().secondaryTypeIsNotAvailable(titledAspect + "-fake");
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get secondary types")
     public void collaboratorCanGetSecondaryTypesForContent() throws Exception
@@ -96,7 +96,7 @@ public class SecondaryTypesTests extends CmisTest
                 .then().usingResource(managerFile).assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get secondary types")
     public void contributorCanGetSecondaryTypesForContent() throws Exception
@@ -106,7 +106,7 @@ public class SecondaryTypesTests extends CmisTest
                 .then().usingResource(managerFile).assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to get secondary types")
     public void consumerCanGetSecondaryTypesForContent() throws Exception
@@ -116,7 +116,7 @@ public class SecondaryTypesTests extends CmisTest
                 .then().usingResource(managerFile).assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is able to get secondary types in public site")
     public void nonInvitedUserCanGetSecondaryTypesForContentInPublicSite() throws Exception
@@ -126,7 +126,7 @@ public class SecondaryTypesTests extends CmisTest
                 .then().usingResource(managerFile).assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get secondary types in private site")
@@ -138,7 +138,7 @@ public class SecondaryTypesTests extends CmisTest
                 .authenticateUser(nonInvitedUser).assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get secondary types in moderated site")
@@ -150,7 +150,7 @@ public class SecondaryTypesTests extends CmisTest
             .authenticateUser(nonInvitedUser).assertThat().secondaryTypeIsAvailable(titledAspect);
     }
     
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to add secondary types for Document")
     public void managerCanAddSecondaryTypesForDocument() throws Exception
@@ -166,7 +166,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().objectHasProperty("cm:publisher", "TAS Team");
     }
     
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to add secondary types for folder")
     public void managerCanAddSecondaryTypesForFolder() throws Exception
@@ -180,7 +180,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().objectHasProperty("cm:latitude", 101.32);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = CmisObjectNotFoundException.class,
             expectedExceptionsMessageRegExp = "Type 'P:cm:fakeAspect' is unknown!*")
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
@@ -190,7 +190,7 @@ public class SecondaryTypesTests extends CmisTest
         cmisApi.authenticateUser(testUser).usingResource(managerFolder).addSecondaryTypes("P:cm:fakeAspect");
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to add twice same secondary type")
     public void managerCanAddTwiceSameSecondaryType() throws Exception
@@ -201,7 +201,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().secondaryTypeIsAvailable("P:cm:dublincore");
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to add secondary types for document created by manager")
     public void collaboratorCanAddAspectForDocument() throws Exception
@@ -218,7 +218,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().objectHasProperty("audio:sampleType", "TAS Sample");
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to add secondary types for document created by manager")
@@ -232,7 +232,7 @@ public class SecondaryTypesTests extends CmisTest
                 .and().assertThat().objectHasProperty("dp:offlineExpiresAfter", 2);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to add secondary types for document created by manager")
@@ -246,7 +246,7 @@ public class SecondaryTypesTests extends CmisTest
                 .and().assertThat().objectHasProperty("dp:offlineExpiresAfter", 2);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to add twice same secondary type")
     public void managerCanAddDateProperty() throws Exception
@@ -262,7 +262,7 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().objectHasProperty("cm:from", tomorrow);
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" },
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
             expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "Property 'cm:fake-prop' is not valid for this type or one of the secondary types!*")
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,

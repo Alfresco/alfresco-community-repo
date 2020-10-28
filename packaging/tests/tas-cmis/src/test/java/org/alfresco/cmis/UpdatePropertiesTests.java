@@ -158,7 +158,7 @@ public class UpdatePropertiesTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify site manager is able to update the title and description for document with version is checked out with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_WS" })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     public void siteManagerCanUpdateDocumentWithVersion() throws Exception
     {
         propertyNameValue = RandomData.getRandomAlphanumeric();

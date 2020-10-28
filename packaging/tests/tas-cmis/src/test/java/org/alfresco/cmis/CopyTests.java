@@ -48,7 +48,7 @@ public class CopyTests extends CmisTest
     
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to copy file to an existent location in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, "NOT_SUPPORTED_ON_CMIS_ATOM" })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_ATOM })
     public void siteManagerCopyFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();

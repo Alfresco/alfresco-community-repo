@@ -363,22 +363,22 @@ public class DeleteTreeTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that only the parent folder is displayed in trash can after deleting it")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
     public void checkTrashCanAfterDeletingParentFolder() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
         childTestFolder = FolderModel.getRandomFolderModel();
         testFile = FileModel.getRandomFileModel(FileType.MSWORD, content);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFolder(parentTestFolder).and().assertThat().existsInRepo()
-            .usingResource(parentTestFolder)
+                .createFolder(parentTestFolder).and().assertThat().existsInRepo()
+                .usingResource(parentTestFolder)
                 .createFolder(childTestFolder).and().assertThat().existsInRepo()
                 .createFile(testFile).and().assertThat().existsInRepo()
-            .when().usingResource(parentTestFolder).refreshResource()
-            .deleteFolderTree()
+                .when().usingResource(parentTestFolder).refreshResource()
+                .deleteFolderTree()
                 .and().assertThat().doesNotExistInRepo()
-            .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
-                   .usingResource(testFile).assertThat().doesNotExistInRepo();
+                .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
+                .usingResource(testFile).assertThat().doesNotExistInRepo();
         dataUser.assertTrashCanHasContent(parentTestFolder);
         dataUser.assertTrashCanDoesNotHaveContent(childTestFolder, testFile);
     }

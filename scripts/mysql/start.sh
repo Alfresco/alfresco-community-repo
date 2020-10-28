@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-. $(dirname $0)/common.sh
+./common.sh
 
 echo "============================================"
 echo "Generate custom config file"

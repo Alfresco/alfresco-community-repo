@@ -1,7 +1,10 @@
 import:
-  - source: travis-env-vars.yml
-os: linux
+  - source: .travis.env-vars.yml
+  - source: .travis.tests-stage.yml
+  - source: .travis.release-stage.yml
+  - source: .travis.publish-stage.yml
 dist: xenial
+sudo: required
 language: java
 jdk:
   - openjdk8
@@ -34,7 +37,9 @@ stages:
     if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[(community|enterprise) release .*\]/
   - name: Publish
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[publish\]/
 
 jobs:
   include:
@@ -60,54 +65,6 @@ jobs:
       script:
         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-    - name: "Community Integrations Tests on MySQL"
-      stage: Tests
-      script:
-        - echo "Community Integrations Tests on MySQL"
-    - name: "Enterprise Integrations Tests on MySQL"
-      stage: Tests
-      script:
-        - echo "Enterprise Integrations Tests on MySQL"
-    - name: "Community Rest API Tests"
-      stage: Tests
-      install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-community-rest-api -am
-      before_script:
-        - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
-        - bash scripts/waitForAlfrescoToStart.sh
-      script: mvn -B test -pl :alfresco-rm-automation-community-rest-api -Dskip.automationtests=false
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
-    - name: "Enterprise Rest API Tests"
-      stage: Tests
-      install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-enterprise-rest-api -am
-      before_script:
-        - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
-        - bash scripts/waitForAlfrescoToStart.sh
-      script:
-        - mvn -B test -pl :alfresco-rm-automation-enterprise-rest-api -Dskip.automationtests=false
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
-    - name: "Community UI Tests ..."
-      stage: Tests
-      before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
-      install:
-        - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
-        - bash scripts/waitForAlfrescoToStart.sh
-      script:
-        - echo "Community UI Tests ..."
-    - name: "Enterprise UI Tests ..."
-      stage: Tests
-      before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
-      install:
-        - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
-        - bash scripts/waitForAlfrescoToStart.sh
-      script:
-        - echo "Enterprise UI Tests ..."
-
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
       script:
@@ -116,17 +73,3 @@ jobs:
       stage: Security Scans
       script:
        - echo "Static Analysis (SAST)"
-
-    - name: "Community Release"
-      stage: Release
-      script:
-        - echo "Community Release"
-    - name: "Enterprise Release"
-      stage: Release
-      script:
-        - echo "Enterprise Release"
-
-    - name: "Copy to S3 Release Bucket"
-      stage: Publish
-      script:
-        - echo "Copy to S3 Release Bucket"

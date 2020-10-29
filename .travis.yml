@@ -179,7 +179,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "REST API TAS tests part1"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -187,7 +187,7 @@ jobs:
         - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part2"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -195,7 +195,7 @@ jobs:
         - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part3"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -203,7 +203,7 @@ jobs:
         - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests - BROWSER binding"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -211,7 +211,7 @@ jobs:
         - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-browser -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests - ATOM binding"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -219,7 +219,7 @@ jobs:
         - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-atom -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests - WEBSERVICES binding"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -227,7 +227,7 @@ jobs:
         - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-webservices -Denvironment=default -DrunBugs=false
 
     - name: "Email TAS tests"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -235,7 +235,7 @@ jobs:
         - travis_wait 30 mvn -B install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "WebDAV TAS tests"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -243,7 +243,7 @@ jobs:
         - travis_wait 30 mvn -B install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Integration TAS tests"
-      if: commit_message =~ /\[tas\]/
+      if: branch = master OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"

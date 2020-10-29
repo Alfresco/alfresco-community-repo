@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - fix/MNT-22009_async_permissions_deleted_files
 
 env:
   global:

@@ -40,6 +40,7 @@ import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.rendition2.TransformClient;
 import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -139,6 +140,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private LockService lockService;
     private CopyService copyService;
     private SynchronousTransformClient synchronousTransformClient;
+    private TransformClient asynchronousTransformClient;
     private TransformationOptionsConverter converter;
 
     private NodeRef folder;
@@ -163,6 +165,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         this.lockService = (LockService) applicationContext.getBean("lockService");
         this.copyService = (CopyService) applicationContext.getBean("CopyService");
         synchronousTransformClient = (SynchronousTransformClient) applicationContext.getBean("synchronousTransformClient");
+        asynchronousTransformClient = (TransformClient) applicationContext.getBean("transformClient");
         converter = (TransformationOptionsConverter) applicationContext.getBean("transformOptionsConverter");
 
         // Create a folder and some content
@@ -1337,24 +1340,24 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 concurrentWork.verify(source);
             }
 
-            final int numIterations = 20;
+            final int multiples = 5;
 
             // Wait for thumbnail(s) to finish
             long endTime = (new Date()).getTime();
             for (final ExpectedThumbnail expectedThumbnail : expectedThumbnails) {
                 NodeRef thumbnail = null;
-                while ((endTime - startTime) < (TEST_LONG_RUNNING_TRANSFORM_TIME * numIterations)) {
+                while ((endTime - startTime) < (TEST_LONG_RUNNING_TRANSFORM_TIME * multiples)) {
                     thumbnail = transactionService.getRetryingTransactionHelper()
                             .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>() {
                                 public NodeRef execute() throws Throwable {
                                     return thumbnailService.getThumbnailByName(source, ContentModel.PROP_CONTENT,
                                             expectedThumbnail.getThumbnailName());
                                 }
-                            }, false, true);
+                            }, true, true);
                     if (thumbnail == null) {
                         Thread.sleep(200);
                         logger.debug("Elapsed " + (endTime - startTime) + " ms of "
-                                + TEST_LONG_RUNNING_TRANSFORM_TIME * numIterations + " ms waiting for "
+                                + TEST_LONG_RUNNING_TRANSFORM_TIME * multiples + " ms waiting for "
                                 + expectedThumbnail.getThumbnailName());
                         endTime = (new Date()).getTime();
                     } else {

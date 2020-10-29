@@ -198,46 +198,46 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 }
             }
 
-            boolean async = action.getExecuteAsychronously();
-            RenditionDefinition2 renditionDefinition = null;
-            if (async)
+            // Create the thumbnail
+            try
             {
-                RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
-                renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
-            }
-            if (async && renditionDefinition != null)
-            {
-                renditionService2.render(actionedUponNodeRef, thumbnailName);
-            }
-            else
-            {
-                // Create the thumbnail
-                try
-                {
+//                boolean async = action.getExecuteAsychronously();
+//                RenditionDefinition2 renditionDefinition = null;
+//                if (async)
+//                {
+//                    RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+//                    renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
+//                }
+//                if (async && renditionDefinition != null)
+//                {
+//                    renditionService2.render(actionedUponNodeRef, thumbnailName);
+//                }
+//                else
+//                {
                     TransformationOptions options = details.getTransformationOptions();
                     this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), options, thumbnailName, null);
-                }
-                catch (ContentServiceTransientException cste)
+//                }
+            }
+            catch (ContentServiceTransientException cste)
+            {
+                // any transient failures in the thumbnail creation must be handled as transient failures of the action to execute.
+                StringBuilder msg = new StringBuilder();
+                msg.append("Creation of thumbnail '").append(details.getName()).append("' declined");
+                if (logger.isDebugEnabled())
                 {
-                    // any transient failures in the thumbnail creation must be handled as transient failures of the action to execute.
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("Creation of thumbnail '").append(details.getName()).append("' declined");
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(msg.toString());
-                    }
-
-                    throw new ActionServiceTransientException(msg.toString(), cste);
+                    logger.debug(msg.toString());
                 }
-                catch (Exception exception)
-                {
-                    final String msg = "Creation of thumbnail '" + details.getName() + "' failed";
-                    logger.info(msg);
 
-                    // We need to rethrow in order to trigger the compensating action.
-                    // See AddFailedThumbnailActionExecuter
-                    throw new AlfrescoRuntimeException(msg, exception);
-                }
+                throw new ActionServiceTransientException(msg.toString(), cste);
+            }
+            catch (Exception exception)
+            {
+                final String msg = "Creation of thumbnail '" + details.getName() + "' failed";
+                logger.info(msg);
+
+                // We need to rethrow in order to trigger the compensating action.
+                // See AddFailedThumbnailActionExecuter
+                throw new AlfrescoRuntimeException(msg, exception);
             }
         }
     }

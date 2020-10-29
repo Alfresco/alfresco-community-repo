@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
-
-./common.sh
+DIRECTORY=`dirname $0`
+echo $DIRECTORY
+. $(dirname $0)/common.sh
 
 echo "============================================"
 echo "Generate custom config file"
@@ -35,8 +36,7 @@ FLUSH PRIVILEGES;
 echo "============================================"
 echo "Pulling and Running $1"
 echo "============================================"
-sg docker "docker run -p $MYSQL_PORT:3306 -v /tmp/Docker:/etc/mysql/conf.d --name $CONTAINER_NAME -e
-MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_USER=$MYSQL_USER -e MYSQL_DATABASE=$MYSQL_DATABASE -d $1"
+sg docker "docker run -p $MYSQL_PORT:3306 -v /tmp/Docker:/etc/mysql/conf.d --name $CONTAINER_NAME -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_USER=$MYSQL_USER -e MYSQL_DATABASE=$MYSQL_DATABASE -d $1"
 
 sleep 120
 

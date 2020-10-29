@@ -22,6 +22,10 @@ if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ]; then
     exit 1
 fi
 
+# Docker Logins
+echo "${DOCKERHUB_PASSWORD}" | docker login -u="${DOCKERHUB_USERNAME}" --password-stdin
+echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
+
 # Check if it's a hotfix version by counting the number of dots in the version number.
 if [ $(echo "${RELEASE_VERSION}" | grep -o "\." | wc -l) == 3 ] && [ ${release_type} == "enterprise" ];
 then

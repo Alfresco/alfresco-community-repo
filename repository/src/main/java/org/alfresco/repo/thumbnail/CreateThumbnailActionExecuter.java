@@ -201,22 +201,22 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             // Create the thumbnail
             try
             {
-//                boolean async = action.getExecuteAsychronously();
-//                RenditionDefinition2 renditionDefinition = null;
-//                if (async)
-//                {
-//                    RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
-//                    renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
-//                }
-//                if (async && renditionDefinition != null)
-//                {
-//                    renditionService2.render(actionedUponNodeRef, thumbnailName);
-//                }
-//                else
-//                {
+                boolean async = action.getExecuteAsychronously();
+                RenditionDefinition2 renditionDefinition = null;
+                if (async)
+                {
+                    RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+                    renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
+                }
+                if (async && renditionDefinition != null)
+                {
+                    renditionService2.render(actionedUponNodeRef, thumbnailName);
+                }
+                else
+                {
                     TransformationOptions options = details.getTransformationOptions();
                     this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), options, thumbnailName, null);
-//                }
+                }
             }
             catch (ContentServiceTransientException cste)
             {

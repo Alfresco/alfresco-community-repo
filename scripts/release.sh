@@ -23,7 +23,7 @@ if [ -z ${RELEASE_VERSION} ] || [ -z ${DEVELOPMENT_VERSION} ]; then
 fi
 
 # Check if it's a hotfix version by counting the number of dots in the version number.
-if [ `echo "${RELEASE_VERSION}" | grep -o "\." | wc -l` == 3 -a ${release_type} == "enterprise" ];
+if [ $(echo "${RELEASE_VERSION}" | grep -o "\." | wc -l) == 3 ] && [ ${release_type} == "enterprise" ];
 then
   deployment_repository="hotfix-release"
 else
@@ -36,6 +36,5 @@ mvn --batch-mode \
     -DreleaseVersion=${RELEASE_VERSION} \
     -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
     -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
-    -DskipTests -D${release_type} -DuseReleaseProfile=false \
-    -P${deployment_repository} -Pinternal \
+    "-Darguments=-DskipTests -D${release_type} -P${deployment_repository},release-${release_type}" \
     release:clean release:prepare release:perform

@@ -139,7 +139,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site contributor is not able to append content to a file created by other user in DocumentLibrary with CMIS")
     public void contributorCannotAppendContentToFileCreatedByOtherUser() throws Exception
@@ -176,7 +176,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to append content to a file with CMIS")
     public void consumerCannotAppendContentToFile() throws Exception
@@ -213,7 +213,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user is not able to append content to a file created in a private site with CMIS")
     public void unauthorizedUserCannotAppendContentToFileFromPrivateSite() throws Exception

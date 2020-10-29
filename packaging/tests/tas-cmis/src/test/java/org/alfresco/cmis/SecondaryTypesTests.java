@@ -10,6 +10,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -217,9 +218,8 @@ public class SecondaryTypesTests extends CmisTest
                 .assertThat().objectHasProperty("audio:trackNumber", 9)
                 .assertThat().objectHasProperty("audio:sampleType", "TAS Sample");
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
-            expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to add secondary types for document created by manager")
     public void contributorCanAddAspectForDocument() throws Exception
@@ -231,9 +231,8 @@ public class SecondaryTypesTests extends CmisTest
                 .then().updateProperty("dp:offlineExpiresAfter", 2)
                 .and().assertThat().objectHasProperty("dp:offlineExpiresAfter", 2);
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS },
-            expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to add secondary types for document created by manager")
     public void consumerCanAddAspectForDocument() throws Exception

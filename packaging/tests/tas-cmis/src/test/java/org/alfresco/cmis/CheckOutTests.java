@@ -94,7 +94,7 @@ public class CheckOutTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that contributor user can NOT check out document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotCheckOutDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);
@@ -107,7 +107,7 @@ public class CheckOutTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that consumer user can NOT check out document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotCheckOutDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);
@@ -120,7 +120,7 @@ public class CheckOutTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that unauthorized user can NOT check out document from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCheckOutDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(siteManager).createPrivateRandomSite();
@@ -134,7 +134,7 @@ public class CheckOutTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that unauthorized user can NOT check out document from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCheckOutDocumentModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(siteManager).createModeratedRandomSite();

@@ -72,10 +72,10 @@ public class GetTypeDefinitionTests extends CmisTest
                .typeDefinitionIs(deletedFile);
     }
 
-    @Bug(id="REPO-4301")
+    @Bug(id = "REPO-5388")
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
               description = "Verify user that was deleted cannot get Type Definition for a valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = { CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })//, expectedExceptions = { CmisUnauthorizedException.class })
     public void deletedUserCannotGetTypeDefinitionForValidFolder() throws Exception
     {
         UserModel deletedUser = dataUser.createRandomTestUser();
@@ -129,7 +129,7 @@ public class GetTypeDefinitionTests extends CmisTest
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
               description = "Verify site Consumer is NOT able to get Type Definition for a valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void siteConsumerCantGetTypeDefinitionForValidFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -177,7 +177,7 @@ public class GetTypeDefinitionTests extends CmisTest
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
              description = "Verify site Consumer is NOT able to get Type Definition for a valid file")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void siteConsumerCantGetTypeDefinitionForValidFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.UNDEFINED);

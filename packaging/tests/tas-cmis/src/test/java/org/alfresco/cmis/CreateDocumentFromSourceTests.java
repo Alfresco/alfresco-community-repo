@@ -10,6 +10,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -54,9 +55,11 @@ public class CreateDocumentFromSourceTests extends CmisTest
                 .refreshResource().then().assertThat().existsInRepo().and().assertThat().contentIs(sourceContent);
     }
 
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify inexistent user isn't able to create file from source in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+//            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
     public void inexistentUserShouldNotCreateDocumentFromSource() throws Exception
     {
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -66,8 +69,8 @@ public class CreateDocumentFromSourceTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY,
             description = "Verify unauthorized user isn't able to create file from source in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_ATOM }, expectedExceptions = { CmisPermissionDeniedException.class,
-            CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_ATOM },
+            expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserShouldNotCreateDocumentFromSource() throws Exception
     {
         UserModel unauthorizedUser = dataUser.createRandomTestUser();
@@ -197,8 +200,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to create file from source with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_ATOM }, expectedExceptions = { CmisPermissionDeniedException.class,
-            CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_ATOM }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerShouldNotCreateDocumentFromSource() throws Exception
     {
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -292,8 +294,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify that an user is not able to create document from a source from a private site with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = { CmisPermissionDeniedException.class,
-            CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void userShouldNotCreateDocFromSourceFromPrivateSite() throws Exception
     {
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

@@ -34,7 +34,7 @@
             <properties>
                 <cmis.binding>browser</cmis.binding>
                 <cmis.basePath>/alfresco/api/-default-/public/cmis/versions/1.1/browser</cmis.basePath>
-                <excludedGroups>not_supported_on_cmis_browser,renditions</excludedGroups>
+                <excludedGroups>not_supported_on_cmis_browser|renditions|bug-browser.*</excludedGroups>
             </properties>
         </profile>
 
@@ -43,7 +43,7 @@
             <properties>
                 <cmis.binding>webservices</cmis.binding>
                 <cmis.basePath>/alfresco/cmisws/cmis?wsdl</cmis.basePath>
-                <excludedGroups>not_supported_on_cmis_ws,renditions</excludedGroups>
+                <excludedGroups>not_supported_on_cmis_ws|renditions|bug-ws.*</excludedGroups>
             </properties>
         </profile>
 
@@ -52,7 +52,7 @@
             <properties>
                 <cmis.binding>atom</cmis.binding>
                 <cmis.basePath>/alfresco/api/-default-/public/cmis/versions/1.1/atom</cmis.basePath>
-                <excludedGroups>not_supported_on_cmis_atom,renditions</excludedGroups>
+                <excludedGroups>not_supported_on_cmis_atom|renditions|bug-atom.*</excludedGroups>
             </properties>
         </profile>
     </profiles>

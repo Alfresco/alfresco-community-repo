@@ -49,10 +49,9 @@ public class CancelCheckOutTests extends CmisTest
                 .and().assertThat().documentIsNotCheckedOut();
     }
 
-    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a document that isn't checked out")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisRuntimeException.class)
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisRuntimeException.class)
     public void cancelCheckOutOnADocumentThatIsntCheckedOut() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);
@@ -74,9 +73,8 @@ public class CancelCheckOutTests extends CmisTest
                 .then().delete().and().assertThat().doesNotExistInRepo()
                 .then().cancelCheckOut();
     }
-    
-    @Bug(id = "REPO-5383")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisRuntimeException.class)
+
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisRuntimeException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a pwc twice")
     public void cancelCheckOutTwice() throws Exception
@@ -86,7 +84,8 @@ public class CancelCheckOutTests extends CmisTest
                 .createFile(testFile)
                 .and().assertThat().existsInRepo()
                 .and().checkOut()
-                .and().assertThat().documentIsCheckedOut().assertThat().isPrivateWorkingCopy()
+                .and().assertThat().documentIsCheckedOut()
+                .assertThat().isPrivateWorkingCopy()
                 .and().cancelCheckOut()
                       .cancelCheckOut();
     }

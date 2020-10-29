@@ -104,10 +104,11 @@ public class UpdatePropertiesTests extends CmisTest
                 .then().updateProperty("cmis:fakeProp", propertyNameValue);
     }
 
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify that deleted user is not able to update properties with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS },
-            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+//            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
     public void deletedUserCannotUpdateFileProperties() throws Exception
     {
         propertyNameValue = RandomData.getRandomAlphanumeric();
@@ -321,8 +322,7 @@ public class UpdatePropertiesTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify site consumer is not able to update properties to a valid document created by site manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS },
-            expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotUpdateFilePropertiesCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -333,11 +333,11 @@ public class UpdatePropertiesTests extends CmisTest
                 .and().updateProperty("cmis:name", propertyNameValue);
     }
 
-    @Bug(id="REPO-4301")
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify disabled user is not able to update properties")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS },
-            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+//            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
     public void disabledUserCannotUpdateFileProperties() throws Exception
     {
         UserModel disabledUser = dataUser.createRandomTestUser();
@@ -351,8 +351,7 @@ public class UpdatePropertiesTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify non invited user is not able to update properties to a document created by site manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS },
-            expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotUpdateFilePropertiesCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

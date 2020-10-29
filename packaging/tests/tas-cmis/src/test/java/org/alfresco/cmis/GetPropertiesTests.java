@@ -3,6 +3,7 @@ package org.alfresco.cmis;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -206,7 +207,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify that non site member cannot get secondaryObjectTypeIds property for a valid document from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetSecondaryObjectTypeIdsForAValidDocumentFromAPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -221,7 +222,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify that non site member cannot get secondaryObjectTypeIds property for a valid folder from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetSecondaryObjectTypeIdsForAValidFolderFromAPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -236,7 +237,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify that non site member cannot get secondaryObjectTypeIds property for a valid document from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetSecondaryObjectTypeIdsForAValidDocumentFromAModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();
@@ -251,7 +252,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify that non site member cannot get secondaryObjectTypeIds property for a valid folder from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetSecondaryObjectTypeIdsForAValidFolderFromAModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

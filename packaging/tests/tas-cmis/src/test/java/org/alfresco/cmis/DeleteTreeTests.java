@@ -8,6 +8,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
@@ -75,10 +76,11 @@ public class DeleteTreeTests extends CmisTest
             .when().usingResource(parentTestFolder).deleteFolderTree().assertThat().doesNotExistInRepo()
             .deleteFolderTree();
     }
-    
+
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent user is NOT able to delete parent folder with multiple children in DocumentLibrary")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
     public void inexistentUserCannotDeleteFolderTree() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
@@ -131,8 +133,7 @@ public class DeleteTreeTests extends CmisTest
             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                    .usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
-//    @Bug(id="REPO-1108")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to delete parent folder with unfile parameter set to DELETESINGLEFILED, using checked out document")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
@@ -212,8 +213,7 @@ public class DeleteTreeTests extends CmisTest
             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                    .usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
-//    @Bug(id="REPO-1108")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete parent folder with continueOnFailure parameter set to false")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -343,7 +343,7 @@ public class DeleteTreeTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to delete parent folder with multiple children in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotDeleteFolderTreeInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();

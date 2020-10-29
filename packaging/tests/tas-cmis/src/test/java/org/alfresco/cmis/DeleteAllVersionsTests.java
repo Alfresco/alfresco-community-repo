@@ -128,7 +128,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user is NOT able to delete a checked out document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeletePWCDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -174,7 +174,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify contributor cannot delete object Document created by site manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotDeleteDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -196,7 +196,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify contributor cannot delete object Folder created by site manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotDeleteFolderCreatedByManager() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -219,7 +219,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify collaborator cannot delete object Document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotDeleteDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -242,7 +242,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify collaborator cannot delete object Folder created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotDeleteFolderCreatedByManager() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -254,7 +254,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify consumer cannot delete object Document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotDeleteDocumentCreated() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -266,7 +266,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify consumer cannot delete object Folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotDeleteFolderCreated() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -278,7 +278,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Document from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -291,7 +291,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Folder from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteFolderFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -302,7 +302,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Document from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteDocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createModeratedRandomSite();
@@ -313,7 +313,7 @@ public class DeleteAllVersionsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Folder from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteFolderFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createModeratedRandomSite();

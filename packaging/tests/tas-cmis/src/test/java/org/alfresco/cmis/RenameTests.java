@@ -8,6 +8,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
@@ -258,10 +259,10 @@ public class RenameTests extends CmisTest
                     .rename(testFile.getName() + prefix).assertThat().existsInRepo()
                         .when().usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is not able to rename document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void siteContributorCannotRenameDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);
@@ -283,10 +284,10 @@ public class RenameTests extends CmisTest
                     .rename(testFile.getName() + prefix).assertThat().existsInRepo()
                         .when().usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to rename document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void siteConsumerCannotRenameDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);
@@ -295,10 +296,10 @@ public class RenameTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                     .rename(testFile.getName() + prefix).assertThat().existsInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to rename document in public site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void siteConsumerCannotRenameDocumentInPublicSite() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);
@@ -307,10 +308,10 @@ public class RenameTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                     .rename(testFile.getName() + prefix).assertThat().existsInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to rename document in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotRenameDocumentInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(managerUser).createPrivateRandomSite();
@@ -320,10 +321,10 @@ public class RenameTests extends CmisTest
                 .then().authenticateUser(nonInvitedUser)
                     .rename(testFile.getName() + prefix).assertThat().existsInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to rename document in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotRenameDocumentInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(managerUser).createModeratedRandomSite();

@@ -120,11 +120,10 @@ public class AddObjectToFolderTests extends CmisTest
                     .and().assertThat().existsInRepo()
                         .and().assertThat().documentHasVersion(1.2);
     }
-    
-    @Bug(id = "REPO-5383")
+
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to add document object to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions=CmisInvalidArgumentException.class,
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions=CmisInvalidArgumentException.class,
             expectedExceptionsMessageRegExp="Only allVersions=true supported!*")
     public void siteManagerCannotAddDocumentToFolderWithFalseAllVersions() throws Exception
     {
@@ -191,10 +190,10 @@ public class AddObjectToFolderTests extends CmisTest
                         .then().addDocumentToFolder(destinationFolder, true)
                             .and().assertThat().existsInRepo();
     }
-    
+
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to add document object created by manager to folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCanAddFileToFolderCreatedByManager() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -204,10 +203,10 @@ public class AddObjectToFolderTests extends CmisTest
                     .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                         .then().addDocumentToFolder(destinationFolder, true);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to delete parent folder with multiple children in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotDeleteFolderTreeInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();

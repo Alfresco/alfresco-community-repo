@@ -106,10 +106,9 @@ public class AclTests extends CmisTest
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteCollaborator);
     }
 
-    @Bug(id = "REPO-5383")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify apply acl with invalid role that will be removed")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisConstraintException.class)
     public void applyAclWithInvalidAddedRole() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -185,11 +184,10 @@ public class AclTests extends CmisTest
                 .when().removeAcl(inviteUser, UserRole.SiteContributor, AclPropagation.OBJECTONLY)
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
-    @Bug(id = "REPO-5383")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Remove Acl for valid folder with AclPropagation set to REPOSITORYDETERMINED")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisConstraintException.class)
     public void siteManagerCannotRemoveInvalidAcl() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.PDF);
@@ -274,10 +272,10 @@ public class AclTests extends CmisTest
                 .when().removeAcl(inviteUser, UserRole.SiteContributor)
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Unauthorized user cannot remove acl")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void removeAclByUnauthorizedUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
@@ -288,10 +286,10 @@ public class AclTests extends CmisTest
                 .when().authenticateUser(unauthorizedUser)
                 .removeAcl(inviteUser, UserRole.SiteConsumer);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Unauthorized user cannot add acl")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void addAclByUnauthorizedUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
@@ -300,10 +298,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(unauthorizedUser)
                 .and().addAcl(inviteUser, UserRole.SiteConsumer, AclPropagation.OBJECTONLY);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Unauthorized user cannot apply acl")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void applyAclByUnauthorizedUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSEXCEL);
@@ -339,10 +337,10 @@ public class AclTests extends CmisTest
                 .addAcl(inviteUser, UserRole.SiteContributor)
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Add Acl by user with collaborator role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotAddAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -365,10 +363,10 @@ public class AclTests extends CmisTest
                 .usingResource(testFile).refreshResource()
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with collaborator role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotApplyAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -378,10 +376,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with collaborator role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotRemoveAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -403,10 +401,10 @@ public class AclTests extends CmisTest
                 .addAcl(inviteUser, UserRole.SiteContributor)
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Add Acl by user with contributor role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotAddAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -429,10 +427,10 @@ public class AclTests extends CmisTest
                 .usingResource(testFile).refreshResource()
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with contributor role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotApplyAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -442,10 +440,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
                 .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with contributor role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotRemoveAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -455,10 +453,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
                 .removeAcl(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Add Acl by user with consumer role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotAddAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -481,10 +479,10 @@ public class AclTests extends CmisTest
                 .usingResource(testFile).refreshResource()
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with consumer role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotApplyAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -494,10 +492,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .applyAcl(inviteUser, UserRole.SiteCollaborator, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by user with consumer role for document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotRemoveAclForDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -507,10 +505,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .removeAcl(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Add Acl by non invited user in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotAddAclInPrivateSite() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -519,10 +517,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .addAcl(inviteUser, UserRole.SiteCollaborator);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Get Acl by non invited user in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetAclInPrivateSite() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -533,10 +531,10 @@ public class AclTests extends CmisTest
                 .usingResource(testFile).refreshResource()
                 .and().assertThat().permissionIsSetForUser(inviteUser, UserRole.SiteContributor);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply Acl by non invited user in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotApplyAclInPrivateSite() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -548,10 +546,10 @@ public class AclTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .applyAcl(inviteUser, UserRole.SiteContributor, UserRole.SiteCollaborator);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Remove Acl by non invited user in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotRemoveAclFromPrivateSite() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -607,11 +605,10 @@ public class AclTests extends CmisTest
                 .then().removeAcl(inviteUser, PermissionMapping.CAN_DELETE_OBJECT)
                 .and().assertThat().permissionIsNotSetForUser(inviteUser, EnumBasicPermissions.CMIS_ALL.value());
     }
-    
-    @Bug(id = "REPO-5383")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Remove invalid Acl(that was not set) for valid document with PermissionMapping")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class,
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisConstraintException.class,
             expectedExceptionsMessageRegExp="No matching ACE found to remove!*")
     public void siteManagerCannotRemoveInvalidAclWithPermissionMapping() throws Exception
     {
@@ -622,11 +619,10 @@ public class AclTests extends CmisTest
                 .assertThat().permissionIsSetForUser(inviteUser, EnumBasicPermissions.CMIS_WRITE.value())
                 .then().removeAcl(inviteUser, PermissionMapping.CAN_CHECKIN_DOCUMENT);
     }
-    
-    @Bug(id = "REPO-5383")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Apply invalid Acl(that was not set) for valid document with PermissionMapping")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class,
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisConstraintException.class,
             expectedExceptionsMessageRegExp="No matching ACE found to remove!*")
     public void siteManagerCannotApplyInvalidAclWithPermissionMapping() throws Exception
     {

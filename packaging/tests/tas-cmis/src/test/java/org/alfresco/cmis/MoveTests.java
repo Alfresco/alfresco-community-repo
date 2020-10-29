@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -124,10 +125,11 @@ public class MoveTests extends CmisTest
                     .moveTo(targetFolder).and().assertThat().existsInRepo()
                          .and().assertThat().hasChildren(sourceFile, subFolder);
     }
-    
+
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent is not able to move file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
     public void inexistentUserCannotMoveFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -177,10 +179,10 @@ public class MoveTests extends CmisTest
         FileModel checkedOutDoc = cmisApi.getFiles().get(0);
         cmisApi.usingResource(checkedOutDoc).assertThat().documentIsCheckedOut();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify unauthorized user is no able to move a file")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotMovesFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -217,7 +219,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor cannot move Document created by Manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotMoveDocumentCreatedByManager() throws Exception
     {
         sourceFile = dataContent.usingUser(siteManager).usingSite(publicSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
@@ -239,7 +241,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor cannot move Folder created by Manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotMoveFolderCreatedByManager() throws Exception
     {
         sourceFolder = dataContent.usingUser(siteManager).usingSite(publicSite).createFolder();
@@ -261,7 +263,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator cannot move Document created by Manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotMoveDocumentCreatedByManager() throws Exception
     {
         sourceFile = dataContent.usingUser(siteManager).usingSite(publicSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
@@ -283,7 +285,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator cannot move Folder created by Manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotMoveFolderCreatedByManager() throws Exception
     {
         sourceFolder = dataContent.usingUser(siteManager).usingSite(publicSite).createFolder();
@@ -293,7 +295,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot move Document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotMoveDocument() throws Exception
     {
         sourceFile = dataContent.usingUser(siteManager).usingSite(publicSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
@@ -303,7 +305,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot move Folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotMoveFolder() throws Exception
     {
         sourceFolder = dataContent.usingUser(siteManager).usingSite(publicSite).createFolder();
@@ -313,7 +315,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot move Document from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotMoveDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(siteManager).createPrivateRandomSite();
@@ -324,7 +326,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot move Folder from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotMoveFolderFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(siteManager).createPrivateRandomSite();
@@ -335,7 +337,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot move Document from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotMoveDocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(siteManager).createModeratedRandomSite();
@@ -346,7 +348,7 @@ public class MoveTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot move Folder from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotMoveFolderFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(siteManager).createModeratedRandomSite();

@@ -8,6 +8,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -207,7 +208,7 @@ public class GetParentsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non site member for a private site is not able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFolderParentsFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -221,7 +222,7 @@ public class GetParentsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non site member for a private site is not able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFileParentsFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -235,7 +236,7 @@ public class GetParentsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non site member for a moderated site is not able to get folder parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFolderParentsFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();
@@ -249,7 +250,7 @@ public class GetParentsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non site member for a moderated site is not able to get file parents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberGetsFileParentsFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

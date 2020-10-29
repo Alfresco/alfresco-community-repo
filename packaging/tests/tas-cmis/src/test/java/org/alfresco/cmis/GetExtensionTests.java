@@ -129,7 +129,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Non invited user cannot get extensions in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetExtensionsInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -138,10 +138,10 @@ public class GetExtensionTests extends CmisTest
             .createFile(privateDoc)
                 .then().authenticateUser(nonInvitedUser).assertThat().hasAspectExtension(titledAspect);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Non invited user cannot get extensions in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetExtensionsInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createPrivateRandomSite();

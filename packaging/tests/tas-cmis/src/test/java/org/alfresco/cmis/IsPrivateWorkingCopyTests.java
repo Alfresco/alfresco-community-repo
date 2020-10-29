@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -113,10 +114,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                 .assertThat().isPrivateWorkingCopy()
                     .then().usingResource(simpleDoc).assertThat().isNotPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to verify if checked out document is private working copy in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotVerifyIsPrivateWorkingCopyInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(managerUser).createPrivateRandomSite();
@@ -126,10 +127,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                  .then().authenticateUser(nonInvitedUser)
                      .assertThat().isPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to verify if checked out document is private working copy in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotVerifyIsPrivateWorkingCopyInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(managerUser).createPrivateRandomSite();

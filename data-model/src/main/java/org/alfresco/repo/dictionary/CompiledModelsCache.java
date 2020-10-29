@@ -55,6 +55,7 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     private TenantService tenantService;
 
     private String broadcastKeyTxnData;
+    private boolean bootstrapping = true;
 
     @Override
     protected DictionaryRegistry buildCache(String tenantId)
@@ -170,7 +171,14 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     {
         super.forceInChangesForThisUncommittedTransaction(key);
 
-        broadcastRefresh(key);
+        if (!bootstrapping) 
+        {
+            broadcastRefresh(key);
+        }
+        else 
+        {
+            bootstrapping = false;
+        }
     }
     
     private void broadcastRefresh(String key)

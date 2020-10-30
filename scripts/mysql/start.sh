@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -xe
 DIRECTORY=`dirname $0`
 echo $DIRECTORY
  $(dirname "${BASH_SOURCE[0]}")/common.sh

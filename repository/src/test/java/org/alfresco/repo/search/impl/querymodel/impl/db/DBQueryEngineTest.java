@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.junit.Assert.assertEquals;
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,18 +36,23 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeEntity;
+import org.alfresco.repo.domain.node.NodeVersionKey;
+import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine.NodePermissionAssessor;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.namespace.QName;
 import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -66,20 +70,28 @@ public class DBQueryEngineTest
     private DBQuery dbQuery;
     private ResultContext<Node> resultContext;
     private QueryOptions options;
-    private EntityLookupCache<Long, Node, NodeRef> nodesCache;
+    private SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache;
+    private SimpleCache<Serializable, Serializable> nodesCache;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setup()
     {
-        template = mock(SqlSessionTemplate.class);
-        nodesCache = mock(EntityLookupCache.class);
         engine = new DBQueryEngine();
-        engine.setSqlSessionTemplate(template);
-        engine.setNodesCache(nodesCache);
         assessor = mock(NodePermissionAssessor.class);
         dbQuery = mock(DBQuery.class);
         resultContext = spy(new DefaultResultContext<>());
         options = createQueryOptions();
+
+        template = mock(SqlSessionTemplate.class);
+        engine.setSqlSessionTemplate(template);
+
+        propertiesCache = mock(SimpleCache.class);
+        engine.setPropertiesCache(propertiesCache);
+        
+        engine.nodesCache = mock(EntityLookupCache.class);
+        
+        DBStats.resetStopwatches();
     }
     
     @Test
@@ -266,7 +278,12 @@ public class DBQueryEngineTest
     private Node createNode(int id) 
     {
         Node node = spy(NodeEntity.class);
+
         when(node.getId()).thenReturn((long)id);
+
+        StoreEntity store = mock(StoreEntity.class);
+        when(node.getStore()).thenReturn(store );
+        
         return node;
     }
     

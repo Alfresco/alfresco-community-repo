@@ -95,7 +95,7 @@
         <alfresco.aos-module.version>1.4.0-M1</alfresco.aos-module.version>
 
         <dependency.postgresql.version>42.2.18</dependency.postgresql.version>
-        <dependency.mysql.version>8.0.19</dependency.mysql.version>
+        <dependency.mysql.version>8.0.22</dependency.mysql.version>
         <dependency.mariadb.version>2.7.0</dependency.mariadb.version>
 
         <dependency.tas-utility.version>3.0.21</dependency.tas-utility.version>

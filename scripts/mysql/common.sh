@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -xe
+set -e
 CONTAINER_NAME=alfresco-db-mysql
 
 MYSQL_USER=alfresco

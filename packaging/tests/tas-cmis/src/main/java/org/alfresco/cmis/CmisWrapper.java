@@ -222,7 +222,7 @@ public class CmisWrapper extends DSLProtocol<CmisWrapper> implements DSLContentM
         {
             doc = withCMISUtil().getCmisFolder(getCurrentSpace()).createDocument(properties, contentStream, versioningState);
         }
-        catch (CmisStorageException | CmisRuntimeException re)
+        catch (CmisStorageException se)
         {
             doc = withCMISUtil().getCmisFolder(getCurrentSpace()).createDocument(properties, contentStream, versioningState);
         }

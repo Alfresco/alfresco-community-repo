@@ -1,7 +1,6 @@
 #!/bin/bash
-set -xe
-DIRECTORY=`dirname $0`
-echo $DIRECTORY
+set -e
+
 . $(dirname "${BASH_SOURCE[0]}")/common.sh
 
 echo "============================================"

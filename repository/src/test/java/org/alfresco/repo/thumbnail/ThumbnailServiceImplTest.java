@@ -177,8 +177,13 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"), ContentModel.TYPE_FOLDER)
                     .getChildRef();
 
-        // Create a thumbnail that RenditionService2 knows nothing about so cannot process.
         ThumbnailRegistry thumbnailRegistry = thumbnailService.getThumbnailRegistry();
+        createTestThumbnail(thumbnailRegistry);
+    }
+
+    public static void createTestThumbnail(ThumbnailRegistry thumbnailRegistry)
+    {
+        // Create a thumbnail that RenditionService2 knows nothing about so cannot process.
         if (thumbnailRegistry.getThumbnailDefinition(TEST_THUMBNAIL) == null)
         {
             ThumbnailDefinition doclib = thumbnailRegistry.getThumbnailDefinition("doclib");
@@ -190,7 +195,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             thumbnailRegistry.addThumbnailDefinition(testThumbnailDefinition);
         }
     }
-    
+
     private void checkTransformer()
     {
         if (!synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, null,

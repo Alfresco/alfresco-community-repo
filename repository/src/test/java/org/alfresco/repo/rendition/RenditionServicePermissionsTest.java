@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,10 +26,6 @@
 
 package org.alfresco.repo.rendition;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -40,19 +36,18 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.thumbnail.ThumbnailServiceImplTest;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
@@ -76,9 +71,16 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.io.Serializable;
+import java.util.List;
+
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.EXPECTED_USER;
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_USER_MIME_TYPE;
-import static org.junit.Assert.*;
+import static org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.TEST_THUMBNAIL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Neil McErlean
@@ -99,7 +101,7 @@ public class RenditionServicePermissionsTest
     public static ApplicationContextInit APP_CONTEXT_INIT = 
             ApplicationContextInit.createStandardContextWithOverrides("classpath:/test/alfresco/test-renditions-context.xml",
                     "classpath:org/alfresco/repo/rendition2/test-transform-context.xml");
-    
+
     // JUnit Rules to create test users.
     public static AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, EXPECTED_USER);
     
@@ -151,6 +153,7 @@ public class RenditionServicePermissionsTest
         transactionHelper = (RetryingTransactionHelper) APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper");
         services          = (ServiceRegistry)           APP_CONTEXT_INIT.getApplicationContext().getBean("ServiceRegistry");
         thumbnailRegistry = (ThumbnailRegistry)         APP_CONTEXT_INIT.getApplicationContext().getBean("thumbnailRegistry");
+        ThumbnailServiceImplTest.createTestThumbnail(thumbnailRegistry);
     }
     
     @Before public void initNonStaticData() throws Exception
@@ -319,7 +322,8 @@ public class RenditionServicePermissionsTest
     {
         final String siteConsumer = testSiteInfo.siteConsumer;
         
-        // Let's trigger the creation of a doclib thumbnail for the broken JPG node.
+        // Let's trigger the creation of a TEST_THUMBNAIL for the broken JPG node. Previously it was doclib, but the
+        // newer RenditionService2 knows how to create that and does not do failure recovery needed by this test.
         // We know this cannot succeed. We also know the user triggering it does not have write permissions for the node.
         AuthenticationUtil.setFullyAuthenticatedUser(siteConsumer);
         
@@ -328,7 +332,7 @@ public class RenditionServicePermissionsTest
             public Void execute() throws Throwable
             {
                 // This is what ScriptNode.createThumbnail does
-                ThumbnailDefinition details = thumbnailRegistry.getThumbnailDefinition("doclib");
+                ThumbnailDefinition details = thumbnailRegistry.getThumbnailDefinition(TEST_THUMBNAIL);
                 Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
                 
                 // Queue async creation of thumbnail

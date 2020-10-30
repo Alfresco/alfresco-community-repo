@@ -1,14 +1,14 @@
-###Running the Integration tests on MySQL
-##    - stable branch
+### Integration tests on MySQL are running:
+##    - on stable branch
 ##    - on demand with commit message [execute tests on MySQL]
 
 jobs:
   include:
   - &integration_test_on_MYSQL
     name: "Community Integrations Tests on MySQL"
-    services: mysql
+    services: docker
     stage: Tests
-    if: branch =~ /release\/.*/ OR commit_message =~ /\[execute tests on MySQL\]/
+    if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[execute tests on MySQL\]/
     before_install: source ./scripts/mysql/start.sh mysql:5.6.26
     script:
       - travis_retry travis_wait 80 mvn -B -q clean install -Puse-mysql -DskipTests  -Dskip.integrationtests=false -Dmy.db.name=alfresco -Dmy.db.port=3306 -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn

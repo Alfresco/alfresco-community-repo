@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,7 +40,6 @@ import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.rendition2.TransformClient;
 import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -126,6 +125,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static Log logger = LogFactory.getLog(ThumbnailServiceImplTest.class);
 
+    /**
+     * A test Thumbnail that is not know to the new RenditionService2, so is processed the very old way.
+     */
+    public static final String TEST_THUMBNAIL = "testThumbnail";
+
     private NodeService secureNodeService;
     private RenditionService renditionService;
     private ThumbnailService thumbnailService;
@@ -140,7 +144,6 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private LockService lockService;
     private CopyService copyService;
     private SynchronousTransformClient synchronousTransformClient;
-    private TransformClient asynchronousTransformClient;
     private TransformationOptionsConverter converter;
 
     private NodeRef folder;
@@ -165,7 +168,6 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         this.lockService = (LockService) applicationContext.getBean("lockService");
         this.copyService = (CopyService) applicationContext.getBean("CopyService");
         synchronousTransformClient = (SynchronousTransformClient) applicationContext.getBean("synchronousTransformClient");
-        asynchronousTransformClient = (TransformClient) applicationContext.getBean("transformClient");
         converter = (TransformationOptionsConverter) applicationContext.getBean("transformOptionsConverter");
 
         // Create a folder and some content
@@ -174,6 +176,19 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         this.folder = this.secureNodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN,
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"), ContentModel.TYPE_FOLDER)
                     .getChildRef();
+
+        // Create a thumbnail that RenditionService2 knows nothing about so cannot process.
+        ThumbnailRegistry thumbnailRegistry = thumbnailService.getThumbnailRegistry();
+        if (thumbnailRegistry.getThumbnailDefinition(TEST_THUMBNAIL) == null)
+        {
+            ThumbnailDefinition doclib = thumbnailRegistry.getThumbnailDefinition("doclib");
+            ThumbnailDefinition testThumbnailDefinition = new ThumbnailDefinition(doclib.getMimetype(), doclib.getTransformationOptions(), TEST_THUMBNAIL);
+            testThumbnailDefinition.setFailureHandlingOptions(doclib.getFailureHandlingOptions());
+            testThumbnailDefinition.setPlaceHolderResourcePath(doclib.getPlaceHolderResourcePath());
+            testThumbnailDefinition.setMimeAwarePlaceHolderResourcePath(doclib.getMimeAwarePlaceHolderResourcePath());
+            testThumbnailDefinition.setRunAs(doclib.getRunAs());
+            thumbnailRegistry.addThumbnailDefinition(testThumbnailDefinition);
+        }
     }
     
     private void checkTransformer()
@@ -390,8 +405,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             {
                 public Void execute() throws Throwable
                 {
-                    ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
-                    
+                    ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(TEST_THUMBNAIL);
+
                     Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
                     actionService.executeAction(createThumbnailAction, corruptNode, true, true);
                     return null;
@@ -412,17 +427,17 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(corruptNode);
                 assertEquals("Wrong number of failed thumbnails", 1, failedThumbnails.size());
               
-                assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey("doclib"));
-                final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get("doclib");
+                assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey(TEST_THUMBNAIL));
+                final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get(TEST_THUMBNAIL);
                 assertNotNull("Failure info was null", doclibFailureInfo);
                 assertEquals("Failure count was wrong.", 1, doclibFailureInfo.getFailureCount());
-                assertEquals("thumbnail name was wrong.", "doclib", doclibFailureInfo.getThumbnailDefinitionName());
+                assertEquals("thumbnail name was wrong.", TEST_THUMBNAIL, doclibFailureInfo.getThumbnailDefinitionName());
 
                 return null;
             }
         });
         
-        // If you uncomment this line and set the timeout to a value greater than ${system.thumbnail.minimum.retry.period} * 1000.
+        // If you uncomment this line and set the timeout to a value greater than ${system.thumbnail.retryPeriod} * 1000.
         // Then the retry period will have passed, the below re-thumbnail attempt will be made and the test will fail with a
         // failureCount == 2.
         //
@@ -434,7 +449,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 {
                     public Void execute() throws Throwable
                     {
-                        ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                        ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(TEST_THUMBNAIL);
                         
                         Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
                         actionService.executeAction(createThumbnailAction, corruptNode, true, true);
@@ -451,11 +466,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                         Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(corruptNode);
                         assertEquals("Wrong number of failed thumbnails", 1, failedThumbnails.size());
                       
-                        assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey("doclib"));
-                        final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get("doclib");
+                        assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey(TEST_THUMBNAIL));
+                        final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get(TEST_THUMBNAIL);
                         assertNotNull("Failure info was null", doclibFailureInfo);
                         assertEquals("Failure count was wrong.", 1, doclibFailureInfo.getFailureCount());
-                        assertEquals("thumbnail name was wrong.", "doclib", doclibFailureInfo.getThumbnailDefinitionName());
+                        assertEquals("thumbnail name was wrong.", TEST_THUMBNAIL, doclibFailureInfo.getThumbnailDefinitionName());
 
                         return null;
                     }
@@ -501,7 +516,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         {
             public Void execute() throws Throwable
             {
-                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(TEST_THUMBNAIL);
                 Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
                 actionService.executeAction(createThumbnailAction, corruptNode, true, true);
                 return null;
@@ -521,8 +536,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(corruptNode);
                 assertEquals("Wrong number of failed thumbnails", 1, failedThumbnails.size());
 
-                assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey("doclib"));
-                final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get("doclib");
+                assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey(TEST_THUMBNAIL));
+                final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get(TEST_THUMBNAIL);
                 assertNotNull("Failure info was null", doclibFailureInfo);
 
                 return doclibFailureInfo.getFailedThumbnailNode();
@@ -576,7 +591,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         {
             public Void execute() throws Throwable
             {
-                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(TEST_THUMBNAIL);
                 
                 Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
                 actionService.executeAction(createThumbnailAction, testNode, true, true);

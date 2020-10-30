@@ -2,7 +2,7 @@
 set -xe
 DIRECTORY=`dirname $0`
 echo $DIRECTORY
- $(dirname "${BASH_SOURCE[0]}")/common.sh
+. $(dirname "${BASH_SOURCE[0]}")/common.sh
 
 echo "============================================"
 echo "Generate custom config file"

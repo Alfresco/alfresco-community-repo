@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1306,9 +1306,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             writer.putContent(contentStream.getStream());
         }
 
+        // extract metadata and generate thumbnail asynchronously
         connector.extractMetadata(nodeRef);
-
-        // generate "doclib" thumbnail asynchronously
         connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
 
         connector.applyVersioningState(nodeRef, versioningState);
@@ -1384,7 +1383,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
             connector.applyPolicies(nodeRef, type, policies);
             connector.applyACL(nodeRef, type, addAces, removeAces);
-            
+
+            // extract metadata and generate thumbnail asynchronously
             connector.extractMetadata(nodeRef);
             connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
 

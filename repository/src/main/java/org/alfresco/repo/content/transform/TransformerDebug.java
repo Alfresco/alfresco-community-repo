@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -67,6 +68,7 @@ public class TransformerDebug
     protected Log logger;
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
+    private final ThreadLocal<Integer> previousTransformId = ThreadLocal.withInitial(()->-1);
 
     protected enum Call
     {
@@ -279,6 +281,16 @@ public class TransformerDebug
         this.mimetypeService = mimetypeService;
     }
 
+    public void setPreviousTransformId(int id)
+    {
+        previousTransformId.set(id);
+    }
+
+    private int getPreviousTransformId()
+    {
+        return previousTransformId.get();
+    }
+
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
@@ -350,7 +362,7 @@ public class TransformerDebug
         log(frame.sourceMimetype+' '+frame.targetMimetype, false);
         
         String fileName = getFileName(frame.sourceNodeRef, firstLevel, sourceSize);
-        log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) +
+        log(getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype) +
                 ((fileName != null) ? fileName+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
                 (firstLevel ? getRenditionName(renditionName) : "") + message);
@@ -369,7 +381,7 @@ public class TransformerDebug
                       Map<String, String> options, String renditionName, String message)
     {
         String fileName = getFileName(sourceNodeRef, true, -1);
-        log("              "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype) +
+        log("              "+ getSourceAndTargetExt(sourceMimetype, targetMimetype) +
                 ((fileName != null) ? fileName+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
                 (getRenditionName(renditionName)) + message);
@@ -452,6 +464,7 @@ public class TransformerDebug
                 ourStack.pop();
             }
         }
+        setPreviousTransformId(id);
         return id;
     }
 
@@ -461,8 +474,7 @@ public class TransformerDebug
         {
             String failureReason = frame.getFailureReason();
             boolean firstLevel = size == 1;
-            String sourceExt = getMimetypeExt(frame.sourceMimetype);
-            String targetExt = getMimetypeExt(frame.targetMimetype);
+            String sourceAndTargetExt = getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype);
             String fileName = getFileName(frame.sourceNodeRef, firstLevel, frame.sourceSize);
             long sourceSize = frame.getSourceSize();
             String transformerName = frame.getTransformerName();
@@ -505,19 +517,18 @@ public class TransformerDebug
 
             if (level != null)
             {
-                infoLog(getReference(debug, false), sourceExt, targetExt, level, fileName, sourceSize,
+                infoLog(getReference(debug, false, false), sourceAndTargetExt, level, fileName, sourceSize,
                         transformerName, renditionName, failureReason, ms, debug);
             }
         }
     }
     
-    private void infoLog(String reference, String sourceExt, String targetExt, String level, String fileName,
+    private void infoLog(String reference, String sourceAndTargetExt, String level, String fileName,
             long sourceSize, String transformerName, String renditionName, String failureReason, String ms, boolean debug)
     {
         String message =
                 reference +
-                sourceExt +
-                targetExt +
+                sourceAndTargetExt +
                 (level == null ? "" : level+' ') +
                 (fileName == null ? "" : fileName) +
                 (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
@@ -565,6 +576,18 @@ public class TransformerDebug
         if (isEnabled() && message != null)
         {
             log(message);
+        }
+    }
+
+    /**
+     * Log a message prefixed with the previous transformation reference, used by this Thread.
+     * @param message
+     */
+    public void debugUsingPreviousReference(String message)
+    {
+        if (isEnabled() && message != null)
+        {
+            log(message, null,true, true);
         }
     }
 
@@ -630,16 +653,21 @@ public class TransformerDebug
     {
         log(message, null, debug);
     }
-    
+
     private void log(String message, Throwable t, boolean debug)
+    {
+        log(message, t, debug, false);
+    }
+
+    private void log(String message, Throwable t, boolean debug, boolean usePreviousRef)
     {
         if (debug && ThreadInfo.getDebugOutput() && logger.isDebugEnabled())
         {
-            logger.debug(getReference(false, false)+message, t);
+            logger.debug(getReference(false, false, usePreviousRef)+message, t);
         }
         else if (logger.isTraceEnabled())
         {
-            logger.trace(getReference(false, false)+message, t);
+            logger.trace(getReference(false, false, usePreviousRef)+message, t);
         }
 
         if (debug)
@@ -647,7 +675,7 @@ public class TransformerDebug
             StringBuilder sb = ThreadInfo.getStringBuilder();
             if (sb != null)
             {
-                sb.append(getReference(false, true));
+                sb.append(getReference(false, true, usePreviousRef));
                 sb.append(message);
                 if (t != null)
                 {
@@ -690,10 +718,21 @@ public class TransformerDebug
      * Returns a N.N.N style reference to the transformation.
      * @param firstLevelOnly indicates if only the top level should be included and no extra padding.
      * @param overrideFirstLevel if the first level id should just be set to 1 (used in test methods)
+     * @param usePreviousRef if the reference of the last transform performed by this Thread should be used.
      * @return a padded (fixed length) reference.
      */
-    private String getReference(boolean firstLevelOnly, boolean overrideFirstLevel)
+    private String getReference(boolean firstLevelOnly, boolean overrideFirstLevel, boolean usePreviousRef)
     {
+        if (usePreviousRef)
+        {
+            int id = getPreviousTransformId();
+            String ref = "";
+            if (id >= 0)
+            {
+                ref = Integer.toString(id)+spaces(13);
+            }
+            return ref;
+        }
         StringBuilder sb = new StringBuilder("");
         Frame frame = null;
         Iterator<Frame> iterator = ThreadInfo.getStack().descendingIterator();
@@ -736,7 +775,7 @@ public class TransformerDebug
             }
             else
             {
-            sb.append(spaces(13-sb.length()+lengthOfFirstId)); // Try to pad to level 7
+                sb.append(spaces(13-sb.length()+lengthOfFirstId)); // Try to pad to level 7
             }
         }
         return sb.toString();
@@ -780,6 +819,14 @@ public class TransformerDebug
             }
         }
         return result;
+    }
+
+    protected String getSourceAndTargetExt(String sourceMimetype, String targetMimetype)
+    {
+        String sourceExt = getMimetypeExt(sourceMimetype);
+        String targetExt = getMimetypeExt(targetMimetype);
+        targetExt = AsynchronousExtractor.getExtension(targetMimetype, sourceExt, targetExt);
+        return sourceExt + targetExt + spaces(1+4-targetExt.length());
     }
 
     protected String getMimetypeExt(String mimetype)
@@ -866,16 +913,15 @@ public class TransformerDebug
         if (isEnabled())
         {
             pushMisc();
-            String sourceExt = getMimetypeExt(sourceMimetype);
-            String targetExt = getMimetypeExt(targetMimetype);
-            debug(sourceExt + targetExt +
+            String sourceAndTargetExt = getSourceAndTargetExt(sourceMimetype, targetMimetype);
+            debug(sourceAndTargetExt +
                     ((fileName != null) ? fileName + ' ' : "") +
                     ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
                     getRenditionName(renditionName) + " "+ TRANSFORM_SERVICE_NAME);
             log(options);
             log(sourceNodeRef.toString() + ' ' + contentHashcode);
-            String reference = getReference(true, false);
-            infoLog(reference, sourceExt, targetExt, null, fileName, sourceSize, TRANSFORM_SERVICE_NAME,
+            String reference = getReference(true, false, false);
+            infoLog(reference, sourceAndTargetExt, null, fileName, sourceSize, TRANSFORM_SERVICE_NAME,
                     renditionName, null, "", true);
         }
         return pop(Call.AVAILABLE, true, false);
@@ -883,19 +929,21 @@ public class TransformerDebug
 
     private String getRenditionName(String renditionName)
     {
-        return renditionName != null ? "-- "+renditionName+" -- " : "";
+        return renditionName != null
+            ? "-- "+ AsynchronousExtractor.getRenditionName(renditionName)+" -- "
+            : "";
     }
 
     /**
      * Debugs a response to the Transform Service
      */
     public void debugTransformServiceResponse(NodeRef sourceNodeRef, int contentHashcode,
-                                              long requested, int seq, String sourceExt, String targetExt, String msg)
+                                              long requested, int id, String sourceExt, String targetExt, String msg)
     {
         pushMisc();
         Frame frame = ThreadInfo.getStack().getLast();
-        frame.id = seq;
-        boolean suppressFinish = seq == -1 || requested == -1;
+        frame.id = id;
+        boolean suppressFinish = id == -1 || requested == -1;
         if (!suppressFinish)
         {
             frame.start = requested;

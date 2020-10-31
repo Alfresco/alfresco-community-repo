@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -55,7 +55,7 @@ public class SolrStatsService implements StatsService
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         
         LuceneQueryLanguageSPI language = searcher.getQueryLanguages().get(searchParameters.getLanguage().toLowerCase());
-        if (language != null && SearchService.LANGUAGE_SOLR_FTS_ALFRESCO.equals(language.getName()))
+        if (language != null && SearchService.LANGUAGE_INDEX_FTS_ALFRESCO.equals(language.getName()))
         {
             SolrQueryLanguage solr = (SolrQueryLanguage) language;
             return solr.executeStatsQuery(searchParameters);

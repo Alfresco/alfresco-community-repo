@@ -15,8 +15,6 @@ jobs:
 
   - <<: *integration_test_on_MYSQL
     name: "Enterprise Integrations Tests on MySQL"
-    services: docker
-    stage: Tests
     install:
       - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
     script:

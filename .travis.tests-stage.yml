@@ -13,34 +13,35 @@ jobs:
       stage: Tests
       install:
         - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
+          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
           else
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
           fi
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-community-rest-api -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-community-rest-api -am
       before_script:
         - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
             bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
           else
             bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
           fi
         - bash scripts/waitForAlfrescoToStart.sh
-      script: mvn -B test -pl :alfresco-rm-automation-community-rest-api -Dskip.automationtests=false
+      script: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
     - name: "Enterprise Rest API Tests"
       stage: Tests
-      if: commit_message !~ /\[tests on community\]/
       install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-enterprise-rest-api -am
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
         - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
+        - bash scripts/dockerLimitMemory.sh
+        - sudo free -m -t
       script:
-        - mvn -B test -pl :alfresco-rm-automation-enterprise-rest-api -Dskip.automationtests=false
+        - mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
     - &community_shared_UI_configuration
@@ -57,11 +58,11 @@ jobs:
       before_install:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
           else
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
           fi
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       install:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
@@ -70,18 +71,20 @@ jobs:
             bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
           fi
         - bash scripts/waitForAlfrescoToStart.sh
+        - bash scripts/dockerLimitMemory.sh
+        - sudo free -m -t
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *community_shared_UI_configuration
       name: "Community Smoke UI Tests for actions in RM site"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRMSite.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *community_shared_UI_configuration
       name: "Community Level 2 UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - &enterprise_shared_UI_configuration
       name: "Enterprise Level 2 UI Tests"
@@ -96,42 +99,42 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/screenshots
           target_paths: $TRAVIS_BUILD_NUMBER
       before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-rm-automation-ui -am
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Classification Level 2 UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2ClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Records Classification UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseRecordsClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseRecordsClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Folders Classification UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseFoldersClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Documents Classification UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseDocumentsClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseDocumentsClassificationTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Security Marks UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseSecurityMarksTests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Console, Guides and Configuration UI Tests"
       script:
-        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-rm-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseConsoleGuidesAndConfiguration.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+        - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseConsoleGuidesAndConfiguration.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}

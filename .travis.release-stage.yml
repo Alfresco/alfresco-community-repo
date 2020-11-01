@@ -1,0 +1,52 @@
+jobs:
+  include:
+    - name: "Community Release and Publish to S3 Staging Bucket"
+      stage: Release
+      if: commit_message =~ /\[community release .*\]/
+      before_script:
+        - source scripts/set-release-variables.sh
+        - bash scripts/check-existing-tags.sh "alfresco/alfresco-governance-share-community"
+      script:
+        - bash scripts/release.sh "community"
+      before_deploy:
+        - bash scripts/zip-artifacts-staging.sh "community"
+        - bash scripts/pushDockerDigestTag.sh -i quay.io/alfresco/alfresco-governance-repository-community -i quay.io/alfresco/alfresco-governance-share-community -r quay.io -t ${RELEASE_VERSION}
+      deploy:
+        - provider: s3
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          upload_dir: "community/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/community/RM/${RELEASE_VERSION}"
+
+    - name: "Enterprise Release and Publish to S3 Staging Bucket"
+      stage: Release
+      if: commit_message =~ /\[enterprise release .*\]/
+      before_script:
+        - source scripts/set-release-variables.sh
+      script:
+        - bash scripts/release.sh "enterprise"
+      before_deploy:
+        - bash scripts/zip-artifacts-staging.sh "enterprise"
+        - bash scripts/pushDockerDigestTag.sh -i quay.io/alfresco/alfresco-governance-repository-enterprise -i quay.io/alfresco/alfresco-governance-share-enterprise -r quay.io -t ${RELEASE_VERSION}
+      deploy:
+        - provider: s3
+          access_key_id: ${STAGING_AWS_ACCESS_KEY}
+          secret_access_key: ${STAGING_AWS_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          upload_dir: "enterprise/RM/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: artifacts_dir
+          on:
+            all_branches: true
+      after_deploy:
+        - echo "Finished release and deployed to https://s3.console.aws.amazon.com/s3/buckets/alfresco-artefacts-staging/enterprise/RM/${RELEASE_VERSION}"

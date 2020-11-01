@@ -30,6 +30,7 @@ import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
+import org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.TransformerDebug;
@@ -67,11 +68,14 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +166,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
          * @param changedHashcode if specified indicates that the source node content changed or was deleted between
          *                        the request to extract or embed and the response.
          */
-        TestAsynchronousExtractor(String mockResult, Integer changedHashcode)
+        TestAsynchronousExtractor(String mockResult, Integer changedHashcode, OverwritePolicy policy)
         {
             this.mockResult = mockResult;
             this.changedHashcode = changedHashcode;
@@ -179,6 +183,8 @@ public class AsynchronousExtractorTest extends BaseSpringTest
             setMimetypeService(mimetypeService);
             setDictionaryService(dictionaryService);
             setExecutorService(executorService);
+            setOverwritePolicy(policy);
+            setEnableStringTagging(true);
             register();
 
             renditionService2.setTransformClient(mockTransformClient);
@@ -284,8 +290,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         contentMetadataExtracter.setContentService(contentService);
         contentMetadataExtracter.setDictionaryService(dictionaryService);
         contentMetadataExtracter.setMetadataExtracterRegistry(metadataExtracterRegistry);
+        contentMetadataExtracter.setTaggingService(taggingService);
         contentMetadataExtracter.setApplicableTypes(new String[]{ContentModel.TYPE_CONTENT.toString()});
         contentMetadataExtracter.setCarryAspectProperties(true);
+        contentMetadataExtracter.setEnableStringTagging(true);
 
         contentMetadataEmbedder = new ContentMetadataEmbedder();
         contentMetadataEmbedder.setNodeService(nodeService);
@@ -341,9 +349,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     private void assertAsyncMetadataExecute(ActionExecuterAbstractBase executor, String mockResult,
                                             Integer changedHashcode, long expectedSize,
                                             Map<QName, Serializable> expectedProperties,
+                                            OverwritePolicy policy,
                                             QName... ignoreProperties) throws Exception
     {
-        TestAsynchronousExtractor extractor = new TestAsynchronousExtractor(mockResult, changedHashcode);
+        TestAsynchronousExtractor extractor = new TestAsynchronousExtractor(mockResult, changedHashcode, policy);
 
         executeAction(executor, extractor);
         assertContentSize(nodeRef, origSize, AFTER_CALLING_EXECUTE);
@@ -433,35 +442,35 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         expectedProperties.put(QName.createQName("cm:title", namespacePrefixResolver), "The quick brown fox jumps over the lazy dog");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.html_metadata.json",
-                UNCHANGED_HASHCODE, origSize, expectedProperties);
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
     public void testExtractNodeDeleted() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.html_metadata.json",
-                SOURCE_HAS_NO_CONTENT, origSize, origProperties);
+                SOURCE_HAS_NO_CONTENT, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
     public void testExtractContentChanged() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.html_metadata.json",
-                1234, origSize, origProperties);
+                CHANGED_HASHCODE, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
     public void testExtractTransformFailure() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataExtracter, null,
-                UNCHANGED_HASHCODE, origSize, origProperties);
+                UNCHANGED_HASHCODE, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
     public void testExtractTransformCorrupt() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick.html", // not json
-                UNCHANGED_HASHCODE, origSize, origProperties);
+                UNCHANGED_HASHCODE, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
@@ -471,7 +480,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         // "{http://www.unknown}name": "ignored" - is reported in an ERROR log
         expectedProperties.put(QName.createQName("cm:author", namespacePrefixResolver), "Used");
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/unknown_namespace_metadata.json",
-                UNCHANGED_HASHCODE, origSize, expectedProperties);
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
@@ -488,7 +497,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         expectedProperties.put(QName.createQName("cm:originator", namespacePrefixResolver), "Mark Rogers");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.msg_metadata.json",
-                UNCHANGED_HASHCODE, origSize, expectedProperties);
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
 
         Serializable sentDate = properties.get(QName.createQName("cm:sentdate", namespacePrefixResolver));
     }
@@ -514,7 +523,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         // Note: As the metadata is for eml, an aspect gets added resulting in a second extract because of
         // ImapContentPolicy.onAddAspect. I cannot see a good way to avoid this.
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.eml_metadata.json",
-                UNCHANGED_HASHCODE, origSize, expectedProperties,
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC,
                 // cm:author is not in the quick.eml_metadata.json but is being added by the second extract which thinks
                 // the source mimetype is MimetypeMap.MIMETYPE_PDF, because that is what the before() method sets the
                 // content to. As a result the PdfBox metadata extractor is called, which extracts cm:author. Given that
@@ -523,37 +532,261 @@ public class AsynchronousExtractorTest extends BaseSpringTest
                 QName.createQName("cm:author", namespacePrefixResolver));
     }
 
-
     @Test
     public void testEmbed() throws Exception
     {
+        String fileName = "src/test/resources/quick/quick.html";
+
+        File file = new File(fileName);
+        long fileSize = file.length();
+
         assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html", // just replace the pdf with html!
-                UNCHANGED_HASHCODE, 428, expectedProperties);
+                UNCHANGED_HASHCODE, fileSize, expectedProperties, OverwritePolicy.PRAGMATIC);
     }
+
     @Test
     public void testEmbedNodeDeleted() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html",
-                SOURCE_HAS_NO_CONTENT, origSize, origProperties);
+                SOURCE_HAS_NO_CONTENT, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
     public void testEmbedContentChanged() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html",
-                1234, origSize, origProperties);
+                CHANGED_HASHCODE, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
     @Test
     public void testEmbedTransformFailure() throws Exception
     {
         assertAsyncMetadataExecute(contentMetadataEmbedder, null,
-                UNCHANGED_HASHCODE, origSize, origProperties);
+                UNCHANGED_HASHCODE, origSize, origProperties, OverwritePolicy.PRAGMATIC);
     }
 
-    // TODO Write tests for: overwritePolicy, enableStringTagging and carryAspectProperties.
-    //      Values are set in AsynchronousExtractor.setMetadata(...) but make use of original code within
-    //      MetadataExtracter and AbstractMappingMetadataExtracter.
-    //      As the tests for exiting extractors are to be removed in ACS 7.0, it is possible that they were being used
-    //      to test these values.
+    @Test
+    public void testOverwritePolicyEager() throws Exception
+    {
+        QName author = QName.createQName("cm:author", namespacePrefixResolver);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            properties.put(author, "Original author");
+            nodeService.addProperties(nodeRef, properties);
+
+            return null;
+        });
+
+        origProperties.put(author, "Original author");
+
+        expectedProperties.put(author, "Nevin Nollop");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.eager_policy_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.EAGER);
+    }
+
+    @Test
+    public void testOverwritePolicyCautious() throws Exception
+    {
+        QName author = QName.createQName("cm:author", namespacePrefixResolver);
+        QName title = QName.createQName("cm:title", namespacePrefixResolver);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            properties.put(author, "Original author");
+            nodeService.addProperties(nodeRef, properties);
+
+            return null;
+        });
+
+        origProperties.put(author, "Original author");
+
+        expectedProperties.put(author, "Original author");
+        expectedProperties.put(title, "The quick brown fox jumps over the lazy dog");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.cautious_policy_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.CAUTIOUS);
+    }
+
+    @Test
+    public void testOverwritePolicyPrudent() throws Exception
+    {
+        QName author = QName.createQName("cm:author", namespacePrefixResolver);
+        QName title = QName.createQName("cm:title", namespacePrefixResolver);
+        QName description = QName.createQName("cm:description", namespacePrefixResolver);
+        QName audio = QName.createQName("audio:audio", namespacePrefixResolver);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            properties.put(author, "Original author");
+            properties.put(title, ""); // will be changed
+            properties.put(audio, "Default audio"); // will not be changed because it's a media property
+            nodeService.addProperties(nodeRef, properties);
+
+            return null;
+        });
+
+        origProperties.put(author, "Original author");
+        origProperties.put(title, "");
+        origProperties.put(audio, "Default audio");
+
+        expectedProperties.put(author, "Original author");
+        expectedProperties.put(title, "The quick brown fox jumps over the lazy dog");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(audio, "Default audio");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.prudent_policy_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRUDENT);
+    }
+
+    @Test
+    public void testOverwritePolicyPragmatic() throws Exception
+    {
+        QName author = QName.createQName("cm:author", namespacePrefixResolver);
+        QName title = QName.createQName("cm:title", namespacePrefixResolver);
+        QName description = QName.createQName("cm:description", namespacePrefixResolver);
+        QName audio = QName.createQName("audio:audio", namespacePrefixResolver);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            properties.put(author, "Original author");
+            properties.put(title, ""); // will be changed
+            properties.put(audio, "Default audio"); // will be changed using PRAGMATIC policy
+            nodeService.addProperties(nodeRef, properties);
+
+            return null;
+        });
+
+        origProperties.put(author, "Original author");
+        origProperties.put(title, "");
+        origProperties.put(audio, "Default audio");
+
+        expectedProperties.put(author, "Original author");
+        expectedProperties.put(title, "The quick brown fox jumps over the lazy dog");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(audio, "New audio");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.pragmatic_policy_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
+    }
+
+    @Test
+    public void testCarryAspectFalse() throws Exception
+    {
+        QName title = QName.createQName("cm:title", namespacePrefixResolver);
+        QName author = QName.createQName("cm:author", namespacePrefixResolver);
+        QName description = QName.createQName("cm:description", namespacePrefixResolver);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                    Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                    properties.put(title, "Default title");
+                    nodeService.addProperties(nodeRef, properties);
+                    return null;
+                });
+
+        origProperties.put(title, "Default title");
+
+        expectedProperties.put(author, "Nevin Nollop");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.carryAspectFalse_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            assertFalse("Title should be removed from properties because the extracted value is null",
+                    properties.containsKey(title));
+            return null;
+        });
+    }
+
+    @Test
+    public void testCarryAspectTrue() throws Exception
+    {
+        QName title = QName.createQName("cm:title", namespacePrefixResolver);
+        QName author = QName.createQName("cm:author", namespacePrefixResolver);
+        QName description = QName.createQName("cm:description", namespacePrefixResolver);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            properties.put(title, "Default title");
+            nodeService.addProperties(nodeRef, properties);
+            return null;
+        });
+
+        origProperties.put(title, "Default title");
+
+        expectedProperties.put(author, "Nevin Nollop");
+        expectedProperties.put(title, "Default title");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.carryAspectTrue_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            assertTrue("Title should NOT be removed from properties because carryAspectProperties is true",
+                    properties.containsKey(title));
+            return null;
+        });
+    }
+
+    @Test
+    public void testExtractTagging() throws Exception
+    {
+        QName taggable = QName.createQName("cm:taggable", namespacePrefixResolver);
+
+        contentMetadataExtracter.setStringTaggingSeparators(Arrays.asList(",", ";"));
+        contentMetadataExtracter.setEnableStringTagging(true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
+            nodeService.addAspect(nodeRef, taggable, Collections.emptyMap());
+            return null;});
+
+        expectedProperties.put(QName.createQName("cm:author", namespacePrefixResolver), "Nevin Nollop");
+        expectedProperties.put(QName.createQName("cm:description", namespacePrefixResolver), "Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(QName.createQName("cm:title", namespacePrefixResolver), "The quick brown fox jumps over the lazy dog");
+
+        List<String> expectedTags = Arrays.asList("tag1", "tag2", "tag3");
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.tagging_metadata.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC, taggable);
+
+        List<String> actualTags = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                assertTrue(properties.containsKey(ContentModel.PROP_TAGS));
+                return taggingService.getTags(nodeRef);
+            });
+
+        for (String expectedTag : expectedTags)
+        {
+            assertTrue(actualTags.contains(expectedTag));
+        }
+    }
+
+    @Test
+    public void testExtractTaggingWhenDisabled() throws Exception
+    {
+        contentMetadataExtracter.setEnableStringTagging(false);
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
+                return null;
+            });
+
+        expectedProperties.put(QName.createQName("cm:author", namespacePrefixResolver), "Nevin Nollop");
+        expectedProperties.put(QName.createQName("cm:description", namespacePrefixResolver), "Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(QName.createQName("cm:title", namespacePrefixResolver), "The quick brown fox jumps over the lazy dog");
+
+        assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.tagging_metadata_enable_false.json",
+                UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
+
+        List<String> tags = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
+                return taggingService.getTags(nodeRef);
+            });
+        assertEquals("Unexpected tags", 0, tags.size());
+    }
 }

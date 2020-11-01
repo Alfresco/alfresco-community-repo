@@ -1,0 +1,7 @@
+{
+  "sys:enableStringTagging": "true",
+  "{http://www.alfresco.org/model/content/1.0}author": "Nevin Nollop",
+  "{http://www.alfresco.org/model/content/1.0}description": "Gym class featuring a brown fox and lazy dog",
+  "{http://www.alfresco.org/model/content/1.0}title": "The quick brown fox jumps over the lazy dog",
+  "{http://www.alfresco.org/model/content/1.0}taggable": "tag1,tag2,tag3"
+}

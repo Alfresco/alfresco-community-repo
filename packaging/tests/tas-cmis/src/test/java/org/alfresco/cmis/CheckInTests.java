@@ -58,22 +58,19 @@ public class CheckInTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify check in document with minor version and with content")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
     public void checkInDocumentWithMinorVersionAndWithContent() throws Exception
     {
         String newContent = "new minor content";
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);
-        cmisApi.authenticateUser(siteManager).usingSite(testSite).createFile(testFile)
-            .and().assertThat().existsInRepo()
-            .and().checkOut()
-            .and().assertThat().documentIsCheckedOut()
-                  .assertThat().isPrivateWorkingCopy()
-            .and().prepareDocumentForCheckIn()
-                .withMinorVersion()
-                .withContent(newContent)
-                .checkIn()
-            .and().assertThat().documentIsNotCheckedOut()
-            .then().assertThat().documentHasVersion(1.1)
+        cmisApi.authenticateUser(siteManager).usingSite(testSite)
+                .createFile(testFile).and().assertThat().existsInRepo()
+                .checkOut().and().assertThat().documentIsCheckedOut()
+                .assertThat().isPrivateWorkingCopy()
+                .and().prepareDocumentForCheckIn()
+                .withMinorVersion().withContent(newContent)
+                .checkIn().and().assertThat().documentIsNotCheckedOut()
+                .then().assertThat().documentHasVersion(1.1)
                 .and().assertThat().contentIs(newContent);
     }
 

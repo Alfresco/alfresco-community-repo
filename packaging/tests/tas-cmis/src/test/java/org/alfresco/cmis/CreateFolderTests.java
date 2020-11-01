@@ -101,9 +101,9 @@ public class CreateFolderTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is not able to create folder with cmis:document base type id with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS},
-            expectedExceptions = { CmisConstraintException.class, CmisRuntimeException.class},
-            expectedExceptionsMessageRegExp = ".*is not a folder.*")
+    @Test(groups = { "bug-atom-REPO-5389", TestGroup.REGRESSION, TestGroup.CMIS},
+            expectedExceptions = CmisConstraintException.class,
+            expectedExceptionsMessageRegExp = ".*Type is not a folder type.*")
     public void siteManagerCannotCreateFolderWithDocumentTypeId() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();

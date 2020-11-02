@@ -32,30 +32,18 @@ import org.alfresco.util.cache.AbstractAsynchronouslyRefreshedCache;
 import org.alfresco.util.cache.RefreshableCacheEvent;
 import org.alfresco.util.cache.RefreshableCacheListener;
 import org.alfresco.util.cache.RefreshableCacheRefreshedEvent;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.util.LinkedHashSet;
-import java.util.Objects;
 
 /**
  * Asynchronously refreshed cache for dictionary models.
  */
 public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<DictionaryRegistry>
 {
-    private static Log logger = LogFactory.getLog(CompiledModelsCache.class);
-
-    private static final String POST_TRANSACTION_PENDING_REFRESH_REQUESTS = "postTransactionPendingCMRefreshRequests";
-    private static final String RESOURCE_KEY_TXN_DATA = "CompiledModelsCache.TxCMBReEv";
+    private static final Log logger = LogFactory.getLog(CompiledModelsCache.class);
 
     private DictionaryDAOImpl dictionaryDAO;
     private TenantService tenantService;
-
-    private String broadcastKeyTxnData;
-    private boolean bootstrapping = true;
 
     @Override
     protected DictionaryRegistry buildCache(String tenantId)
@@ -124,7 +112,6 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     {
         super.afterPropertiesSet();
 
-        broadcastKeyTxnData = RESOURCE_KEY_TXN_DATA + "BC." + getCacheId();
 
         // RefreshableCacheListener as anonymous class since CompileModelsCache already
         // implements this interface, but expects to be invoked in different circumstances.
@@ -165,114 +152,5 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
                 return CompiledModelsCache.this.getCacheId();
             }
         }); 
-    }
-
-    public void forceInChangesForThisUncommittedTransaction(String key)
-    {
-        super.forceInChangesForThisUncommittedTransaction(key);
-
-        if (!bootstrapping) 
-        {
-            broadcastRefresh(key);
-        }
-        else 
-        {
-            bootstrapping = false;
-        }
-    }
-    
-    private void broadcastRefresh(String key)
-    {
-        if (TransactionSupportUtil.getTransactionId() != null && TransactionSynchronizationManager.isSynchronizationActive())
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Compiled models cache adding" + key + " to post commit list: " + this);
-            }
-
-            String currentTxn = TransactionSupportUtil.getTransactionId();
-            TransactionListener transactionListener = new TransactionListener("TxCMBReEv" + currentTxn);
-            TransactionSupportUtil.bindListener(transactionListener, 0);
-
-            LinkedHashSet<String> broadcastKeys = (LinkedHashSet<String>) TransactionSupportUtil.getResource(broadcastKeyTxnData);
-            if (broadcastKeys == null)
-            {
-                broadcastKeys = new LinkedHashSet<>();
-                TransactionSupportUtil.bindResource(broadcastKeyTxnData, broadcastKeys);
-            }
-
-            broadcastKeys.add(key);
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Compiled models cache broadcastRefresh for key - " + key + " for cache - " + getCacheId());
-            }
-
-            refresh(key);
-        }
-    }
-
-    private class TransactionListener extends TransactionListenerAdapter
-    {
-        private final String id;
-
-        TransactionListener(String uniqueId)
-        {
-            this.id = uniqueId;
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Created lister with id = " + id);
-            }
-        }
-
-        @Override
-        public void afterCommit()
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Starting aftercommit listener execution.");
-            }
-
-            LinkedHashSet<String> broadcastKeys = (LinkedHashSet<String>) TransactionSupportUtil.getResource(broadcastKeyTxnData);
-            if (broadcastKeys != null)
-            {
-                for (String key : broadcastKeys)
-                {
-                    try
-                    {
-                        refresh(key);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
-                        // consume exception
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
-                return true;
-            }
-            if (!(o instanceof CompiledModelsCache.TransactionListener))
-            {
-                return false;
-            }
-            CompiledModelsCache.TransactionListener that = (CompiledModelsCache.TransactionListener) o;
-            return Objects.equals(id, that.id);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return Objects.hash(id);
-        }
     }
 }

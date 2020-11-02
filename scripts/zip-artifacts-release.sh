@@ -8,7 +8,6 @@ mkdir "artifacts_dir"
 mvn -B org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy \
     -Dartifact=org.alfresco:alfresco-governance-services-${release_type}-repo:${RELEASE_VERSION}:amp \
     -DoutputDirectory=artifacts_dir
-    alfresco-governance-services-enterprise-repo
 
 mvn -B org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy \
     -Dartifact=org.alfresco:alfresco-governance-services-${release_type}-share:${RELEASE_VERSION}:amp \

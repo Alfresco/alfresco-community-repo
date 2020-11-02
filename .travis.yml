@@ -1,5 +1,7 @@
 import:
-  - source: travis-env-vars.yml
+  - source: travis/travis-env-vars.yml
+  - source: travis/travis_integration_test_MySQL.yml
+
 os: linux
 dist: xenial
 language: java
@@ -62,26 +64,6 @@ jobs:
         - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
         - travis_retry travis_wait 35 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - name: "Community Integrations Tests on MySQL"
-      services: mysql
-      stage: Tests
-      if:  branch IN (release\/V2.7.*, hotfix-2.7\/.*) OR commit_message =~ /\[execute tests on MySQL\]/
-      before_install:
-        - mysql -u root --password="" < scripts/my_sql_travis.sql
-      script:
-        - travis_retry travis_wait 80 mvn -B -q clean install -Puse-mysql -DskipTests  -Dskip.integrationtests=false -Dmy.db.name=alfresco -Dmy.db.port=3306 -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - name: "Enterprise Integrations Tests on MySQL"
-      services: mysql
-      stage: Tests
-      if:  branch IN (release\/V2.7.*, hotfix-2.7\/.*) OR commit_message =~ /\[execute tests on MySQL\]/
-      before_install:
-        - mysql -u root --password="" < scripts/my_sql_travis.sql
-      install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-      script:
-        - travis_retry travis_wait 80 mvn -B -q clean install -Puse-mysql -DskipTests -Dskip.integrationtests=false  -Dmy.db.name=alfresco -Dmy.db.port=3306 -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Community Rest API Tests"
       stage: Tests

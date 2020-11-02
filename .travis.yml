@@ -1,7 +1,7 @@
 import:
   - source: travis/.travis.env-vars.yml
   - source: travis/.travis.tests-stage.yml
-  - source: travis/.travis-integration-test-MySQL.yml
+  - source: travis/.travis.integration-test-MySQL.yml
   - source: travis/.travis.release-stage.yml
   - source: travis/.travis.publish-stage.yml
 dist: xenial

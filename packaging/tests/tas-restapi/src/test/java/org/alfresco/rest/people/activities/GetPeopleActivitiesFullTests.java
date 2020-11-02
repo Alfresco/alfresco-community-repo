@@ -63,7 +63,7 @@ public class GetPeopleActivitiesFullTests extends RestTest
         // after repo-4250 a file is created first and then update it with content, so there are more entries than previously
         restActivityModelsCollection.assertThat().paginationField("count").is("2");
         RestActivitySummaryModel summary = restActivityModelsCollection.getEntries().get(0).onModel().getActivitySummary();
-        summary.assertThat().field("firstName").is(userModel.getUsername() + " FirstName")
+        summary.assertThat().field("firstName").is("FN-" + userModel.getUsername())
                 .and().field("lastName").is("LN-" + userModel.getUsername())
                 .and().field("title").is(fileInSite1.getName())
                 .and().field("objectId").is(fileInSite1.getNodeRefWithoutVersion());

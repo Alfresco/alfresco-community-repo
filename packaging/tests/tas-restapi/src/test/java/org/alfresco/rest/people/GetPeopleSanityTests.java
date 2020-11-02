@@ -41,8 +41,10 @@ public class GetPeopleSanityTests extends RestTest
 
         personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(searchedUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        personModel.assertThat().field("id").is(searchedUser.getUsername()).assertThat().field("firstName").is(searchedUser.getUsername() + " FirstName").and()
-                .field("email").is(searchedUser.getUsername() + domain).and().field("emailNotificationsEnabled").is("true");
+        personModel.assertThat().field("id").is(searchedUser.getUsername())
+                .and().field("firstName").is("FN-" + searchedUser.getUsername())
+                .and().field("email").is(searchedUser.getUsername() + domain)
+                .and().field("emailNotificationsEnabled").is("true");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
@@ -54,8 +56,10 @@ public class GetPeopleSanityTests extends RestTest
 
         personModel = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingUser(searchedUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        personModel.assertThat().field("id").is(searchedUser.getUsername()).assertThat().field("firstName").is(searchedUser.getUsername() + " FirstName").and()
-                .field("email").is(searchedUser.getUsername() + domain).and().field("emailNotificationsEnabled").is("true");
+        personModel.assertThat().field("id").is(searchedUser.getUsername())
+                .and().field("firstName").is("FN-" + searchedUser.getUsername())
+                .and().field("email").is(searchedUser.getUsername() + domain)
+                .and().field("emailNotificationsEnabled").is("true");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS, TestGroup.SANITY })
@@ -67,8 +71,10 @@ public class GetPeopleSanityTests extends RestTest
 
         personModel = restClient.authenticateUser(contributorUser).withCoreAPI().usingUser(searchedUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        personModel.assertThat().field("id").is(searchedUser.getUsername()).assertThat().field("firstName").is(searchedUser.getUsername() + " FirstName").and()
-                .field("email").is(searchedUser.getUsername() + domain).and().field("emailNotificationsEnabled").is("true");
+        personModel.assertThat().field("id").is(searchedUser.getUsername())
+                .and().field("firstName").is("FN-" + searchedUser.getUsername())
+                .and().field("email").is(searchedUser.getUsername() + domain)
+                .and().field("emailNotificationsEnabled").is("true");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
@@ -80,8 +86,10 @@ public class GetPeopleSanityTests extends RestTest
 
         personModel = restClient.authenticateUser(consumerUser).withCoreAPI().usingUser(searchedUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        personModel.assertThat().field("id").is(searchedUser.getUsername()).assertThat().field("firstName").is(searchedUser.getUsername() + " FirstName").and()
-                .field("email").is(searchedUser.getUsername() + domain).and().field("emailNotificationsEnabled").is("true");
+        personModel.assertThat().field("id").is(searchedUser.getUsername())
+                .and().field("firstName").is("FN-" + searchedUser.getUsername())
+                .and().field("email").is(searchedUser.getUsername() + domain)
+                .and().field("emailNotificationsEnabled").is("true");
         ;
     }
 
@@ -91,8 +99,10 @@ public class GetPeopleSanityTests extends RestTest
     {
         personModel = restClient.authenticateUser(adminUser).withCoreAPI().usingUser(searchedUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        personModel.assertThat().field("id").is(searchedUser.getUsername()).assertThat().field("firstName").is(searchedUser.getUsername() + " FirstName").and()
-                .field("email").is(searchedUser.getUsername() + domain).and().field("emailNotificationsEnabled").is("true");
+        personModel.assertThat().field("id").is(searchedUser.getUsername())
+                .and().field("firstName").is("FN-" + searchedUser.getUsername())
+                .and().field("email").is(searchedUser.getUsername() + domain)
+                .and().field("emailNotificationsEnabled").is("true");
         ;
     }
 

@@ -1,8 +1,9 @@
 import:
-  - source: .travis.env-vars.yml
-  - source: .travis.tests-stage.yml
-  - source: .travis.release-stage.yml
-  - source: .travis.publish-stage.yml
+  - source: travis/.travis.env-vars.yml
+  - source: travis/.travis.tests-stage.yml
+  - source: travis/.travis.integration-test-MySQL.yml
+  - source: travis/.travis.release-stage.yml
+  - source: travis/.travis.publish-stage.yml
 dist: xenial
 sudo: required
 language: java

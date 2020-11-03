@@ -52,4 +52,11 @@ public class LegacyRenditionTest extends AbstractRenditionTest
     {
         AbstractRenditionIntegrationTest.after();
     }
+
+    @Test
+    @Override
+    public void testSelectedMetadataExtracts() throws Exception
+    {
+        internalTestSelectedMetadataExtracts(0, 0);
+    }
 }

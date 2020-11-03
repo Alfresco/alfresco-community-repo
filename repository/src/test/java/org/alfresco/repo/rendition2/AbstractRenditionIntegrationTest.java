@@ -28,12 +28,15 @@ package org.alfresco.repo.rendition2;
 import junit.framework.AssertionFailedError;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AsynchronousExtractor;
+import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -59,7 +62,9 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 
 import static java.lang.Thread.sleep;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
@@ -117,6 +122,9 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
     @Autowired
     protected TransformationOptionsConverter converter;
+
+    @Autowired
+    protected AsynchronousExtractor asynchronousExtractor;
 
     static String PASSWORD = "password";
 
@@ -256,6 +264,30 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         }
     }
 
+    protected void checkExtract(String testFileName, boolean expectedToPass)
+    {
+        try
+        {
+            NodeRef sourceNodeRef = createSource(ADMIN, testFileName);
+            extract(ADMIN, sourceNodeRef);
+
+            // We actually don't check the result. There will be an exception if not supported, which is really all
+            // we care about as the T-Engines have tests too.
+//            waitForExtract(ADMIN, sourceNodeRef, true);
+            if (!expectedToPass)
+            {
+                fail("The extract of metadata should NOT be supported for " + testFileName);
+            }
+        }
+        catch(UnsupportedOperationException e)
+        {
+            if (expectedToPass)
+            {
+                fail("The extract of metadata SHOULD be supported for " + testFileName);
+            }
+        }
+    }
+
     // Creates a new source node as the given user in its own transaction.
     protected NodeRef createSource(String user, String testFileName)
     {
@@ -326,6 +358,25 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     private void render(NodeRef sourceNodeRef, String renditionName)
     {
         renditionService2.render(sourceNodeRef, renditionName);
+    }
+
+    // Requests a new metadata extract as the given user in its own transaction.
+    protected void extract(String user, NodeRef sourceNode)
+    {
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    extract(sourceNode);
+                    return null;
+                }), user);
+    }
+
+    // Requests a new metadata extract as the current user in the current transaction.
+    private void extract(NodeRef sourceNodeRef)
+    {
+        ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+        asynchronousExtractor.extract(sourceNodeRef, reader, MetadataExtracter.OverwritePolicy.PRAGMATIC,
+                Collections.emptyMap(), Collections.emptyMap());
     }
 
     // As a given user waitForRendition for a rendition to appear. Creates new transactions to do this.

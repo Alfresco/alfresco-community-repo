@@ -184,6 +184,61 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
         }
     }
 
+    private void assertMetadataExtractsOkayFromSourceExtension(List<String> sourceExtensions, List<String> excludeList, List<String> expectedToFail,
+                                                               int expectedExtractCount, int expectedFailedCount) throws Exception
+    {
+        int extractCount = 0;
+        int failedCount = 0;
+        int successCount = 0;
+        int excludedCount = 0;
+        RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+        StringJoiner failures = new StringJoiner("\n");
+        StringJoiner successes = new StringJoiner("\n");
+
+        for (String sourceExtension : sourceExtensions)
+        {
+            String sourceMimetype = mimetypeMap.getMimetype(sourceExtension);
+            String testFileName = getTestFileName(sourceMimetype);
+            if (testFileName != null)
+            {
+                extractCount++;
+                if (excludeList.contains(sourceExtension))
+                {
+                    excludedCount++;
+                }
+                else
+                {
+                    try
+                    {
+                        checkExtract(testFileName, !expectedToFail.contains(sourceExtension));
+                        successes.add(sourceExtension);
+                        successCount++;
+                    }
+                    catch (AssertionFailedError e)
+                    {
+                        failures.add(sourceExtension);
+                        failedCount++;
+                    }
+                }
+            }
+        }
+
+        int expectedSuccessCount = expectedExtractCount - excludedCount - expectedFailedCount;
+        System.out.println("FAILURES:\n"+failures+"\n");
+        System.out.println("SUCCESSES:\n"+successes+"\n");
+        System.out.println("extractCount: "+extractCount+" expected "+expectedExtractCount);
+        System.out.println(" failedCount: "+failedCount+" expected "+expectedFailedCount);
+        System.out.println("successCount: "+successCount+" expected "+expectedSuccessCount);
+
+        assertEquals("Extract count has changed", expectedExtractCount, extractCount);
+        assertEquals("Failed extract count has changed", expectedFailedCount, failedCount);
+        assertEquals("Successful extract count has changed", expectedSuccessCount, successCount);
+        if (failures.length() > 0)
+        {
+            fail(failures.toString());
+        }
+    }
+
     @Test
     public void testExpectedNumberOfRenditions() throws Exception
     {
@@ -240,6 +295,18 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
     {
         assertRenditionsOkayFromSourceExtension(Arrays.asList("gif"),
                 Collections.emptyList(), Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
+    }
+
+    @Test
+    public void testSelectedMetadataExtracts() throws Exception
+    {
+        internalTestSelectedMetadataExtracts(7, 0);
+    }
+
+    protected void internalTestSelectedMetadataExtracts(int expectedExtractCount, int expectedFailedCount) throws Exception
+    {
+        assertMetadataExtractsOkayFromSourceExtension(Arrays.asList("msg", "doc", "odt", "pdf", "docx", "mp4", "png"),
+                Collections.emptyList(), Collections.emptyList(), expectedExtractCount, expectedFailedCount);
     }
 
     /**

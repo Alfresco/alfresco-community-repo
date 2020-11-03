@@ -31,6 +31,7 @@ import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_P
 import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_MODIFIED_AT;
 import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME;
 import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE;
+import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_CLIENT_NAME;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -77,6 +78,7 @@ import org.alfresco.service.namespace.QName;
         parentProps.put(RESOURCE_TYPE_KEY,(String)props.get(WF_PROP_RESOURCE_TYPE));
         parentProps.put(CREATED_AT,(Date)props.get(ContentModel.PROP_CREATED));
         parentProps.put(MODIFIED_AT,(Date)props.get(WF_PROP_MODIFIED_AT));
+        parentProps.put(CLIENT_NAME,(Date)props.get(WF_PROP_CLIENT_NAME));
         return parentProps;
     }
 

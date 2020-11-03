@@ -119,5 +119,7 @@
          <property name="emailTemplatePath">
                  <util:constant static-field="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH"/>
          </property>
+        <property name="clientAppConfig" ref="clientAppConfig"/>
+        <property name="emailHelper" ref="emailHelper"/>
     </bean>    
 </beans>

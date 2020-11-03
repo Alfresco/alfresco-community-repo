@@ -28,7 +28,10 @@ package org.alfresco.repo.invitation.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.alfresco.repo.client.config.ClientAppConfig;
+import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.util.EmailHelper;
 
 /**
  * Activiti delegate that is executed when a invitation request has been sent.
@@ -39,15 +42,27 @@ public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
 {
     
     private String emailTemplatePath;
+    private ClientAppConfig clientAppConfig;
+    private EmailHelper emailHelper;
     public static final String ENTERPRISE_EMAIL_TEMPLATE_PATH = "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email-moderated.html.ftl";
    
-    public static final String EMAIL_SUBJECT_KEY =
-            "invitation.moderated.email.subject";
-    
+    public static final String EMAIL_SUBJECT_KEY = "invitation.moderated.email.subject";
+    private static final String EMAIL_TEMPLATE_REF ="alfresco/templates/workspace/invite-email-moderated.html.ftl";
+
 
     public void setEmailTemplatePath(String emailTemplatePath)
     {
         this.emailTemplatePath = emailTemplatePath;
+    }
+
+    public void setClientAppConfig(ClientAppConfig clientAppConfig)
+    {
+        this.clientAppConfig = clientAppConfig;
+    }
+
+    public void setEmailHelper(EmailHelper emailHelper)
+    {
+        this.emailHelper = emailHelper;
     }
 
     @Override
@@ -55,6 +70,18 @@ public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
     {
         String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
         Map<String, Object> variables = execution.getVariables();
-        invitationService.sendModeratedInvitation(invitationId, emailTemplatePath, EMAIL_SUBJECT_KEY, variables);
+        String clientName = (String) variables.get(WorkflowModelModeratedInvitation.wfVarClientName);
+
+        ClientAppConfig.ClientApp clientApp = clientAppConfig.getClient(clientName);
+        if(clientApp != null)
+        {
+            final String path = clientApp.getProperty("inviteModeratedTemplatePath");
+            final String templatePath = emailHelper.getEmailTemplate(clientApp.getName(), path, EMAIL_TEMPLATE_REF);
+            invitationService.sendModeratedInvitation(invitationId, templatePath, EMAIL_SUBJECT_KEY, variables);
+        }
+        else
+        {
+            invitationService.sendModeratedInvitation(invitationId, emailTemplatePath, EMAIL_SUBJECT_KEY, variables);
+        }
     }
 }

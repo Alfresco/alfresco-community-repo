@@ -57,11 +57,13 @@
    "modifiedBy": "${modifiedBy}",
    "modifiedByUser": "${modifiedByUser}",
    <#if node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification")>
-      <#list node.properties.lastThumbnailModification as thumbnailMod>
+     <#if node.properties.lastThumbnailModification??>
+       <#list node.properties.lastThumbnailModification as thumbnailMod>
          <#if thumbnailMod?contains("doclib")>
    "lastThumbnailModification": "${thumbnailMod}",
          </#if>
-      </#list>
+       </#list>
+     </#if>
    </#if>
    "lockedBy": "${lockedBy}",
    "lockedByUser": "${lockedByUser}",

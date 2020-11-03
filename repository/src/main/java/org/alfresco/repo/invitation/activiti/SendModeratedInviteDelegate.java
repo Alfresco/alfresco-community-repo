@@ -72,9 +72,9 @@ public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
         Map<String, Object> variables = execution.getVariables();
         String clientName = (String) variables.get(WorkflowModelModeratedInvitation.wfVarClientName);
 
-        ClientAppConfig.ClientApp clientApp = clientAppConfig.getClient(clientName);
-        if(clientApp != null)
+        if(clientName != null && clientAppConfig.getClient(clientName) != null)
         {
+            ClientAppConfig.ClientApp clientApp = clientAppConfig.getClient(clientName);
             final String path = clientApp.getProperty("inviteModeratedTemplatePath");
             final String templatePath = emailHelper.getEmailTemplate(clientApp.getName(), path, EMAIL_TEMPLATE_REF);
             invitationService.sendModeratedInvitation(invitationId, templatePath, EMAIL_SUBJECT_KEY, variables);

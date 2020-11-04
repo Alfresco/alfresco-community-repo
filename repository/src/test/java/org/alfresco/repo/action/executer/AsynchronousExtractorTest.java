@@ -72,6 +72,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,13 +179,13 @@ public class AsynchronousExtractorTest extends BaseSpringTest
             setContentService(contentService);
             setTransactionService(transactionService);
             setTransformServiceRegistry(transformServiceRegistry);
+            setEnableStringTagging(true);
             setTaggingService(taggingService);
             setRegistry(metadataExtracterRegistry);
             setMimetypeService(mimetypeService);
             setDictionaryService(dictionaryService);
             setExecutorService(executorService);
             setOverwritePolicy(policy);
-            setEnableStringTagging(true);
             register();
 
             renditionService2.setTransformClient(mockTransformClient);
@@ -353,7 +354,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
                                             QName... ignoreProperties) throws Exception
     {
         TestAsynchronousExtractor extractor = new TestAsynchronousExtractor(mockResult, changedHashcode, policy);
-
+        extractor.setEnableStringTagging(true);
         executeAction(executor, extractor);
         assertContentSize(nodeRef, origSize, AFTER_CALLING_EXECUTE);
         assertProperties(nodeRef, origProperties, AFTER_CALLING_EXECUTE, ignoreProperties);
@@ -535,9 +536,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     @Test
     public void testEmbed() throws Exception
     {
-        String fileName = "src/test/resources/quick/quick.html";
+        URL resource = getClass().getClassLoader().getResource("quick/quick.html");
+        assertNotNull("File not found", resource);
 
-        File file = new File(fileName);
+        File file = new File(resource.toURI());
         long fileSize = file.length();
 
         assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html", // just replace the pdf with html!

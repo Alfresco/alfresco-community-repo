@@ -31,7 +31,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,8 +44,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.embedder.Embedder;
@@ -476,43 +473,11 @@ public abstract class TikaPoweredMetadataExtracter
         {
             return;
         }
-        
+
+        Map<String, String> metadataAsStrings = convertMetadataToStrings(properties);
         Metadata metadataToEmbed = new Metadata();
-        for (String metadataKey : properties.keySet())
-        {
-            Serializable value = properties.get(metadataKey);
-            if (value == null)
-            {
-                continue;
-            }
-            if (value instanceof Collection<?>)
-            {
-                for (Object singleValue : (Collection<?>) value)
-                {
-                    try
-                    {
-                        // Convert to a string value for Tika
-                        metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, singleValue));
-                    }
-                    catch (TypeConversionException e)
-                    {
-                        logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
-                    }
-                }
-            }
-            else
-            {
-                try
-                {
-                    // Convert to a string value for Tika
-                    metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, value));
-                }
-                catch (TypeConversionException e)
-                {
-                    logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
-                }
-            }
-        }
+        metadataAsStrings.forEach((k,v)->metadataToEmbed.add(k, v));
+
         InputStream inputStream = getInputStream(reader);
         OutputStream outputStream = writer.getContentOutputStream();
         embedder.embed(metadataToEmbed, inputStream, outputStream, null);

@@ -25,18 +25,13 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
-import org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.PropertyCheck;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @deprecated OOTB extractors are being moved to T-Engines.

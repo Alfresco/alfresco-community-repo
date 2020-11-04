@@ -494,7 +494,7 @@ public class CmisAssertion extends DSLAssertion<CmisWrapper>
         }
         else
         {
-            Assert.assertFalse(false, String.format("Object %s does not have property %s", cmisObject.getName(), propertyId));
+            throw new AssertionError(String.format("Object %s does not have property %s", cmisObject.getName(), propertyId));
         }
         return cmisAPI();
     }

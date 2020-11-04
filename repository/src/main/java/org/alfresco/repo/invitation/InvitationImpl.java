@@ -73,7 +73,7 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     
     private final Date modifiedAt;
      
-    private final Date clientName;
+    private final String clientName;
 
     public InvitationImpl(Map<String, Serializable> props)
     {
@@ -85,7 +85,7 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
         this.resourceType = type==null ? ResourceType.WEB_SITE : ResourceType.valueOf(type);
         this.createdAt = (Date)props.get(CREATED_AT);
         this.modifiedAt = (Date)props.get(MODIFIED_AT);
-        this.clientName = (Date)props.get(CLIENT_NAME);
+        this.clientName = (String)props.get(CLIENT_NAME);
     }
 
     /**
@@ -127,7 +127,7 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
         return inviteeUserName;
     }
 
-    public Date getClientName()
+    public String getClientName()
     {
         return clientName;
     }

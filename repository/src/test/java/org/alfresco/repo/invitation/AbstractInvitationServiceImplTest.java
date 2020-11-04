@@ -1040,6 +1040,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         assertEquals("comments", comments, invitation.getInviteeComments());
         assertEquals("resource type name wrong", resourceType, invitation.getResourceType());
         assertEquals("resource name wrong", resourceName, invitation.getResourceName());
+        assertEquals("client name wrong", "workspace", invitation.getClientName());
 
         /**
          * Now we have an invitation get it and check the details have been

@@ -739,17 +739,11 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     {
         QName taggable = QName.createQName("cm:taggable", namespacePrefixResolver);
 
-        contentMetadataExtracter.setStringTaggingSeparators(Arrays.asList(",", ";"));
         contentMetadataExtracter.setEnableStringTagging(true);
         transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
-            nodeService.addAspect(nodeRef, taggable, Collections.emptyMap());
             return null;});
-
-        expectedProperties.put(QName.createQName("cm:author", namespacePrefixResolver), "Nevin Nollop");
-        expectedProperties.put(QName.createQName("cm:description", namespacePrefixResolver), "Gym class featuring a brown fox and lazy dog");
-        expectedProperties.put(QName.createQName("cm:title", namespacePrefixResolver), "The quick brown fox jumps over the lazy dog");
 
         List<String> expectedTags = Arrays.asList("tag1", "tag2", "tag3");
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.tagging_metadata.json",
@@ -757,13 +751,13 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         List<String> actualTags = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
                 Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                assertTrue(properties.containsKey(ContentModel.PROP_TAGS));
+//                assertTrue(properties.containsKey(ContentModel.PROP_TAGS)); this property should be added after adding tags
                 return taggingService.getTags(nodeRef);
             });
 
         for (String expectedTag : expectedTags)
         {
-            assertTrue(actualTags.contains(expectedTag));
+            assertTrue("Expected tag " + expectedTag + " not in " + actualTags, actualTags.contains(expectedTag));
         }
     }
 
@@ -777,10 +771,6 @@ public class AsynchronousExtractorTest extends BaseSpringTest
                 return null;
             });
 
-        expectedProperties.put(QName.createQName("cm:author", namespacePrefixResolver), "Nevin Nollop");
-        expectedProperties.put(QName.createQName("cm:description", namespacePrefixResolver), "Gym class featuring a brown fox and lazy dog");
-        expectedProperties.put(QName.createQName("cm:title", namespacePrefixResolver), "The quick brown fox jumps over the lazy dog");
-
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.tagging_metadata_enable_false.json",
                 UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
 
@@ -789,6 +779,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
                 assertFalse(properties.containsKey(ContentModel.PROP_TAGS));
                 return taggingService.getTags(nodeRef);
             });
+
         assertEquals("Unexpected tags", 0, tags.size());
     }
 }

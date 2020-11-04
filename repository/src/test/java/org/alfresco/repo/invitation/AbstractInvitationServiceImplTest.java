@@ -1019,6 +1019,83 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     }
 
     /**
+     * Create a moderated invitation for workspace client Get it Search for it Cancel it
+     */
+    public void testWorkspaceModeratedInvitation()
+    {
+        String inviteeUserName = USER_TWO;
+        Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
+        String resourceName = SITE_SHORT_NAME_INVITE;
+        String inviteeRole = SiteModel.SITE_COLLABORATOR;
+        String comments = "please sir, let me in!";
+
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        ModeratedInvitation invitation = invitationService.inviteModerated(comments, inviteeUserName, resourceType,
+                    resourceName, inviteeRole, "workspace", "");
+
+        assertNotNull("moderated invitation is null", invitation);
+        String inviteId = invitation.getInviteId();
+        assertEquals("user name wrong", inviteeUserName, invitation.getInviteeUserName());
+        assertEquals("role  name wrong", inviteeRole, invitation.getRoleName());
+        assertEquals("comments", comments, invitation.getInviteeComments());
+        assertEquals("resource type name wrong", resourceType, invitation.getResourceType());
+        assertEquals("resource name wrong", resourceName, invitation.getResourceName());
+
+        /**
+         * Now we have an invitation get it and check the details have been
+         * returned correctly.
+         */
+        ModeratedInvitation mi2 = (ModeratedInvitation) invitationService.getInvitation(inviteId);
+        assertEquals("invite id", inviteId, mi2.getInviteId());
+        assertEquals("user name wrong", inviteeUserName, mi2.getInviteeUserName());
+        assertEquals("role  name wrong", inviteeRole, mi2.getRoleName());
+        assertEquals("comments", comments, mi2.getInviteeComments());
+        assertEquals("resource type name wrong", resourceType, mi2.getResourceType());
+        assertEquals("resource name wrong", resourceName, mi2.getResourceName());
+
+        /**
+         * Search for the new invitation
+         */
+        List<Invitation> invitations = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+        assertTrue("invitations is empty", !invitations.isEmpty());
+
+        ModeratedInvitation firstInvite = (ModeratedInvitation) invitations.get(0);
+        assertEquals("invite id wrong", inviteId, firstInvite.getInviteId());
+
+        /**
+         * Cancel the invitation
+         */
+        ModeratedInvitation canceledInvitation = (ModeratedInvitation) invitationService.cancel(inviteId);
+        assertEquals("invite id wrong", inviteId, canceledInvitation.getInviteId());
+        assertEquals("comments wrong", comments, canceledInvitation.getInviteeComments());
+
+        /**
+         * Should now be no invitation
+         */
+        List<Invitation> inv2 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+        assertTrue("After cancel invitations is not empty", inv2.isEmpty());
+
+        /**
+         * New invitation
+         */
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        ModeratedInvitation invite3 = invitationService.inviteModerated(comments, inviteeUserName, resourceType,
+                resourceName, inviteeRole);
+
+        String thirdInvite = invite3.getInviteId();
+
+        this.authenticationComponent.setCurrentUser(USER_MANAGER);
+        invitationService.approve(thirdInvite, "Welcome in");
+
+        /**
+         * Now verify access control list
+         */
+        String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
+        assertEquals("role name wrong", inviteeRole, roleName);
+        siteService.removeMembership(resourceName, inviteeUserName);
+    }
+
+    /**
      * Test the approval of a moderated invitation
      */
     public void testModeratedApprove()

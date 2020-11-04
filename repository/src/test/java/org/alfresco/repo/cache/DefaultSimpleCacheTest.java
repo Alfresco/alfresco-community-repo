@@ -117,7 +117,7 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         assertFalse(cache.contains(104));
         assertEquals(true, cache.putAndCheckUpdate(104, null));
         // Repeat putting null - still not an update, as we had that value a moment ago.
-        assertEquals(true, cache.putAndCheckUpdate(104, null));
+        assertEquals(false, cache.putAndCheckUpdate(104, null));
         // Now an update
         assertEquals(true, cache.putAndCheckUpdate(104, "104"));
         // Another update
@@ -125,10 +125,10 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         // Another update, back to null
         assertEquals(true, cache.putAndCheckUpdate(104, null));
         // Not an update - still null
-        assertEquals(true, cache.putAndCheckUpdate(104, null));
+        assertEquals(false, cache.putAndCheckUpdate(104, null));
         
         cache.remove(104);
-        assertEquals(false, cache.putAndCheckUpdate(104, "104"));
+        assertEquals(true, cache.putAndCheckUpdate(104, "104"));
         assertEquals(true, cache.putAndCheckUpdate(104, null));
     }
     

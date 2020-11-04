@@ -39,7 +39,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY,
             description = "Verify secondaryObjectTypeIds property for valid document")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.SANITY, TestGroup.CMIS})
     public void verifySecondaryObjectTypeIdsPropertyForValidDocument() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
@@ -50,7 +50,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify secondaryObjectTypeIds property for valid folder")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.SANITY, TestGroup.CMIS})
     public void verifySecondaryObjectTypeIdsPropertyForValidFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -61,7 +61,7 @@ public class GetPropertiesTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property for inexistent folder (that was previously deleted)")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
     public void verifySecondaryObjectTypeIdsPropertyForInexistentFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -74,7 +74,7 @@ public class GetPropertiesTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property for valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void managerVerifiesSecondaryObjectTypeIdsPropertyForValidFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder);
@@ -85,7 +85,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site collaborator for valid document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorVerifiesSecondaryObjectTypeIdsPropertyForValidDocumentCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite).createFile(testFile)
@@ -96,7 +96,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site collaborator for valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorVerifiesSecondaryObjectTypeIdsPropertyForValidFolderCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite).createFolder(testFolder)
@@ -107,7 +107,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site collaborator for valid document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorVerifiesSecondaryObjectTypeIdsPropertyForValidDocumentCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
@@ -120,7 +120,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site collaborator for valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorVerifiesSecondaryObjectTypeIdsPropertyForValidFolderCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -133,7 +133,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site contributor for valid document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorVerifiesSecondaryObjectTypeIdsPropertyForValidDocumentCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite).createFile(testFile)
@@ -144,7 +144,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site contributor for valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorVerifiesSecondaryObjectTypeIdsPropertyForValidFolderCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite).createFolder(testFolder)
@@ -155,7 +155,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site contributor for valid document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorVerifiesSecondaryObjectTypeIdsPropertyForValidDocumentCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
@@ -168,7 +168,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site contributor for valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorVerifiesSecondaryObjectTypeIdsPropertyForValidFolderCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)
@@ -181,7 +181,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site consumer for valid document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerVerifiesSecondaryObjectTypeIdsPropertyForValidDocument() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
@@ -194,7 +194,7 @@ public class GetPropertiesTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify secondaryObjectTypeIds property as site consumer for valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_CMIS_WS, TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerVerifiesSecondaryObjectTypeIdsPropertyForValidFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(testFolder)

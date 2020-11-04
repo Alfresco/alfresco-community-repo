@@ -142,7 +142,7 @@ public class UpdatePropertiesTests extends CmisTest
    
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
                 description = "Verify site manager is able to update the title and description while document is checked out with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS })
     public void siteManagerCanUpdateCheckOutDocTitleAndDescription() throws Exception
     {
         propertyNameValue = RandomData.getRandomAlphanumeric();
@@ -164,8 +164,10 @@ public class UpdatePropertiesTests extends CmisTest
     {
         propertyNameValue = RandomData.getRandomAlphanumeric();
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
-        cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile).assertThat().existsInRepo()
-                .then().update("first content").update("second content")
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
+                .createFile(testFile).assertThat().existsInRepo()
+                .then().update("first content")
+                .then().update("second content")
                 .updateProperty("cmis:description", propertyNameValue)
                 .updateProperty("cm:title", propertyNameValue)
                 .and().assertThat().contentPropertyHasValue("cmis:description", propertyNameValue)

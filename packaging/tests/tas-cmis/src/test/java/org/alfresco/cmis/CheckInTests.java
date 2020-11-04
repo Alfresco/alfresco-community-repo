@@ -228,7 +228,7 @@ public class CheckInTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify check in document created with VersioningState checkedout")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS})
     public void checkInDocumentWithProperties() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);

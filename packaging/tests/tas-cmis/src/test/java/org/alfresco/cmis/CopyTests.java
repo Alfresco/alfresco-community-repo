@@ -105,8 +105,7 @@ public class CopyTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION, 
             description = "Verify non existing user is not able to copy file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
-//            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisUnauthorizedException.class)
     public void nonExistentUserIsNotAbleToCopyFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -121,8 +120,7 @@ public class CopyTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION, 
             description = "Verify non existing user is not able to copy folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
-//            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisUnauthorizedException.class)
     public void nonExistentUserIsNotAbleToCopyFolder() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();

@@ -61,7 +61,7 @@ public class CreateFolderTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent user can't create folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserShouldNotCreateFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -195,7 +195,7 @@ public class CreateFolderTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify disabled user is not able to create folder in Shared location")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void disabledUserShouldNotCreateFolder() throws Exception
     {
         UserModel disabled = dataUser.createRandomTestUser();

@@ -61,7 +61,7 @@ public class SetContentTests extends CmisTest
     }
 
     @Bug(id = "REPO-5388")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION, 
                 description = "Verify that inexistent user is not able to set content to a document with CMIS")
     public void inexistentUserCannotSetFileContent() throws Exception

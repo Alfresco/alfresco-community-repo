@@ -36,7 +36,7 @@ public class RepositoryInfoTests extends CmisTest
     }
 
     @Bug(id = "REPO-5388")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})//, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY, description = "Verify that valid user with invalid password cannot get repositories")
     public void unauthorizedUserCannotGetRepositories() throws Exception
     {
@@ -84,7 +84,7 @@ public class RepositoryInfoTests extends CmisTest
     }
 
     @Bug(id = "REPO-5388")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, description = "Verify that invalid user cannot get repositories")
     public void invalidUserCannotGetRepositories() throws Exception
     {
@@ -109,7 +109,7 @@ public class RepositoryInfoTests extends CmisTest
     }
 
     @Bug(id = "REPO-5388")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, description = "Verify that disabled user cannot get repositories")
     public void disabledUserCannotGetRepositories() throws Exception
     {

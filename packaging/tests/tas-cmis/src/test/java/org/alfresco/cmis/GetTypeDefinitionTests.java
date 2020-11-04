@@ -75,7 +75,7 @@ public class GetTypeDefinitionTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
               description = "Verify user that was deleted cannot get Type Definition for a valid folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })//, expectedExceptions = { CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisUnauthorizedException.class)
     public void deletedUserCannotGetTypeDefinitionForValidFolder() throws Exception
     {
         UserModel deletedUser = dataUser.createRandomTestUser();

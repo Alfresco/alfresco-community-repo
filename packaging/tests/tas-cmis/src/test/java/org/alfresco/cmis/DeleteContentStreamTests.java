@@ -71,7 +71,7 @@ public class DeleteContentStreamTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify nonexistent user is not able to delete content of a document with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void nonexistentUserCannotDeleteDocumentContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);

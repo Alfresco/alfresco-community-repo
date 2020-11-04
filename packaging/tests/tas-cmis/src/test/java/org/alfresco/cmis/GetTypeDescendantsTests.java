@@ -110,7 +110,7 @@ public class GetTypeDescendantsTests extends CmisTest
     }
 
     @Bug(id = "REPO-5388")
-    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION })//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION }, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
         description = "Verify deleted user cannot get type descendantes for valid type id and includePropertyDefinitions = false  and depth = 1")
     public void deletedUserCannotGetTypeDescendants() throws Exception
@@ -124,7 +124,7 @@ public class GetTypeDescendantsTests extends CmisTest
     }
 
     @Bug(id = "REPO-5388")
-    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION })//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION }, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
         description = "Verify disabled user cannot get type descendantes for valid type id and includePropertyDefinitions = false  and depth = 1")
     public void disabledUserCannotGetTypeDescendants() throws Exception

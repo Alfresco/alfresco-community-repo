@@ -129,7 +129,7 @@ public class MoveTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent is not able to move file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserCannotMoveFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();

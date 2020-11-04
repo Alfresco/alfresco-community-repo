@@ -83,7 +83,7 @@ public class RelationshipTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that inexistent user is not able to create relationship between documents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -99,7 +99,7 @@ public class RelationshipTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that user that was deleted is not able to create relationship between documents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})//, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void deletedUserCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

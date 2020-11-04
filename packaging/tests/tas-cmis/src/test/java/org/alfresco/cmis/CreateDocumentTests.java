@@ -52,8 +52,7 @@ public class CreateDocumentTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent user isn't able to create files in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
-//            expectedExceptions = { CmisUnauthorizedException.class, CmisPermissionDeniedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserShouldNotCreateDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
@@ -248,8 +247,7 @@ public class CreateDocumentTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify disabled user is not able to create file in Shared folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
-//            expectedExceptions={ CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void disabledUserShouldNotCreateDocument() throws Exception
     {
         UserModel disabled = dataUser.createRandomTestUser();

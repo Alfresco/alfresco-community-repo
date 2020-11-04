@@ -87,7 +87,7 @@ public class GetTypeChildrenTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify deleted user is not authorized to get type children for valid type id")
-    @Test(groups = { TestGroup.CMIS, TestGroup.REGRESSION })//, expectedExceptions = {CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.CMIS, TestGroup.REGRESSION }, expectedExceptions = CmisUnauthorizedException.class)
     public void getTypeChildrenWithWithDeletedUser() throws DataPreparationException
     {
         UserModel deletedUser = dataUser.createRandomTestUser();
@@ -103,7 +103,7 @@ public class GetTypeChildrenTests extends CmisTest
     @Bug(id = "REPO-5388")
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify disabled user is not authorized to get type children for valid type id")
-    @Test(groups = { TestGroup.CMIS, TestGroup.REGRESSION })//, expectedExceptions = {CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.CMIS, TestGroup.REGRESSION }, expectedExceptions = CmisUnauthorizedException.class)
     public void getTypeChildrenWithWithDisabledUser() throws DataPreparationException
     {
         UserModel disabledUser = dataUser.createRandomTestUser();

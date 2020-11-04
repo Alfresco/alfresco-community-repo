@@ -55,24 +55,19 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/reports
             - ./rm-automation/rm-automation-ui/target/screenshots
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
-      before_install:
-        - |
-          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
-          else
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
-          fi
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       install:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
             bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH false
           else
+            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
             bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH true
           fi
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
 
@@ -98,10 +93,9 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/reports
             - ./rm-automation/rm-automation-ui/target/screenshots
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
-      before_install:
+      install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
-      install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH true
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh

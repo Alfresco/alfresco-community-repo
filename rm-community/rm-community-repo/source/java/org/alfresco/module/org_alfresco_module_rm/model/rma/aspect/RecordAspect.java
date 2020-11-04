@@ -78,7 +78,7 @@ public class RecordAspect extends    AbstractDisposableItem
                                      NodeServicePolicies.OnMoveNodePolicy,
                                      CopyServicePolicies.OnCopyCompletePolicy,
                                      NodeServicePolicies.OnUpdatePropertiesPolicy,
-        ContentServicePolicies.OnContentPropertyUpdatePolicy
+                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -421,16 +421,15 @@ public class RecordAspect extends    AbstractDisposableItem
     @Behaviour
     (
         kind = BehaviourKind.CLASS,
-        notificationFrequency = NotificationFrequency.FIRST_EVENT,
-        type = "rma:record"
+        notificationFrequency = NotificationFrequency.FIRST_EVENT
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
-        String beforeNameAfter = (String) before.get(ContentModel.PROP_STORE_NAME);
+        String storeNameBefore = (String) before.get(ContentModel.PROP_STORE_NAME);
 
         ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
-        if (storeNameAfter != null && !storeNameAfter.equals(beforeNameAfter))
+        if (storeNameAfter != null && !storeNameAfter.equals(storeNameBefore))
         {
             if (nodeService.hasAspect(nodeRef, ASPECT_WORM_LOCK))
             {

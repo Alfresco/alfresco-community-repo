@@ -106,7 +106,7 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         // Precondition: no value for key 102
         assertFalse(cache.contains(102));
         // Put a value - and test the return
-        assertEquals(false, cache.putAndCheckUpdate(102, "102"));
+        assertEquals(true, cache.putAndCheckUpdate(102, "102"));
         assertEquals("102", cache.get(102));
         
         cache.put(103, null);

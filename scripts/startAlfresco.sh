@@ -3,4 +3,9 @@
 set -ev
 
 cd $1
-docker-compose --env-file $2 up -d
+# if 2nd input parameter is true then use legacy transformers
+# (flags LOCAL_TRANSFORM_SERVICE_ENABLED and TRANSFORM_SERVICE_ENABLED are set to false in .env.ci )
+if $2 ; then
+  mv -u .env.ci .env
+fi
+docker-compose up -d

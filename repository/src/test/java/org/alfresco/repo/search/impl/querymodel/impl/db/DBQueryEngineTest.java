@@ -31,6 +31,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -38,15 +39,16 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.StoreEntity;
+import org.alfresco.repo.domain.permissions.AuthorityEntity;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine.NodePermissionAssessor;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
@@ -71,7 +73,6 @@ public class DBQueryEngineTest
     private ResultContext<Node> resultContext;
     private QueryOptions options;
     private SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache;
-    private SimpleCache<Serializable, Serializable> nodesCache;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -153,7 +154,7 @@ public class DBQueryEngineTest
     }
     
     @Test
-    public void shouldNotConsiderInaccessibleNodesInResultSet()
+    public void shouldResultSetHaveCorrectAmountOfRequiredNodesWhenSomeAreExcludedDueToDeclinedPermission()
     {
         withMaxItems(5);
         List<Node> nodes = createNodes(20);
@@ -202,19 +203,7 @@ public class DBQueryEngineTest
         assertEquals(0, result.length());
         verify(resultContext).stop();
     }
-    
-    @Test
-    public void shouldNodePermissionAssessorLimitisBeOverridenWhenSetValuesAreProvidedInQueryOptions()
-    {
-        when(options.getMaxPermissionChecks()).thenReturn(2000);
-        when(options.getMaxPermissionCheckTimeMillis()).thenReturn(20000L);
-        
-        NodePermissionAssessor assessor = engine.createAssessor(options);
-        
-        assertEquals(assessor.getMaxPermissionChecks(), 2000);
-        assertEquals(assessor.getMaxPermissionCheckTimeMillis(), 20000L);
-    }
-        
+            
     private void prepareTemplate(DBQuery dbQuery, List<Node> nodes)
     {
         doAnswer(invocation -> {
@@ -277,7 +266,7 @@ public class DBQueryEngineTest
     
     private Node createNode(int id) 
     {
-        Node node = spy(NodeEntity.class);
+        Node node = spy(Node.class);
 
         when(node.getId()).thenReturn((long)id);
 

@@ -143,6 +143,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     
                 webScriptResponse.addHeader("X-Response-Stats", sb.toString());
             }
+
             //Write response
             setResponse(webScriptResponse, DEFAULT_SUCCESS);
             renderJsonResponse(webScriptResponse, toRender, assistant.getJsonHelper());

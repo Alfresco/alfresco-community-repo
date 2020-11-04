@@ -1,9 +1,3 @@
-package org.alfresco.repo.search.impl.querymodel.impl.db;
-
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.concurrent.NotThreadSafe;
-
 /*-
  * #%L
  * Alfresco Remote API
@@ -29,6 +23,12 @@ import javax.annotation.concurrent.NotThreadSafe;
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.repo.search.impl.querymodel.impl.db;
+
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.concurrent.NotThreadSafe;
+
 
 @NotThreadSafe
 public class SingleTaskRestartableWatch

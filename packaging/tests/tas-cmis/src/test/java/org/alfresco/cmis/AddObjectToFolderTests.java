@@ -36,7 +36,7 @@ public class AddObjectToFolderTests extends CmisTest
         testSite = dataSite.usingUser(testUser).createPublicRandomSite();
         destinationFolder = FolderModel.getRandomFolderModel();
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(destinationFolder)
-            .assertThat().existsInRepo();
+                .assertThat().existsInRepo();
         usersWithRoles = dataUser.usingUser(testUser)
                 .addUsersWithRolesToSite(testSite, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
@@ -48,10 +48,10 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(sourceFile).assertThat().existsInRepo()
+                .createFile(sourceFile).assertThat().existsInRepo()
                 .then().addDocumentToFolder(destinationFolder, true)
-                    .and().assertThat().existsInRepo()
-                    .and().assertThat().objectIdIs(sourceFile.getNodeRef());
+                .and().assertThat().existsInRepo()
+                .and().assertThat().objectIdIs(sourceFile.getNodeRef());
     }
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -63,7 +63,7 @@ public class AddObjectToFolderTests extends CmisTest
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         FolderModel folderToAdd = FolderModel.getRandomFolderModel();
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFolder(folderToAdd).assertThat().existsInRepo()
+                .createFolder(folderToAdd).assertThat().existsInRepo()
                 .then().addDocumentToFolder(folderToAdd, true);
     }
     
@@ -75,7 +75,7 @@ public class AddObjectToFolderTests extends CmisTest
         FileModel randomFile = FileModel.getRandomFileModel(FileType.HTML);
         randomFile.setCmisLocation("/" + randomFile.getName() + "/");
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .usingResource(randomFile)
+                .usingResource(randomFile)
                 .addDocumentToFolder(destinationFolder, true);
     }
     
@@ -88,7 +88,7 @@ public class AddObjectToFolderTests extends CmisTest
         FolderModel randomFolder = FolderModel.getRandomFolderModel();
         randomFolder.setCmisLocation("/" + randomFolder.getName() + "/");
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(sourceFile).assertThat().existsInRepo()
+                .createFile(sourceFile).assertThat().existsInRepo()
                 .then().addDocumentToFolder(randomFolder, true);
     }
     
@@ -99,11 +99,11 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(sourceFile).assertThat().existsInRepo()
+                .createFile(sourceFile).assertThat().existsInRepo()
                 .then().checkOut().and().assertThat().documentIsCheckedOut()
                 .usingPWCDocument().addDocumentToFolder(destinationFolder, true)
-                    .and().assertThat().existsInRepo()
-                    .and().assertThat().documentIsCheckedOut();
+                .and().assertThat().existsInRepo()
+                .and().assertThat().documentIsCheckedOut();
     }
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -113,12 +113,12 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(sourceFile).assertThat().existsInRepo()
+                .createFile(sourceFile).assertThat().existsInRepo()
                 .then().update("first content").update("second content")
-                    .and().assertThat().documentHasVersion(1.2)
+                .and().assertThat().documentHasVersion(1.2)
                 .then().addDocumentToFolder(destinationFolder, true)
-                    .and().assertThat().existsInRepo()
-                        .and().assertThat().documentHasVersion(1.2);
+                .and().assertThat().existsInRepo()
+                .and().assertThat().documentHasVersion(1.2);
     }
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -129,9 +129,9 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFile(sourceFile).assertThat().existsInRepo()
+                .createFile(sourceFile).assertThat().existsInRepo()
                 .then().update("update content")
-                    .and().assertThat().documentHasVersion(1.1)
+                .and().assertThat().documentHasVersion(1.1)
                 .then().addDocumentToFolder(destinationFolder, false);
     }
     
@@ -142,11 +142,11 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-            .usingSite(testSite)
+                .usingSite(testSite)
                 .createFile(sourceFile).assertThat().existsInRepo()
-                    .then().addDocumentToFolder(destinationFolder, true)
-                        .and().assertThat().existsInRepo()
-                            .and().assertThat().objectIdIs(sourceFile.getNodeRef());
+                .then().addDocumentToFolder(destinationFolder, true)
+                .and().assertThat().existsInRepo()
+                .and().assertThat().objectIdIs(sourceFile.getNodeRef());
     }
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -156,11 +156,11 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(testUser)
-            .usingSite(testSite)
+                .usingSite(testSite)
                 .createFile(sourceFile).assertThat().existsInRepo()
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                        .then().addDocumentToFolder(destinationFolder, true)
-                            .and().assertThat().existsInRepo();
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .then().addDocumentToFolder(destinationFolder, true)
+                .and().assertThat().existsInRepo();
     }
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -170,11 +170,11 @@ public class AddObjectToFolderTests extends CmisTest
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-            .usingSite(testSite)
+                .usingSite(testSite)
                 .createFile(sourceFile).assertThat().existsInRepo()
-                    .then().addDocumentToFolder(destinationFolder, true)
-                        .and().assertThat().existsInRepo()
-                            .and().assertThat().objectIdIs(sourceFile.getNodeRef());
+                .then().addDocumentToFolder(destinationFolder, true)
+                .and().assertThat().existsInRepo()
+                .and().assertThat().objectIdIs(sourceFile.getNodeRef());
     }
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -183,12 +183,11 @@ public class AddObjectToFolderTests extends CmisTest
     public void contributorCanAddFileToFolderCreatedByManager() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
-        cmisApi.authenticateUser(testUser)
-            .usingSite(testSite)
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFile(sourceFile).assertThat().existsInRepo()
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                        .then().addDocumentToFolder(destinationFolder, true)
-                            .and().assertThat().existsInRepo();
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .then().addDocumentToFolder(destinationFolder, true)
+                .and().assertThat().existsInRepo();
     }
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
@@ -197,11 +196,10 @@ public class AddObjectToFolderTests extends CmisTest
     public void consumerCanAddFileToFolderCreatedByManager() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
-        cmisApi.authenticateUser(testUser)
-            .usingSite(testSite)
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFile(sourceFile).assertThat().existsInRepo()
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                        .then().addDocumentToFolder(destinationFolder, true);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .then().addDocumentToFolder(destinationFolder, true);
     }
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -212,12 +210,11 @@ public class AddObjectToFolderTests extends CmisTest
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         destinationFolder = FolderModel.getRandomFolderModel();
-        cmisApi.authenticateUser(testUser)
-            .usingSite(privateSite)
+        cmisApi.authenticateUser(testUser).usingSite(privateSite)
                 .createFolder(destinationFolder).assertThat().existsInRepo()
                 .createFile(sourceFile).assertThat().existsInRepo()
-                    .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                        .then().addDocumentToFolder(destinationFolder, true);
+                .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .then().addDocumentToFolder(destinationFolder, true);
     }
 }
 

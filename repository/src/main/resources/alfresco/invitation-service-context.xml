@@ -33,6 +33,7 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="messageService" ref="messageService"/>
+         <property name="clientAppConfig" ref="clientAppConfig"/>
      </bean>
      
     <!-- Site service security bean -->

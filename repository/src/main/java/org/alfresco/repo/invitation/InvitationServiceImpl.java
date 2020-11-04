@@ -261,7 +261,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         PropertyCheck.mandatory(this, "PasswordGenerator", passwordGenerator);
         PropertyCheck.mandatory(this, "PolicyComponent", policyComponent);
         PropertyCheck.mandatory(this, "templateService", templateService);
-        
+        PropertyCheck.mandatory(this, "clientAppConfig", clientAppConfig);
+
         this.inviteNominatedSender = new InviteNominatedSender(serviceRegistry, repositoryHelper, messageService);
         this.inviteModeratedSender = new InviteModeratedSender(serviceRegistry, repositoryHelper, messageService);
         

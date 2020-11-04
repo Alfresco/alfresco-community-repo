@@ -77,8 +77,10 @@ import org.alfresco.service.namespace.QName;
         parentProps.put(RESOURCE_NAME_KEY,(String)props.get(WF_PROP_RESOURCE_NAME));
         parentProps.put(RESOURCE_TYPE_KEY,(String)props.get(WF_PROP_RESOURCE_TYPE));
         parentProps.put(CREATED_AT,(Date)props.get(ContentModel.PROP_CREATED));
-        parentProps.put(MODIFIED_AT,(Date)props.get(WF_PROP_MODIFIED_AT));
-        parentProps.put(CLIENT_NAME,(Date)props.get(WF_PROP_CLIENT_NAME));
+        Object modifiedAt = props.get(WF_PROP_MODIFIED_AT);
+        parentProps.put(MODIFIED_AT, modifiedAt != null ?  (Date) modifiedAt : null);
+        Object clientName = props.get(WF_PROP_CLIENT_NAME);
+        parentProps.put(CLIENT_NAME, clientName != null ? (String) clientName : null);
         return parentProps;
     }
 

@@ -111,8 +111,6 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-
-
         // RefreshableCacheListener as anonymous class since CompileModelsCache already
         // implements this interface, but expects to be invoked in different circumstances.
         register(new RefreshableCacheListener()

@@ -22,9 +22,9 @@ jobs:
       before_script:
         - |
           if [[ ${TRAVIS_BRANCH} == *community* ]]; then
-            bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
+            bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH .env
           else
-            bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+            bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH .env
           fi
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
@@ -36,7 +36,7 @@ jobs:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
-        - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+        - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH .env
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
@@ -66,9 +66,9 @@ jobs:
       install:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
+            bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH .env
           else
-            bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
+            bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH .env.ci
           fi
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
@@ -102,7 +102,7 @@ jobs:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       install:
-        - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
+        - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH .env.ci
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t

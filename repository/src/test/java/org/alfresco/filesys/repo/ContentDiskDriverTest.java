@@ -112,7 +112,7 @@ import org.springframework.core.io.ClassPathResource;
  * Unit tests for Alfresco Repository ContentDiskDriver
  */
 @Category(BaseSpringTestsCategory.class)
-public class ContentDiskDriverTest extends TestCaseActionExecuter
+public class ContentDiskDriverTest extends TestCase
 {
     private static final String TEST_PROTOTYPE_NAME = "test";
     private static final String TEST_REMOTE_NAME = "remoteName";

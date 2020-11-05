@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -112,7 +112,7 @@ import org.springframework.core.io.ClassPathResource;
  * Unit tests for Alfresco Repository ContentDiskDriver
  */
 @Category(BaseSpringTestsCategory.class)
-public class ContentDiskDriverTest extends TestCase
+public class ContentDiskDriverTest extends TestCaseActionExecuter
 {
     private static final String TEST_PROTOTYPE_NAME = "test";
     private static final String TEST_REMOTE_NAME = "remoteName";
@@ -2175,7 +2175,7 @@ public class ContentDiskDriverTest extends TestCase
         
         try
         {
-            tran.doInTransaction(deleteGarbageDirCB);
+            transactionService.getRetryingTransactionHelper().doInTransaction(deleteGarbageDirCB);
         }
         catch (Exception e)
         {
@@ -2205,8 +2205,8 @@ public class ContentDiskDriverTest extends TestCase
                 
                 
             }
-        };                
-        tran.doInTransaction(createTestDirCB);
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(createTestDirCB);
         logger.debug("Create rule on test dir");
         
         RetryingTransactionCallback<Void> createRuleCB = new RetryingTransactionCallback<Void>() {
@@ -2235,7 +2235,7 @@ public class ContentDiskDriverTest extends TestCase
                 compAction.addActionCondition(noCondition2);
 
                 rule.setAction(compAction);           
-                         
+
                 ruleService.saveRule(testContext.testDirNodeRef, rule);
                 
                 logger.debug("rule created");
@@ -2243,7 +2243,7 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(createRuleCB, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(createRuleCB, false, true);
 
         /**
          * Create a file in the test directory
@@ -2272,7 +2272,7 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(createFileCB, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(createFileCB, false, true);
         
         logger.debug("step b: write content to test file");
         
@@ -2294,16 +2294,16 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(writeFileCB, false, true);
-        
+        transactionService.getRetryingTransactionHelper().doInTransaction(writeFileCB, false, true);
+
+        Thread.sleep(3000); // Need to wait for the async extract
         logger.debug("Step c: validate metadata has been extracted.");
         
         /**
          * c: check simple case of meta-data extraction has worked.
          */
-        RetryingTransactionCallback<Void> validateFirstExtractionCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
             public Void execute() throws Throwable
             {
                 Map<QName, Serializable> props = nodeService.getProperties(testContext.testNodeRef);
@@ -2318,14 +2318,11 @@ public class ContentDiskDriverTest extends TestCase
                 assertEquals("description is not correct", "This is a test file", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_DESCRIPTION));
                 assertEquals("title is not correct", "ContentDiskDriverTest", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_TITLE));
                 assertEquals("author is not correct", "mrogers", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_AUTHOR));
-                
-    
-                        
+
                 return null;
             }
-        };
-        tran.doInTransaction(validateFirstExtractionCB, false, true);
-        
+        });
+
         
         /**
          * d: Save the new file as an update file in the test directory
@@ -2346,7 +2343,7 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(createUpdateFileCB, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(createUpdateFileCB, false, true);
 
         RetryingTransactionCallback<Void> writeFile2CB = new RetryingTransactionCallback<Void>() {
 
@@ -2379,7 +2376,7 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(writeFile2CB, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(writeFile2CB, false, true);
         
         /**
          * rename the old file
@@ -2394,7 +2391,7 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(renameOldFileCB, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(renameOldFileCB, false, true);
   
         /**
          * Check the old file has gone.
@@ -2416,7 +2413,7 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        tran.doInTransaction(validateOldFileGoneCB, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateOldFileGoneCB, false, true);
         
 //        /**
 //         * Check metadata extraction on intermediate new file
@@ -2439,7 +2436,7 @@ public class ContentDiskDriverTest extends TestCase
 //            }
 //        };
 //        
-//        tran.doInTransaction(validateIntermediateCB, true, true);
+//        transactionService.getRetryingTransactionHelper().doInTransaction(validateIntermediateCB, true, true);
         
         /**
          * Move the new file into place, stuff should get shuffled
@@ -2454,8 +2451,8 @@ public class ContentDiskDriverTest extends TestCase
                 return null;
             }
         };
-        
-        tran.doInTransaction(moveNewFileCB, false, true);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(moveNewFileCB, false, true);
         
         logger.debug("validate update has run correctly.");
         RetryingTransactionCallback<Void> validateUpdateCB = new RetryingTransactionCallback<Void>() {
@@ -2482,12 +2479,12 @@ public class ContentDiskDriverTest extends TestCase
                     return null;
             }
         };
-        
-        tran.doInTransaction(validateUpdateCB, true, true);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateUpdateCB, true, true);
         
     } // testScenarioShuffleMetadataExtraction
-    
-    
+
+
     /**
      * ALF-12812
      * 
@@ -2698,8 +2695,10 @@ public class ContentDiskDriverTest extends TestCase
         };
         
         tran.doInTransaction(moveNewFileCB, false, true);
-        
-      logger.debug("Step c: validate metadata has been extracted.");  
+
+        Thread.sleep(3000); // Need to wait for async extract
+
+      logger.debug("Step c: validate metadata has been extracted.");
       /**
       * c: check simple case of meta-data extraction has worked.
       */
@@ -2732,7 +2731,7 @@ public class ContentDiskDriverTest extends TestCase
      };
      tran.doInTransaction(validateFirstExtractionCB, false, true);
 
-        
+
     } // testScenarioMetadataExtractionForMac
     
     public void testDirListing()throws Exception

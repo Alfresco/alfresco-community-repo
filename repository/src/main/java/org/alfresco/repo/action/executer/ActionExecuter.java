@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,7 @@ package org.alfresco.repo.action.executer;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -83,4 +84,17 @@ public interface ActionExecuter
      * @param actionedUponNodeRef    the actioned upon node reference
      */
     void execute(Action action, NodeRef actionedUponNodeRef);
+
+    /**
+     * Allows ActionExecuters to say that they should be run asynchronously even if
+     * requested to run synchronously.
+     *
+     * @param actionedUponNodeRef to processed
+     * @return false by default. true to override the executeAsychronously parameter in
+     *         {@link ActionService#executeAction(Action, NodeRef, boolean, boolean)}.
+     */
+    default boolean isExecuteAsynchronously(NodeRef actionedUponNodeRef)
+    {
+        return false;
+    }
 }

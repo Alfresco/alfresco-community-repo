@@ -18,18 +18,10 @@ shareContainerId=$(docker ps -a | grep '_share_' | awk '{print $1}')
 if [ -n "$shareContainerId" ]; then
       docker update --memory=1Gb --memory-swap -1 --restart on-failure $shareContainerId
       docker stop $(docker ps -a | grep '_transform-router_' | awk '{print $1}')
-#      docker stop $(docker ps -a | grep '_imagemagick_' | awk '{print $1}')
-#      docker stop $(docker ps -a | grep '_alfresco-pdf-renderer_' | awk '{print $1}')
       docker stop $(docker ps -a | grep '_shared-file-store_' | awk '{print $1}')
-#      docker stop $(docker ps -a | grep '_tika_' | awk '{print $1}')
-#      docker stop $(docker ps -a | grep '_libreoffice_' | awk '{print $1}')
    else
       docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_transform-router_' | awk '{print $1}')
-#      docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_imagemagick_' | awk '{print $1}')
-#      docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_alfresco-pdf-renderer_' | awk '{print $1}')
       docker update --memory=300Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_shared-file-store_' | awk '{print $1}')
-#      docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_tika_' | awk '{print $1}')
-#      docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_libreoffice_' | awk '{print $1}')
 fi
 
 #stop not needed container

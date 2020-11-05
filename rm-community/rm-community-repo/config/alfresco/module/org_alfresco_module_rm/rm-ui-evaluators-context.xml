@@ -15,7 +15,6 @@
       <property name="recordContributorsGroupName" value="${rm.record.contributors.group.name}"/>
       <property name="recordService" ref="RecordService"/>
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="siteService" ref="SiteService" />

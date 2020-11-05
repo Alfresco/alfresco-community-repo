@@ -56,10 +56,9 @@ public interface SiteMembershipRequests
 	 * @param inviteeId the site invitee id
 	 * @param siteInvite the site invite
 	 * @param client the client name which is registered to send emails
-	 * @param workspacePath path of workspace deployed location
 	 * @return SiteMembershipRequest
 	 */
-	SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite, final String client, final String workspacePath);
+	SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite, final String client);
 	
 	/**
 	 * Update the site membership request for inviteeId and site

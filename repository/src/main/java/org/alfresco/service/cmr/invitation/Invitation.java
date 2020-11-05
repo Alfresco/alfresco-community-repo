@@ -98,9 +98,9 @@ public interface Invitation
     
     Date getModifiedAt();
 
-	/**
-	 * Which client to be sent
-	 * @return the clientName
-	 */
-	String getClientName();
+    /**
+     * Which client to be sent
+     * @return the clientName
+     */
+    String getClientName();
 }

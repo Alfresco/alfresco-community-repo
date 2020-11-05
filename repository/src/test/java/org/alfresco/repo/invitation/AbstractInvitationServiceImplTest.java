@@ -1042,7 +1042,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
         this.authenticationComponent.setCurrentUser(USER_TWO);
         ModeratedInvitation invitation = invitationService.inviteModerated(comments, inviteeUserName, resourceType,
-                    resourceName, inviteeRole, "workspace", "");
+                    resourceName, inviteeRole, "workspace");
 
         assertNotNull("moderated invitation is null", invitation);
         String inviteId = invitation.getInviteId();
@@ -1093,6 +1093,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         this.authenticationComponent.setCurrentUser(USER_TWO);
         ModeratedInvitation invite3 = invitationService.inviteModerated(comments, inviteeUserName, resourceType,
                 resourceName, inviteeRole);
+        assertEquals("client name wrong", null, invite3.getClientName());
 
         String thirdInvite = invite3.getInviteId();
 

@@ -158,9 +158,9 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
     }
 	
 	private SiteMembershipRequest inviteToModeratedSite(final String message, final String inviteeId, final String siteId,
-			final String inviteeRole, final String clientName, final String workspacePath)
+			final String inviteeRole, final String clientName)
 	{
-		ModeratedInvitation invitation = invitationService.inviteModerated(message, inviteeId, ResourceType.WEB_SITE, siteId, inviteeRole, clientName, workspacePath);
+		ModeratedInvitation invitation = invitationService.inviteModerated(message, inviteeId, ResourceType.WEB_SITE, siteId, inviteeRole, clientName);
 
 		SiteMembershipRequest ret = new SiteMembershipRequest();
 		ret.setId(siteId);
@@ -270,7 +270,7 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
 		if(siteVisibility.equals(SiteVisibility.MODERATED))
 		{
-			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, null, null);
+			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, null);
 		}
 		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
 		{
@@ -286,7 +286,7 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 	}
 
 	@Override
-	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client, String workspacePath) {
+	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client) {
 		SiteMembershipRequest request = null;
 
 		inviteeId = people.validatePerson(inviteeId, true);
@@ -337,7 +337,7 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
 		if(siteVisibility.equals(SiteVisibility.MODERATED))
 		{
-			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client, workspacePath);;
+			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client);;
 		}
 		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
 		{

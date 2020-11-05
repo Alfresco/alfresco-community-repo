@@ -146,10 +146,9 @@ public interface InvitationService
      * @param resourceName which resource
      * @param inviteeRole which role ?
      * @param clientName which client
-     * @param workspacePath path of the digital workspace
      */
-    @Auditable(parameters = { "inviteeComments", "inviteeUserName", "resourceType", "resourceName", "inviteeRole", "clientName", "workspacePath" })
-    public ModeratedInvitation inviteModerated(String inviteeComments, String inviteeUserName, Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName, String workspacePath);
+    @Auditable(parameters = { "inviteeComments", "inviteeUserName", "resourceType", "resourceName", "inviteeRole", "clientName" })
+    public ModeratedInvitation inviteModerated(String inviteeComments, String inviteeUserName, Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName);
 
     /**
      * Update the invitee comments for an existing moderated invitation

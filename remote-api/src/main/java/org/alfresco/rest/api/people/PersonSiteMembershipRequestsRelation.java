@@ -74,10 +74,8 @@ RelationshipResourceAction.Create<SiteMembershipRequest>, RelationshipResourceAc
 		for(SiteMembershipRequest invite : invites)
 		{
 			SiteMembershipRequest siteInvite = null;
-			String client = parameters.getParameter("client");
-			String workspacePath = parameters.getParameter("workspacePath");
-			if(client != null) {
-				siteInvite = siteMembershipRequests.createSiteMembershipRequest(personId, invite, client, workspacePath);
+			if(invite.getClient() != null) {
+				siteInvite = siteMembershipRequests.createSiteMembershipRequest(personId, invite, invite.getClient());
 			} else {
 				siteInvite = siteMembershipRequests.createSiteMembershipRequest(personId, invite);
 			}

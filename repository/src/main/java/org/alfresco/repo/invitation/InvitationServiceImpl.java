@@ -2064,11 +2064,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @param clientName which client
      */
     public ModeratedInvitation inviteModerated(String inviteeComments, String inviteeUserName,
-                                               Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName, String workspacePath)
+                                               Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
     {
         if (resourceType == Invitation.ResourceType.WEB_SITE)
         {
-            return startModeratedInvite(inviteeComments, inviteeUserName, resourceType, resourceName, inviteeRole, clientName, workspacePath);
+            return startModeratedInvite(inviteeComments, inviteeUserName, resourceType, resourceName, inviteeRole, clientName);
         }
         throw new InvitationException("unknown resource type");
     }
@@ -2079,7 +2079,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @return the new moderated invitation
      */
     private ModeratedInvitation startModeratedInvite(String inviteeComments, String inviteeUserName,
-                                                     Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName, String workspacePath)
+                                                     Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
     {
         SiteInfo siteInfo = siteService.getSite(resourceName);
 
@@ -2110,8 +2110,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if(clientName != null && clientAppConfig.getClient(clientName) != null) {
             ClientAppConfig.ClientApp client = clientAppConfig.getClient(clientName);
             workflowProps.put(WorkflowModelModeratedInvitation.WF_TEMPLATE_ASSETS_URL, client.getTemplateAssetsUrl());
-            String workspaceUrl = workspacePath != null ? workspacePath :  client.getProperty("workspaceUrl");
-            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  workspaceUrl);
+            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  client.getProperty("workspaceUrl"));
         }
 
         // get the moderated workflow

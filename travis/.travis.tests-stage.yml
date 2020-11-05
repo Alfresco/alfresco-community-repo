@@ -1,14 +1,5 @@
 jobs:
   include:
-    - name: "Community Integrations Tests on MySQL"
-      stage: Tests
-      script:
-        - echo "Community Integrations Tests on MySQL"
-    - name: "Enterprise Integrations Tests on MySQL"
-      stage: Tests
-      script:
-        - echo "Enterprise Integrations Tests on MySQL"
-
     - name: "Community Rest API Tests"
       stage: Tests
       install:

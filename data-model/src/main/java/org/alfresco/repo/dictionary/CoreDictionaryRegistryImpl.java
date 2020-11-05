@@ -45,7 +45,7 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
     @Override
     public String getTenantDomain()
     {
-        return "";
+        return null;
     }
 
     @Override

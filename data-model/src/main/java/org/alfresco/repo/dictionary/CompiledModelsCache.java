@@ -40,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<DictionaryRegistry>
 {
-    private static final Log logger = LogFactory.getLog(CompiledModelsCache.class);
+    private static Log logger = LogFactory.getLog(CompiledModelsCache.class);
 
     private DictionaryDAOImpl dictionaryDAO;
     private TenantService tenantService;

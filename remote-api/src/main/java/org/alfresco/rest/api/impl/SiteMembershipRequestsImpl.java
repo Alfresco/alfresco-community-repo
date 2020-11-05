@@ -286,7 +286,8 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 	}
 
 	@Override
-	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client) {
+	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client)
+	{
 		SiteMembershipRequest request = null;
 
 		inviteeId = people.validatePerson(inviteeId, true);

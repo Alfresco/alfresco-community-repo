@@ -2107,7 +2107,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
 
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_CLIENT_NAME, clientName);
-        if(clientName != null && clientAppConfig.getClient(clientName) != null) {
+        if(clientName != null && clientAppConfig.getClient(clientName) != null)
+        {
             ClientAppConfig.ClientApp client = clientAppConfig.getClient(clientName);
             workflowProps.put(WorkflowModelModeratedInvitation.WF_TEMPLATE_ASSETS_URL, client.getTemplateAssetsUrl());
             workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  client.getProperty("workspaceUrl"));

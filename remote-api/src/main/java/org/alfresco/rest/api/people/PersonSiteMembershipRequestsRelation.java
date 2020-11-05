@@ -74,9 +74,11 @@ RelationshipResourceAction.Create<SiteMembershipRequest>, RelationshipResourceAc
 		for(SiteMembershipRequest invite : invites)
 		{
 			SiteMembershipRequest siteInvite = null;
-			if(invite.getClient() != null) {
+			if(invite.getClient() != null)
+			{
 				siteInvite = siteMembershipRequests.createSiteMembershipRequest(personId, invite, invite.getClient());
-			} else {
+			} else
+			{
 				siteInvite = siteMembershipRequests.createSiteMembershipRequest(personId, invite);
 			}
 			result.add(siteInvite);

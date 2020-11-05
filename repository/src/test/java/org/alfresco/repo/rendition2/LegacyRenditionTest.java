@@ -27,6 +27,7 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,6 +48,13 @@ public class LegacyRenditionTest extends AbstractRenditionTest
         legacy();
     }
 
+    @Override
+    @Before
+    public void setUp() throws Exception
+    {
+        super.setUp();
+    }
+
     @AfterClass
     public static void after()
     {
@@ -57,6 +65,6 @@ public class LegacyRenditionTest extends AbstractRenditionTest
     @Override
     public void testSelectedMetadataExtracts() throws Exception
     {
-        internalTestSelectedMetadataExtracts(0, 0);
+        internalTestSelectedMetadataExtracts(7, 7);
     }
 }

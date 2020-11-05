@@ -255,7 +255,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
                 fail("The " + renditionName + " rendition should NOT be supported for " + testFileName);
             }
         }
-        catch(UnsupportedOperationException e)
+        catch (UnsupportedOperationException e)
         {
             if (expectedToPass)
             {
@@ -270,16 +270,13 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         {
             NodeRef sourceNodeRef = createSource(ADMIN, testFileName);
             extract(ADMIN, sourceNodeRef);
-
-            // We actually don't check the result. There will be an exception if not supported, which is really all
-            // we care about as the T-Engines have tests too.
-//            waitForExtract(ADMIN, sourceNodeRef, true);
+            waitForExtract(ADMIN, sourceNodeRef, true);
             if (!expectedToPass)
             {
                 fail("The extract of metadata should NOT be supported for " + testFileName);
             }
         }
-        catch(UnsupportedOperationException e)
+        catch (AssertionFailedError e)
         {
             if (expectedToPass)
             {
@@ -354,12 +351,6 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
                 }), user);
     }
 
-    // Requests a new rendition as the current user in the current transaction.
-    private void render(NodeRef sourceNodeRef, String renditionName)
-    {
-        renditionService2.render(sourceNodeRef, renditionName);
-    }
-
     // Requests a new metadata extract as the given user in its own transaction.
     protected void extract(String user, NodeRef sourceNode)
     {
@@ -369,6 +360,12 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
                     extract(sourceNode);
                     return null;
                 }), user);
+    }
+
+    // Requests a new rendition as the current user in the current transaction.
+    private void render(NodeRef sourceNodeRef, String renditionName)
+    {
+        renditionService2.render(sourceNodeRef, renditionName);
     }
 
     // Requests a new metadata extract as the current user in the current transaction.
@@ -385,6 +382,24 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         try
         {
             return AuthenticationUtil.runAs(() -> waitForRendition(sourceNodeRef, renditionName, shouldExist), user);
+        }
+        catch (RuntimeException e)
+        {
+            Throwable cause = e.getCause();
+            if (cause instanceof AssertionFailedError)
+            {
+                throw (AssertionFailedError)cause;
+            }
+            throw e;
+        }
+    }
+
+    // As a given user waitForExtract to appear. Creates new transactions to do this.
+    protected void waitForExtract(String user, NodeRef sourceNodeRef, boolean nodePropsShouldChange) throws AssertionFailedError
+    {
+        try
+        {
+            AuthenticationUtil.runAs(() -> waitForExtract(sourceNodeRef, nodePropsShouldChange), user);
         }
         catch (RuntimeException e)
         {
@@ -424,6 +439,38 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
             assertNull("Rendition " + renditionName + " did not fail", assoc);
             return null;
         }
+    }
+
+    // As the current user waitForRendition for a rendition to appear. Creates new transactions to do this.
+    private Object waitForExtract(NodeRef sourceNodeRef, boolean nodePropsShouldChange) throws InterruptedException
+    {
+        long maxMillis = 5000;
+        boolean nodeModified = true;
+        for (int i = (int)(maxMillis / 1000); i >= 0; i--)
+        {
+            // Must create a new transaction in order to see changes that take place after this method started.
+            nodeModified = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+            {
+                Serializable created = nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CREATED);
+                Serializable modified = nodeService.getProperty(sourceNodeRef, ContentModel.PROP_MODIFIED);
+                return !created.equals(modified);
+            }, true, true);
+            if (nodeModified)
+            {
+                break;
+            }
+            logger.debug("waitForExtract sleep "+i);
+            sleep(1000);
+        }
+        if (nodePropsShouldChange)
+        {
+            assertTrue("Extract failed", nodeModified);
+        }
+        else
+        {
+            assertFalse("Extract did not fail", nodeModified);
+        }
+        return null;
     }
 
     protected String getTestFileName(String sourceMimetype) throws FileNotFoundException

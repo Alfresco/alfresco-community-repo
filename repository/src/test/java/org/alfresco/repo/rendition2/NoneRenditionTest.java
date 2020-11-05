@@ -80,7 +80,7 @@ public class NoneRenditionTest extends AbstractRenditionTest
     @Override
     public void testSelectedMetadataExtracts() throws Exception
     {
-        internalTestSelectedMetadataExtracts(0, 0);
+        internalTestSelectedMetadataExtracts(7, 7);
     }
 
     @Test

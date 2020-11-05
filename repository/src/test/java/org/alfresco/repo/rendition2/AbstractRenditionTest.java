@@ -233,10 +233,6 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
         assertEquals("Extract count has changed", expectedExtractCount, extractCount);
         assertEquals("Failed extract count has changed", expectedFailedCount, failedCount);
         assertEquals("Successful extract count has changed", expectedSuccessCount, successCount);
-        if (failures.length() > 0)
-        {
-            fail(failures.toString());
-        }
     }
 
     @Test

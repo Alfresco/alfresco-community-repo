@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - fix/MNT-21967_ClassCastException_with_score_column_query_622
 
 env:
   global:

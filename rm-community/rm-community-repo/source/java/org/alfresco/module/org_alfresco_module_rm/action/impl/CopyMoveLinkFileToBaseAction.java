@@ -382,16 +382,23 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     {
         // double check that the child hasn't been created by another thread
         NodeRef child = getChild(parent, childName);
-        if (child == null) {
-            if (targetisUnfiledRecords) {
+        if (child == null)
+        {
+            if (targetisUnfiledRecords)
+            {
                 // create unfiled folder
                 child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
-            } else if (lastAsFolder) {
+            }
+            else if (lastAsFolder)
+            {
                 // create record folder
                 child = getRecordFolderService().createRecordFolder(parent, childName);
-            } else {
+            }
+            else
+            {
                 // ensure we are not trying to create a record category in a record folder
-                if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent))) {
+                if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent)))
+                {
                     throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path has a record category within a record folder.");
                 }
 

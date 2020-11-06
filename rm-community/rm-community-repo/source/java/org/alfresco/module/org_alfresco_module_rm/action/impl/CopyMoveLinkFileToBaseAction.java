@@ -380,40 +380,26 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      */
     private NodeRef createChild(final Action action, final NodeRef parent, final String childName, final boolean targetisUnfiledRecords, final boolean lastAsFolder)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork()
-            {
-                // double check that the child hasn't been created by another thread
-                NodeRef child = getChild(parent, childName);
-                if (child == null)
-                {
-                    if (targetisUnfiledRecords)
-                    {
-                        // create unfiled folder
-                        child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
-                    }
-                    else if(lastAsFolder)
-                    {
-                        // create record folder
-                        child = getRecordFolderService().createRecordFolder(parent, childName);
-                    }
-                    else
-                    {
-                        // ensure we are not trying to create a record categtory in a record folder
-                        if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent)))
-                        {
-                            throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path has a record category within a record folder.");
-                        }
-
-                        // create record category
-                        child = filePlanService.createRecordCategory(parent, childName);
-                    }
+        // double check that the child hasn't been created by another thread
+        NodeRef child = getChild(parent, childName);
+        if (child == null) {
+            if (targetisUnfiledRecords) {
+                // create unfiled folder
+                child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
+            } else if (lastAsFolder) {
+                // create record folder
+                child = getRecordFolderService().createRecordFolder(parent, childName);
+            } else {
+                // ensure we are not trying to create a record category in a record folder
+                if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent))) {
+                    throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path has a record category within a record folder.");
                 }
-                return child;
+
+                // create record category
+                child = filePlanService.createRecordCategory(parent, childName);
             }
-        });
+        }
+        return child;
     }
 
     /**

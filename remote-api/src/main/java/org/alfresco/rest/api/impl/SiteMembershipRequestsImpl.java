@@ -338,7 +338,8 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
 		if(siteVisibility.equals(SiteVisibility.MODERATED))
 		{
-			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client);;
+			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client);
+
 		}
 		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
 		{

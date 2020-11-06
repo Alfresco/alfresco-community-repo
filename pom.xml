@@ -15,9 +15,9 @@
    </organization>
 
    <scm>
-      <connection>scm:git:ssh://git@github.com/Alfresco/governance-services.git</connection>
-      <developerConnection>scm:git:ssh://git@github.com/Alfresco/governance-services.git</developerConnection>
-      <url>scm:git:ssh://git@github.com/Alfresco/governance-services.git</url>
+      <connection>scm:git:https://github.com/Alfresco/governance-services.git</connection>
+      <developerConnection>scm:git:https://github.com/Alfresco/governance-services.git</developerConnection>
+      <url>https://github.com/Alfresco/governance-services</url>
      <tag>V3.4.0</tag>
   </scm>
 

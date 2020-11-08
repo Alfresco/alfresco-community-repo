@@ -298,7 +298,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
                         }
                     }
                     return null;
-                }), AuthenticationUtil.getSystemUserName());
+                }, false, true), AuthenticationUtil.getSystemUserName());
     }
 
     public void setMetadata(NodeRef nodeRef, InputStream transformInputStream)

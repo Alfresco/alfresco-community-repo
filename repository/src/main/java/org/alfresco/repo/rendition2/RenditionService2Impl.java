@@ -27,6 +27,7 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
@@ -84,7 +85,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public static final int SOURCE_HAS_NO_CONTENT = -1;
     public static final int RENDITION2_DOES_NOT_EXIST = -2;
 
-    private static Log logger = LogFactory.getLog(RenditionService2Impl.class);
+    public static Log logger = LogFactory.getLog(RenditionService2Impl.class);
 
     // As Async transforms and renditions are so similar, this class provides a way to provide the code that is different.
     private abstract static class RenderOrTransformCallBack
@@ -298,6 +299,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
             if (!nodeService.exists(sourceNodeRef))
             {
+                ActionServiceImpl.debug("requestAsyncTransformOrRendition does not exist", sourceNodeRef);
                 throw new IllegalArgumentException(renderOrTransform.getName()+ ": The supplied sourceNodeRef "+sourceNodeRef+" does not exist.");
             }
 
@@ -317,6 +319,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 long size = contentData.getSize();
                 try
                 {
+                    ActionServiceImpl.debug("checkSupported", sourceNodeRef);
                     transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, size, contentUrl);
                 }
                 catch (UnsupportedOperationException e)

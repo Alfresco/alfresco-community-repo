@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.rendition2.RenditionService2;
@@ -281,12 +282,14 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
             logger.trace(sj);
         }
 
+        ActionServiceImpl.debug("Async trans 1", nodeRef);
         AuthenticationUtil.runAs(
                 (AuthenticationUtil.RunAsWork<Void>) () ->
                 transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                 {
                     try
                     {
+                        ActionServiceImpl.debug("Async trans 2", nodeRef);
                         renditionService2.transform(nodeRef, transformDefinition);
                     }
                     catch (IllegalArgumentException e)

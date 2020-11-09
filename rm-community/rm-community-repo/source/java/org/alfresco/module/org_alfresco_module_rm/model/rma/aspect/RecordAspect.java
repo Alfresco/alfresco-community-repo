@@ -410,43 +410,42 @@ public class RecordAspect extends    AbstractDisposableItem
         }, AuthenticationUtil.getSystemUserName());
     }
 
-        /**
-         * Behaviour to prevent content update for records
-         *
-         * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
-         */
-        @Override
-        @Behaviour
-                (
-                        kind = BehaviourKind.CLASS,
-                        notificationFrequency = NotificationFrequency.FIRST_EVENT
-                )
-        public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    /**
+    * Behaviour to prevent content update for records
+    *
+    * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
+    */
+    @Override
+    @Behaviour
+    (
+        kind = BehaviourKind.CLASS,
+        notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
+        ContentData contentBefore = (ContentData) before.get(ContentModel.PROP_CONTENT);
+        ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
+        // Check only storeNameAfter since the store name is updated before this method is triggered
+        // Does not allow setting content to null when moving content between stores (case not covered by
+        // ContentPropertyRestrictionInterceptor)
+        if (storeNameAfter != null)
         {
-                String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
-                ContentData contentBefore = (ContentData) before.get(ContentModel.PROP_CONTENT);
-                ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
-                // Check only storeNameAfter since the store name is updated before this method is triggered
-                // Does not allow setting content to null when moving content between stores (case not covered by
-                // ContentPropertyRestrictionInterceptor)
-                if (storeNameAfter != null)
-                {
-                        if (nodeService.hasAspect(nodeRef, ASPECT_WORM_LOCK))
-                        {
-                                if (contentBefore != null && !contentBefore.equals(contentAfter))
-                                {
-
-                                        throw new IntegrityException(MSG_WORM_RECORD_LOCKED, null);
-                                }
-                        }
-                        if (contentAfter != null)
-                        {
-                                return;
-                        }
-                }
+            if (nodeService.hasAspect(nodeRef, ASPECT_WORM_LOCK))
+            {
                 if (contentBefore != null && !contentBefore.equals(contentAfter))
                 {
-                        throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+                    throw new IntegrityException(MSG_WORM_RECORD_LOCKED, null);
                 }
+            }
+            if (contentAfter != null)
+            {
+                return;
+            }
         }
+        if (contentBefore != null && !contentBefore.equals(contentAfter))
+        {
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+        }
+    }
 }

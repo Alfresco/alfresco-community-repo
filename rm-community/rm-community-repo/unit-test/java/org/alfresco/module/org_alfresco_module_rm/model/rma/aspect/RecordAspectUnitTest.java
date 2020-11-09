@@ -26,23 +26,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.model.ContentModel.PROP_STORE_NAME;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.io.Serializable;
-import java.util.Locale;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
@@ -56,6 +40,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import java.io.Serializable;
+import java.util.Locale;
+import java.util.Map;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.model.ContentModel.PROP_STORE_NAME;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * Unit tests for the {@link RecordAspect}.
@@ -143,6 +141,17 @@ public class RecordAspectUnitTest
                 "/plain", 0L, "UTF-8", Locale.UK));
         Map<QName, Serializable> after = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl2", "text" +
                 "/plain", 0L, "UTF-8", Locale.UK), PROP_STORE_NAME, "store2");
+        recordAspect.onUpdateProperties(NODE_REF, before, after);
+    }
+
+    /**
+    * Check that an IntegrityException is thrown when content is changed
+    */
+    @Test(expected = IntegrityException.class)
+    public void testOnUpdatePropertiesContentChanged()
+    {
+        Map<QName, Serializable> before = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl", "text/plain", 0L, "UTF-8", Locale.UK));
+        Map<QName, Serializable> after = ImmutableMap.of(PROP_CONTENT, new ContentData("dummyContentUrl2", "text" + "/plain", 0L, "UTF-8", Locale.UK));
         recordAspect.onUpdateProperties(NODE_REF, before, after);
     }
 }

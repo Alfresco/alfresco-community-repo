@@ -41,14 +41,14 @@
                               </td>
                            </tr>
                            <tr>
-                              <td style="padding-right:40px;padding-bottom:30px;padding-left:40px">
+                              <td style="padding-right:40px;padding-bottom:40px;padding-left:40px">
                                  <table border="0" cellspacing="0" cellpadding="0">
                                     <tbody>
                                     <tr>
                                        <td>
-                                          <h3 style="letter-spacing: 0; color: #707070;font-size: 20px; margin: 0">
+                                          <p style="letter-spacing: 0; color: #707070;font-size: 28px; margin: 0">
                                              Join Request
-                                          </h3>
+                                          </p>
                                        </td>
                                     </tr>
                                     </tbody>
@@ -56,32 +56,31 @@
                               </td>
                            </tr>
                            <tr>
-                              <td style="padding-right:40px;padding-bottom:10px;padding-left:40px">
+                              <td style="padding-right: 40px; padding-bottom: 10px; padding-left: 40px">
                                  <table border="0" cellspacing="0" cellpadding="0">
                                     <tbody>
                                     <tr>
                                        <td>
-                                          <p style="letter-spacing: 0px; color: #707070; display: block; font-weight: bold; font-size: 1.17em; margin: 0; ">
+                                          <p style="letter-spacing: 0; color: #707070; display: block; font-weight: bold; font-size: 20px; margin: 0;">
                                              ${inviteeName}
                                           </p>
 
-                                          <p style="letter-spacing: 0px; color: #707070;">
+                                          <p style="letter-spacing: 0;color: #707070;margin: 0;font-size: 20px">
                                              ${message("templates.workspace.invite-email-moderated.html.body")}
                                           </p>
 
-                                          <p style="letter-spacing: 0px; color: #707070; display: block; font-weight: bold; font-size: 1.17em; ">
+                                          <p style="letter-spacing: 0;color: #707070;display: block;font-weight: bold;font-size: 20px;margin: 0;">
                                              ${siteName}
                                           </p>
 
-                                          <p style="letter-spacing: 0px; color: #707070; display: block;">
-                                          <table bgcolor="#FFFFFF" border="0"
-                                                 cellpadding="0" cellspacing="0"
+                                          <p style="letter-spacing: 0; color: #707070; display: block; margin: 40px 0">
+                                          <table bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0"
                                                  style="background: #2A7DE1 0 0 no-repeat padding-box;border-radius: 5px;color: #FFFFFF;">
                                              <tbody>
                                              <tr>
                                                 <td>
                                                    <a href="${workspacePendingInvitesLink}"
-                                                      style="color:#ffffff;display:inline-block;border-radius: 5px;font-size:16px;font-family:Helvetica,Arial,Verdana,sans-serif;font-weight:400;padding: 10px;text-decoration:none;"
+                                                      style="color:#ffffff;display:inline-block;border-radius: 5px;font-size: 18px; font-family:Helvetica,Arial,Verdana,sans-serif;font-weight:400;padding: 15px 35px;text-decoration:none;"
                                                       target="_blank"
                                                       data-saferedirecturl="${workspacePendingInvitesLink}">
                                                       ${message("templates.workspace.invite-email-moderated.html.action")}

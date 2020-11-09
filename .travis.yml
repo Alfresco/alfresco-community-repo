@@ -21,7 +21,6 @@ branches:
   only:
     - master
     - /release\/.*/
-    - fix/MNT-21800_cmis_ws_checkout_error_622
 
 env:
   global:

@@ -14,7 +14,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-remote-api.version}</version>
+            <version>${dependency.alfresco-community-repo.version}</version>
             <scope>provided</scope>
             <exclusions>
             	<exclusion>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-core.version}</version>
+            <version>${dependency.alfresco-community-repo.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
+            <version>${dependency.alfresco-community-repo.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-remote-api.version}</version>
+            <version>${dependency.alfresco-community-repo.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

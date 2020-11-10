@@ -34,7 +34,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDispos
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
-import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -77,8 +76,7 @@ public class RecordAspect extends    AbstractDisposableItem
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
                                      CopyServicePolicies.OnCopyCompletePolicy,
-                                     NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -101,7 +99,7 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
-    private static final String MSG_UPDATE_STORE_NAME = "rm.action.update-store-name";
+    private static final String MSG_WORM_RECORD_LOCKED = "rm.action.worm-record-locked";
 
     // WORM lock aspect
     public static final String RME_URI = "http://www.alfresco.org/model/recordsmanagemententerprise/1.0";
@@ -413,10 +411,10 @@ public class RecordAspect extends    AbstractDisposableItem
     }
 
     /**
-     * Behaviour to prevent content update for records
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
-     */
+    * Behaviour to prevent content update for records
+    *
+    * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
+    */
     @Override
     @Behaviour
     (
@@ -426,37 +424,28 @@ public class RecordAspect extends    AbstractDisposableItem
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
-        String storeNameBefore = (String) before.get(ContentModel.PROP_STORE_NAME);
-
+        ContentData contentBefore = (ContentData) before.get(ContentModel.PROP_CONTENT);
         ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
-        if (storeNameAfter != null && !storeNameAfter.equals(storeNameBefore))
+        // Check only storeNameAfter since the store name is updated before this method is triggered
+        // Does not allow setting content to null when moving content between stores (case not covered by
+        // ContentPropertyRestrictionInterceptor)
+        if (storeNameAfter != null)
         {
             if (nodeService.hasAspect(nodeRef, ASPECT_WORM_LOCK))
             {
-                // we cannot change the worm store name
-                throw new IntegrityException(MSG_UPDATE_STORE_NAME, null);
+                if (contentBefore != null && !contentBefore.equals(contentAfter))
+                {
+                    throw new IntegrityException(MSG_WORM_RECORD_LOCKED, null);
+                }
             }
-            // Does not allow setting content to null when moving content between stores (case not covered by
-            // ContentPropertyRestrictionInterceptor)
-            else if (contentAfter != null)
+            if (contentAfter != null)
             {
                 return;
             }
         }
-    }
-
-    @Override
-    @Behaviour
-    (
-        kind = BehaviourKind.CLASS,
-        notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
-    public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
-    {
-        // Allow creation of content but not update
-        if (beforeValue != null)
+        if (contentBefore != null && !contentBefore.equals(contentAfter))
         {
-                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
         }
     }
 }

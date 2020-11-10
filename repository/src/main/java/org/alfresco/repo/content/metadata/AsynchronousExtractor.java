@@ -251,12 +251,11 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
                                        String embedOrExtract, Map<String, String> options)
     {
         final String domain = TenantUtil.getCurrentDomain();
-        final String runAsUser = AuthenticationUtil.getRunAsUser();
 
         ExecutorService executorService = getExecutorService();
         executorService.execute(() -> {
 
-            TenantUtil.runAsUserTenant((TenantRunAsWork<Void>) () -> {
+            TenantUtil.runAsSystemTenant((TenantRunAsWork<Void>) () -> {
                 transactionService.getRetryingTransactionHelper()
                             .doInTransaction((RetryingTransactionCallback<Void>) () -> {
                                 try
@@ -271,7 +270,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
                             }, false);
 
                 return null;
-            }, runAsUser, domain);
+            }, domain);
         });
     }
 

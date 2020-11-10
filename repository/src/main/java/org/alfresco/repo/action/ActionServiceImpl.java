@@ -44,10 +44,8 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
-import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -77,13 +75,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Action service implementation
@@ -641,18 +637,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         AsynchronousActionExecutionQueue queue = getQueue(action.action);
 
         // Queue the action for execution
-        nodeServiceX = this.nodeService;
-        ActionServiceImpl.debug("queueAction", action.getActionedUponNodeRef());
         queue.executeAction(this, action.getAction(), action.getActionedUponNodeRef(), action.getCheckConditions(),
                     action.getActionChain());
-    }
-
-    static NodeService nodeServiceX;
-    public static void debug(String context, NodeRef nodeRef)
-    {
-        String transactionId = TransactionSupportUtil.getTransactionId();
-        Boolean exists = transactionId == null || nodeRef == null ? null : nodeServiceX.exists(nodeRef);
-        RenditionService2Impl.logger.debug(context + " noderef:"+nodeRef+" exists:" + exists + " tid:" + transactionId+" user:"+AuthenticationUtil.getRunAsUser());
     }
 
     /**

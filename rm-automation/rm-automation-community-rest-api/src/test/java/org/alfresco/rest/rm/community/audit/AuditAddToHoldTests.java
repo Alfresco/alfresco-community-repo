@@ -41,6 +41,7 @@ import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -94,6 +95,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private RecordCategoryChild recordFolder;
     private List<AuditEntry> auditEntries;
     private List<String> holdsList = asList(HOLD1, HOLD2);
+    private List<String> holdsListRef = new ArrayList<>();
     private String hold1NodeRef;
 
     @BeforeClass (alwaysRun = true)
@@ -102,7 +104,8 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Create 2 holds.");
         hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
-        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        holdsListRef = asList(hold1NodeRef, hold2NodeRef);
 
         STEP("Create a new record category with a record folder.");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
@@ -302,7 +305,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditAddToHoldTests()
     {
-        holdsList.forEach(hold -> holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), hold));
+        holdsListRef.forEach(hold -> holdsAPI.deleteHold(getAdminUser(), hold));
         dataSite.usingAdmin().deleteSite(privateSite);
         asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordCategory.getId());

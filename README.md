@@ -128,7 +128,7 @@ cd acs-community-packaging
 mvn clean install -PcommunityDocker -Dmaven.javadoc.skip=true
 cd ..
 ~~~
-In Itellij IDEA, create a new project using the `work` directory as the source.
+In Intellij IDEA, create a new project using the `work` directory as the source.
 * File > New Project from Existing Sources > .../work > Maven
 
 ## Docker

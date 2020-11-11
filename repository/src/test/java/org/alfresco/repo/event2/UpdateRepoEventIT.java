@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -977,5 +978,33 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(aspectsBefore);
         assertEquals(1, aspectsBefore.size());
         assertTrue(aspectsBefore.contains("cm:auditable"));
+    }
+
+    @Test
+    public void testAddAndRemovePropertyInTheSameTransaction()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+
+        checkNumOfEvents(1);
+
+        NodeResource resource = getNodeResource(1);
+        // Check properties
+        assertTrue(resource.getProperties().isEmpty());
+
+        // Add and remove cm:userName property
+        retryingTransactionHelper.doInTransaction(() -> {
+            Map<QName, Serializable> properties = Map.of(ContentModel.PROP_USERNAME, "user1");
+            nodeService.addProperties(nodeRef, properties);
+            nodeService.removeProperty(nodeRef, ContentModel.PROP_USERNAME);
+            return null;
+        });
+
+        // There should only be a create event
+        resource = getNodeResource(1);
+        assertTrue(resource.getProperties().isEmpty());
+
+        // Check there isn't a node update event
+        List<RepoEvent<EventData<NodeResource>>> nodeUpdatedEvents = getFilteredEvents(EventType.NODE_UPDATED);
+        assertEquals(0, nodeUpdatedEvents.size());
     }
 }

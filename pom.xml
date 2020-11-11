@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.318-SNAPSHOT</version>
+    <version>8.328-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -52,13 +52,13 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.transform.model.version>1.0.2.11</dependency.transform.model.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.8</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.10</dependency.acs-event-model.version>
 
         <dependency.spring.version>5.2.9.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.11.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.4.0</dependency.cxf.version>
+        <dependency.cxf.version>3.4.1</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
         <dependency.webscripts.version>8.14</dependency.webscripts.version>
@@ -69,7 +69,7 @@
         <dependency.guava.version>28.2-jre</dependency.guava.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.6</dependency.gson.version>
-        <dependency.httpclient.version>4.5.12</dependency.httpclient.version>
+        <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.13</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
@@ -97,11 +97,11 @@
         <dependency.mysql.version>8.0.22</dependency.mysql.version>
         <dependency.mariadb.version>2.7.0</dependency.mariadb.version>
 
-        <dependency.tas-utility.version>3.0.21</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.36</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
         <dependency.tas-restapi.version>1.48</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.19</dependency.tas-cmis.version>
+        <dependency.tas-cmis.version>1.21</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
@@ -147,6 +147,13 @@
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
                 <version>2.7.2-alfresco</version>
+                <exclusions>
+                    <!-- [ACS-544] Excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c.org -->
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.services</groupId>
@@ -453,7 +460,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.66</version>
+                <version>1.67</version>
 <!--                <version>${dependency.bouncycastle.version}</version>-->
             </dependency>
             <dependency>
@@ -475,6 +482,13 @@
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>${dependency.xercesImpl.version}</version>
+                <exclusions>
+                    <!-- [ACS-544] Excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c.org -->
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- Newer metadata-extractor, used in TIKA, see ACS-370 -->
             <dependency>
@@ -682,4 +696,3 @@
     </build>
 
 </project>
-

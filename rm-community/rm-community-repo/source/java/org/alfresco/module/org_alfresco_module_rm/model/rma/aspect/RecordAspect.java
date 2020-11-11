@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
@@ -39,7 +34,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDispos
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
-import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -60,6 +54,11 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * rma:record behaviour bean
  *
@@ -77,7 +76,7 @@ public class RecordAspect extends    AbstractDisposableItem
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
                                      CopyServicePolicies.OnCopyCompletePolicy,
-                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -100,7 +99,11 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
+    private static final String MSG_WORM_RECORD_LOCKED = "rm.action.worm-record-locked";
 
+    // WORM lock aspect
+    public static final String RME_URI = "http://www.alfresco.org/model/recordsmanagemententerprise/1.0";
+    public static final QName ASPECT_WORM_LOCK = QName.createQName(RME_URI, "wormLock");
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -373,21 +376,6 @@ public class RecordAspect extends    AbstractDisposableItem
         }
     }
 
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
-    public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
-    {
-        // Allow creation of content but not update
-        if (beforeValue != null)
-        {
-            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
-        }
-    }
-
     /**
      * Behaviour to remove the shared link before declare a record
      * and to create new bin if the node is a copy or has copies
@@ -420,5 +408,44 @@ public class RecordAspect extends    AbstractDisposableItem
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /**
+    * Behaviour to prevent content update for records
+    *
+    * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
+    */
+    @Override
+    @Behaviour
+    (
+        kind = BehaviourKind.CLASS,
+        notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String storeNameAfter = (String) after.get(ContentModel.PROP_STORE_NAME);
+        ContentData contentBefore = (ContentData) before.get(ContentModel.PROP_CONTENT);
+        ContentData contentAfter = (ContentData) after.get(ContentModel.PROP_CONTENT);
+        // Check only storeNameAfter since the store name is updated before this method is triggered
+        // Does not allow setting content to null when moving content between stores (case not covered by
+        // ContentPropertyRestrictionInterceptor)
+        if (storeNameAfter != null)
+        {
+            if (nodeService.hasAspect(nodeRef, ASPECT_WORM_LOCK))
+            {
+                if (contentBefore != null && !contentBefore.equals(contentAfter))
+                {
+                    throw new IntegrityException(MSG_WORM_RECORD_LOCKED, null);
+                }
+            }
+            if (contentAfter != null)
+            {
+                return;
+            }
+        }
+        if (contentBefore != null && !contentBefore.equals(contentAfter))
+        {
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+        }
     }
 }

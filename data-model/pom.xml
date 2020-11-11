@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.306-SNAPSHOT</version>
+        <version>8.326-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -188,7 +188,12 @@
                     <groupId>org.codehaus.woodstox</groupId>
                     <artifactId>woodstox-core-asl</artifactId>
                 </exclusion>
-            </exclusions>
+                <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
+                <exclusion>
+                  <groupId>org.apache.geronimo.specs</groupId>
+                  <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>

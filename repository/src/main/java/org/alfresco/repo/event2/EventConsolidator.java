@@ -292,6 +292,7 @@ public class EventConsolidator implements EventSupportedPolicies
 
         Builder builder = NodeResource.builder();
 
+        ZonedDateTime modifiedAt = null;
         Map<QName, Serializable> changedPropsBefore = getBeforeMapChanges(propertiesBefore, propertiesAfter);
         if (!changedPropsBefore.isEmpty())
         {
@@ -321,13 +322,8 @@ public class EventConsolidator implements EventSupportedPolicies
                 builder.setModifiedByUser(modifier);
                 resourceBeforeAllFieldsNull = false;
             }
-            ZonedDateTime modifiedAt =
+            modifiedAt =
                         helper.getZonedDateTime((Date) changedPropsBefore.get(ContentModel.PROP_MODIFIED));
-            if (modifiedAt != null)
-            {
-                builder.setModifiedAt(modifiedAt);
-                resourceBeforeAllFieldsNull = false;
-            }
         }
 
         // Handle case where the content does not exist on the propertiesBefore
@@ -355,6 +351,12 @@ public class EventConsolidator implements EventSupportedPolicies
         {
             builder.setNodeType(helper.getQNamePrefixString(nodeTypeBefore));
             resourceBeforeAllFieldsNull = false;
+        }
+
+        // Only set modifiedAt if one of the other fields is also not null
+        if (modifiedAt != null && !resourceBeforeAllFieldsNull)
+        {
+            builder.setModifiedAt(modifiedAt);
         }
 
         return builder.build();

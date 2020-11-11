@@ -118,7 +118,7 @@ public class StatsGet extends DeclarativeWebScript
        Pair<LocalDate, LocalDate> startAndEnd = getStartAndEndDates(req.getParameter("startDate"),req.getParameter("endDate"));
        query = buildQuery(siteInfo, facetKey, startAndEnd);
 
-       StatsParameters params = new StatsParameters(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO, query, false);
+       StatsParameters params = new StatsParameters(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO, query, false);
        //params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, this.statsField, false));
        params.addStatsParameter(StatsParameters.PARAM_FIELD, this.statsField);
        params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX+propFacet.toString());

@@ -1,6 +1,6 @@
 version: "3"
 
-# The acs-community-deployment project contains the product version of docker-compose.
+# The acs-deployment project contains the product version of docker-compose.
 #
 # This version is for testing and development use. For testing and debug we need to have a more open version.
 # For remote debug we need the CATALINA_OPTS and to expose port 8000.

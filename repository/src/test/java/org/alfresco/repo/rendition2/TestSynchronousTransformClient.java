@@ -59,8 +59,7 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
                                Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
     {
         boolean supported = true;
-        if (!sourceMimetype.equals(TEST_FAILING_MIME_TYPE) && !sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) &&
-            !targetMimetype.equals(TEST_FAILING_MIME_TYPE) && !targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE))
+        if (!isATest(sourceMimetype, targetMimetype))
         {
             supported = delegate.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
                     transformName, sourceNodeRef);
@@ -73,11 +72,46 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
     {
         String sourceMimetype = reader.getMimetype();
         String targetMimetype = writer.getMimetype();
-        if (sourceMimetype.equals(TEST_FAILING_MIME_TYPE) || targetMimetype.equals(TEST_FAILING_MIME_TYPE))
+        if (isATest(sourceMimetype, targetMimetype))
+        {
+            doTest(sourceMimetype, targetMimetype, writer, new TestTransformClientCallback());
+        }
+        else
+        {
+            delegate.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
+        }
+    }
+
+    static boolean isATest(String sourceMimetype, String targetMimetype)
+    {
+        return  isFailingTest(sourceMimetype, targetMimetype) ||
+                isLongRunningTest(sourceMimetype, targetMimetype) ||
+                isUserTest(sourceMimetype, targetMimetype);
+    }
+
+    static boolean isFailingTest(String sourceMimetype, String targetMimetype)
+    {
+        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE) || targetMimetype.equals(TEST_FAILING_MIME_TYPE);
+    }
+
+    static boolean isLongRunningTest(String sourceMimetype, String targetMimetype)
+    {
+        return sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) || targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE);
+    }
+
+    static boolean isUserTest(String sourceMimetype, String targetMimetype)
+    {
+        return sourceMimetype.equals(TEST_USER_MIME_TYPE) || targetMimetype.equals(TEST_USER_MIME_TYPE);
+    }
+
+    static void doTest(String sourceMimetype, String targetMimetype, ContentWriter writer,
+                       TestTransformClientCallback callback)
+    {
+        if (isFailingTest(sourceMimetype, targetMimetype))
         {
             throw new ContentServiceTransientException("Transformation intentionally failed for test purposes.");
         }
-        else if (sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) || targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE))
+        else if (isLongRunningTest(sourceMimetype, targetMimetype))
         {
             try
             {
@@ -87,9 +121,9 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
             {
                 e.printStackTrace();
             }
-            writer.putContent("SUCCESS");
+            callback.successfulTransform(writer);
         }
-        else if (sourceMimetype.equals(TEST_USER_MIME_TYPE) || targetMimetype.equals(TEST_USER_MIME_TYPE))
+        else if (isUserTest(sourceMimetype, targetMimetype))
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             if (!EXPECTED_USER.equals(username))
@@ -97,11 +131,7 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
                 throw new ContentIOException(
                         "Expected username '" + EXPECTED_USER + "' but found '" + username + "'");
             }
-            writer.putContent("SUCCESS");
-        }
-        else
-        {
-            delegate.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
+            callback.successfulTransform(writer);
         }
     }
 
@@ -109,5 +139,13 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
     public String getName()
     {
         return delegate.getName();
+    }
+
+    static class TestTransformClientCallback
+    {
+        public void successfulTransform(ContentWriter writer)
+        {
+            writer.putContent("SUCCESS");
+        }
     }
 }

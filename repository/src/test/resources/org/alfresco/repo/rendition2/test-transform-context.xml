@@ -9,6 +9,12 @@
       <constructor-arg name="delegate" ref="switchingSynchronousTransformClient" />
    </bean>
 
+   <bean id="transformClient" class="org.alfresco.repo.rendition2.TestAsynchronousTransformClient">
+      <constructor-arg name="contentService" ref="contentService" />
+      <constructor-arg name="delegate" ref="localTransformClient" />
+      <constructor-arg name="renditionService2" ref="renditionService2" />
+   </bean>
+
    <bean id="transformServiceRegistry" class="org.alfresco.repo.rendition2.TestTransformServiceRegistry">
       <constructor-arg name="delegate" ref="localTransformServiceRegistry" />
    </bean>

@@ -38,7 +38,9 @@ import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.TransformClient;
+import org.alfresco.repo.search.impl.noindex.NoIndexCategoryServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tagging.TaggingServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -49,8 +51,9 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
@@ -81,6 +84,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -113,6 +117,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
     private NodeService nodeService;
+    private NodeService publicNodeService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private MimetypeService mimetypeService;
@@ -125,11 +130,13 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     private TransformerDebug transformerDebug;
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
-    private TaggingService taggingService;
+    private TaggingServiceImpl taggingService;
     private ContentMetadataExtracter contentMetadataExtracter;
     private ContentMetadataEmbedder contentMetadataEmbedder;
     private RenditionService2Impl renditionService2;
     private TransformClient transformClient;
+    private CategoryService categoryService;
+    private MockCategoryService mockCategoryService;
 
     private long origSize;
     private Map<QName, Serializable> origProperties;
@@ -183,12 +190,13 @@ public class AsynchronousExtractorTest extends BaseSpringTest
             setTaggingService(taggingService);
             setRegistry(metadataExtracterRegistry);
             setMimetypeService(mimetypeService);
-            setDictionaryService(dictionaryService);
+            setDictionaryService(AsynchronousExtractorTest.this.dictionaryService);
             setExecutorService(executorService);
             setOverwritePolicy(policy);
             register();
 
             renditionService2.setTransformClient(mockTransformClient);
+            renditionService2.setAsynchronousExtractor(this);
         }
 
         @Override
@@ -268,10 +276,52 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         }
     }
 
+    /**
+     * Mock CategoryService that only knows about taggable. Unlike the real implementation it does not call Solr to
+     * find tag nodes.
+     */
+    private class MockCategoryService extends NoIndexCategoryServiceImpl
+    {
+        private NodeRef taggableCat;
+
+        MockCategoryService(NodeService nodeService, NodeService publicNodeService)
+        {
+            setNodeService(nodeService);
+            setPublicNodeService(publicNodeService);
+
+            // Create the required tagging category
+            NodeRef catContainer = nodeService.createNode(rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            "categoryContainer"), ContentModel.TYPE_CONTAINER).getChildRef();
+            NodeRef catRoot = nodeService.createNode(
+                    catContainer,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "categoryRoot"),
+                    ContentModel.TYPE_CATEGORYROOT).getChildRef();
+            taggableCat = nodeService.createNode(
+                    catRoot,
+                    ContentModel.ASSOC_CATEGORIES,
+                    ContentModel.ASPECT_TAGGABLE,
+                    ContentModel.TYPE_CATEGORY).getChildRef();
+        }
+
+        public void setTaggableCat(NodeRef taggableCat)
+        {
+            this.taggableCat = taggableCat;
+        }
+
+        @Override
+        protected Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName qname)
+        {
+            return Collections.singleton(taggableCat);
+        }
+    }
+
     @Before
     public void before() throws Exception
     {
         nodeService = (NodeService) applicationContext.getBean("nodeService");
+        publicNodeService = (NodeService) applicationContext.getBean("NodeService");
         contentService = (ContentService) applicationContext.getBean("contentService");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
         mimetypeService = (MimetypeService) applicationContext.getBean("mimetypeService");
@@ -280,8 +330,10 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         renditionService2 = (RenditionService2Impl) applicationContext.getBean("renditionService2");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         transformServiceRegistry = (TransformServiceRegistry) applicationContext.getBean("transformServiceRegistry");
-        taggingService = (TaggingService) applicationContext.getBean("taggingService");
+        taggingService = (TaggingServiceImpl) applicationContext.getBean("taggingService");
         transformClient = (TransformClient) applicationContext.getBean("transformClient");
+        asynchronousExtractor = (AsynchronousExtractor) applicationContext.getBean("extractor.Asynchronous");
+        categoryService = (CategoryService) applicationContext.getBean("CategoryService");
 
         // Create an empty metadata extractor registry, so that if we add one it will be used
         metadataExtracterRegistry = new MetadataExtracterRegistry();
@@ -336,6 +388,9 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
                 origSize = getSize(nodeRef);
 
+                mockCategoryService = new MockCategoryService(nodeService, publicNodeService);
+                taggingService.setCategoryService(mockCategoryService);
+
                 return null;
             }
         });
@@ -345,6 +400,8 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     public void after() throws Exception
     {
         renditionService2.setTransformClient(transformClient);
+        renditionService2.setAsynchronousExtractor(asynchronousExtractor);
+        taggingService.setCategoryService(categoryService);
     }
 
     private void assertAsyncMetadataExecute(ActionExecuterAbstractBase executor, String mockResult,
@@ -751,7 +808,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         List<String> actualTags = transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
                 Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-//                assertTrue(properties.containsKey(ContentModel.PROP_TAGS)); this property should be added after adding tags
+                assertTrue(properties.containsKey(ContentModel.PROP_TAGS));
                 return taggingService.getTags(nodeRef);
             });
 

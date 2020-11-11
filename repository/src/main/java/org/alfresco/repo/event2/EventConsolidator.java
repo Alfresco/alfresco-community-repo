@@ -58,7 +58,7 @@ import org.alfresco.service.namespace.QName;
 public class EventConsolidator implements EventSupportedPolicies
 {
     private final NodeResourceHelper helper;
-    private final Deque<EventType> eventTypes;
+    protected final Deque<EventType> eventTypes;
     private final List<QName> aspectsAdded;
     private final List<QName> aspectsRemoved;
 
@@ -125,7 +125,7 @@ public class EventConsolidator implements EventSupportedPolicies
      * @param forceUpdate if {@code true}, will get the latest node info and ignores
      *                    the existing builder object.
      */
-    private void createBuilderIfAbsent(NodeRef nodeRef, boolean forceUpdate)
+    protected void createBuilderIfAbsent(NodeRef nodeRef, boolean forceUpdate)
     {
         if (resourceBuilder == null || forceUpdate)
         {
@@ -140,7 +140,7 @@ public class EventConsolidator implements EventSupportedPolicies
      *
      * @param nodeRef the nodeRef in the txn
      */
-    private void createBuilderIfAbsent(NodeRef nodeRef)
+    protected void createBuilderIfAbsent(NodeRef nodeRef)
     {
         createBuilderIfAbsent(nodeRef, false);
     }
@@ -491,4 +491,9 @@ public class EventConsolidator implements EventSupportedPolicies
     {
         return resourceBeforeAllFieldsNull;
     }
+    
+    protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull){
+        this.resourceBeforeAllFieldsNull = resourceBeforeAllFieldsNull;
+    }
+
 }

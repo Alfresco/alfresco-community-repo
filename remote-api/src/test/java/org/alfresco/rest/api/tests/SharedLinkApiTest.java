@@ -193,7 +193,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Map<String, String> body = new HashMap<>();
         body.put("nodeId", d1Id);
 
-        Thread.sleep(30000); // Allow time for the async metadata extract
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
 
         response = post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
         QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);

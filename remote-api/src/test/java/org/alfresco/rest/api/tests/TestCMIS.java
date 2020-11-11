@@ -1789,6 +1789,9 @@ public class TestCMIS extends EnterpriseTestApi
         }
 
         Document autoVersionedDoc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
+
         String objectId = autoVersionedDoc.getId();
         String bareObjectId = stripCMISSuffix(objectId);
         // create versions
@@ -2506,6 +2509,8 @@ public class TestCMIS extends EnterpriseTestApi
 
         /* Create document */
         Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
         
         /* Checkout document */
         ObjectId pwcId = doc.checkOut();
@@ -3272,6 +3277,8 @@ public class TestCMIS extends EnterpriseTestApi
                 "This is just a test");
 
         final Document document = folder.createDocument(props, cs, VersioningState.MAJOR);
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
 
         ObjectId pwcObjectId = document.checkOut();
 

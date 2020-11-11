@@ -713,7 +713,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String contentName = "content " + RUNID + ".txt";
         String content1Id = createTextFile(folderB_Id, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
 
-
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
         // get node info
         response = getSingle(NodesEntityResource.class, content1Id, null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);

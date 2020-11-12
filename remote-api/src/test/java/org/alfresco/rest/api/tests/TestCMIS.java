@@ -1275,7 +1275,7 @@ public class TestCMIS extends EnterpriseTestApi
                 return null;
             }
         }, personId);
-        
+
         NodeRef folderNodeRef = folders.get(0);
         NodeRef docNodeRef = documents.get(0);
 
@@ -1790,7 +1790,7 @@ public class TestCMIS extends EnterpriseTestApi
 
         Document autoVersionedDoc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
         // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
-        Thread.sleep(3000);
+        Thread.sleep(6000);
 
         String objectId = autoVersionedDoc.getId();
         String bareObjectId = stripCMISSuffix(objectId);
@@ -2872,6 +2872,7 @@ public class TestCMIS extends EnterpriseTestApi
         fileContent.setStream(stream);
 
         Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        Thread.sleep(5000);
 
         ObjectId pwcId = doc.checkOut();
         Document pwc = (Document) cmisSession.getObject(pwcId.getId());

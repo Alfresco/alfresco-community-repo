@@ -1,0 +1,5 @@
+{
+  "sys:enableStringTagging": "false",
+  "sys:stringTaggingSeparators": ";,\",\",\\|",
+  "{http://www.alfresco.org/model/content/1.0}taggable": "tag1;tag2;tag3"
+}

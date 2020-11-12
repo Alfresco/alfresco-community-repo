@@ -5612,6 +5612,124 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(((ArrayList) (propUpdateResponse.get("custom:locations"))).size() == 1);
     }
 
+    @Test
+    public void versioningStatePropetyMultipartUploadTest() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+
+        // Scenario 1 majorVersion and versionState multipart values are not set.
+        String fileName = "myfile" + UUID.randomUUID() + ".txt";
+        File file = getResourceFile("quick-2.pdf");
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+
+        MultiPartRequest reqBody = multiPartBuilder.build();
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Default behaviour, expect to be MAJOR Version 1.0
+        Map<String, Object> documentProperties = documentResponse.getProperties();
+        assertEquals(2, documentProperties.size());
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 2 majorVersion is not set versionState is set to none.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningState("none");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 3 majorVersion is set to true and versionState is set to none.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(true);
+        multiPartBuilder.setVersioningState("none");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 4 majorVersion is set to false and versionState is set to none.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(false);
+        multiPartBuilder.setVersioningState("none");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 5 majorVersion is not set versionState is set to minor.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningState("minor");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals(2, documentProperties.size());
+        assertEquals("MINOR", documentProperties.get("cm:versionType"));
+        assertEquals("0.1", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 6 majorVersion is set to true and versionState is set to minor.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(true);
+        multiPartBuilder.setVersioningState("minor");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals(2, documentProperties.size());
+        assertEquals("MINOR", documentProperties.get("cm:versionType"));
+        assertEquals("0.1", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 7 majorVersion is not set versionState is set to major.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningState("major");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals(2, documentProperties.size());
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 8 majorVersion is set to false and versionState is set to major.
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(false);
+        multiPartBuilder.setVersioningState("major");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals(2, documentProperties.size());
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+    }
+
     @Test public void testAuditableProperties() throws Exception
     {
         setRequestContext(user1);

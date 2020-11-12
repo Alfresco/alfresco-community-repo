@@ -2914,6 +2914,7 @@ public class NodesImpl implements Nodes
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
+        String versioningState = null;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
@@ -2969,6 +2970,10 @@ public class NodesImpl implements Nodes
 
                 case "renditions":
                     renditionNames = getStringOrNull(field.getValue());
+                    break;
+
+            case "versionstate":
+                    versioningState = getStringOrNull(field.getValue());
                     break;
 
                 default:
@@ -3042,11 +3047,27 @@ public class NodesImpl implements Nodes
                     throw new ConstraintViolatedException(fileName + " already exists.");
                 }
             }
-            
+
             // Note: pending REPO-159, we currently auto-enable versioning on new upload (but not when creating empty file)
             if (versionMajor == null)
             {
                 versionMajor = true;
+            }
+
+            // MNT-22036 add versioningState property for newly created nodes.
+            if (null != versioningState)
+            {
+                switch (versioningState)
+                {
+                case "none":
+                    versionMajor = null;
+                    break;
+                case "major":
+                    versionMajor = true;
+                    break;
+                default:
+                    versionMajor = false;
+                }
             }
 
             // Create a new file.

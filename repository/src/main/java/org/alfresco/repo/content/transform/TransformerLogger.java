@@ -179,26 +179,6 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         }
     }
     
-    /**
-     * The transformer property and value used to set this logger. This is commented
-     * out if the property has not been overridden (default is 0).
-     * @param defaultProperties the transformer.properties file values that may be overridden. 
-     * @return the transformer property and value.
-     */
-    public String getPropertyAndValue(Properties defaultProperties)
-    {
-        getMaxEntries();
-        String value = Integer.toString(maxEntries);
-        
-        String propertyName = getPropertyName();
-        String defaultValue = defaultProperties == null ? null : defaultProperties.getProperty(propertyName);
-        defaultValue = defaultValue == null ? "0" : defaultValue;
-        
-        StringBuilder sb = new StringBuilder();
-        appendProperty(sb, propertyName, value, defaultValue);
-        return sb.toString();
-    }
-
     private static void appendProperty(StringBuilder sb, String propertyName, String value, String defaultValue)
     {
         boolean isDefaultValue = value.equals(defaultValue);

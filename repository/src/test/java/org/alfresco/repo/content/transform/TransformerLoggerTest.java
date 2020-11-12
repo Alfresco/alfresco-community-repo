@@ -110,49 +110,6 @@ public class TransformerLoggerTest
     }
 
     @Test
-    public void propertyExistsTest()
-    {
-        properties.setProperty("property.name", "5");
-        assertEquals("property.name=5  # default=0", log.getPropertyAndValue(null));
-    }
-
-    @Test
-    public void propertyExistsAndDefaultSetTest()
-    {
-        properties.setProperty("property.name", "5");
-        Properties properties = new Properties();
-        properties.setProperty("property.name", "23");
-        assertEquals("property.name=5  # default=23", log.getPropertyAndValue(properties));
-    }
-
-    @Test
-    public void propertyDoesNotExistTest()
-    {
-        assertEquals("# property.name=0", log.getPropertyAndValue(null));
-    }
-
-    @Test
-    public void propertyNegativeTest()
-    {
-        properties.setProperty("property.name", "-2");
-        assertEquals("# property.name=0", log.getPropertyAndValue(null));
-    }
-
-    @Test
-    public void propertyGreaterThanMax()
-    {
-        properties.setProperty("property.name", "1000");
-        assertEquals("property.name=176  # default=0", log.getPropertyAndValue(null));
-    }
-
-    @Test
-    public void propertyBadTest()
-    {
-        properties.setProperty("property.name", "abc");
-        assertEquals("# property.name=0", log.getPropertyAndValue(null));
-    }
-    
-    @Test
     public void isDebugEnabled0EntriesTest()
     {
         // when(transformerConfig.getProperty("property.name")).thenReturn("0"); - default to this

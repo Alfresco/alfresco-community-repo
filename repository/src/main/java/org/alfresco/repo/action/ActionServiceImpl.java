@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,6 +38,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.action.executer.LoggingAwareExecuter;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -576,6 +577,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
         Set<String> actionChain = this.currentActionChain.get();
 
+        // Like emails (see RuleServiceImpl), metadata extraction is now normally performed asynchronously.
+        // As a result we need to override the executeAsychronously value if this is the case so that
+        // changes to the actionedUponNodeRef will have been committed before the extract is performed.
+        executeAsychronously = isExecuteAsynchronously(action, actionedUponNodeRef, executeAsychronously);
+
         if (executeAsychronously == false)
         {
             executeActionImpl(action, actionedUponNodeRef, checkConditions, false, actionChain);
@@ -585,6 +591,30 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             // Add to the post transaction pending action list
             addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain);
         }
+    }
+
+    private boolean isExecuteAsynchronously(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)
+    {
+        if (executeAsynchronously == false)
+        {
+            String actionDefinitionName = action.getActionDefinitionName();
+            if (actionDefinitionName.equals(CompositeActionExecuter.NAME))
+            {
+                for (Action subAction : ((CompositeAction)action).getActions())
+                {
+                    if (isExecuteAsynchronously(subAction, actionedUponNodeRef, false))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                ActionExecuter executer = (ActionExecuter) this.applicationContext.getBean(actionDefinitionName);
+                executeAsynchronously = executer.isExecuteAsynchronously(actionedUponNodeRef);
+            }
+        }
+        return executeAsynchronously;
     }
 
     /**

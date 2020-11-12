@@ -46,37 +46,24 @@ import org.springframework.context.ApplicationContext;
     // Minimum context [classpath:alfresco/minimal-context.xml]
     // ----------------------------------------------------------------------
 
-    // Metadata tests
-    org.alfresco.repo.content.metadata.DWGMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.MailMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.MP3MetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.JodMetadataExtractorOOoTest.class,
-    org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.ConcurrencyPdfBoxMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.PoiMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest.class,
-
+    // Metadata tests - replaced with simplified test in LocalRenditionTest and ServiceRenditionTest
     org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
 
-        // ----------------------------------------------------------------------
-        // Transformer/Rendition contexts
-        //
-        // The following tests can be extracted in a separate test suite
-        // if/when we decide to move the transformations in a separate component
-        // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Transformer/Rendition contexts
+    //
+    // The following tests can be extracted in a separate test suite
+    // if/when we decide to move the transformations in a separate component
+    // ----------------------------------------------------------------------
 
-        // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/rendition2/test-transform-context.xml]
-        // some tests fail locally - on windows
-        org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
+    // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
+    // some tests fail locally - on windows
+    org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
 
-        // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
-        // classpath:alfresco/test/global-integration-test-context.xml]
-        // this does NOT passes locally
-        org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
+    // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
+    // classpath:alfresco/test/global-integration-test-context.xml]
+    // this does NOT passes locally
+    org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
 
     // ----------------------------------------------------------------------
     // Misc contexts

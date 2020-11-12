@@ -77,6 +77,13 @@ public class NoneRenditionTest extends AbstractRenditionTest
     }
 
     @Test
+    @Override
+    public void testSelectedMetadataExtracts() throws Exception
+    {
+        internalTestSelectedMetadataExtracts(7, 7);
+    }
+
+    @Test
     public void testAllTransformServiceConfigRenditions() throws Exception
     {
         internalTestTasRestApiRenditions(0, 0);

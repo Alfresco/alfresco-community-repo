@@ -40,13 +40,4 @@
        </property>
    </bean>
 
-   <bean id="extracter.worker.JodConverter" class="org.alfresco.repo.content.metadata.JodConverterMetadataExtracterWorker">
-      <property name="mimetypeService">
-         <ref bean="mimetypeService" />
-      </property>
-      <property name="jodConverter">
-         <ref bean="jodconverter.shared.instance" />
-      </property>
-   </bean>
-
 </beans>

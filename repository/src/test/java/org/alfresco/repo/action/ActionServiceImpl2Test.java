@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,7 @@
 
 package org.alfresco.repo.action;
 
+import static java.lang.Thread.sleep;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -351,7 +352,16 @@ public class ActionServiceImpl2Test
                 Action action = actionService.createAction(ContentMetadataExtracter.EXECUTOR_NAME);
                 // Execute the action
                 actionService.executeAction(action, testNode);
+                return null;
+            }
+        });
 
+        Thread.sleep(3000); // Need to wait for the async extract
+
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
                 assertEquals("Gym class featuring a brown fox and lazy dog",
                         nodeService.getProperty(testNode, ContentModel.PROP_DESCRIPTION));
                 return null;

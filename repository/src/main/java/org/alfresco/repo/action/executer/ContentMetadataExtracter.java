@@ -55,6 +55,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
+import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -362,7 +363,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         String mimetype = reader.getMimetype();
         long sourceSizeInBytes = reader.getSize();
         MetadataExtracter extracter = metadataExtracterRegistry.getExtractor(mimetype, sourceSizeInBytes);
-        return extracter instanceof AbstractMappingMetadataExtracter;
+        return extracter instanceof AsynchronousExtractor;
     }
 
     /**

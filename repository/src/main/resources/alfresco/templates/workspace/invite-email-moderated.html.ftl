@@ -23,7 +23,38 @@
          <tbody>
          <tr>
             <td align="center" valign="top" style="padding-bottom:60px">
-               <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 25px;">
+               <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 25px 0 0 0">
+                  <tbody>
+                  <tr>
+                     <td align="center" valign="top">
+                        <table align="center" bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0" style="background-color:#ffffff;max-width: 600px;max-height: 60px;" width="100%">
+                           <tbody>
+                           <tr>
+                              <td style="padding-bottom:40px;padding-left:40px;">
+                                 <table border="0" cellspacing="0" cellpadding="0">
+                                    <tbody>
+                                    <tr>
+                                       <td height="30" width="30">
+                                          <img src="${template_assets_url}/logo/workspace.png" alt="Alfresco" width="35" height="35" style="border:none;">
+                                       </td>
+                                       <td align="" valign="center" bgcolor="#FFFFFF">
+                                          <span bgcolor="#FFFFFF" style="font-size: 16px;letter-spacing: 0;color: #212328;opacity: 1;padding: 10px;" align="left">
+                                             Digital Workspace
+                                          </span>
+                                       </td>
+                                    </tr>
+                                    </tbody>
+                                 </table>
+                              </td>
+                           </tr>
+                           </tbody>
+                        </table>
+                     </td>
+                  </tr>
+                  </tbody>
+               </table>
+
+               <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
                   <tbody>
                   <tr>
                      <td align="center" valign="top">
@@ -32,14 +63,6 @@
                                style="background-color:#ffffff;max-width: 600px;max-height: 600px;"
                                width="100%">
                            <tbody>
-                           <tr>
-                              <td align="" valign="top" bgcolor="#FFFFFF"
-                                  style="padding: 40px;">
-                                 <img style="border:none; display:block; border-collapse:collapse; outline:none; text-decoration:none;"
-                                      src="${template_assets_url}/logo/workspace.png" border="0"
-                                      alt="Alfresco" width="180" height="36">
-                              </td>
-                           </tr>
                            <tr>
                               <td style="padding-right:40px;padding-bottom:40px;padding-left:40px">
                                  <table border="0" cellspacing="0" cellpadding="0">

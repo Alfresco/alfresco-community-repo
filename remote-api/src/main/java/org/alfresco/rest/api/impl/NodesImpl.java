@@ -1849,10 +1849,10 @@ public class NodesImpl implements Nodes
             versionMajor = Boolean.valueOf(str);
         }
         String versioningEnabledStringValue = parameters.getParameter("versioningEnabled");
-        if(null != versioningEnabledStringValue)
+        if (null != versioningEnabledStringValue)
         {
             boolean versioningEnabled = Boolean.parseBoolean(versioningEnabledStringValue);
-            if(versioningEnabled)
+            if (versioningEnabled)
             {
                 versionMajor = (null != versionMajor) ? versionMajor : true;
             }
@@ -2987,7 +2987,7 @@ public class NodesImpl implements Nodes
 
             case "versioningenabled":
                     String versioningEnabledStringValue = getStringOrNull(field.getValue());
-                    if(null != versioningEnabledStringValue)
+                    if (null != versioningEnabledStringValue)
                     {
                         versioningEnabled = !versioningEnabledStringValue.equalsIgnoreCase("false");
                     }

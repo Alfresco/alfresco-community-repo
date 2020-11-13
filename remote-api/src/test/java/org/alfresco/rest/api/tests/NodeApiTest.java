@@ -5626,7 +5626,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // 6:  majorVersion true    -  versioningEnabled true     Expect: MAJOR version
         // 7:  majorVersion false   -  versioningEnabled true     Expect: Minor version
         // 8:  majorVersion not set -  versioningEnabled False    Expect: versioning disabled
-        // 9:  majorVersion not set -  versioningEnabled False1   Expect: MAJOR version
+        // 9:  majorVersion not set -  versioningEnabled invalid   Expect: MAJOR version
 
         // Scenario 1:
         String fileName = "myfile" + UUID.randomUUID() + ".txt";
@@ -5740,7 +5740,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Scenario 9:
         fileName = "myfile" + UUID.randomUUID() + ".txt";
         multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
-        multiPartBuilder.setVersioningEnabled("False1");
+        multiPartBuilder.setVersioningEnabled("invalid");
 
         reqBody = multiPartBuilder.build();
         response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -5766,7 +5766,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // 6: majorVersion true    -  versioningEnabled true     Expect: MAJOR version
         // 7: majorVersion false   -  versioningEnabled true     Expect: Minor version
         // 8: majorVersion not set -  versioningEnabled False    Expect: versioning disabled
-        // 9: majorVersion not set -  versioningEnabled False1   Expect: versioning disabled
+        // 9: majorVersion not set -  versioningEnabled invalid   Expect: versioning disabled
         // 10 majorVersion not set -  versioningenabled true     Expect: versioning disabled
 
         Document d1 = new Document();
@@ -5869,7 +5869,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         //Scenario 9:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","False1");
+        requestHeaders.put("versioningEnabled","invalid");
 
         response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);

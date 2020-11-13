@@ -45,7 +45,6 @@ commons-pool    http://jakarta.apache.org/commons/
 commons-validator   http://jakarta.apache.org/commons/ 
 ConcurrentLinkedHashMap     http://code.google.com/p/concurrentlinkedhashmap/
 Fast Infoset Project    http://fi.java.net/
-PDFBox  http://pdfbox.apache.org/
 Google Data Java Client Library http://code.google.com/p/gdata-java-client/
 Geronimo Activation http://geronimo.apache.org/
 Geronimo Annotation http://geronimo.apache.org/
@@ -279,7 +278,6 @@ The svn diff files with the details of the changes can be found in the following
 === Apache 2.0 License ====
 acegi   http://sourceforge.net/projects/acegisecurity/
 commons-dbcp    http://jakarta.apache.org/commons/ 
-PDFBox  http://pdfbox.apache.org/
 Greenmail   http://www.icegreen.com/greenmail/
 POI http://poi.apache.org/
 quartz  http://quartz-scheduler.org/

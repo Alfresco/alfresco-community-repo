@@ -19,4 +19,4 @@ jobs:
     name: "Enterprise Integrations Tests on MySQL"
     install:
       - travis_retry travis_wait 60 mvn -B -q clean install ${MVN_SKIP} -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -am
-    script: travis_retry travis_wait 80 mvn -B -q clean install ${MVN_SKIP} -Puse-mysql -Dskip.integrationtests=false -Dmy.db.name=alfresco -Dmy.db.port=3307 -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+    script: travis_retry travis_wait 80 mvn -B -q clean install ${MVN_SKIP} -Puse-mysql -Dskip.integrationtests=false -Dmy.db.name=alfresco -Dmy.db.port=3307 -f rm-enterprise/pom.xml -amd -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn

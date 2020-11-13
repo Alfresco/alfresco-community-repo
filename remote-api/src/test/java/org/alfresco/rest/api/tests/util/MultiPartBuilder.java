@@ -56,7 +56,7 @@ public class MultiPartBuilder
     private String updateNodeRef;
     private String description;
     private String contentTypeQNameStr;
-    private String versioningState;
+    private String versioningEnabled;
     private List<String> aspects = Collections.emptyList();
     private Boolean majorVersion;
     private Boolean overwrite;
@@ -76,7 +76,7 @@ public class MultiPartBuilder
         this.updateNodeRef = that.updateNodeRef;
         this.description = that.description;
         this.contentTypeQNameStr = that.contentTypeQNameStr;
-        this.versioningState = that.versioningState;
+        this.versioningEnabled = that.versioningEnabled;
         this.aspects = new ArrayList<>(that.aspects);
         this.majorVersion = that.majorVersion;
         this.overwrite = that.overwrite;
@@ -126,9 +126,9 @@ public class MultiPartBuilder
         return this;
     }
 
-    public MultiPartBuilder setVersioningState(String versioningState)
+    public MultiPartBuilder setVersioningEnabled(String versioningEnabled)
     {
-        this.versioningState = versioningState;
+        this.versioningEnabled = versioningEnabled;
         return this;
     }
 
@@ -285,7 +285,7 @@ public class MultiPartBuilder
         addPartIfNotNull(parts, "updatenoderef", updateNodeRef);
         addPartIfNotNull(parts, "description", description);
         addPartIfNotNull(parts, "contenttype", contentTypeQNameStr);
-        addPartIfNotNull(parts, "versioningstate", versioningState);
+        addPartIfNotNull(parts, "versioningenabled", versioningEnabled);
         addPartIfNotNull(parts, "aspects", getCommaSeparated(aspects));
         addPartIfNotNull(parts, "majorversion", majorVersion);
         addPartIfNotNull(parts, "overwrite", overwrite);

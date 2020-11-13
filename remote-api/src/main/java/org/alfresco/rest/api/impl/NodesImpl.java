@@ -1848,6 +1848,19 @@ public class NodesImpl implements Nodes
         {
             versionMajor = Boolean.valueOf(str);
         }
+        String versioningEnabledStringValue = parameters.getParameter("versioningEnabled");
+        if(null != versioningEnabledStringValue)
+        {
+            boolean versioningEnabled = Boolean.parseBoolean(versioningEnabledStringValue);
+            if(versioningEnabled)
+            {
+                versionMajor = (null != versionMajor) ? versionMajor : true;
+            }
+            else
+            {
+                versionMajor = null;
+            }
+        }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
         // Create the node
@@ -2914,7 +2927,7 @@ public class NodesImpl implements Nodes
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
-        String versioningState = null;
+        boolean versioningEnabled = true;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
@@ -2972,8 +2985,12 @@ public class NodesImpl implements Nodes
                     renditionNames = getStringOrNull(field.getValue());
                     break;
 
-            case "versioningstate":
-                    versioningState = getStringOrNull(field.getValue());
+            case "versioningenabled":
+                    String versioningEnabledStringValue = getStringOrNull(field.getValue());
+                    if(null != versioningEnabledStringValue)
+                    {
+                        versioningEnabled = !versioningEnabledStringValue.equalsIgnoreCase("false");
+                    }
                     break;
 
                 default:
@@ -3053,22 +3070,8 @@ public class NodesImpl implements Nodes
             {
                 versionMajor = true;
             }
-
-            // MNT-22036 add versioningState property for newly created nodes.
-            if (null != versioningState)
-            {
-                switch (versioningState)
-                {
-                case "none":
-                    versionMajor = null;
-                    break;
-                case "major":
-                    versionMajor = true;
-                    break;
-                default:
-                    versionMajor = false;
-                }
-            }
+            // MNT-22036 add versioningEnabled property for newly created nodes.
+            versionMajor = versioningEnabled ? versionMajor : null;
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);

@@ -76,8 +76,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Test of the ActionExecuter for extracting metadata. Note: This test makes
- * assumptions about the PDF test data for PdfBoxExtracter.
+ * Test of the ActionExecuter for extracting metadata.
  * 
  * @author Jesper Steen Møller
  */

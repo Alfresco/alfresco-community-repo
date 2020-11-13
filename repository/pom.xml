@@ -265,21 +265,6 @@
             <artifactId>xmlbeans</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>fontbox</artifactId>
-            <version>${dependency.pdfbox.version}</version>
-        </dependency>
-        <dependency>
-            <!-- we need this for TextToPdfContentTransformer -->
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox-tools</artifactId>
-            <version>${dependency.pdfbox.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
         </dependency>

@@ -268,17 +268,6 @@
       </property>
    </bean>
    
-   <bean id="pdfBoxEmbededDocumentSelector"
-         class="org.alfresco.repo.content.metadata.MediaTypeDisablingDocumentSelector">
-      <property name="disabledMediaTypes">
-         <list>
-            <value>image/jpeg</value>
-            <value>image/tiff</value>
-            <value>image/png</value>
-         </list>
-       </property>
-   </bean>
-
    <!-- Content Metadata Extractors -->
    <!-- The last one listed for any mimetype will be used if available -->
 

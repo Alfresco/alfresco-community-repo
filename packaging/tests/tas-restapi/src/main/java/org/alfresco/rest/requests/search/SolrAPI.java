@@ -67,6 +67,17 @@ public class SolrAPI extends ModelRequest<SolrAPI>
         return restWrapper.processTextResponse(request);
     }
 
+    /**
+     * Executes an action (like "delete") on SOLR alfresco core
+     * @param urlActionPath some action name (like "delete")
+     * @param queryBody parameters for the action
+     */
+    public RestTextResponse postAction(String urlActionPath, String queryBody) throws Exception
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, queryBody, urlActionPath);
+        return restWrapper.processTextResponse(request);
+    }
+    
     public RestTextResponse getSelectQuery() throws Exception
     {
         List<Header> headers = new ArrayList<Header>();
@@ -77,4 +88,19 @@ public class SolrAPI extends ModelRequest<SolrAPI>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "select?q={parameters}", restWrapper.getParameters());
         return restWrapper.processTextResponse(request);
     }
+
+    /**
+     * Executes a query in SOLR using JSON format for the results
+     */
+    public RestTextResponse getSelectQueryJson() throws Exception
+    {
+        List<Header> headers = new ArrayList<Header>();
+        headers.add(new Header("Content-Type", "application/json"));
+        Headers header = new Headers(headers);
+        restWrapper.setResponseHeaders(header);
+        restWrapper.configureRequestSpec().setUrlEncodingEnabled(false);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "select?q={parameters}&wt=json", restWrapper.getParameters());
+        return restWrapper.processTextResponse(request);
+    }
+
 }

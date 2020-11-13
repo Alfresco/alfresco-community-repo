@@ -276,6 +276,7 @@
       <property name="namespacePrefixResolver" ref="namespaceService" />
       <property name="transformerDebug" ref="transformerDebug" />
       <property name="renditionService2" ref="renditionService2" />
+      <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
       <property name="contentService" ref="ContentService" />
       <property name="transactionService" ref="transactionService" />
       <property name="transformServiceRegistry" ref="transformServiceRegistry" />

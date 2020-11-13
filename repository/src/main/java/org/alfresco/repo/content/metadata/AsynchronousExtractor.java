@@ -31,6 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.rendition2.TransformDefinition;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -98,6 +100,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private NamespacePrefixResolver namespacePrefixResolver;
     private TransformerDebug transformerDebug;
     private RenditionService2 renditionService2;
+    private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
     private ContentService contentService;
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
@@ -121,6 +124,11 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     public void setRenditionService2(RenditionService2 renditionService2)
     {
         this.renditionService2 = renditionService2;
+    }
+
+    public void setRenditionDefinitionRegistry2(RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2)
+    {
+        this.renditionDefinitionRegistry2 = renditionDefinitionRegistry2;
     }
 
     public void setContentService(ContentService contentService)
@@ -283,9 +291,13 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         // This needs to be specific to each source mimetype and the extract or embed as the name
         // is used to cache the transform name that will be used.
         String transformName = targetMimetype + '/' + sourceMimetype;
-
-        TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMimetype,
-                options, null, null, null);
+        String renditionName = TransformDefinition.convertToRenditionName(transformName);
+        TransformDefinition transformDefinition = (TransformDefinition) renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+        if (transformDefinition == null)
+        {
+            transformDefinition = new TransformDefinition(transformName, targetMimetype,
+                    options, null, null, null, renditionDefinitionRegistry2);
+        }
 
         if (logger.isTraceEnabled())
         {

@@ -58,6 +58,9 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/surefire-reports
             - ./rm-automation/rm-automation-ui/target/reports
             - ./rm-automation/rm-automation-ui/target/screenshots
+            - alfresco.log
+            - solr.log
+            - share.log
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
         - |
@@ -75,6 +78,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+      after_failure: bash scripts/getLogs.sh
 
     - <<: *community_shared_UI_configuration
       name: "Community Smoke UI Tests for actions in RM site"
@@ -85,7 +89,7 @@ jobs:
       name: "Community Level 2: Disposition Schedules, Holds, Records UI Tests"
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communityLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-  
+
     - <<: *community_shared_UI_configuration
       name: "Community Level 2: Audit, Rules, User Dashboard and Node Browser UI Tests"
       script:
@@ -102,6 +106,9 @@ jobs:
             - ./rm-automation/rm-automation-ui/target/surefire-reports
             - ./rm-automation/rm-automation-ui/target/reports
             - ./rm-automation/rm-automation-ui/target/screenshots
+            - alfresco.log
+            - solr.log
+            - share.log
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
@@ -112,6 +119,7 @@ jobs:
         - sudo free -m -t
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
+      after_failure: bash scripts/getLogs.sh
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Classification Level 2 UI Tests"
@@ -155,4 +163,3 @@ jobs:
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
       after_script: bash scripts/cleanup.sh
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000

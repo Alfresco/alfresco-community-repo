@@ -126,7 +126,7 @@ public class HoldReportTest extends BaseRMTestCase implements ReportModel
             {
                 // crate a hold
                 hold = holdService.createHold(filePlan, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
-                
+
                 // add some items to the hold
                 folder1 = recordFolderService.createRecordFolder(rmContainer, FOLDER1_NAME);
                 holdService.addToHold(hold, folder1);
@@ -168,8 +168,7 @@ public class HoldReportTest extends BaseRMTestCase implements ReportModel
             public void after()
             {
                 holdService.deleteHold(hold);
-                nodeService.deleteNode(folder1);
             }
-        });         
+        });
     }
 }

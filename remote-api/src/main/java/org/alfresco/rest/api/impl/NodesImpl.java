@@ -2972,7 +2972,7 @@ public class NodesImpl implements Nodes
                     renditionNames = getStringOrNull(field.getValue());
                     break;
 
-            case "versionstate":
+            case "versioningstate":
                     versioningState = getStringOrNull(field.getValue());
                     break;
 

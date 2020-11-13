@@ -9,7 +9,7 @@ jobs:
     services: docker
     stage: Tests
     if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[execute tests on MySQL\]/
-    before_install:
+    install:
       - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED'
       - docker run -d -p 61617:61617 -p 5673:5673 alfresco/alfresco-activemq:5.15.8
     script:

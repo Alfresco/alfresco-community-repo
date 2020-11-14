@@ -190,10 +190,6 @@ truezip http://truezip.java.net/
 icu4j   http://icu-project.org/ 
 
 
-=== Imagemagick ===
-Imagemagick 	http://www.imagemagick.org/script/license.php
-
-
 === JSON license ===
 JSon    http://www.json.org/java/
 

@@ -248,7 +248,6 @@
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <dir.root>${dir.root}</dir.root>
-                                <img.exe>${img.exe}</img.exe>
                                 <!-- BDE-91 -->
                                 <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
                                 <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>

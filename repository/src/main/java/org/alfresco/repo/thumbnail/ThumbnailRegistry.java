@@ -293,12 +293,6 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             // not cache the empty list. We prevent this because we want to allow for
             // transformers only coming online *during* system operation - as opposed
             // to coming online during startup.
-            //
-            // An example of such a transient transformer would be those that use OpenOffice.org.
-            // It is possible that the system might start without OOo-based transformers
-            // being available. Therefore we must not cache an empty list for the relevant
-            // MIME types - otherwise this class would hide the fact that OOo (soffice) has
-            // been launched and that new transformers are available.
             if (foundAtLeastOneTransformer)
             {
                 this.mimetypeMap.put(mimetype, thumbnailDefinitionsLimitsForMimetype);

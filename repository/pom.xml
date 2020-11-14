@@ -297,16 +297,6 @@
             <version>1.2.18</version>
         </dependency>
         <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-jodconverter-core</artifactId>
-            <version>3.0.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jmagick</groupId>
-            <artifactId>jmagick</artifactId>
-            <version>6.6.9</version>
-        </dependency>
-        <dependency>
             <groupId>org.htmlparser</groupId>
             <artifactId>htmlparser</artifactId>
             <version>2.1</version>

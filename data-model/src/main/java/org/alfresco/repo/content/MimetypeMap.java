@@ -662,7 +662,6 @@ public class MimetypeMap implements MimetypeService
         boolean successReadingConfig = true;
         if (jsonConfigFileFinder != null)
         {
-            // This should not be "alfresco/mimetype" which is used for the in JVM jodconverter
             successReadingConfig &= jsonConfigFileFinder.readFiles("alfresco/mimetypes", logger);
             if (mimetypeJsonConfigDir != null && !mimetypeJsonConfigDir.isBlank())
             {

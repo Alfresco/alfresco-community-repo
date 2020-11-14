@@ -44,6 +44,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.alfresco.repo.rendition2.TransformDefinition.TRANSFORM_NAMESPACE;
 
 /**
  * A registry of rendition definitions.
@@ -352,7 +355,8 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     @Override
     public Set<String> getRenditionNames()
     {
-        return getData().renditionDefinitions.keySet();
+        // transform definitions are hidden
+        return getData().renditionDefinitions.keySet().stream().filter(name -> !name.startsWith(TRANSFORM_NAMESPACE)).collect(Collectors.toSet());
     }
 
     @Override
@@ -397,15 +401,18 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         for (Map.Entry<String, RenditionDefinition2> entry : data.renditionDefinitions.entrySet())
         {
             RenditionDefinition2 renditionDefinition2 = entry.getValue();
-            String targetMimetype = renditionDefinition2.getTargetMimetype();
             String renditionName = renditionDefinition2.getRenditionName();
-            Map<String, String> options = renditionDefinition2.getTransformOptions();
-            Long maxSize = transformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-            if (maxSize != null)
+            if (!renditionName.startsWith(TRANSFORM_NAMESPACE))
             {
-                String renditionNameMaxSizePair = entry.getKey();
-                Pair<String, Long> pair = new Pair<>(renditionNameMaxSizePair, maxSize);
-                renditions.add(pair);
+                String targetMimetype = renditionDefinition2.getTargetMimetype();
+                Map<String, String> options = renditionDefinition2.getTransformOptions();
+                Long maxSize = transformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+                if (maxSize != null)
+                {
+                    String renditionNameMaxSizePair = entry.getKey();
+                    Pair<String, Long> pair = new Pair<>(renditionNameMaxSizePair, maxSize);
+                    renditions.add(pair);
+                }
             }
         }
         return renditions;

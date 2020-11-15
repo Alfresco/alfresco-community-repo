@@ -876,11 +876,6 @@ public class MimetypeMap implements MimetypeService
      */
     private MediaType detectType(String filename, ContentReader reader)
     {
-//        Metadata metadata = new Metadata();
-//        if (filename != null)
-//        {
-//            metadata.add(Metadata.RESOURCE_NAME_KEY, filename);
-//        }
         TikaInputStream inp = null;
         try
         {

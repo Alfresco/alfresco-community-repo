@@ -1831,6 +1831,19 @@ public class NodesImpl implements Nodes
         {
             versionMajor = Boolean.valueOf(str);
         }
+        String versioningEnabledStringValue = parameters.getParameter("versioningEnabled");
+        if (null != versioningEnabledStringValue)
+        {
+            boolean versioningEnabled = Boolean.parseBoolean(versioningEnabledStringValue);
+            if (versioningEnabled)
+            {
+                versionMajor = (null != versionMajor) ? versionMajor : true;
+            }
+            else
+            {
+                versionMajor = null;
+            }
+        }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
         // Create the node
@@ -2891,6 +2904,7 @@ public class NodesImpl implements Nodes
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
+        boolean versioningEnabled = true;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
@@ -2946,6 +2960,19 @@ public class NodesImpl implements Nodes
 
                 case "renditions":
                     renditionNames = getStringOrNull(field.getValue());
+                    break;
+                case "versioningenabled":
+                    String versioningEnabledStringValue = getStringOrNull(field.getValue());
+                    if (null != versioningEnabledStringValue)
+                    {
+                        // MNT-22036 versioningenabled parameter was added to disable versioning of newly created nodes.
+                        // The default API mechanism should not be changed/affected.
+                        // Versioning is enabled by default when creating a node using form-data.
+                        // To preserve this, versioningEnabled value must be 'true' for any given value typo/valuesNotSupported (except case-insensitive 'false')
+                        // .equalsIgnoreCase("false") will return true only when the input value is 'false'
+                        // !.equalsIgnoreCase("false") will return false only when the input value is 'false'
+                        versioningEnabled = !versioningEnabledStringValue.equalsIgnoreCase("false");
+                    }
                     break;
 
                 default:
@@ -3019,12 +3046,14 @@ public class NodesImpl implements Nodes
                     throw new ConstraintViolatedException(fileName + " already exists.");
                 }
             }
-            
+
             // Note: pending REPO-159, we currently auto-enable versioning on new upload (but not when creating empty file)
             if (versionMajor == null)
             {
                 versionMajor = true;
             }
+            // MNT-22036 add versioningEnabled property for newly created nodes.
+            versionMajor = versioningEnabled ? versionMajor : null;
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);

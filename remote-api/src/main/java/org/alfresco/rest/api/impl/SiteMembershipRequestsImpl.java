@@ -158,9 +158,9 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
     }
 	
 	private SiteMembershipRequest inviteToModeratedSite(final String message, final String inviteeId, final String siteId,
-			final String inviteeRole)
+			final String inviteeRole, final String clientName)
 	{
-		ModeratedInvitation invitation = invitationService.inviteModerated(message, inviteeId, ResourceType.WEB_SITE, siteId, inviteeRole);
+		ModeratedInvitation invitation = invitationService.inviteModerated(message, inviteeId, ResourceType.WEB_SITE, siteId, inviteeRole, clientName);
 
 		SiteMembershipRequest ret = new SiteMembershipRequest();
 		ret.setId(siteId);
@@ -270,7 +270,76 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
 		if(siteVisibility.equals(SiteVisibility.MODERATED))
 		{
-			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole);
+			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, null);
+		}
+		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
+		{
+			request = inviteToPublicSite(siteInfo, message, inviteeId, inviteeRole);
+		}
+		else
+		{
+			// note: security, no indication that this is a private site
+			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+		}
+
+		return request;
+	}
+
+	@Override
+	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client)
+	{
+		SiteMembershipRequest request = null;
+
+		inviteeId = people.validatePerson(inviteeId, true);
+
+		// Note that the order of error checking is important. The server first needs to check for the status 404
+		// conditions before checking for status 400 conditions. Otherwise the server is open to a probing attack.
+		String siteId = siteInvite.getId();
+		final SiteInfo siteInfo = sites.validateSite(siteId);
+		if(siteInfo == null)
+		{
+			// site does not exist
+			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+		}
+		// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+		siteId = siteInfo.getShortName();
+
+		final SiteVisibility siteVisibility = siteInfo.getVisibility();
+
+		if(siteVisibility.equals(SiteVisibility.PRIVATE))
+		{
+			// note: security, no indication that this is a private site
+			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+		}
+
+		// Is the invitee already a member of the site?
+		boolean isMember = siteService.isMember(siteId, inviteeId);
+		if(isMember)
+		{
+			// yes
+			throw new InvalidArgumentException(inviteeId + " is already a member of site " + siteId);
+		}
+
+		// Is there an outstanding site invite request for the (invitee, site)?
+		Invitation invitation = getSiteInvitation(inviteeId, siteId);
+		if(invitation != null)
+		{
+			// yes
+			throw new InvalidArgumentException(inviteeId + " is already invited to site " + siteId);
+		}
+
+		final String inviteeRole = DEFAULT_ROLE;
+		String message = siteInvite.getMessage();
+		if(message == null)
+		{
+			// the invitation service ignores null messages so convert to an empty message.
+			message = "";
+		}
+
+		if(siteVisibility.equals(SiteVisibility.MODERATED))
+		{
+			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client);
+
 		}
 		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
 		{

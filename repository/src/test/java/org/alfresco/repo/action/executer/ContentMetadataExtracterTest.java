@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,12 +43,6 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
@@ -56,6 +50,7 @@ import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -64,13 +59,21 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Test of the ActionExecuter for extracting metadata. Note: This test makes
@@ -88,6 +91,8 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
     private NodeService nodeService;
     private ContentService contentService;
+    private MetadataExtracterRegistry registry;
+    private TransactionService transactionService;
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
@@ -101,7 +106,9 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     {
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
-        
+        registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
+        transactionService = (TransactionService) this.applicationContext.getBean("transactionService");
+
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -130,7 +137,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
      * Test execution of the extraction itself
      */
     @Test
-    public void testFromBlanks()
+    public void testFromBlanks() throws Exception
     {
         // Test that the action writes properties when they don't exist or are
         // unset
@@ -143,15 +150,34 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
                                                         // be handled
         this.nodeService.setProperties(this.nodeRef, props);
 
-        // Execute the action
-        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
+        // Make the nodeRef visible to other transactions as it will need to be in async requests
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
-        this.executer.execute(action, this.nodeRef);
+        // Execute the action
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
+                executer.execute(action, nodeRef);
+                return null;
+            }
+        });
+
+        Thread.sleep(3000); // Need to wait for the async extract
 
         // Check that the properties have been set
-        assertEquals(QUICK_TITLE, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE));
-        assertEquals(QUICK_DESCRIPTION, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION));
-        assertEquals(QUICK_CREATOR, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_AUTHOR));
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertEquals(QUICK_TITLE, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+                assertEquals(QUICK_DESCRIPTION, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+                assertEquals(QUICK_CREATOR, nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR));
+                return null;
+            }
+        });
     }
     
     private static final QName PROP_UNKNOWN_1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "unkown1");
@@ -189,7 +215,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     @Test
     public void testUnknownProperties()
     {
-        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
         TestUnknownMetadataExtracter extracterUnknown = new TestUnknownMetadataExtracter();
         extracterUnknown.setRegistry(registry);
         extracterUnknown.register();
@@ -247,7 +272,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     @Test
     public void testNullExtractedValues_ALF1823()
     {
-        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
         TestNullPropMetadataExtracter extractor = new TestNullPropMetadataExtracter();
         extractor.setRegistry(registry);
         extractor.register();
@@ -293,7 +317,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
      * Test execution of the pragmatic approach
      */
     @Test
-    public void testFromPartial()
+    public void testFromPartial() throws Exception
     {
         // Test that the action does not overwrite properties that are already
         // set
@@ -307,16 +331,34 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         props.remove(ContentModel.PROP_DESCRIPTION); // Allow this baby
         this.nodeService.setProperties(this.nodeRef, props);
 
+        // Make the nodeRef visible to other transactions as it will need to be in async requests
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
         // Execute the action
-        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
+                executer.execute(action, nodeRef);
+                return null;
+            }
+        });
 
-        this.executer.execute(action, this.nodeRef);
+        Thread.sleep(3000); // Need to wait for the async extract
 
-        // Check that the properties have been preserved
-        assertEquals(myTitle, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE));
-        assertEquals(myCreator, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_AUTHOR));
+        // Check that the properties have been preserved, but that description has been set
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertEquals(myTitle, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+                assertEquals(myCreator, nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR));
 
-        // But this one should have been set
-        assertEquals(QUICK_DESCRIPTION, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION));
+                assertEquals(QUICK_DESCRIPTION, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+                return null;
+            }
+        });
     }
 }

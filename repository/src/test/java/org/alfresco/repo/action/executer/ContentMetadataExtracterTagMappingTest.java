@@ -45,7 +45,6 @@ import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
-import org.alfresco.repo.content.metadata.TikaPoweredMetadataExtracter;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -74,8 +73,6 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.jpeg.JpegParser;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -112,6 +109,7 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
     private TaggingService taggingService;
     private NodeService nodeService;
     private ContentService contentService;
+    private MetadataExtracterRegistry metadataExtracterRegistry;
     private AuditService auditService;
     private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
@@ -144,7 +142,8 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
         this.taggingService = (TaggingService)ctx.getBean("TaggingService");
         this.nodeService = (NodeService) ctx.getBean("NodeService");
         this.contentService = (ContentService) ctx.getBean("ContentService");
-        
+        this.metadataExtracterRegistry = (MetadataExtracterRegistry) ctx.getBean("metadataExtracterRegistry");
+
         this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
         this.auditService = (AuditService)ctx.getBean("auditService");
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
@@ -297,7 +296,7 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
         });
     }
 
-    private static class TagMappingMetadataExtracter extends TikaPoweredMetadataExtracter
+    private static class TagMappingMetadataExtracter extends AbstractMappingMetadataExtracter
     {
         
         private String existingTagNodeRef;
@@ -329,16 +328,10 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
             return sourceMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_JPEG);
         }
         
-        @Override
-        protected Parser getParser()
-        {
-            return new JpegParser();
-        }
-        
         @SuppressWarnings("unchecked")
         public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
         {
-            Map<String, Serializable> rawMap = super.extractRaw(reader);
+            Map<String, Serializable> rawMap = newRawMap();
             
             // Add some test keywords to those actually extracted from the file including a nodeRef
             List<String> keywords = new ArrayList<String>(Arrays.asList(

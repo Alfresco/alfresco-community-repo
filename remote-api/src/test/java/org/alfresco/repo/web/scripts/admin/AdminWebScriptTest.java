@@ -349,20 +349,5 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         {
             return null;
         }
-
-        public String getAnalyserResourceBundleName()
-        {
-            return null;
-        }
-
-        public String resolveAnalyserClassName(Locale locale)
-        {
-            return null;
-        }
-
-        public String resolveAnalyserClassName()
-        {
-            return null;
-        }
     }
 }

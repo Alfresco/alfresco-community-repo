@@ -53,6 +53,7 @@ public class SiteMembershipRequest implements Comparable<SiteMembershipRequest>
     private Date modifiedAt;
     private String title; // for sorting only
 	private Person person;
+    private String client;
 
 	public static Pair<String, String> splitId(String id)
 	{
@@ -137,11 +138,21 @@ public class SiteMembershipRequest implements Comparable<SiteMembershipRequest>
         this.person = person;
     }
 
+    public String getClient()
+    {
+        return client;
+    }
+
+    public void setClient(String client)
+    {
+        this.client = client;
+    }
+
 	@Override
 	public String toString()
 	{
 		return "SiteMembershipRequest [id=" + id + ", message=" + message + ", createdAt=" + createdAt
-				+ ", modifiedAt=" + modifiedAt + "]";
+				+ ", modifiedAt=" + modifiedAt + ", client=" + client + "]";
 	}
 
 	@Override

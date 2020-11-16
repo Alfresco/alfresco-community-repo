@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.dictionary;
 
+import org.alfresco.service.cmr.dictionary.CustomModelException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -58,4 +60,12 @@ public interface ModelValidator
      * exist
      */
 	boolean canDeleteModel(QName modelName);
+
+    /**
+     * validate the namespace prefix
+     *
+     * @throws CustomModelException if the prefix already exists in another model
+     */
+	void validateModelNamespacePrefix(NodeRef modelNodeRef);
+
 }

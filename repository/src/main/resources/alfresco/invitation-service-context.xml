@@ -33,6 +33,7 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="messageService" ref="messageService"/>
+         <property name="clientAppConfig" ref="clientAppConfig"/>
      </bean>
      
     <!-- Site service security bean -->
@@ -119,5 +120,7 @@
          <property name="emailTemplatePath">
                  <util:constant static-field="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH"/>
          </property>
+        <property name="clientAppConfig" ref="clientAppConfig"/>
+        <property name="emailHelper" ref="emailHelper"/>
     </bean>    
 </beans>

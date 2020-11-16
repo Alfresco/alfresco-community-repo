@@ -31,9 +31,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
-import org.alfresco.repo.search.adaptor.lucene.LuceneFunction;
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.LuceneFunction;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
@@ -136,54 +136,54 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         this.defaultNamespace = defaultNamespace;
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneEquality(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneEquality(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneExists(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Boolean not) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneExists(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Boolean not) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneGreaterThan(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneGreaterThan(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
+    public  <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
     throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneIn(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneIn(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneInequality(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneInequality(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneLessThan(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneLessThan(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
+    public  <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
     throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> Q buildLuceneLike(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, Boolean not) throws E
+    public  <Q, S, E extends Throwable> Q buildLuceneLike(QueryParserAdaptor<Q, S, E> lqpa, String propertyName, Serializable value, Boolean not) throws E
     {
         throw new UnsupportedOperationException();
     }
 
-    public  <Q, S, E extends Throwable> String getLuceneSortField(LuceneQueryParserAdaptor<Q, S, E> lqpa, String propertyName) throws E
+    public  <Q, S, E extends Throwable> String getLuceneSortField(QueryParserAdaptor<Q, S, E> lqpa, String propertyName) throws E
     {
         // Score is special
         if (propertyName.equalsIgnoreCase("Score"))
@@ -263,12 +263,12 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     }
 
     /**
-     * @param lqpa LuceneQueryParserAdaptor<Q, S, E>
+     * @param lqpa QueryParserAdaptor<Q, S, E>
      * @param field String
      * @return ... extends Throwable
      * @throws E 
      */
-    private  <Q, S, E extends Throwable> String findSortField(LuceneQueryParserAdaptor<Q, S, E> lqpa, String field) throws E
+    private  <Q, S, E extends Throwable> String findSortField(QueryParserAdaptor<Q, S, E> lqpa, String field) throws E
     {
         return lqpa.getSortField(field);
     }

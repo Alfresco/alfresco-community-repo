@@ -253,7 +253,10 @@
    </bean>
 
    <!-- Metadata Extraction Registry -->
-   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
+   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry">
+       <property name="asyncExtractEnabled" value="${content.metadata.async.extract.enabled}" />
+       <property name="asyncEmbedEnabled" value="${content.metadata.async.embed.enabled}" />
+   </bean>
    
    <!-- Abstract bean definition defining base definition for all metadata extracters -->
    <bean id="baseMetadataExtracter"
@@ -286,47 +289,16 @@
 
    <!-- Content Metadata Extractors -->
    <!-- The last one listed for any mimetype will be used if available -->
-   <!-- As such, the Tika auto-detect fallback should be listed first -->
-   <bean id="extracter.TikaAuto"       class="org.alfresco.repo.content.metadata.TikaAutoMetadataExtracter"     parent="baseMetadataExtracter">
-      <constructor-arg><ref bean="tikaConfig"/></constructor-arg>
-   </bean>
-   <bean id="extracter.PDFBox"        class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter"        parent="baseMetadataExtracter">
-      <property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
-      <property name="mimetypeLimits">
-         <map>
-            <entry key="application/pdf">
-               <bean class="org.alfresco.repo.content.metadata.MetadataExtracterLimits">
-                  <property name="timeoutMs" value="${content.metadataExtracter.default.timeoutMs}"/>
-                  <property name="maxDocumentSizeMB" value="${content.metadataExtracter.pdf.maxDocumentSizeMB}"/>
-                  <property name="maxConcurrentExtractionsCount" value="${content.metadataExtracter.pdf.maxConcurrentExtractionsCount}"/>
-               </bean>
-            </entry>
-         </map>
-      </property>
-      <property name="overwritePolicy">
-         <value>${content.metadataExtracter.pdf.overwritePolicy}</value>
-      </property>
-   </bean>
-   <bean id="extracter.Poi"           class="org.alfresco.repo.content.metadata.PoiMetadataExtracter"           parent="baseMetadataExtracter" />
-   <bean id="extracter.Office"        class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter"        parent="baseMetadataExtracter" />
-   <bean id="extracter.Mail"          class="org.alfresco.repo.content.metadata.MailMetadataExtracter"          parent="baseMetadataExtracter" />
-   <bean id="extracter.Html"          class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter"          parent="baseMetadataExtracter" />
-   <bean id="extracter.OpenDocument"  class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter"  parent="baseMetadataExtracter" />
-   <bean id="extracter.DWG"           class="org.alfresco.repo.content.metadata.DWGMetadataExtracter"           parent="baseMetadataExtracter" />
-   <bean id="extracter.RFC822"        class="org.alfresco.repo.content.metadata.RFC822MetadataExtracter"        parent="baseMetadataExtracter" >
-      <property name="supportedDateFormats">
-         <list>
-            <value>EEE, d MMM yyyy HH:mm:ss Z</value>
-            <value>EEE, d MMM yy HH:mm:ss Z</value>
-            <value>d MMM yyyy HH:mm:ss Z</value>
-         </list>
-      </property>
-   </bean>
-   <bean id="extracter.MP3" class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter">
-      <property name="tikaConfig" ref="tikaConfig"/>
-   </bean>
-   <bean id="extracter.Audio" class="org.alfresco.repo.content.metadata.TikaAudioMetadataExtracter" parent="baseMetadataExtracter">
-      <property name="tikaConfig" ref="tikaConfig"/>
+
+   <bean id="extractor.Asynchronous" class="org.alfresco.repo.content.metadata.AsynchronousExtractor" parent="baseMetadataExtracter">
+      <property name="nodeService" ref="nodeService" />
+      <property name="namespacePrefixResolver" ref="namespaceService" />
+      <property name="transformerDebug" ref="transformerDebug" />
+      <property name="renditionService2" ref="renditionService2" />
+      <property name="contentService" ref="ContentService" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+      <property name="taggingService" ref="taggingService" />
    </bean>
 
    <!-- Content Transformation Regisitry -->
@@ -583,7 +555,7 @@
             <ref bean="miscRemoteTransformerClient" />
         </property>
     </bean>
-   
+
    <bean id="transformer.MediaWikiParser"
          class="org.alfresco.repo.content.transform.MediaWikiContentTransformer"
          parent="baseContentTransformer">
@@ -592,31 +564,6 @@
       </property>
       <property name="fileFolderService">
          <ref bean="FileFolderService" />
-      </property>
-   </bean>
-
-   <!-- Import the JodConverter extractor worker from the OOoJodconverter subsystem -->
-   <bean id="extracter.worker.JodConverter"
-         class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="OOoJodconverter" />
-      </property>
-      <property name="sourceBeanName">
-         <value>extracter.worker.JodConverter</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker</value>
-         </list>
-      </property>
-   </bean>
-
-   <!-- Metadata extractors -->
-   <bean id="extracter.JodConverter"
-         class="org.alfresco.repo.content.metadata.JodConverterMetadataExtracter"
-         parent="baseMetadataExtracter">
-      <property name="worker">
-         <ref bean="extracter.worker.JodConverter" />
       </property>
    </bean>
 

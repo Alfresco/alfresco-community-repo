@@ -338,31 +338,6 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getAnalyserResourceBundleName()
-     */
-    @Override
-    public String getAnalyserResourceBundleName()
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#resolveAnalyserClassName(java.lang.String, java.util.Locale, java.lang.ClassLoader)
-     */
-    @Override
-    public String resolveAnalyserClassName(Locale locale)
-    {
-        return null;
-    }
-    
-    @Override
-    public String resolveAnalyserClassName()
-    {
-        return null;
-    }
-
-    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getFacetable()
      */
     @Override

@@ -2348,6 +2348,11 @@ public class NodesImpl implements Nodes
     private void handleNodeRename(Map<QName, Serializable> props, NodeRef nodeRef)
     {
         Serializable nameProp = props.get(ContentModel.PROP_NAME);
+        handleNodeRename(nameProp, nodeRef);
+    }
+
+    private void handleNodeRename(Serializable nameProp, NodeRef nodeRef)
+    {
         if ((nameProp != null))
         {
             String currentName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
@@ -2722,6 +2727,7 @@ public class NodesImpl implements Nodes
         String fileName = parameters.getParameter(PARAM_NAME);
         if (fileName != null)
         {
+            handleNodeRename(fileName, nodeRef);
             // optionally rename, before updating the content
             nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, fileName);
         }

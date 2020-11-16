@@ -50,23 +50,36 @@ import org.alfresco.service.namespace.QName;
 @AlfrescoPublicApi
 public interface SearchService
 {
-    public static final String LANGUAGE_LUCENE = "lucene";
+    String LANGUAGE_LUCENE = "lucene";
 
-    public static final String LANGUAGE_XPATH = "xpath";
+    String LANGUAGE_XPATH = "xpath";
 
-    public static final String LANGUAGE_FTS_ALFRESCO = "fts-alfresco";
-    
-    public static final String LANGUAGE_SOLR_FTS_ALFRESCO = "solr-fts-alfresco";
-    
-    public static final String LANGUAGE_CMIS_STRICT = "cmis-strict";
-    
-    public static final String LANGUAGE_CMIS_ALFRESCO = "cmis-alfresco";
+    String LANGUAGE_FTS_ALFRESCO = "fts-alfresco";
 
-    public static final String LANGUAGE_SOLR_CMIS = "solr-cmis";
+    String LANGUAGE_CMIS_STRICT = "cmis-strict";
 
-    public static final String LANGUAGE_SOLR_ALFRESCO = "solr-alfresco";
-    
-    public static final String LANGUAGE_SOLR_SQL = "solr-sql";
+    String LANGUAGE_CMIS_ALFRESCO = "cmis-alfresco";
+
+    String LANGUAGE_INDEX_CMIS = "index-cmis";
+
+    String LANGUAGE_INDEX_ALFRESCO = "index-alfresco";
+
+    String LANGUAGE_INDEX_SQL = "index-sql";
+
+    String LANGUAGE_INDEX_FTS_ALFRESCO = "index-fts-alfresco";
+
+    // Old language names for solr subsystems retro compatibility
+    @Deprecated
+    String LANGUAGE_SOLR_FTS_ALFRESCO = "solr-fts-alfresco";
+
+    @Deprecated
+    String LANGUAGE_SOLR_CMIS = "solr-cmis";
+
+    @Deprecated
+    String LANGUAGE_SOLR_ALFRESCO = "solr-alfresco";
+
+    @Deprecated
+    String LANGUAGE_SOLR_SQL = "solr-sql";
 
     /**
      * Search against a store. Pulls back all attributes on each node. Does not
@@ -81,7 +94,7 @@ public interface SearchService
      * @return Returns the query results
      */
     @Auditable(parameters = {"store", "language", "query"})
-    public ResultSet query(StoreRef store, String language, String query);
+    ResultSet query(StoreRef store, String language, String query);
 
     /**
      * Search against a store.
@@ -98,8 +111,8 @@ public interface SearchService
      * @return Returns the query results
      */
     @Auditable(parameters = {"store", "language", "query", "queryParameterDefinitions"})
-    public ResultSet query(StoreRef store, String language, String query,
-            QueryParameterDefinition[] queryParameterDefinitions);
+    ResultSet query(StoreRef store, String language, String query,
+                    QueryParameterDefinition[] queryParameterDefinitions);
 
     
     /**
@@ -114,14 +127,14 @@ public interface SearchService
      * @return Returns the query results
      */
     @Auditable(parameters = {"store", "queryId", "queryParameters"})
-    public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters);
+    ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters);
 
     /**
      * Search using the given SearchParameters
      */
 
     @Auditable(parameters = {"searchParameters"})
-    public ResultSet query(SearchParameters searchParameters);
+    ResultSet query(SearchParameters searchParameters);
 
     /**
      * Select nodes using an xpath expression.
@@ -143,8 +156,8 @@ public interface SearchService
             
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"},
             recordable = {true,             true,    true,         false,                     true})
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
+    List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
+                              NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
             throws InvalidNodeRefException, XPathException;
 
     /**
@@ -169,8 +182,8 @@ public interface SearchService
             
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"},
             recordable = {true,             true,    true,         false,                     true,                   true})
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
+    List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
+                              NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
             throws InvalidNodeRefException, XPathException;
 
     /**
@@ -193,9 +206,9 @@ public interface SearchService
             
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"},
             recordable = {true,             true,    true,         false,                     true})
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks) throws InvalidNodeRefException, XPathException;
+    List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
+                                        QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+                                        boolean followAllParentLinks) throws InvalidNodeRefException, XPathException;
 
     /**
      * Select properties using an xpath expression
@@ -219,9 +232,9 @@ public interface SearchService
             
             parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"},
             recordable = {true,             true,     true,        false,                     true,                   true})
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException;
+    List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
+                                        QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+                                        boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException;
 
     /**
      * Search for string pattern in both the node text (if present) and node
@@ -236,7 +249,7 @@ public interface SearchService
      * @return Returns true if the pattern could be found - uses the default OR operator
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "googleLikePattern"})
-    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern)
+    boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern)
             throws InvalidNodeRefException;
     
     /**
@@ -252,7 +265,7 @@ public interface SearchService
      * @return Returns true if the pattern could be found
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "googleLikePattern", "defaultOperator"})
-    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, SearchParameters.Operator defaultOperator)
+    boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, SearchParameters.Operator defaultOperator)
             throws InvalidNodeRefException;
 
     /**
@@ -270,6 +283,6 @@ public interface SearchService
      * @return Returns true if the pattern could be found
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "sqlLikePattern", "includeFTS"})
-    public boolean like(NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS)
+    boolean like(NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS)
             throws InvalidNodeRefException;
 }

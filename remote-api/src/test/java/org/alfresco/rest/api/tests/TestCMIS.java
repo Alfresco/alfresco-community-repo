@@ -1025,87 +1025,6 @@ public class TestCMIS extends EnterpriseTestApi
         }
     }
 
-    /**
-     * Tests CMIS and non-CMIS public api interactions
-     */
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testScenario1() throws Exception
-    {
-        final TestNetwork network1 = getTestFixture().getRandomNetwork();
-        Iterator<String> personIt = network1.getPersonIds().iterator();
-        final String person = personIt.next();
-        assertNotNull(person);
-
-        Sites sitesProxy = publicApiClient.sites();
-        Comments commentsProxy = publicApiClient.comments();
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
-		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
-        
-        ListResponse<MemberOfSite> sites = sitesProxy.getPersonSites(person, null);
-        assertTrue(sites.getList().size() > 0);
-        MemberOfSite siteMember = sites.getList().get(0);
-        String siteId = siteMember.getSite().getSiteId();
-
-        Folder documentLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteId + "/documentLibrary");
-        
-        System.out.println("documentLibrary id = " + documentLibrary.getId());
-
-        Map<String, String> fileProps = new HashMap<String, String>();
-        {
-            fileProps.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
-            fileProps.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
-        }
-        ContentStreamImpl fileContent = new ContentStreamImpl();
-        {
-            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
-            writer.putContent("Ipsum and so on");
-            ContentReader reader = writer.getReader();
-            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-            fileContent.setStream(reader.getContentInputStream());
-        }
-        Document doc = documentLibrary.createDocument(fileProps, fileContent, VersioningState.MAJOR);
-
-        System.out.println("Document id = " + doc.getId());
-
-        Comment c = commentsProxy.createNodeComment(doc.getId(), new Comment("comment title 1", "comment 1"));
-        
-        System.out.println("Comment = " + c);
-        
-        // Now lock the document
-        String nodeRefStr = (String) doc.getPropertyValue("alfcmis:nodeRef");
-        final NodeRef nodeRef = new NodeRef(nodeRefStr);
-        final TenantRunAsWork<Void> runAsWork = new TenantRunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                lockService.lock(nodeRef, LockType.WRITE_LOCK);
-                return null;
-            }
-        };
-        RetryingTransactionCallback<Void> txnWork = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                TenantUtil.runAsUserTenant(runAsWork, "bob", network1.getId());
-                return null;
-            }
-        };
-        transactionHelper.doInTransaction(txnWork);
-        
-        // Now attempt to update the document's metadata
-        try
-        {
-            doc.delete();
-        }
-        catch (CmisUpdateConflictException e)
-        {
-            // Expected: ACE-762 BM-0012: NodeLockedException not handled by CMIS 
-        }
-    }
-
     //@Test
     public void testInvalidMethods() throws Exception
     {
@@ -1275,7 +1194,7 @@ public class TestCMIS extends EnterpriseTestApi
                 return null;
             }
         }, personId);
-        
+
         NodeRef folderNodeRef = folders.get(0);
         NodeRef docNodeRef = documents.get(0);
 
@@ -1789,6 +1708,9 @@ public class TestCMIS extends EnterpriseTestApi
         }
 
         Document autoVersionedDoc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(5000);
+
         String objectId = autoVersionedDoc.getId();
         String bareObjectId = stripCMISSuffix(objectId);
         // create versions
@@ -1807,6 +1729,8 @@ public class TestCMIS extends EnterpriseTestApi
                 contentStream.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 contentStream.setStream(reader.getContentInputStream());
             }
+            // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+            Thread.sleep(5000);
             pwc.checkIn(true, Collections.EMPTY_MAP, contentStream, "checkin " + i);
         }
         
@@ -2506,6 +2430,8 @@ public class TestCMIS extends EnterpriseTestApi
 
         /* Create document */
         Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
         
         /* Checkout document */
         ObjectId pwcId = doc.checkOut();
@@ -2867,6 +2793,7 @@ public class TestCMIS extends EnterpriseTestApi
         fileContent.setStream(stream);
 
         Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        Thread.sleep(5000);
 
         ObjectId pwcId = doc.checkOut();
         Document pwc = (Document) cmisSession.getObject(pwcId.getId());
@@ -3272,6 +3199,8 @@ public class TestCMIS extends EnterpriseTestApi
                 "This is just a test");
 
         final Document document = folder.createDocument(props, cs, VersioningState.MAJOR);
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
 
         ObjectId pwcObjectId = document.checkOut();
 

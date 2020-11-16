@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -76,6 +77,7 @@ public class NodeResourceHelper implements InitializingBean
     protected PersonService       personService;
     protected EventFilterRegistry eventFilterRegistry;
     protected NamespaceService    namespaceService;
+    protected PermissionService   permissionService;
 
     private NodeAspectFilter   nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
@@ -88,6 +90,7 @@ public class NodeResourceHelper implements InitializingBean
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "eventFilterRegistry", eventFilterRegistry);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "permissionService", permissionService);
 
         this.nodeAspectFilter = eventFilterRegistry.getNodeAspectFilter();
         this.nodePropertyFilter = eventFilterRegistry.getNodePropertyFilter();
@@ -108,6 +111,11 @@ public class NodeResourceHelper implements InitializingBean
         this.personService = personService;
     }
 
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
     // To make IntelliJ stop complaining about unused method!
     @SuppressWarnings("unused")
     public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry)
@@ -171,18 +179,15 @@ public class NodeResourceHelper implements InitializingBean
         Map<String, Serializable> filteredProps = new HashMap<>(props.size());
 
         props.forEach((k, v) -> {
-            if (!nodePropertyFilter.isExcluded(k) && v != null)
+            if (!nodePropertyFilter.isExcluded(k))
             {
-                if (v instanceof MLText)
+                if (v != null && v instanceof MLText)
                 {
                     //TODO - should we send all of the values if multiple locales exist?
                     v = ((MLText) v).getDefaultValue();
                 }
 
-                if (isNotEmptyString(v))
-                {
-                    filteredProps.put(getQNamePrefixString(k), v);
-                }
+                filteredProps.put(getQNamePrefixString(k), v);
             }
         });
 
@@ -318,5 +323,10 @@ public class NodeResourceHelper implements InitializingBean
     {
         final Path path = nodeService.getPath(nodeRef);
         return PathUtil.getNodeIdsInReverse(path, showLeaf);
+    }
+
+    public PermissionService getPermissionService()
+    {
+        return permissionService;
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +68,7 @@ import org.junit.Test;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * 
+ *
  * @author sglover
  *
  */
@@ -80,6 +79,7 @@ public class DictionaryDAOTest
     private static final String TEST_URL = "http://www.alfresco.org/test/dictionarydaotest/1.0";
     private static final String TEST2_URL = "http://www.alfresco.org/test/dictionarydaotest2/1.0";
     private static final String TEST_MODEL = "org/alfresco/repo/dictionary/dictionarydaotest_model.xml";
+    private static final String TEST_MODEL_NEW_FORMAT = "org/alfresco/repo/dictionary/dictionarydaotest_model_new_format.xml";
     private static final String TEST_NS_CLASH_MODEL = "org/alfresco/repo/dictionary/nstest_model.xml";
     private static final String TEST_BUNDLE = "org/alfresco/repo/dictionary/dictionarydaotest_model";
     private static final String TEST_COMMON_NS_PARENT_MODEL = "org/alfresco/repo/dictionary/commonpropertynsparent_model.xml";
@@ -90,7 +90,7 @@ public class DictionaryDAOTest
 
     @Before
     public void setUp() throws Exception
-    {   
+    {
         // register resource bundles for messages
         I18NUtil.registerResourceBundle(TEST_RESOURCE_MESSAGES);
 
@@ -119,7 +119,7 @@ public class DictionaryDAOTest
         component.setMessageLookup(new StaticMessageLookup());
         service = component;
     }
-    
+
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService)
     {
         CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
@@ -140,17 +140,17 @@ public class DictionaryDAOTest
     @Test
     public void testBootstrap()
     {
-        TenantService tenantService = new SingleTServiceImpl();   
+        TenantService tenantService = new SingleTServiceImpl();
 
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO, tenantService);
-        
+
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
-        
+
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
-        
+
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
@@ -168,12 +168,43 @@ public class DictionaryDAOTest
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO, tenantService);
-        
+
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
-        
+
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
         bootstrapModels.add(TEST_MODEL);
+        bootstrapModels.add(TEST_NS_CLASH_MODEL);
+
+        bootstrap.setModels(bootstrapModels);
+        bootstrap.setDictionaryDAO(dictionaryDAO);
+        bootstrap.setTenantService(tenantService);
+
+        try
+        {
+            bootstrap.bootstrap();
+            fail("Expected "+NamespaceException.class.getName()+" to be thrown, but it was not.");
+        }
+        catch (NamespaceException e)
+        {
+            System.out.println(e.getMessage());
+            // Good!
+        }
+    }
+    @Test
+    public void testNamespaceClashResultsInSensibleErrorWithNewFormat()
+    {
+        TenantService tenantService = new SingleTServiceImpl();
+
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
+        dictionaryDAO.setTenantService(tenantService);
+        initDictionaryCaches(dictionaryDAO, tenantService);
+
+        DictionaryBootstrap bootstrap = new DictionaryBootstrap();
+        List<String> bootstrapModels = new ArrayList<String>();
+
+        bootstrapModels.add("alfresco/model/dictionaryModel_new_format.xml");
+        bootstrapModels.add(TEST_MODEL_NEW_FORMAT);
         bootstrapModels.add(TEST_NS_CLASH_MODEL);
 
         bootstrap.setModels(bootstrapModels);
@@ -200,14 +231,36 @@ public class DictionaryDAOTest
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO, tenantService);
-        
+
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
-        
+
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
         bootstrapModels.add(TEST_COMMON_NS_PARENT_MODEL);
         bootstrapModels.add(TEST_COMMON_NS_CHILD_MODEL);
-        
+
+        bootstrap.setModels(bootstrapModels);
+        bootstrap.setDictionaryDAO(dictionaryDAO);
+        bootstrap.setTenantService(tenantService);
+        bootstrap.bootstrap();
+    }
+
+    @Test
+    public void testUseImportedNamespacesWithNewFormat()
+    {
+        TenantService tenantService = new SingleTServiceImpl();
+
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
+        dictionaryDAO.setTenantService(tenantService);
+        initDictionaryCaches(dictionaryDAO, tenantService);
+
+        DictionaryBootstrap bootstrap = new DictionaryBootstrap();
+        List<String> bootstrapModels = new ArrayList<String>();
+
+        bootstrapModels.add("alfresco/model/dictionaryModel_new_format.xml");
+        bootstrapModels.add(TEST_COMMON_NS_PARENT_MODEL);
+        bootstrapModels.add(TEST_COMMON_NS_CHILD_MODEL);
+
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
@@ -220,32 +273,31 @@ public class DictionaryDAOTest
         QName model = QName.createQName(TEST_URL, "dictionarydaotest");
         ModelDefinition modelDef = service.getModel(model);
         assertEquals("Model Description", modelDef.getDescription(service));
-        
+
         QName type = QName.createQName(TEST_URL, "base");
         TypeDefinition typeDef = service.getType(type);
         assertEquals("Base Title", typeDef.getTitle(service));
         assertEquals("Base Description", typeDef.getDescription(service));
-        
+
         QName prop = QName.createQName(TEST_URL, "prop1");
         PropertyDefinition propDef = service.getProperty(prop);
         assertEquals("Prop1 Title", propDef.getTitle(service));
         assertEquals("Prop1 Description", propDef.getDescription(service));
-        
+
         QName assoc = QName.createQName(TEST_URL, "assoc1");
         AssociationDefinition assocDef = service.getAssociation(assoc);
         assertEquals("Assoc1 Title", assocDef.getTitle(service));
         assertEquals("Assoc1 Description", assocDef.getDescription(service));
-        
+
         QName datatype = QName.createQName(TEST_URL, "datatype");
         DataTypeDefinition datatypeDef = service.getDataType(datatype);
-        assertEquals("alfresco/model/dataTypeAnalyzers", datatypeDef.getAnalyserResourceBundleName());
-        
+
         QName constraint = QName.createQName(TEST_URL, "list1");
         ConstraintDefinition constraintDef = service.getConstraint(constraint);
         assertEquals("List1 title", constraintDef.getTitle(service));
         assertEquals("List1 description", constraintDef.getDescription(service));
-        
-        
+
+
         // Localisation of List Of Values Constraint.
         // 1. LoV defined at the top of the model.
         ListOfValuesConstraint lovConstraint = (ListOfValuesConstraint)constraintDef.getConstraint();
@@ -254,7 +306,7 @@ public class DictionaryDAOTest
         assertEquals("Wrong localised lov value.", "VALUE WITH SPACES display", lovConstraint.getDisplayLabel("VALUE WITH SPACES", service)); // Keys with spaces.
         assertEquals("Wrong localised lov value.", "VALUE WITH TRAILING SPACE display", lovConstraint.getDisplayLabel("VALUE WITH TRAILING SPACE ", service)); // Keys with trailing space.
         assertNull(lovConstraint.getDisplayLabel("nosuchLOV", service));
-        
+
         // 2. A named LoV defined within a specific property "non-Ref".
         QName constrainedPropName = QName.createQName(TEST_URL, "constrainedProp");
         PropertyDefinition constrainedPropDef = service.getProperty(constrainedPropName);
@@ -267,23 +319,23 @@ public class DictionaryDAOTest
         assertEquals("Wrong localised lov value.", "GAMMA, DELTA display", lovConstraint.getDisplayLabel("GAMMA, DELTA", service)); // Keys with commas
         assertEquals("Wrong localised lov value.", "OMEGA", lovConstraint.getDisplayLabel("OMEGA", service));
         assertNull(lovConstraint.getDisplayLabel("nosuchLOV", service));
-        
+
         // Localisation of unnamed LoV defined within a specific property are not supported.
     }
 
     @Test
     public void testConstraints()
-    {   
+    {
         QName model = QName.createQName(TEST_URL, "dictionarydaotest");
         Collection<ConstraintDefinition> modelConstraints = service.getConstraints(model);
         assertEquals(23, modelConstraints.size()); // 10 + 7 + 6
-        
+
         QName conRegExp1QName = QName.createQName(TEST_URL, "regex1");
         boolean found1 = false;
-        
+
         QName conStrLen1QName = QName.createQName(TEST_URL, "stringLength1");
         boolean found2 = false;
-        
+
         for (ConstraintDefinition constraintDef : modelConstraints)
         {
             if (constraintDef.getName().equals(conRegExp1QName))
@@ -292,7 +344,7 @@ public class DictionaryDAOTest
                 assertEquals("Regex1 description", constraintDef.getDescription(service));
                 found1 = true;
             }
-            
+
             if (constraintDef.getName().equals(conStrLen1QName))
             {
                 assertNull(constraintDef.getTitle(service));
@@ -302,12 +354,12 @@ public class DictionaryDAOTest
         }
         assertTrue(found1);
         assertTrue(found2);
-        
+
         // get the constraints for a property without constraints
         QName propNoConstraintsQName = QName.createQName(TEST_URL, "fileprop");
         PropertyDefinition propNoConstraintsDef = service.getProperty(propNoConstraintsQName);
         assertNotNull("Property without constraints returned null list", propNoConstraintsDef.getConstraints());
-        
+
         // get the constraints defined for the property
         QName prop1QName = QName.createQName(TEST_URL, "prop1");
         PropertyDefinition propDef = service.getProperty(prop1QName);
@@ -317,21 +369,21 @@ public class DictionaryDAOTest
         assertTrue("Constraint instance incorrect", constraints.get(0).getConstraint() instanceof RegexConstraint);
         assertTrue("Constraint instance incorrect", constraints.get(1).getConstraint() instanceof StringLengthConstraint);
         assertTrue("Constraint instance incorrect", constraints.get(2).getConstraint() instanceof RegisteredConstraint);
-        
+
         // check the individual constraints
         ConstraintDefinition constraintDef = constraints.get(0);
         assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().equals("dictionarydaotest_base_prop1_anon_0"));
-        
+
         // inherit title / description for reference constraint
         assertTrue("Constraint title incorrect", constraintDef.getTitle(service).equals("Regex1 title"));
         assertTrue("Constraint description incorrect", constraintDef.getDescription(service).equals("Regex1 description"));
-        
+
         constraintDef = constraints.get(1);
         assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().equals("dictionarydaotest_base_prop1_anon_1"));
-        
+
         assertTrue("Constraint title incorrect", constraintDef.getTitle(service).equals("Prop1 Strlen1 title"));
         assertTrue("Constraint description incorrect", constraintDef.getDescription(service).equals("Prop1 Strlen1 description"));
-        
+
         // check that the constraint implementation is valid (it used a reference)
         Constraint constraint = constraintDef.getConstraint();
         assertNotNull("Reference constraint has no implementation", constraint);
@@ -406,7 +458,7 @@ public class DictionaryDAOTest
         allowedValues = constraint.getAllowedValues();
         assertEquals("Expected 1 allowed values", 1, allowedValues.size());
         assertEquals("HIJ", allowedValues.get(0));
-        
+
         // check the inherited property on second derived aspect
         propDef = service.getProperty(aspectTwoQName, propQName);
         assertNotNull(propDef);
@@ -425,7 +477,7 @@ public class DictionaryDAOTest
         allowedValues = constraint.getAllowedValues();
         assertEquals("Wrong number of allowed values", 1, allowedValues.size());
         assertEquals("HIJ", allowedValues.get(0));
-        
+
         // check the cross-namespace inheritance
         propDef = service.getProperty(aspectThreeQName, propQName);
         assertNotNull(propDef);
@@ -466,7 +518,7 @@ public class DictionaryDAOTest
         QName testEnforcedQName = QName.createQName(TEST_URL, "enforced");
         ClassDefinition testEnforcedClassDef = service.getClass(testEnforcedQName);
         Map<QName, PropertyDefinition> testEnforcedPropertyDefs = testEnforcedClassDef.getProperties();
-        
+
         PropertyDefinition propertyDef = null;
 
         QName testMandatoryEnforcedQName = QName.createQName(TEST_URL, "mandatory-enforced");
@@ -508,12 +560,12 @@ public class DictionaryDAOTest
 
         // Test invalid args
         boolean testI1 = service.isSubClass(invalid, referenceable);
-        
+
         assertFalse(testI1);
-        
+
         boolean testI2 = service.isSubClass(referenceable, invalid);
         assertFalse(testI2);
-        
+
         boolean testI3 = service.isSubClass(invalid, invalid);
         assertFalse(testI3);
 
@@ -529,7 +581,7 @@ public class DictionaryDAOTest
         boolean test5 = service.isSubClass(base, folder);  // reversed test
         assertFalse(test5);
     }
-    
+
     @Test
     public void testPropertyOverride()
     {
@@ -538,7 +590,7 @@ public class DictionaryDAOTest
         PropertyDefinition prop1 = props1.get(QName.createQName(TEST_URL, "propoverride"));
         String def1 = prop1.getDefaultValue();
         assertEquals("one", def1);
-        
+
         TypeDefinition type2 = service.getType(QName.createQName(TEST_URL, "overridetype2"));
         Map<QName, PropertyDefinition> props2 = type2.getProperties();
         PropertyDefinition prop2 = props2.get(QName.createQName(TEST_URL, "propoverride"));
@@ -568,541 +620,6 @@ public class DictionaryDAOTest
         assertTrue("Expected a child association", assocDef instanceof ChildAssociationDefinition);
         childAssocDef = (ChildAssociationDefinition) assocDef;
         assertTrue("Expected 'true' for timestamp propagation", childAssocDef.getPropagateTimestamps());
-    }
-    
-    @Test
-    public void testDataTypeAnlyserResolution()
-    {
-        // Stuff to configure/
-        
-        TenantService tenantService = new SingleTServiceImpl();
-        
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
-        dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO, tenantService);
-      
-        ModelDefinition modelDefinition;
-        DataTypeDefinition dataTypeDefinition;
-        
-        //
-        
-        dictionaryDAO.putModel(createModel(dictionaryDAO, false, false, false));
-        QName modeQName = QName.createQName("test:analyzerModel", dictionaryDAO);
-        QName dataTypeQName =  QName.createQName("test:analyzerDataType", dictionaryDAO);
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), null);
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), null);
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), null);
-        
-        assertNull(dataTypeDefinition.resolveAnalyserClassName());
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        //
-        
-        dictionaryDAO.putModel(createModel(dictionaryDAO, false, false, true));
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), null);
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), null);
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), "java.lang.String");
-        
-        assertEquals(dataTypeDefinition.resolveAnalyserClassName(), "java.lang.String");
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        //
-         
-        dictionaryDAO.putModel(createModel(dictionaryDAO, false, true, false));
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), null);
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), "dataTypeResourceBundle");
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), null);
-        
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        //
-        
-        dictionaryDAO.putModel(createModel(dictionaryDAO, false, true, true));
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), null);
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), "dataTypeResourceBundle");
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), "java.lang.String");
-        
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        dictionaryDAO.putModel(createModel(dictionaryDAO, true, false, false));
-     
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "dataTypeModelResourceBundle");
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), null);
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), null);
-        
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeModelResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        //
-        
-        dictionaryDAO.putModel(createModel(dictionaryDAO, true, false, true));
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "dataTypeModelResourceBundle");
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), null);
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), "java.lang.String");
-        
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeModelResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        //
-         
-        dictionaryDAO.putModel(createModel(dictionaryDAO, true, true, false));
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "dataTypeModelResourceBundle");
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), "dataTypeResourceBundle");
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), null);
-        
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-        
-        //
-        
-        dictionaryDAO.putModel(createModel(dictionaryDAO, true, true, true));
-        
-        modelDefinition = dictionaryDAO.getModel(modeQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "dataTypeModelResourceBundle");
-        dataTypeDefinition = dictionaryDAO.getDataType(dataTypeQName);
-        assertEquals(dataTypeDefinition.getAnalyserResourceBundleName(), "dataTypeResourceBundle");
-        assertEquals(dataTypeDefinition.getDefaultAnalyserClassName(), "java.lang.String");
-        
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            dataTypeDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modeQName);
-    }
-
-    private M2Model createModel(DictionaryDAO dictionaryDAO, boolean withModelBundle, boolean withDataTypeBundle, boolean withTypeAnalyserClss)
-    {
-        String testNamespace = "http://www.alfresco.org/test/analyserResolution";
-        M2Model model = M2Model.createModel("test:analyzerModel");
-        model.createNamespace(testNamespace, "test");
-        if(withModelBundle)
-        {
-            model.setAnalyserResourceBundleName("dataTypeModelResourceBundle");
-        }
-        
-        M2DataType dataTypeWithAnalyserBundleName = model.createPropertyType("test:analyzerDataType");
-        dataTypeWithAnalyserBundleName.setJavaClassName("java.lang.String");
-        if(withTypeAnalyserClss)
-        {
-            dataTypeWithAnalyserBundleName.setDefaultAnalyserClassName("java.lang.String");
-        }
-        if(withDataTypeBundle)
-        {
-            dataTypeWithAnalyserBundleName.setAnalyserResourceBundleName("dataTypeResourceBundle");
-        }
-        return model;
-    }
-    
-    @Test
-    public void testTypeAnalyserResolution()
-    {
-        // Stuff to configure/
-        
-        TenantService tenantService = new SingleTServiceImpl();
-        
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
-        dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO, tenantService);
-        
-        // build data model - typical settings
-        dictionaryDAO.putModel(createModel(dictionaryDAO, true, false, true));
-        
-        // check simple stack - all defined keep removing the end
-      
-        ModelDefinition modelDefinition;
-        ClassDefinition superDefinition;
-        ClassDefinition classDefinition;
-        PropertyDefinition propertyDefinition;
-        
-        dictionaryDAO.putModel(createTypeModel(dictionaryDAO, true, true, true, true));
-        
-        QName modelQName = QName.createQName("test2:analyzerClassModel", dictionaryDAO);
-        QName superQName = QName.createQName("test2:analyzerSuperType", dictionaryDAO);
-        QName typeQName = QName.createQName("test2:analyzerType", dictionaryDAO);
-        QName propertyQName = QName.createQName("test2:analyzerProperty", dictionaryDAO);
-        
-        modelDefinition = dictionaryDAO.getModel(modelQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "typeModelResourceBundle");
-        superDefinition = dictionaryDAO.getType(superQName);
-        assertEquals(superDefinition.getAnalyserResourceBundleName(), "superTypeResourceBundle");
-        classDefinition = dictionaryDAO.getType(typeQName);
-        assertEquals(classDefinition.getAnalyserResourceBundleName(), "typeResourceBundle");
-        propertyDefinition = dictionaryDAO.getProperty(propertyQName);
-        assertEquals(propertyDefinition.getAnalyserResourceBundleName(), "propertyResourceBundle");
-        
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("propertyResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("propertyResourceBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modelQName);
-        
-        //
-        
-        dictionaryDAO.putModel(createTypeModel(dictionaryDAO, true, true, true, false));
-     
-        modelDefinition = dictionaryDAO.getModel(modelQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "typeModelResourceBundle");
-        superDefinition = dictionaryDAO.getType(superQName);
-        assertEquals(superDefinition.getAnalyserResourceBundleName(), "superTypeResourceBundle");
-        classDefinition = dictionaryDAO.getType(typeQName);
-        assertEquals(classDefinition.getAnalyserResourceBundleName(), "typeResourceBundle");
-        propertyDefinition = dictionaryDAO.getProperty(propertyQName);
-        assertEquals(propertyDefinition.getAnalyserResourceBundleName(), null);
-        
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("typeResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("typeResourceBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modelQName);
-        
-//
-        
-        dictionaryDAO.putModel(createTypeModel(dictionaryDAO, true, true, false, false));
-     
-        modelDefinition = dictionaryDAO.getModel(modelQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "typeModelResourceBundle");
-        superDefinition = dictionaryDAO.getType(superQName);
-        assertEquals(superDefinition.getAnalyserResourceBundleName(), "superTypeResourceBundle");
-        classDefinition = dictionaryDAO.getType(typeQName);
-        assertEquals(classDefinition.getAnalyserResourceBundleName(), null);
-        propertyDefinition = dictionaryDAO.getProperty(propertyQName);
-        assertEquals(propertyDefinition.getAnalyserResourceBundleName(), null);
-        
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("superTypeResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("superTypeResourceBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modelQName);
-        
-//
-        
-        dictionaryDAO.putModel(createTypeModel(dictionaryDAO, true, false, false, false));
-     
-        modelDefinition = dictionaryDAO.getModel(modelQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), "typeModelResourceBundle");
-        superDefinition = dictionaryDAO.getType(superQName);
-        assertEquals(superDefinition.getAnalyserResourceBundleName(), null);
-        classDefinition = dictionaryDAO.getType(typeQName);
-        assertEquals(classDefinition.getAnalyserResourceBundleName(), null);
-        propertyDefinition = dictionaryDAO.getProperty(propertyQName);
-        assertEquals(propertyDefinition.getAnalyserResourceBundleName(), null);
-        
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("typeModelResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("typeModelResourceBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modelQName);
-        
-//
-        
-        dictionaryDAO.putModel(createTypeModel(dictionaryDAO, false, false, false, false));
-     
-        modelDefinition = dictionaryDAO.getModel(modelQName);
-        assertEquals(modelDefinition.getAnalyserResourceBundleName(), null);
-        superDefinition = dictionaryDAO.getType(superQName);
-        assertEquals(superDefinition.getAnalyserResourceBundleName(), null);
-        classDefinition = dictionaryDAO.getType(typeQName);
-        assertEquals(classDefinition.getAnalyserResourceBundleName(), null);
-        propertyDefinition = dictionaryDAO.getProperty(propertyQName);
-        assertEquals(propertyDefinition.getAnalyserResourceBundleName(), null);
-        
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("dataTypeModelResourceBundle"));
-        }
-        dictionaryDAO.setDefaultAnalyserResourceBundleName("defaultBundle");
-        try
-        {
-            propertyDefinition.resolveAnalyserClassName();
-            fail();
-        }
-        catch(MissingResourceException mre)
-        {
-            assertTrue(mre.getMessage().contains("defaultBundle"));
-        }
-        
-        dictionaryDAO.setDefaultAnalyserResourceBundleName(null);
-        dictionaryDAO.removeModel(modelQName);
-        
-        
-    }
-
-    /**
-     * @param dictionaryDAO DictionaryDAOImpl
-     * @param withModelBundle boolean
-     * @param withInheritedTypeBundle boolean
-     * @param withTypeBundle boolean
-     * @param withPropertyBundle boolean
-     * @return M2Model
-     */
-    private M2Model createTypeModel(DictionaryDAOImpl dictionaryDAO, boolean withModelBundle, boolean withInheritedTypeBundle, boolean withTypeBundle, boolean withPropertyBundle)
-    {
-        String testNamespace = "http://www.alfresco.org/test/analyserResolutionType";
-        M2Model model = M2Model.createModel("test2:analyzerClassModel");
-        model.createNamespace(testNamespace, "test2");
-        model.createImport("http://www.alfresco.org/test/analyserResolution", "test");
-        if(withModelBundle)
-        {
-            model.setAnalyserResourceBundleName("typeModelResourceBundle");
-        }
-        
-        M2Type superTypeWithAnalyserBundleName = model.createType("test2:analyzerSuperType");
-        if(withInheritedTypeBundle)
-        {
-            superTypeWithAnalyserBundleName.setAnalyserResourceBundleName("superTypeResourceBundle");
-        }
-        
-        M2Type typeWithAnalyserBundleName = model.createType("test2:analyzerType");
-        typeWithAnalyserBundleName.setParentName("test2:analyzerSuperType");
-        if(withTypeBundle)
-        {
-            typeWithAnalyserBundleName.setAnalyserResourceBundleName("typeResourceBundle");
-        }
-        
-        M2Property propertyWithAnalyserBundelName = typeWithAnalyserBundleName.createProperty("test2:analyzerProperty");
-        propertyWithAnalyserBundelName.setType("test:analyzerDataType");
-        if(withPropertyBundle)
-        {
-            propertyWithAnalyserBundelName.setAnalyserResourceBundleName("propertyResourceBundle");
-        }
-        return model;
     }
 
     //testing a model containing circular dependency cannot be imported with bootstrap
@@ -1147,7 +664,6 @@ public class DictionaryDAOTest
         String testNamespace = "http://www.alfresco.org/model/dictionary/1.0/my";
         M2Model model = M2Model.createModel("my:circularModel");
         model.createNamespace(testNamespace, "my");
-        model.setAnalyserResourceBundleName("typeModelResourceBundle");
         M2Type typeA = model.createType("my:circularA");
         typeA.setParentName("my:circularC");
         M2Type typeB = model.createType("my:circularB");

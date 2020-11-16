@@ -33,10 +33,9 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.search.adaptor.lucene.LuceneFunction;
+import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

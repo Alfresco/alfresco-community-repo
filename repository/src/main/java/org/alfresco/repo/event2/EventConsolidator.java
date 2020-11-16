@@ -58,7 +58,7 @@ import org.alfresco.service.namespace.QName;
 public class EventConsolidator implements EventSupportedPolicies
 {
     private final NodeResourceHelper helper;
-    private final Deque<EventType> eventTypes;
+    protected final Deque<EventType> eventTypes;
     private final List<QName> aspectsAdded;
     private final List<QName> aspectsRemoved;
 
@@ -125,7 +125,7 @@ public class EventConsolidator implements EventSupportedPolicies
      * @param forceUpdate if {@code true}, will get the latest node info and ignores
      *                    the existing builder object.
      */
-    private void createBuilderIfAbsent(NodeRef nodeRef, boolean forceUpdate)
+    protected void createBuilderIfAbsent(NodeRef nodeRef, boolean forceUpdate)
     {
         if (resourceBuilder == null || forceUpdate)
         {
@@ -140,7 +140,7 @@ public class EventConsolidator implements EventSupportedPolicies
      *
      * @param nodeRef the nodeRef in the txn
      */
-    private void createBuilderIfAbsent(NodeRef nodeRef)
+    protected void createBuilderIfAbsent(NodeRef nodeRef)
     {
         createBuilderIfAbsent(nodeRef, false);
     }
@@ -292,6 +292,7 @@ public class EventConsolidator implements EventSupportedPolicies
 
         Builder builder = NodeResource.builder();
 
+        ZonedDateTime modifiedAt = null;
         Map<QName, Serializable> changedPropsBefore = getBeforeMapChanges(propertiesBefore, propertiesAfter);
         if (!changedPropsBefore.isEmpty())
         {
@@ -321,13 +322,16 @@ public class EventConsolidator implements EventSupportedPolicies
                 builder.setModifiedByUser(modifier);
                 resourceBeforeAllFieldsNull = false;
             }
-            ZonedDateTime modifiedAt =
+            modifiedAt =
                         helper.getZonedDateTime((Date) changedPropsBefore.get(ContentModel.PROP_MODIFIED));
-            if (modifiedAt != null)
-            {
-                builder.setModifiedAt(modifiedAt);
-                resourceBeforeAllFieldsNull = false;
-            }
+        }
+
+        // Handle case where the content does not exist on the propertiesBefore
+        if (propertiesBefore != null && !propertiesBefore.containsKey(ContentModel.PROP_CONTENT) &&
+                propertiesAfter != null && propertiesAfter.containsKey(ContentModel.PROP_CONTENT))
+        {
+            builder.setContent(new ContentInfo());
+            resourceBeforeAllFieldsNull = false;
         }
 
         Set<String> aspectsBefore = getMappedAspectsBefore(after.getAspectNames());
@@ -347,6 +351,12 @@ public class EventConsolidator implements EventSupportedPolicies
         {
             builder.setNodeType(helper.getQNamePrefixString(nodeTypeBefore));
             resourceBeforeAllFieldsNull = false;
+        }
+
+        // Only set modifiedAt if one of the other fields is also not null
+        if (modifiedAt != null && !resourceBeforeAllFieldsNull)
+        {
+            builder.setModifiedAt(modifiedAt);
         }
 
         return builder.build();
@@ -406,6 +416,16 @@ public class EventConsolidator implements EventSupportedPolicies
         // Get before values that changed
         Map<K, V> beforeDelta = new HashMap<>(before);
         beforeDelta.entrySet().removeAll(after.entrySet());
+
+        // Add nulls for before properties
+        Set<K> beforeKeys = before.keySet();
+        Set<K> newKeys = after.keySet();
+        newKeys.removeAll(beforeKeys);
+
+        for (K key : newKeys)
+        {
+            beforeDelta.put(key, null);
+        }
 
         return beforeDelta;
     }
@@ -471,4 +491,9 @@ public class EventConsolidator implements EventSupportedPolicies
     {
         return resourceBeforeAllFieldsNull;
     }
+    
+    protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull){
+        this.resourceBeforeAllFieldsNull = resourceBeforeAllFieldsNull;
+    }
+
 }

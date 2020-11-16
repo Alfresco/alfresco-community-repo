@@ -52,12 +52,9 @@ import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.index.shard.Floc;
 import org.alfresco.repo.index.shard.ShardRegistry;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.impl.QueryParserUtils;
-import org.alfresco.repo.search.impl.lucene.JSONResult;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
-import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
-import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
-import org.alfresco.repo.search.impl.lucene.SolrStatsResult;
+import org.alfresco.repo.search.impl.JSONResult;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -318,19 +315,19 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new LuceneQueryParserException("stats", e);
+            throw new QueryParserException("stats", e);
         }
         catch (HttpException e)
         {
-            throw new LuceneQueryParserException("stats", e);
+            throw new QueryParserException("stats", e);
         }
         catch (IOException e)
         {
-            throw new LuceneQueryParserException("stats", e);
+            throw new QueryParserException("stats", e);
         }
         catch (JSONException e)
         {
-            throw new LuceneQueryParserException("stats", e);
+            throw new QueryParserException("stats", e);
         }
     }
 
@@ -586,19 +583,19 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (HttpException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (IOException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (JSONException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
     }
 
@@ -1273,7 +1270,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
 
                 if (get.getStatusCode() != HttpServletResponse.SC_OK)
                 {
-                    throw new LuceneQueryParserException("Request failed " + get.getStatusCode() + " " + url.toString());
+                    throw new QueryParserException("Request failed " + get.getStatusCode() + " " + url.toString());
                 }
 
                 Reader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
@@ -1288,19 +1285,19 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (HttpException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (IOException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
         catch (JSONException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new QueryParserException("", e);
         }
     }
 

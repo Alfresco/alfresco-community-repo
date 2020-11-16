@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.impl.solr.SolrSQLJSONResultSet;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.rest.api.search.impl.ResultMapper;
@@ -100,7 +100,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
         }
         catch (Exception exception) 
         {
-            if (exception instanceof LuceneQueryParserException)
+            if (exception instanceof QueryParserException)
             {
                 renderException(exception,res,assistant);
             }
@@ -123,7 +123,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
     public SearchParameters buildSearchParameters(SearchSQLQuery searchQuery)
     {
         SearchParameters sparams = new SearchParameters();
-        sparams.setLanguage(SearchService.LANGUAGE_SOLR_SQL);
+        sparams.setLanguage(SearchService.LANGUAGE_INDEX_SQL);
         sparams.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         if(StringUtils.isEmpty(searchQuery.getStmt()))
         {

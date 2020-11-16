@@ -469,21 +469,6 @@ public class M2Model
         return new ArrayList();
     }
 
-
-    /**
-     * @return String
-     */
-    public String getAnalyserResourceBundleName()
-    {
-        return analyserResourceBundleName;
-    }
-
-
-    public void setAnalyserResourceBundleName(String analyserResourceBundleName)
-    {
-        this.analyserResourceBundleName = analyserResourceBundleName;
-    }
-
     public void setConfigProperties(Properties configProperties)
     {
         if (types != null)

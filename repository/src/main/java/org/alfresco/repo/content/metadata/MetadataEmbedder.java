@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,6 +33,7 @@ import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -69,5 +70,18 @@ public interface MetadataEmbedder extends ContentWorker {
      */
     public void embed(Map<QName, Serializable> properties, ContentReader reader, ContentWriter writer) throws ContentIOException;
 
-
+    /**
+     * Identical to {@link #embed(Map, ContentReader, ContentWriter)} but with the addition of the
+     * {@code NodeRef} being acted on. By default, the method without the {@code NodeRef} is called.
+     *
+     * @param nodeRef the node being acted on.
+     * @param properties the model properties to embed
+     * @param reader the reader for the original source content file
+     * @param writer the writer for the content after metadata has been embedded
+     * @throws ContentIOException
+     */
+    public default void embed(NodeRef nodeRef, Map<QName, Serializable> properties, ContentReader reader, ContentWriter writer) throws ContentIOException
+    {
+        embed(properties, reader, writer);
+    }
 }

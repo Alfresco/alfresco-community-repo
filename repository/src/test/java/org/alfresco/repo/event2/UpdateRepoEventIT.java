@@ -26,8 +26,12 @@
 
 package org.alfresco.repo.event2;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -92,7 +96,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue(content.getSizeInBytes() > 0);
 
         NodeResource resourceBefore = getNodeResourceBefore(resultRepoEvent);
-        assertNull("Content should have been null.", resourceBefore.getContent());
+        assertNotNull("Content should not have been null.", resourceBefore.getContent());
 
         // Update the content again
         retryingTransactionHelper.doInTransaction(() -> {
@@ -121,6 +125,66 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(resourceBefore.getModifiedAt());
 
         // Apart from the 'content' and 'modifiedAt' properties the rest should be not be not set
+        // for the resourceBefore object
+        assertNull(resourceBefore.getId());
+        assertNull(resourceBefore.getName());
+        assertNull(resourceBefore.getNodeType());
+        assertNull(resourceBefore.isFile());
+        assertNull(resourceBefore.isFolder());
+        assertNull(resourceBefore.getModifiedByUser());
+        assertNull(resourceBefore.getCreatedAt());
+        assertNull(resourceBefore.getCreatedByUser());
+        assertNull(resourceBefore.getProperties());
+        assertNull(resourceBefore.getAspectNames());
+        assertNull(resourceBefore.getPrimaryHierarchy());
+    }
+
+    @Test
+    public void testUpdateNodeResourceContent_NullBefore()
+    {
+        ContentService contentService = (ContentService) applicationContext.getBean(
+                "contentService");
+
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+
+        RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
+
+        NodeResource resource = getNodeResource(resultRepoEvent);
+        assertNull("Content should have been null.", resource.getContent());
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
+                    true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+            writer.setEncoding("UTF-8");
+            writer.putContent("test content.");
+            return null;
+        });
+
+        checkNumOfEvents(2);
+
+        resultRepoEvent = getRepoEvent(2);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
+                resultRepoEvent.getType());
+
+        resource = getNodeResource(resultRepoEvent);
+        ContentInfo content = resource.getContent();
+        assertNotNull(content);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, content.getMimeType());
+        assertEquals("UTF-8", content.getEncoding());
+        assertTrue(content.getSizeInBytes() > 0);
+
+        NodeResource resourceBefore = getNodeResourceBefore(resultRepoEvent);
+        assertNotNull("Content should not have been null.", resourceBefore.getContent());
+        content = resourceBefore.getContent();
+        assertNull(content.getMimeType());
+        assertNull(content.getEncoding());
+        assertNull(content.getSizeInBytes());
+        assertNotNull(resourceBefore.getModifiedAt());
+
+        // Apart from the 'content' and 'modifiedAt' properties the rest should not be set
         // for the resourceBefore object
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getName());
@@ -169,7 +233,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(14, (long) content.getSizeInBytes());
 
         NodeResource resourceBefore = getNodeResourceBefore(resultRepoEvent);
-        assertNull("Content should have been null.", resourceBefore.getContent());
+        assertNotNull("Content should not have been null.", resourceBefore.getContent());
 
         // Update the content again - different content but same size
         retryingTransactionHelper.doInTransaction(() -> {
@@ -248,6 +312,34 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
+    public void testUpdateContentTitleFromNull()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        NodeResource resource = getNodeResource(1);
+
+        assertNotNull(resource.getProperties());
+        String title = getProperty(resource, "cm:title");
+        assertNull("Title should have been null.", title);
+
+        // update content cm:title property with "test title" value
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "test title");
+            return null;
+        });
+
+        resource = getNodeResource(2);
+        title = getProperty(resource, "cm:title");
+        assertEquals("test title", title);
+
+        NodeResource resourceBefore = getNodeResourceBefore(2);
+        Map<String, Serializable> expectedResourceBeforeProperties = new HashMap<>();
+        expectedResourceBeforeProperties.put("cm:title", null);
+        assertEquals(expectedResourceBeforeProperties, resourceBefore.getProperties());
+
+        assertNotNull(resourceBefore.getModifiedAt());
+    }
+
+    @Test
     public void testUpdateContentDescription()
     {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
@@ -267,7 +359,11 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("test description", desc);
 
         NodeResource resourceBefore = getNodeResourceBefore(2);
-        assertNull(resourceBefore.getProperties());
+        assertNotNull(resourceBefore.getProperties());
+
+        Map<String, Serializable> expectedResourceBeforeProperties = new HashMap<>();
+        expectedResourceBeforeProperties.put("cm:description", null);
+        assertEquals(expectedResourceBeforeProperties, resourceBefore.getProperties());
     }
 
     @Test
@@ -338,7 +434,15 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource resourceBefore = getNodeResourceBefore(2);
         assertNotNull(resourceBefore.getAspectNames());
         assertEquals(originalAspects, resourceBefore.getAspectNames());
-        assertNull(resourceBefore.getProperties());
+        assertNotNull(resourceBefore.getProperties());
+
+        Map<String, Serializable> expectedResourceBeforeProperties = new HashMap<>();
+        expectedResourceBeforeProperties.put("cm:autoVersion", null);
+        expectedResourceBeforeProperties.put("cm:initialVersion", null);
+        expectedResourceBeforeProperties.put("cm:versionType", null);
+        expectedResourceBeforeProperties.put("cm:autoVersionOnUpdateProps", null);
+        expectedResourceBeforeProperties.put("cm:versionLabel", null);
+        assertEquals(expectedResourceBeforeProperties, resourceBefore.getProperties());
     }
 
     @Test
@@ -874,5 +978,33 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(aspectsBefore);
         assertEquals(1, aspectsBefore.size());
         assertTrue(aspectsBefore.contains("cm:auditable"));
+    }
+
+    @Test
+    public void testAddAndRemovePropertyInTheSameTransaction()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+
+        checkNumOfEvents(1);
+
+        NodeResource resource = getNodeResource(1);
+        // Check properties
+        assertTrue(resource.getProperties().isEmpty());
+
+        // Add and remove cm:userName property
+        retryingTransactionHelper.doInTransaction(() -> {
+            Map<QName, Serializable> properties = Map.of(ContentModel.PROP_USERNAME, "user1");
+            nodeService.addProperties(nodeRef, properties);
+            nodeService.removeProperty(nodeRef, ContentModel.PROP_USERNAME);
+            return null;
+        });
+
+        // There should only be a create event
+        resource = getNodeResource(1);
+        assertTrue(resource.getProperties().isEmpty());
+
+        // Check there isn't a node update event
+        List<RepoEvent<EventData<NodeResource>>> nodeUpdatedEvents = getFilteredEvents(EventType.NODE_UPDATED);
+        assertEquals(0, nodeUpdatedEvents.size());
     }
 }

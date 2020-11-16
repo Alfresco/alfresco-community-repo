@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     public static final String ROLE_KEY = "role";
     public static final String CREATED_AT = "createdAt";
     public static final String MODIFIED_AT = "modifiedAt";
+    public static final String CLIENT_NAME = "clientName";
     
     /**
      * Unique reference for this invitation
@@ -72,6 +73,8 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     
     private final Date modifiedAt;
      
+    private final String clientName;
+
     public InvitationImpl(Map<String, Serializable> props)
     {
         this.inviteId = (String)props.get(ID_KEY);
@@ -82,6 +85,7 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
         this.resourceType = type==null ? ResourceType.WEB_SITE : ResourceType.valueOf(type);
         this.createdAt = (Date)props.get(CREATED_AT);
         this.modifiedAt = (Date)props.get(MODIFIED_AT);
+        this.clientName = (String)props.get(CLIENT_NAME);
     }
 
     /**
@@ -121,6 +125,11 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     public String getInviteeUserName()
     {
         return inviteeUserName;
+    }
+
+    public String getClientName()
+    {
+        return clientName;
     }
     
     public abstract InvitationType getInvitationType();

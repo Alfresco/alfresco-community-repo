@@ -35,6 +35,7 @@ public enum DeploymentMethod
     INSTALLER,
     DOCKER_COMPOSE,
     HELM_CHART,
+    ANSIBLE,
     /**
      * The distribution zip was used to lay down the ACS artifacts
      */

@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -52,6 +53,7 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 	private String role;
 	private Status status;
 	private boolean isMemberOfGroup;
+	private List<SiteGroup> groupMembership;
 
 	public SiteMember()
 	{
@@ -76,13 +78,14 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 		this.role = role;
 	}
     
-	public SiteMember(String memberId, Person member, String siteId, String role, boolean isMemberOfGroup)
+	public SiteMember(String memberId, Person member, String siteId, String role, boolean isMemberOfGroup, List<SiteGroup> groups)
 	{
 		this.memberId = memberId;
 		this.member = member;
 		this.siteId = siteId;
 		this.role = role;
 		this.isMemberOfGroup = isMemberOfGroup;
+		this.groupMembership = groups;
 	}
 
     public String getMemberId()
@@ -140,6 +143,15 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 		isMemberOfGroup = memberOfGroup;
 	}
 
+
+	public List<SiteGroup> getGroupMembership() {
+		return groupMembership;
+	}
+
+	public void setGroupMembership(List<SiteGroup> groupMembership) {
+		this.groupMembership = groupMembership;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -155,7 +167,21 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 		boolean isMemberOfGroup = (boolean)jsonObject.get("isMemberOfGroup");
 		JSONObject personJSON = (JSONObject)jsonObject.get("person");
 		Person member = Person.parsePerson(personJSON);
-		return new SiteMember(id, member, siteId, role, isMemberOfGroup);
+		List<SiteGroup> groupRoles = jsonObject.get("groupMembership") != null  ? parseMemberGroupInfo((JSONArray) jsonObject.get("groupMembership")) : null;
+		return new SiteMember(id, member, siteId, role, isMemberOfGroup, groupRoles);
+	}
+
+	private static List<SiteGroup> parseMemberGroupInfo(JSONArray groupMembership) {
+		return (List<SiteGroup>) groupMembership.stream()
+				.map(memberObject -> {
+					String name = (String) ((JSONObject) memberObject).get("name");
+					String groupRole = (String) ((JSONObject) memberObject).get("role");
+					SiteGroup siteGroup = new SiteGroup();
+					siteGroup.setRole(groupRole);
+					siteGroup.setName(name);
+					return siteGroup;
+				})
+				.collect(Collectors.toList());
 	}
 
 	public static ListResponse<SiteMember> parseSiteMembers(String siteId, JSONObject jsonObject)

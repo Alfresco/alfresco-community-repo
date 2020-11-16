@@ -44,6 +44,7 @@ public class SiteGroup implements Serializable, ExpectedComparison, Comparable<S
 
 	private String role;
 	private String id; // group id (aka authority name)
+	private String name;
 	private Group group;
 
 	public SiteGroup()
@@ -67,6 +68,14 @@ public class SiteGroup implements Serializable, ExpectedComparison, Comparable<S
 	public String getRole()
 	{
 		return role;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public void setRole(String role)

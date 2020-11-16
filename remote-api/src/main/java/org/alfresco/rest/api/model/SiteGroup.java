@@ -34,6 +34,7 @@ public class SiteGroup implements Comparable<SiteGroup>
 {
     private String role;
     private String id; // group id (aka authority name)
+    private String name;
 
     public SiteGroup() {}
 
@@ -47,6 +48,17 @@ public class SiteGroup implements Comparable<SiteGroup>
         {
             throw new IllegalArgumentException();
         }
+        this.role = role;
+        this.id = id;
+    }
+
+    public SiteGroup(String id, String name, String role)
+    {
+        if (role == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        this.name = name;
         this.role = role;
         this.id = id;
     }
@@ -85,6 +97,14 @@ public class SiteGroup implements Comparable<SiteGroup>
             throw new IllegalArgumentException();
         }
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

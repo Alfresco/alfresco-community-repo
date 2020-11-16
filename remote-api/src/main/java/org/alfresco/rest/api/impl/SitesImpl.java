@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.repo.site.SiteServiceImpl.GROUP_SITE_PREFIX;
+
 import java.io.Serializable;
 import java.text.Collator;
 import java.util.AbstractList;
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -297,9 +300,33 @@ public class SitesImpl implements Sites
         sort.add(new Pair<SiteService.SortFields, Boolean>(SiteService.SortFields.Username, Boolean.TRUE));
         PagingResults<SiteMembership> pagedResults = siteService.listMembersPaged(siteId, expandGroups, sort, pagingRequest);
 
+        final String finalSiteId = siteId;
         List<SiteMember> ret = pagedResults.getPage()
                 .stream()
-                .map((siteMembership) -> new SiteMember(siteMembership.getPersonId(), siteMembership.getRole(), siteMembership.isMemberOfGroup()))
+                .map((siteMembership) -> {
+                    SiteMember siteMember = new SiteMember(siteMembership.getPersonId(), siteMembership.getRole(), siteMembership.isMemberOfGroup());
+                    if(siteMembership.isMemberOfGroup())
+                    {
+                        List<SiteGroup> groupMembership = this.authorityService.getAuthoritiesForUser(siteMember.getPersonId()).stream()
+                                .filter(groupName -> !groupName.startsWith(GROUP_SITE_PREFIX))
+                                .map(groupName -> {
+                                    try
+                                    {
+                                        SiteGroup siteGroupMembership = getSiteGroupMembership(finalSiteId, groupName);
+                                        return new SiteGroup(null, this.authorityService.getAuthorityDisplayName(siteGroupMembership.getId()), siteGroupMembership.getRole());
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        logger.debug("Group does not exist " + finalSiteId + " on the site " + groupName);
+                                        return null;
+                                    }
+                                })
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+                        siteMember.setGroupMembership(groupMembership);
+                    }
+                    return  siteMember;
+                })
                 .collect(Collectors.toList());
 
         return CollectionWithPagingInfo.asPaged(paging, ret, pagedResults.hasMoreItems(), pagedResults.getTotalResultCount().getFirst());

@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.api.people.PeopleEntityResource;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
@@ -41,6 +43,7 @@ public class SiteMember
 	private String personId;
 	private String role;
 	private boolean isMemberOfGroup;
+	private List<SiteGroup> groupMembership;
 
 	public SiteMember()
 	{
@@ -116,6 +119,14 @@ public class SiteMember
 	public boolean getIsMemberOfGroup()
 	{
 		return isMemberOfGroup;
+	}
+
+	public List<SiteGroup> getGroupMembership() {
+		return groupMembership;
+	}
+
+	public void setGroupMembership(List<SiteGroup> groupMembership) {
+		this.groupMembership = groupMembership;
 	}
 
 	@Override

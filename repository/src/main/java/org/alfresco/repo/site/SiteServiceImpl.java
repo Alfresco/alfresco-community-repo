@@ -149,7 +149,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private static final String ACTIVITY_TOOL = "siteService";
     
     private static final String SITE_PREFIX = "site_";
-    private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + SITE_PREFIX;
+    public static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + SITE_PREFIX;
     private static final int GROUP_PREFIX_LENGTH = PermissionService.GROUP_PREFIX.length();
     private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     

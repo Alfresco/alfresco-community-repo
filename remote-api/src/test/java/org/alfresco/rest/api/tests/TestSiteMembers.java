@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -47,19 +48,28 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Sites;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.data.Person;
-import org.alfresco.rest.api.tests.client.data.Site;
-import org.alfresco.rest.api.tests.client.data.SiteImpl;
-import org.alfresco.rest.api.tests.client.data.SiteMember;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.rest.api.tests.client.data.*;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestSiteMembers extends EnterpriseTestApi
 {
+	protected AuthorityService authorityService;
+
+	@Before
+	public void setup() throws Exception
+	{
+		super.setup();
+		authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+	}
+
+
 	// TODO set create member for a user who is a member of the site (not the creator)
 	// TODO split into more manageable test methods
 	@Test
@@ -665,5 +675,62 @@ public class TestSiteMembers extends EnterpriseTestApi
 				}
 			}
 		}
+	}
+
+	@Test
+	public void shouldReturnGroupMembershipsForSiteMembers() throws Exception {
+		Iterator<TestNetwork> networksIt = getTestFixture().getNetworksIt();
+		final TestNetwork testNetwork = networksIt.next();
+		final List<String> networkPeople = testNetwork.getPersonIds();
+		String personId = networkPeople.get(0);
+		Sites sitesProxy = publicApiClient.sites();
+
+		// Create a moderate site
+		TestSite site = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+		{
+			@Override
+			public TestSite doWork() throws Exception
+			{
+				return testNetwork.createSite(SiteVisibility.MODERATED);
+			}
+		}, personId, testNetwork.getId());
+
+		// Create a group
+		String groupName = this.createGroup(personId, networkPeople.get(1));
+
+		// Add it to the site
+		publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
+		sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+
+		Paging paging = getPaging(0, 2, 2, 6);
+		publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
+		ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
+		assertEquals(siteMembers.getList().size(), 2);
+		SiteMember siteMember = siteMembers.getList().stream()
+				.filter(user -> user.getMemberId().equals(networkPeople.get(1)))
+				.findFirst().get();
+
+		assertEquals(siteMember.getGroupMembership().size(), 1);
+		assertEquals(siteMember.getGroupMembership().get(0).getRole(), SiteRole.SiteCollaborator.name());
+		assertEquals(siteMember.getGroupMembership().get(0).getName(), "Test Group A");
+	}
+
+	private String createGroup(String userName, String user1)
+	{
+		String groupName = "Test_GroupA" + GUID.generate();
+		AuthenticationUtil.setRunAsUser(userName);
+
+		groupName = authorityService.getName(AuthorityType.GROUP, groupName);
+
+		if (!authorityService.authorityExists(groupName))
+		{
+			AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+			groupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
+			authorityService.setAuthorityDisplayName(groupName, "Test Group A");
+		}
+		authorityService.addAuthority(groupName, user1);
+
+		return groupName;
 	}
 }

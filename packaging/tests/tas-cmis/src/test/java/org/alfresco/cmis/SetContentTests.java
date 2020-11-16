@@ -34,10 +34,10 @@ public class SetContentTests extends CmisTest
         publicSite = dataSite.usingUser(siteManager).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
-    
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
-    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY, 
-                description = "Verify site manager is able to set content to a valid document in DocumentLibrary with CMIS")
+
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY,
+            description = "Verify site manager is able to set content to a valid document in DocumentLibrary with CMIS")
     public void siteManagerSetFileContentForFileCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "first content");
@@ -59,21 +59,20 @@ public class SetContentTests extends CmisTest
             .usingSite(publicSite)
                 .createFolder(testFolder).setContent(someContent);
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+
+    @Bug(id = "REPO-5388")
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION, 
                 description = "Verify that inexistent user is not able to set content to a document with CMIS")
     public void inexistentUserCannotSetFileContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
-            .createFile(testFile).assertThat().existsInRepo()
-                .and().assertThat().contentLengthIs(0)
-            .then().authenticateUser(UserModel.getRandomUserModel())
+                .createFile(testFile).assertThat().existsInRepo()
+                .then().authenticateUser(UserModel.getRandomUserModel())
                 .setContent(someContent);
     }
-    
-    @Bug(id="ACE-5614")
+
     @Test(groups = { TestGroup.REGRESSION , TestGroup.CMIS})
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
                 description = "Verify site manager is able to set content to a document with no content with overwrite parameter set to false with CMIS")
@@ -81,9 +80,10 @@ public class SetContentTests extends CmisTest
     {
         FileModel newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
-            .createFile(newFile).assertThat().existsInRepo()
-            .and().assertThat().contentLengthIs(0)
-            .then().setContent(someContent, false).and()
+                .createFile(newFile).assertThat().existsInRepo()
+                .deleteContent(true)
+                .then().assertThat().contentLengthIs(-1)
+                .then().setContent(someContent, false)
                 .and().assertThat().contentIs(someContent);
     }
     
@@ -98,8 +98,8 @@ public class SetContentTests extends CmisTest
                 .and().assertThat().contentIs(someContent)
             .then().setContent(secondContent, false);
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION, 
                 description = "Verify unauthorized user is not able to set content to a document")
     public void unauthorizedUserCannotSetContent() throws Exception
@@ -140,7 +140,7 @@ public class SetContentTests extends CmisTest
                 .and().assertThat().contentLengthIs(12);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is not able to set content to a document created by other user with CMIS")
     public void contributorCannotSetFileContentForFileCreatedByOtherUser() throws Exception
@@ -193,7 +193,7 @@ public class SetContentTests extends CmisTest
                 .and().assertThat().contentLengthIs(12);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to set file content with CMIS")
     public void consumerCannotSetFileContent() throws Exception
@@ -231,7 +231,7 @@ public class SetContentTests extends CmisTest
                 .and().assertThat().contentLengthIs(12);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user is not able to set content to a document from a private site")
     public void unauthorizedUserCannotSetContentToPrivateSiteDoc() throws Exception

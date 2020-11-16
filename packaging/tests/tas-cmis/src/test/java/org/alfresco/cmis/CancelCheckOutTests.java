@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -31,7 +32,7 @@ public class CancelCheckOutTests extends CmisTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(testSite, UserRole.SiteContributor, UserRole.SiteCollaborator);
     }
 
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify cancel check out on a pwc")
     public void cancelCheckOutOnPWC() throws Exception
@@ -50,7 +51,7 @@ public class CancelCheckOutTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a document that isn't checked out")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisRuntimeException.class)
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisRuntimeException.class)
     public void cancelCheckOutOnADocumentThatIsntCheckedOut() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);
@@ -72,8 +73,8 @@ public class CancelCheckOutTests extends CmisTest
                 .then().delete().and().assertThat().doesNotExistInRepo()
                 .then().cancelCheckOut();
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisRuntimeException.class)
+
+    @Test(groups = { "bug-atom-REPO-5383", "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisRuntimeException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a pwc twice")
     public void cancelCheckOutTwice() throws Exception
@@ -83,7 +84,8 @@ public class CancelCheckOutTests extends CmisTest
                 .createFile(testFile)
                 .and().assertThat().existsInRepo()
                 .and().checkOut()
-                .and().assertThat().documentIsCheckedOut().assertThat().isPrivateWorkingCopy()
+                .and().assertThat().documentIsCheckedOut()
+                .assertThat().isPrivateWorkingCopy()
                 .and().cancelCheckOut()
                       .cancelCheckOut();
     }

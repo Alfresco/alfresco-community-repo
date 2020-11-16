@@ -34,7 +34,7 @@ public class AppendContentStreamTests extends CmisTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
 
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to append content to a not empty file in DocumentLibrary with CMIS")
     public void siteManagerShouldAppendContentToNotEmptyFile() throws Exception
@@ -46,7 +46,7 @@ public class AppendContentStreamTests extends CmisTest
                     .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisObjectNotFoundException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisObjectNotFoundException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify user is not able to append content to a non existent Document in DocumentLibrary with CMIS")
     public void userShouldNotAppendContentToNonexistentFile() throws Exception
@@ -59,8 +59,8 @@ public class AppendContentStreamTests extends CmisTest
                 .and().assertThat().doesNotExistInRepo()
             .then().update(textToAppend);
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to append content to an empty file with version with CMIS")
     public void siteManagerCanAppendContentToEmptyFileWithVersion() throws Exception
@@ -76,7 +76,7 @@ public class AppendContentStreamTests extends CmisTest
                     .and().assertThat().contentIs(textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to append content to an empty file with no version in DocumentLibrary with CMIS")
     public void siteManagerCanAppendContentToEmptyFileWithNoVersion() throws Exception
@@ -88,8 +88,8 @@ public class AppendContentStreamTests extends CmisTest
                 .then().update(textToAppend)
                     .and().assertThat().contentIs(textToAppend);
     }
-    
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to append content with last chunk parameter set to FALSE with CMIS")
     public void siteManagerCanAppendContentWithLastChunkSetToFalse() throws Exception
@@ -102,7 +102,7 @@ public class AppendContentStreamTests extends CmisTest
                     .and().assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify admin is able to append content to a file created by other user in DocumentLibrary with CMIS")
     public void adminShouldAppendContentToFileCreatedByOtherUser() throws Exception
@@ -114,7 +114,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to append content to a file created by other user in DocumentLibrary with CMIS")
     public void siteManagerShouldAppendContentToFileCreatedByOtherUser() throws Exception
@@ -126,7 +126,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site contributor is able to append content to a file created by self in DocumentLibrary with CMIS")
     public void contributorShouldAppendContentToFileCreatedBySelf() throws Exception
@@ -139,7 +139,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site contributor is not able to append content to a file created by other user in DocumentLibrary with CMIS")
     public void contributorCannotAppendContentToFileCreatedByOtherUser() throws Exception
@@ -151,7 +151,7 @@ public class AppendContentStreamTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).update(textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to append content to a file created by other user in DocumentLibrary with CMIS")
     public void collaboratorShouldAppendContentToFileCreatedByOtherUser() throws Exception
@@ -163,7 +163,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to append content to a file created by self in DocumentLibrary with CMIS")
     public void collaboratorShouldAppendContentToFileCreatedBySelf() throws Exception
@@ -176,7 +176,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to append content to a file with CMIS")
     public void consumerCannotAppendContentToFile() throws Exception
@@ -188,7 +188,7 @@ public class AppendContentStreamTests extends CmisTest
                 .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).update(textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUpdateConflictException.class, expectedExceptionsMessageRegExp = "^.*Cannot perform operation since the node.*is locked.$")
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisUpdateConflictException.class, expectedExceptionsMessageRegExp = "^.*Cannot perform operation since the node.*is locked.$")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is not able to append content to a checked out file with CMIS")
     public void managerCannotAppendContentToCheckedOutFile() throws Exception
@@ -200,7 +200,7 @@ public class AppendContentStreamTests extends CmisTest
                 .when().update(textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to append content to a PWC file with CMIS")
     public void managerCanAppendContentToPWCFile() throws Exception
@@ -213,7 +213,7 @@ public class AppendContentStreamTests extends CmisTest
                 .assertThat().contentIs(initialContent + textToAppend);
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user is not able to append content to a file created in a private site with CMIS")
     public void unauthorizedUserCannotAppendContentToFileFromPrivateSite() throws Exception

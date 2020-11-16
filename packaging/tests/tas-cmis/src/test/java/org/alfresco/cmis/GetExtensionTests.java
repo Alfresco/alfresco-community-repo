@@ -42,7 +42,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Site manager can get extensions from a valid folder")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerCanGetExtensionsForValidFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingResource(managerFolder)
@@ -51,7 +51,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Site manager can get extensions from a valid file")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerCanGetExtensionsForValidFile() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingResource(managerFile)
@@ -60,7 +60,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Site manager cannot get extensions from an invalid document - that was deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerCannotGetExtensionsForInvalidDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
@@ -72,7 +72,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Site manager can get extensions from checkedout document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerCanGetExtensionsForCheckedOutDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD, documentContent);
@@ -85,7 +85,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Site collaborator can get extensions")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanGetExtensions() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingResource(managerFolder)
@@ -96,7 +96,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Site contributor can get extensions")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanGetExtensions() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingResource(managerFolder)
@@ -107,7 +107,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Site consumer can get extensions")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerCanGetExtensions() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(managerFolder)
@@ -118,7 +118,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Non invited user can get extensions in public site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5394", TestGroup.REGRESSION, TestGroup.CMIS})
     public void nonInvitedUserCanGetExtensionsInPublicSite() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(managerFolder)
@@ -129,7 +129,7 @@ public class GetExtensionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Non invited user cannot get extensions in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetExtensionsInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -138,10 +138,10 @@ public class GetExtensionTests extends CmisTest
             .createFile(privateDoc)
                 .then().authenticateUser(nonInvitedUser).assertThat().hasAspectExtension(titledAspect);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Non invited user cannot get extensions in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetExtensionsInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createPrivateRandomSite();

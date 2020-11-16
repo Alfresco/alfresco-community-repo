@@ -23,7 +23,39 @@
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/cmis-suite.xml</suiteXmlFile>
+        <cmis.binding></cmis.binding>
+        <cmis.basePath></cmis.basePath>
+        <excludedGroups></excludedGroups>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>run-cmis-browser</id>
+            <properties>
+                <cmis.binding>browser</cmis.binding>
+                <cmis.basePath>/alfresco/api/-default-/public/cmis/versions/1.1/browser</cmis.basePath>
+                <excludedGroups>not_supported_on_cmis_browser|renditions|bug-browser.*</excludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>run-cmis-webservices</id>
+            <properties>
+                <cmis.binding>webservices</cmis.binding>
+                <cmis.basePath>/alfresco/cmisws/cmis?wsdl</cmis.basePath>
+                <excludedGroups>not_supported_on_cmis_ws|renditions|bug-ws.*</excludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>run-cmis-atom</id>
+            <properties>
+                <cmis.binding>atom</cmis.binding>
+                <cmis.basePath>/alfresco/api/-default-/public/cmis/versions/1.1/atom</cmis.basePath>
+                <excludedGroups>not_supported_on_cmis_atom|renditions|bug-atom.*</excludedGroups>
+            </properties>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>
@@ -42,6 +74,10 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
                     </suiteXmlFiles>
+                    <systemProperties>
+                        <cmis.binding>${cmis.binding}</cmis.binding>
+                        <cmis.basePath>${cmis.basePath}</cmis.basePath>
+                    </systemProperties>
                     <argLine>
                         --illegal-access=warn
                     </argLine>

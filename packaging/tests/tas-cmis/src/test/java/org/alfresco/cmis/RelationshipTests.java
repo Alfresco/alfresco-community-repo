@@ -80,9 +80,10 @@ public class RelationshipTests extends CmisTest
                         .and().assertThat().objectHasRelationshipWith(targetFile);
     }
 
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that inexistent user is not able to create relationship between documents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -95,10 +96,10 @@ public class RelationshipTests extends CmisTest
                         .and().assertThat().objectHasRelationshipWith(targetFile);
     }
 
-    @Bug(id="REPO-4301")
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that user that was deleted is not able to create relationship between documents with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void deletedUserCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -163,7 +164,7 @@ public class RelationshipTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify contributor is not able to create relationship between a source object and a target object in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS},expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -193,7 +194,7 @@ public class RelationshipTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify consumer is not able to create relationship between a source object and a target object in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS},expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -208,7 +209,7 @@ public class RelationshipTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify unauthorized user is not able to create relationship between a source object and a target object from a private site with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCreateRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -219,10 +220,10 @@ public class RelationshipTests extends CmisTest
             .then().authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
             .usingResource(sourceFile).createRelationshipWith(targetFile);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify unauthorized user is not able to get relationship between a source object and a target object from a private site with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotGetRelationship() throws Exception
     {
         sourceFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

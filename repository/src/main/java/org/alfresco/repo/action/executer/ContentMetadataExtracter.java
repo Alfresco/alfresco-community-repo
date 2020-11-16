@@ -55,6 +55,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
+import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -335,6 +336,34 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         }
 
         return result;
+    }
+
+    /**
+     * Used by the action service to work out if it should override the executeAsychronously
+     * value when it is know the extract will take place asynchronously anyway. Results in
+     * the action being processed post commit, which allows it to see node changes.
+     *
+     * @param actionedUponNodeRef the node to be processed.
+     * @return true if the AsynchronousExtractor will be used. false otherwise.
+     */
+    @Override
+    public boolean isExecuteAsynchronously(NodeRef actionedUponNodeRef)
+    {
+        if (!nodeService.exists(actionedUponNodeRef))
+        {
+            return false;
+        }
+
+        ContentReader reader = contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+        if (reader == null || reader.getMimetype() == null)
+        {
+            return false;
+        }
+
+        String mimetype = reader.getMimetype();
+        long sourceSizeInBytes = reader.getSize();
+        MetadataExtracter extracter = metadataExtracterRegistry.getExtractor(mimetype, sourceSizeInBytes);
+        return extracter instanceof AsynchronousExtractor;
     }
 
     /**

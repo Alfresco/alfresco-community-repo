@@ -713,7 +713,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String contentName = "content " + RUNID + ".txt";
         String content1Id = createTextFile(folderB_Id, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
 
-
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
         // get node info
         response = getSingle(NodesEntityResource.class, content1Id, null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -5712,6 +5713,55 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String currentPath = folderBPath.toDisplayPath(nodeService, permissionService) + "/" + pathBLastElement.getRef().getQName().getLocalName();
         String expectedPath = "/Company Home/User Homes/" + user1 + "/" + nameA02 + "/" + nameB;
         assertTrue(currentPath.equals(expectedPath));
+    }
+
+    @Test
+    public void testPrimaryPathVersion() throws Exception
+    {
+        setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        String myNodeId = getMyNodeId();
+
+        // /Company Home/User Homes/user<timestamp>/folder_A
+        String folderName = "folder_A";
+        Folder folder = createFolder(myNodeId, folderName);
+        NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder.getId());
+
+        // /Company Home/User Homes/user<timestamp>/folder_A/testDoc<GUID>
+        String docName = "testDoc" + GUID.generate();
+        Document doc = new Document();
+        doc.setName(docName);
+        doc.setNodeType(TYPE_CM_CONTENT);
+        HttpResponse response = post(getNodeChildrenUrl(folderNodeRef.getId()), toJsonAsStringNonNull(doc), 201);
+        Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        NodeRef docNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, docResp.getId());
+
+        // Checks that current path and name match
+        String expectedPath1 = "/Company Home/User Homes/" + user1 + "/" + folderName + "/" + docName;
+        Path docPath1 = nodeService.getPath(docNodeRef);
+        Path.ChildAssocElement docPathLast1 = (Path.ChildAssocElement) docPath1.last();
+        String docLocalName1 = docPathLast1.getRef().getQName().getLocalName();
+        String currentPath1 = docPath1.toDisplayPath(nodeService, permissionService) + "/" + docLocalName1;
+        assertTrue(docName.equals(docLocalName1));
+        assertTrue(expectedPath1.equals(currentPath1));
+
+        // Upload document new content supplying a different name
+        String docName2 = "testDoc2" + GUID.generate();
+        Map<String, String> params = new HashMap<>();
+        params.put("name", docName2);
+        Document docResp2 = updateTextFileWithRandomContent(docNodeRef.getId(), 1024L, params);
+        NodeRef docNodeRef2 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, docResp2.getId());
+
+        // Checks new path and name after new version upload
+        String expectedPath2 = "/Company Home/User Homes/" + user1 + "/" + folderName + "/" + docName2;
+        Path docPath2 = nodeService.getPath(docNodeRef2);
+        Path.ChildAssocElement docPathLast2 = (Path.ChildAssocElement) docPath2.last();
+        String docLocalName2 = docPathLast2.getRef().getQName().getLocalName();
+        String currentPath2 = docPath2.toDisplayPath(nodeService, permissionService) + "/" + docLocalName2;
+        assertFalse(docLocalName1.equals(docLocalName2));
+        assertTrue(docName2.equals(docLocalName2));
+        assertFalse(expectedPath1.equals(currentPath2));
+        assertTrue(expectedPath2.equals(currentPath2));
     }
 
     private String getDataDictionaryNodeId() throws Exception

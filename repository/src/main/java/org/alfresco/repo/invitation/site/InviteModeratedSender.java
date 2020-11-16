@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.util.ModelUtil;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -60,6 +61,7 @@ public class InviteModeratedSender extends InviteSender
     private static final String DATA_DICTIONARY_XPATH_PREFIX = "app:";
     public static final String WF_PACKAGE = "wf_package";
     public static final String SHARE_PENDING_INVITES_LINK = "{0}/page/site/{1}/pending-invites";
+    public static final String WORKSPACE_PENDING_INVITES_LINK = "{0}/#/{1}/members/libraries";
 
     private static final List<String> INVITE_MODERATED_EXPECTED_PROPERTIES = Arrays.asList(
             WorkflowModelModeratedInvitation.wfVarInviteeUserName,
@@ -107,6 +109,8 @@ public class InviteModeratedSender extends InviteSender
         model.put("inviteeName", StringUtils.join(new String[] { inviteePerson.getFirstName(), inviteePerson.getLastName() }, " "));
         model.put("siteName", getSiteName(properties));
         model.put("sharePendingInvitesLink", StringUtils.stripStart(getPendingInvitesLink(properties), "/"));
+        model.put("workspacePendingInvitesLink", StringUtils.stripStart(getWorkSpaceInvitesLink(properties), "/"));
+        model.put("template_assets_url", getTemplateAssetsLink(properties));
         return model;
     }
 
@@ -114,6 +118,24 @@ public class InviteModeratedSender extends InviteSender
     {
         return MessageFormat.format(SHARE_PENDING_INVITES_LINK, TenantUtil.getCurrentDomain(),
                                     properties.get(WorkflowModelModeratedInvitation.wfVarResourceName));
+    }
+
+    protected String getWorkSpaceInvitesLink(Map<String, String> properties)
+    {
+        String path = properties.get(WorkflowModelModeratedInvitation.wfVarWorkspaceUrl);
+        boolean hasValidBaseUrl =  path != null && !StringUtils.isAllBlank(path) && path.length() > 1;
+        String workspaceUrl = sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort()
+                + ( hasValidBaseUrl ?   "/" + path.trim() : "");
+
+        return MessageFormat.format(WORKSPACE_PENDING_INVITES_LINK, workspaceUrl, properties.get(WorkflowModelModeratedInvitation.wfVarResourceName));
+    }
+
+    protected String getTemplateAssetsLink(Map<String, String> properties)
+    {
+        if (properties.get(WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl) != null) {
+            return UrlUtil.replaceAlfrescoUrlPlaceholder(properties.get(WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl), this.sysAdminParams);
+        }
+        return UrlUtil.getAlfrescoUrl(this.sysAdminParams);
     }
 
     @Override

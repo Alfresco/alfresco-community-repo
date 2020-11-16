@@ -93,8 +93,6 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.dictionaryService = (DictionaryService) this.applicationContext.getBean("dictionaryService");
         this.mimetypeService = (MimetypeService) this.applicationContext.getBean("mimetypeService");
         this.metadataExtracterRegistry  = (MetadataExtracterRegistry) this.applicationContext.getBean("metadataExtracterRegistry");
-        metadataExtracterRegistry.setAsyncExtractEnabled(false);
-        metadataExtracterRegistry.setAsyncEmbedEnabled(false);
 
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -122,13 +120,6 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.executer.setContentService(contentService);
         this.executer.setMetadataExtracterRegistry(metadataExtracterRegistry);
         this.executer.setApplicableTypes(new String[] { ContentModel.TYPE_CONTENT.toString() });
-    }
-
-    @After
-    public void after()
-    {
-        metadataExtracterRegistry.setAsyncExtractEnabled(true);
-        metadataExtracterRegistry.setAsyncEmbedEnabled(true);
     }
 
     /**

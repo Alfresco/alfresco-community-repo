@@ -562,9 +562,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * configuration-driven, i.e. declaring further mappings will result in more values being
      * extracted from the documents.
      * <p>
-     * Most extractors will not be using this method.  For an example of its use, see the
-     * {@linkplain OpenDocumentMetadataExtracter OpenDocument extractor}, which uses the mapping
-     * to select specific user properties from a document.
+     * Most extractors will not be using this method.
      */
     protected final Map<String, Set<QName>> getMapping()
     {
@@ -2264,7 +2262,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         // TODO make this an abstract method once more extracters support embedding
     }
 
-    // Originally in TikaPoweredMetadataExtracter
     public static Map<String, String> convertMetadataToStrings(Map<String, Serializable> properties)
     {
         Map<String, String> propertiesAsStrings = new HashMap<>();
@@ -2286,7 +2283,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     }
                     catch (TypeConversionException e)
                     {
-                        TikaPoweredMetadataExtracter.logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                        logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
                     }
                 }
             }
@@ -2299,7 +2296,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 }
                 catch (TypeConversionException e)
                 {
-                    TikaPoweredMetadataExtracter.logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                    logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
                 }
             }
         }

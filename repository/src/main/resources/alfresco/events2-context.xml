@@ -49,6 +49,7 @@
         <property name="personService" ref="personService"/>
         <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
         <property name="namespaceService" ref="namespaceService"/>
+        <property name="permissionService" ref="permissionService"/>
     </bean>
 
     <bean id="nodeResourceHelper" class="org.alfresco.repo.event2.NodeResourceHelper" parent="baseNodeResourceHelper"/>

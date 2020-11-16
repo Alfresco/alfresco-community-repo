@@ -324,7 +324,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpPreventActionsOnFrozenContent()
     {
-        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
+        holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordFolder.getParentId());
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(categoryWithRS.getId());

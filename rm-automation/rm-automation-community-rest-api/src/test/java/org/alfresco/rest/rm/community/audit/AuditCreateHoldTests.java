@@ -37,6 +37,7 @@ import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
@@ -67,6 +68,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     private final String HOLD1 = PREFIX + "createHold";
     private final String HOLD2 = PREFIX + "createHold2";
     private final String HOLD3 = PREFIX + "createHold3";
+    private List<String> holdsListRef = new ArrayList<>();
 
     @Autowired
     private RMAuditService rmAuditService;
@@ -100,8 +102,9 @@ public class AuditCreateHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
-
+        String hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD1,
+                HOLD_REASON, HOLD_DESCRIPTION);
+        holdsListRef.add(hold1NodeRef);
         STEP("Check the audit log contains the entry for the created hold with the hold details.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_HOLD, rmAdmin, HOLD1,
                 asList(ImmutableMap.of("new", HOLD_REASON, "previous", "", "name", "Hold Reason"),
@@ -117,8 +120,8 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     public void createHoldEventIsNotAuditedForExistingHold()
     {
         STEP("Create a new hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
-
+        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        holdsListRef.add(hold2NodeRef);
         rmAuditService.clearAuditLog();
 
         STEP("Try to create again the same hold and expect action to fail.");
@@ -168,7 +171,9 @@ public class AuditCreateHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD3, HOLD_REASON, HOLD_DESCRIPTION);
+        String hold3NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD3,
+                HOLD_REASON, HOLD_DESCRIPTION);
+        holdsListRef.add(hold3NodeRef);
 
         STEP("Check that an user with no Read permissions over the hold can't see the entry for the create hold event");
         assertTrue("The list of events should not contain Create Hold entry ",
@@ -178,8 +183,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditCreateHoldTests()
     {
-        asList(HOLD1, HOLD2, HOLD3).forEach(hold ->
-                holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), hold));
+        holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
         asList(rmAdmin, rmManager).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
     }
 }

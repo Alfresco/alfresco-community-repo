@@ -98,6 +98,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Mock
     private CapabilityService mockedCapabilityService;
 
+    @Mock
+    private ChildAssociationRef mockChildAssociationRef;
+
     @Spy @InjectMocks HoldServiceImpl holdService;
 
     @Before
@@ -120,7 +123,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");
         when(mockedNodeService.getType(activeContent)).thenReturn(contentSubtype);
         when(mockedNodeTypeUtility.instanceOf(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeService.getPrimaryParent(activeContent)).thenReturn(mockChildAssociationRef);
 
+        when(mockedNodeService.getPrimaryParent(recordFolder)).thenReturn(mockChildAssociationRef);
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
     }
@@ -353,6 +358,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void addToHoldNotInHold()
     {
         mockPoliciesForAddToHold();
+        when(mockedNodeService.getPrimaryParent(record)).thenReturn(mockChildAssociationRef);
 
         holdService.addToHold(hold, recordFolder);
 

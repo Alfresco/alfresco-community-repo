@@ -89,6 +89,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder, closedRecordFolder, heldRecordFolder;
     private UnfiledContainerChild unfiledContainerFolder;
+    private String holdNodeRef;
 
     @Autowired
     private RoleService roleService;
@@ -114,7 +115,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
                 "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
         heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
-        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
+        holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), heldRecordFolder.getId(),
                 HOLD_NAME);
 
@@ -284,7 +285,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void declareAndFileVersionAsRecordCleanUp()
     {
-        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME);
+        holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         deleteRecordCategory(recordCategory.getId());
 
         //delete created collaboration site

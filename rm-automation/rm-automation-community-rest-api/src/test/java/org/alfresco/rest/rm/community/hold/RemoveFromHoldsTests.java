@@ -86,6 +86,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
     private SiteModel testSite, privateSite;
     private String holdNodeRefOne;
+    private String holdNodeRefTwo;
     private FileModel contentHeld, contentAddToManyHolds;
     private Set<UserModel> usersToBeClean = new HashSet<>();
     private Set<String> nodesToBeClean = new HashSet<>();
@@ -100,7 +101,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         STEP("Create two holds.");
         holdNodeRefOne = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
                 HOLD_ONE, HOLD_REASON, HOLD_DESCRIPTION);
-        holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser()
+        holdNodeRefTwo = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser()
                         .getUsername(), HOLD_TWO, HOLD_REASON, HOLD_DESCRIPTION);
 
         STEP("Create test files.");
@@ -326,8 +327,8 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpRemoveContentFromHold()
     {
-        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
-        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_TWO);
+        holdsAPI.deleteHold(getAdminUser(), holdNodeRefOne);
+        holdsAPI.deleteHold(getAdminUser(), holdNodeRefTwo);
         dataSite.usingAdmin().deleteSite(testSite);
         dataSite.usingAdmin().deleteSite(privateSite);
         usersToBeClean.forEach(user -> getDataUser().usingAdmin().deleteUser(user));

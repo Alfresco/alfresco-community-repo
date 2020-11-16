@@ -143,8 +143,6 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
         this.nodeService = (NodeService) ctx.getBean("NodeService");
         this.contentService = (ContentService) ctx.getBean("ContentService");
         this.metadataExtracterRegistry = (MetadataExtracterRegistry) ctx.getBean("metadataExtracterRegistry");
-        metadataExtracterRegistry.setAsyncExtractEnabled(false);
-        metadataExtracterRegistry.setAsyncEmbedEnabled(false);
 
         this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
         this.auditService = (AuditService)ctx.getBean("auditService");
@@ -209,9 +207,6 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        metadataExtracterRegistry.setAsyncExtractEnabled(true);
-        metadataExtracterRegistry.setAsyncEmbedEnabled(true);
-
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
             fail("Test is not transaction-safe.  Fix up transaction handling and re-test.");

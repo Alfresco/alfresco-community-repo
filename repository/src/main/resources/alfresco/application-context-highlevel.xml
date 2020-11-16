@@ -44,4 +44,5 @@
     <import resource="classpath*:alfresco/deprecated-model-bootstrap-context.xml" />
     <import resource="classpath*:alfresco/events-context.xml" />
     <import resource="classpath*:alfresco/messaging-context.xml" />
+    <import resource="classpath:alfresco/invitation-service-context.xml"/>
 </beans>

@@ -83,21 +83,21 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 {
     private static final Log LOGGER = LogFactory.getLog(EventGenerator.class);
 
-    private PolicyComponent policyComponent;
-    private NodeService nodeService;
+    protected PolicyComponent policyComponent;
+    protected NodeService nodeService;
     private NamespaceService namespaceService;
-    private DictionaryService dictionaryService;
+    protected DictionaryService dictionaryService;
     private DescriptorService descriptorService;
     private EventFilterRegistry eventFilterRegistry;
     private Event2MessageProducer event2MessageProducer;
     private TransactionService transactionService;
     private PersonService personService;
-    private NodeResourceHelper nodeResourceHelper;
+    protected NodeResourceHelper nodeResourceHelper;
 
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
-    private final EventTransactionListener transactionListener = new EventTransactionListener();
+    protected final EventTransactionListener transactionListener = new EventTransactionListener();
 
     @Override
     public void afterPropertiesSet()
@@ -283,7 +283,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
      * @return the {@link EventConsolidator} for the supplied {@code nodeRef} from
      * the current transaction context.
      */
-    private EventConsolidator getEventConsolidator(NodeRef nodeRef)
+    protected EventConsolidator getEventConsolidator(NodeRef nodeRef)
     {
         Consolidators consolidators = getTxnConsolidators(transactionListener);
         Map<NodeRef, EventConsolidator> nodeEvents = consolidators.getNodes();
@@ -302,7 +302,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
 
-    private Consolidators getTxnConsolidators(Object resourceKey)
+    protected Consolidators getTxnConsolidators(Object resourceKey)
     {
         Consolidators consolidators = AlfrescoTransactionSupport.getResource(resourceKey);
         if (consolidators == null)
@@ -388,7 +388,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         //NOOP
     }
 
-    private class EventTransactionListener extends TransactionListenerAdapter
+    protected class EventTransactionListener extends TransactionListenerAdapter
     {
         @Override
         public void afterCommit()
@@ -425,7 +425,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             }
         }
 
-        private void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
+        protected void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
         {
             if (consolidator.isTemporaryNode())
             {
@@ -466,7 +466,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             logAndSendEvent(event, consolidator.getEventTypes());
         }
 
-        private void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
+        protected void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
             if (consolidator.isTemporaryChildAssociation())
             {
@@ -506,7 +506,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             logAndSendEvent(event, consolidator.getEventTypes());
         }
 
-        private void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
+        protected void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
             if (consolidator.isTemporaryPeerAssociation())
             {
@@ -525,7 +525,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             logAndSendEvent(event, consolidator.getEventTypes());
         }
 
-        private void logAndSendEvent(RepoEvent<?> event, Deque<EventType> listOfEvents)
+        protected void logAndSendEvent(RepoEvent<?> event, Deque<EventType> listOfEvents)
         {
             if (LOGGER.isTraceEnabled())
             {
@@ -542,7 +542,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
 
-    private static class Consolidators
+    protected static class Consolidators
     {
         private Map<NodeRef, EventConsolidator> nodes;
         private Map<ChildAssociationRef, ChildAssociationEventConsolidator> childAssocs;

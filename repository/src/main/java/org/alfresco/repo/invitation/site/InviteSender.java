@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
@@ -66,6 +67,7 @@ public abstract class InviteSender
     protected final FileFolderService fileFolderService;
     protected final RepoAdminService repoAdminService;
     protected final NamespaceService namespaceService;
+    protected final SysAdminParams sysAdminParams;
     
     public InviteSender(ServiceRegistry services, Repository repository, MessageService messageService)
     {
@@ -79,6 +81,7 @@ public abstract class InviteSender
         this.namespaceService = services.getNamespaceService();
         this.repository = repository;
         this.messageService = messageService;
+        this.sysAdminParams = services.getSysAdminParams();
     }
     
     /**

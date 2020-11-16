@@ -34,6 +34,9 @@ import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.rendition2.TransformDefinition;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -247,17 +250,28 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private void transformInBackground(NodeRef nodeRef, ContentReader reader, String targetMimetype,
                                        String embedOrExtract, Map<String, String> options)
     {
+        final String domain = TenantUtil.getCurrentDomain();
+        final String runAsUser = AuthenticationUtil.getRunAsUser();
+
         ExecutorService executorService = getExecutorService();
-        executorService.execute(() ->
-        {
-            try
-            {
-                transform(nodeRef, reader, targetMimetype, embedOrExtract, options);
-            }
-            finally
-            {
-                extractRawThreadFinished();
-            }
+        executorService.execute(() -> {
+
+            TenantUtil.runAsUserTenant((TenantRunAsWork<Void>) () -> {
+                transactionService.getRetryingTransactionHelper()
+                            .doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                                try
+                                {
+                                    transform(nodeRef, reader, targetMimetype, embedOrExtract, options);
+                                }
+                                finally
+                                {
+                                    extractRawThreadFinished();
+                                }
+                                return null;
+                            }, false);
+
+                return null;
+            }, runAsUser, domain);
         });
     }
 
@@ -281,24 +295,18 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
             logger.trace(sj);
         }
 
-        AuthenticationUtil.runAs(
-                (AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    try
-                    {
-                        renditionService2.transform(nodeRef, transformDefinition);
-                    }
-                    catch (IllegalArgumentException e)
-                    {
-                        if (e.getMessage().endsWith("The supplied sourceNodeRef "+nodeRef+" does not exist."))
-                        {
-                            throw new ConcurrencyFailureException(
-                                    "The original transaction may not have finished. " + e.getMessage());
-                        }
-                    }
-                    return null;
-                }), AuthenticationUtil.getSystemUserName());
+        try
+        {
+            renditionService2.transform(nodeRef, transformDefinition);
+        }
+        catch (IllegalArgumentException e)
+        {
+            if (e.getMessage().endsWith("The supplied sourceNodeRef " + nodeRef + " does not exist."))
+            {
+                throw new ConcurrencyFailureException(
+                            "The original transaction may not have finished. " + e.getMessage());
+            }
+        }
     }
 
     public void setMetadata(NodeRef nodeRef, InputStream transformInputStream)

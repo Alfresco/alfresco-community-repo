@@ -435,7 +435,7 @@ public class RecordAspect extends    AbstractDisposableItem
             {
                 if (contentBefore != null && !contentBefore.equals(contentAfter))
                 {
-                    throw new IntegrityException(MSG_WORM_RECORD_LOCKED, null);
+                    throw new IntegrityException(I18NUtil.getMessage(MSG_WORM_RECORD_LOCKED), null);
                 }
             }
             if (contentAfter != null)

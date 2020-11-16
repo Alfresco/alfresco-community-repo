@@ -131,14 +131,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
     }
 
     @Override
-    protected void tearDownImpl()
+    protected void tearDown() throws Exception
     {
-        // Unfreeze stuff so it can be deleted
-        holdService.removeFromHold(hold, frozenRecord);
-        holdService.removeFromHold(hold, frozenRecordFolder);
-        holdService.removeFromHold(hold, frozenRecord2);
-
-        super.tearDownImpl();
+        super.tearDown();
     }
 
     @Override

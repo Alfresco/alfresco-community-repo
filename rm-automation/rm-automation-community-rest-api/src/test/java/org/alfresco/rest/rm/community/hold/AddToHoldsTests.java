@@ -357,7 +357,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAddContentToHold()
     {
-        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD);
+        holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
         users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         nodesToBeClean.forEach( category -> getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(category));

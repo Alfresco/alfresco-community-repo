@@ -5632,7 +5632,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Default behaviour, expect to be MAJOR Version 1.0
         Map<String, Object> documentProperties = documentResponse.getProperties();
-        assertEquals(2, documentProperties.size());
         assertEquals("MAJOR", documentProperties.get("cm:versionType"));
         assertEquals("1.0", documentProperties.get("cm:versionLabel"));
 
@@ -5684,7 +5683,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
-        assertEquals(2, documentProperties.size());
         assertEquals("MAJOR", documentProperties.get("cm:versionType"));
         assertEquals("1.0", documentProperties.get("cm:versionLabel"));
 
@@ -5699,7 +5697,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
-        assertEquals(2, documentProperties.size());
         assertEquals("MAJOR", documentProperties.get("cm:versionType"));
         assertEquals("1.0", documentProperties.get("cm:versionLabel"));
 
@@ -5714,7 +5711,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
-        assertEquals(2, documentProperties.size());
         assertEquals("MINOR", documentProperties.get("cm:versionType"));
         assertEquals("0.1", documentProperties.get("cm:versionLabel"));
 

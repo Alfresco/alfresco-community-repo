@@ -97,6 +97,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory, closedRecordFolder, recordFolderWithSpacesInName;
     private UnfiledContainerChild unfiledContainerFolder;
+    private String holdNodeRef;
 
     @Autowired
     private DockerHelper dockerHelper;
@@ -406,7 +407,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     public void declareAndFileToHeldRecordFolderUsingFilesAPI() throws Exception
     {
         RecordCategoryChild heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
-        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
+        holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), heldRecordFolder.getId(),
                 HOLD_NAME);
 
@@ -457,7 +458,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     public void declareAndFileDocumentAsRecordCleanup()
     {
         //delete rm items
-        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME);
+        holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         deleteRecordCategory(recordCategory.getId());
         getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(unfiledContainerFolder.getId());
 

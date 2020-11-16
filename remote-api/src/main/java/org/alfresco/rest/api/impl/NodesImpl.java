@@ -2984,11 +2984,16 @@ public class NodesImpl implements Nodes
                 case "renditions":
                     renditionNames = getStringOrNull(field.getValue());
                     break;
-
-            case "versioningenabled":
+                case "versioningenabled":
                     String versioningEnabledStringValue = getStringOrNull(field.getValue());
                     if (null != versioningEnabledStringValue)
                     {
+                        // MNT-22036 versioningenabled parameter was added to disable versioning of newly created nodes.
+                        // The default API mechanism should not be changed/affected.
+                        // Versioning is enabled by default when creating a node using form-data.
+                        // To preserve this, versioningEnabled value must be 'true' for any given value typo/valuesNotSupported (except case-insensitive 'false')
+                        // .equalsIgnoreCase("false") will return true only when the input value is 'false'
+                        // !.equalsIgnoreCase("false") will return false only when the input value is 'false'
                         versioningEnabled = !versioningEnabledStringValue.equalsIgnoreCase("false");
                     }
                     break;

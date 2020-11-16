@@ -51,6 +51,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.client.config.ClientAppConfig;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate;
 import org.alfresco.repo.invitation.site.InviteModeratedSender;
@@ -145,7 +146,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             WorkflowModelModeratedInvitation.wfVarInviteeRole,
             WorkflowModelModeratedInvitation.wfVarResourceName,
             WorkflowModelModeratedInvitation.bpmGroupAssignee,
-            WorkflowModelModeratedInvitation.wfVarResourceType);
+            WorkflowModelModeratedInvitation.wfVarResourceType,
+            WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl,
+            WorkflowModelModeratedInvitation.wfVarWorkspaceUrl);
     
     
     /**
@@ -172,6 +175,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private MessageService messageService;
     private InviteNominatedSender inviteNominatedSender;
     private InviteModeratedSender inviteModeratedSender;
+    private ClientAppConfig clientAppConfig;
 
     // maximum number of tries to generate a invitee user name which
     // does not already belong to an existing person
@@ -194,6 +198,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private String moderatedInvitationWorkflowId = 
             WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
     
+    public void setClientAppConfig(ClientAppConfig clientAppConfig)
+    {
+        this.clientAppConfig = clientAppConfig;
+    }
+         
     /**
      * Set the policy component
      * 
@@ -252,7 +261,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         PropertyCheck.mandatory(this, "PasswordGenerator", passwordGenerator);
         PropertyCheck.mandatory(this, "PolicyComponent", policyComponent);
         PropertyCheck.mandatory(this, "templateService", templateService);
-        
+        PropertyCheck.mandatory(this, "clientAppConfig", clientAppConfig);
+
         this.inviteNominatedSender = new InviteNominatedSender(serviceRegistry, repositoryHelper, messageService);
         this.inviteModeratedSender = new InviteModeratedSender(serviceRegistry, repositoryHelper, messageService);
         
@@ -2041,5 +2051,72 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private Map<String, String> makePropertiesFromContextVariables(Map<?, ?> executionVariables, Collection<String> propertyNames)
     {
         return CollectionUtils.filterKeys((Map<String, String>) executionVariables, CollectionUtils.containsFilter(propertyNames));
+    }
+
+     /**
+     * Start the invitation process for a ModeratedInvitation
+     *
+     * @param inviteeComments why does the invitee want access to the resource ?
+     * @param inviteeUserName who is to be invited
+     * @param resourceType Invitation .ResourceType what resource type ?
+     * @param resourceName which resource
+     * @param inviteeRole which role ?
+     * @param clientName which client
+     */
+    public ModeratedInvitation inviteModerated(String inviteeComments, String inviteeUserName,
+                                               Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
+    {
+        if (resourceType == Invitation.ResourceType.WEB_SITE)
+        {
+            return startModeratedInvite(inviteeComments, inviteeUserName, resourceType, resourceName, inviteeRole, clientName);
+        }
+        throw new InvitationException("unknown resource type");
+    }
+
+    /**
+     * Moderated invitation implementation for given client
+     *
+     * @return the new moderated invitation
+     */
+    private ModeratedInvitation startModeratedInvite(String inviteeComments, String inviteeUserName,
+                                                     Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
+    {
+        SiteInfo siteInfo = siteService.getSite(resourceName);
+
+        if (siteService.isMember(resourceName, inviteeUserName))
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Failed - invitee user is already a member of the site.");
+
+            Object objs[] = { inviteeUserName, "", resourceName };
+            throw new InvitationExceptionUserError("invitation.invite.already_member", objs);
+        }
+
+        String roleGroup = siteService.getSiteRoleGroup(resourceName, SiteModel.SITE_MANAGER);
+
+        // get the workflow description
+        String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.moderated.workflow.description");
+
+        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
+        workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
+        workflowProps.put(WorkflowModelModeratedInvitation.ASSOC_GROUP_ASSIGNEE, roleGroup);
+        workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS, inviteeComments);
+        workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE, inviteeRole);
+        workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
+        workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME, resourceName);
+        workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
+
+        workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_CLIENT_NAME, clientName);
+        if(clientName != null && clientAppConfig.getClient(clientName) != null)
+        {
+            ClientAppConfig.ClientApp client = clientAppConfig.getClient(clientName);
+            workflowProps.put(WorkflowModelModeratedInvitation.WF_TEMPLATE_ASSETS_URL, client.getTemplateAssetsUrl());
+            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  client.getProperty("workspaceUrl"));
+        }
+
+        // get the moderated workflow
+
+        WorkflowDefinition wfDefinition = getWorkflowDefinition(InvitationWorkflowType.MODERATED);
+        return (ModeratedInvitation) startWorkflow(wfDefinition, workflowProps);
     }
 }

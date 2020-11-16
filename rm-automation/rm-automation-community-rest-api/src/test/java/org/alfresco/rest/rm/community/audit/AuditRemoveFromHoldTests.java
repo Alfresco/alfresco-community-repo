@@ -321,7 +321,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditRemoveFromHoldTests()
     {
-        holdsListRef.forEach(hold -> holdsAPI.deleteHold(getAdminUser(), hold));
+        holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
         dataSite.usingAdmin().deleteSite(privateSite);
         asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordCategory.getId());

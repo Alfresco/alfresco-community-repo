@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.net.ConnectException;
+
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -90,6 +93,23 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             }
 
             throw new AuthenticationException("Failed to authenticate user against Keycloak.", e);
+        }
+        catch (RuntimeException e)
+        {
+            Throwable cause = ExceptionStackUtil.getCause(e, ConnectException.class);
+            if (cause != null)
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Couldn't connect to Keycloak server to authenticate user. Reason: " + cause.getMessage());
+                }
+                throw new AuthenticationException("Couldn't connect to Keycloak server to authenticate user.", cause);
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Error occurred while authenticating user against Keycloak. Reason: " + e.getMessage());
+            }
+            throw new AuthenticationException("Error occurred while authenticating user against Keycloak.", e);
         }
     }
 

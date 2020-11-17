@@ -299,7 +299,19 @@
       <property name="transactionService" ref="transactionService" />
       <property name="transformServiceRegistry" ref="transformServiceRegistry" />
       <property name="taggingService" ref="taggingService" />
+      <property name="rfc822MetadataExtracter" ref="extracter.RFC822" />
    </bean>
+
+    <!-- No longer used as an extractor but still extended by RM to provide additional mappings -->
+    <bean id="extracter.RFC822"        class="org.alfresco.repo.content.metadata.RFC822MetadataExtracter"        parent="baseMetadataExtracter" >
+        <property name="supportedDateFormats">
+            <list>
+                <value>EEE, d MMM yyyy HH:mm:ss Z</value>
+                <value>EEE, d MMM yy HH:mm:ss Z</value>
+                <value>d MMM yyyy HH:mm:ss Z</value>
+            </list>
+        </property>
+    </bean>
 
    <!-- Content Transformation Regisitry -->
    <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" >

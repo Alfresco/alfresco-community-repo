@@ -102,6 +102,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
     private TaggingService taggingService;
+    private RFC822MetadataExtracter rfc822MetadataExtracter;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -141,6 +142,11 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     public void setTaggingService(TaggingService taggingService)
     {
         this.taggingService = taggingService;
+    }
+
+    public void setRfc822MetadataExtracter(RFC822MetadataExtracter rfc822MetadataExtracter)
+    {
+        this.rfc822MetadataExtracter = rfc822MetadataExtracter;
     }
 
     @Override
@@ -223,7 +229,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     }
 
     @Override
-    // Not called. Overloaded method with the NodeRef is called.
+    // Not called. extractRawInThread is called.
     protected Map<String, Serializable> extractRaw(ContentReader reader)
     {
         return null;
@@ -233,10 +239,34 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits)
             throws Throwable
     {
-        long timeoutMs = limits.getTimeoutMs();
-        Map<String, String> options = Collections.singletonMap(TIMEOUT, Long.toString(timeoutMs));
+        Map<String, String> options = getExtractOptions(nodeRef, reader, limits);
         transformInBackground(nodeRef, reader, MIMETYPE_METADATA_EXTRACT, EXTRACT, options);
         return EMPTY_METADATA;
+    }
+
+    private Map<String, String> getExtractOptions(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits)
+    {
+        long timeoutMs = limits.getTimeoutMs();
+
+        // This is a horrible hack to allow the AGS (RM) AMP to specify the mapping of properties from the repository
+        // rather than just using the values defined in the T-Engine.
+        boolean overrideMappings = false;
+        if (!overrideMappings)
+        if (rfc822MetadataExtracter.isOverriddenByRmAndTypeIsRFC822(reader))
+        {
+
+        }
+        else
+        {
+
+        }
+        String sourceMimetype = reader.getMimetype();
+        return getNormalExtractOptions(timeoutMs);
+    }
+
+    private Map<String, String> getNormalExtractOptions(long timeoutMs)
+    {
+        return Collections.singletonMap(TIMEOUT, Long.toString(timeoutMs));
     }
 
     @Override

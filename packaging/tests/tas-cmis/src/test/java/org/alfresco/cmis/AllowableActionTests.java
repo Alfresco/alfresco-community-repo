@@ -191,7 +191,7 @@ public class AllowableActionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get allowable actions from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserOnPrivateSiteCannotGetAllowableActions() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -204,7 +204,7 @@ public class AllowableActionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get allowable actions from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserOnModeratedSiteCannotGetAllowableActions() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

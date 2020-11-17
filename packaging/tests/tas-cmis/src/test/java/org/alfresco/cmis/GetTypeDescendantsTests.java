@@ -109,8 +109,8 @@ public class GetTypeDescendantsTests extends CmisTest
             .withoutPropertyDefinitions().hasDescendantType(1, "D:cm:dictionaryModel", "D:trx:transferLock");
     }
 
-    @Bug(id="REPO-4301")
-    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION }, expectedExceptions=CmisUnauthorizedException.class)
+    @Bug(id = "REPO-5388")
+    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION }, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
         description = "Verify deleted user cannot get type descendantes for valid type id and includePropertyDefinitions = false  and depth = 1")
     public void deletedUserCannotGetTypeDescendants() throws Exception
@@ -123,8 +123,8 @@ public class GetTypeDescendantsTests extends CmisTest
             .withoutPropertyDefinitions().hasDescendantType(1, "D:cm:dictionaryModel", "D:trx:transferLock");
     }
 
-    @Bug(id="REPO-4301")
-    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION }, expectedExceptions=CmisUnauthorizedException.class)
+    @Bug(id = "REPO-5388")
+    @Test(groups = { TestGroup.CMIS , TestGroup.REGRESSION }, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
         description = "Verify disabled user cannot get type descendantes for valid type id and includePropertyDefinitions = false  and depth = 1")
     public void disabledUserCannotGetTypeDescendants() throws Exception

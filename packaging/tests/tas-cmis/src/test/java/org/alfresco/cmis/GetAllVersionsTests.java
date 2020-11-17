@@ -49,7 +49,7 @@ public class GetAllVersionsTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can not get all versions for a document that was deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerShouldNotGetAllVersionsForADeletedDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -160,7 +160,7 @@ public class GetAllVersionsTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user cannot get all versions for a document in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetAllVersionsForDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(siteManager).createPrivateRandomSite();
@@ -170,10 +170,10 @@ public class GetAllVersionsTests extends CmisTest
                 .usingResource(testFile)
                     .usingVersion().getAllDocumentVersions().assertHasVersions(1.0);
     }
-    
+
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user cannot get all versions for a document in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetAllVersionsForDocumentFromModeratedSite() throws Exception
     {
         SiteModel moderated = dataSite.usingUser(siteManager).createPrivateRandomSite();

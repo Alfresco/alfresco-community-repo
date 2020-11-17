@@ -35,6 +35,7 @@ public class RepositoryInfoTests extends CmisTest
         Assert.assertNotNull(cmisApi.authenticateUser(testUser).getSession());
     }
 
+    @Bug(id = "REPO-5388")
     @Test(groups = { TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY, description = "Verify that valid user with invalid password cannot get repositories")
     public void unauthorizedUserCannotGetRepositories() throws Exception
@@ -81,7 +82,8 @@ public class RepositoryInfoTests extends CmisTest
         Assert.assertEquals(aclCapabilities.getSupportedPermissions().value(), "both", "Verify acl capabilities: getSupportedPermissions");
         Assert.assertEquals(aclCapabilities.getAclPropagation().value(), "propagate", "Verify acl capabilities: getAclPropagation");
     }
-    
+
+    @Bug(id = "REPO-5388")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, description = "Verify that invalid user cannot get repositories")
     public void invalidUserCannotGetRepositories() throws Exception
@@ -105,8 +107,8 @@ public class RepositoryInfoTests extends CmisTest
         String wrongBindingType = BindingType.BROWSER.value() + "w";
         cmisApi.authUserUsingBrowserUrlAndBindingType(testUser, cmisApi.cmisProperties.envProperty().getFullServerUrl() + cmisApi.cmisProperties.getBasePath(), wrongBindingType).getRepositoryInfo();
     }
-    
-    @Bug(id="REPO-4301")
+
+    @Bug(id = "REPO-5388")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, description = "Verify that disabled user cannot get repositories")
     public void disabledUserCannotGetRepositories() throws Exception

@@ -131,6 +131,45 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         assertEquals(false, cache.putAndCheckUpdate(104, "104"));
         assertEquals(true, cache.putAndCheckUpdate(104, null));
     }
+
+    @Test
+    public void putAndCheckUpdateIncludeNewCheck()
+    {
+        // Put an initial value
+        cache.put(101, "101");
+        // Update it
+        assertEquals(true, cache.putAndCheckUpdate(101, "99101", true));
+        // Check the value really was updated
+        assertEquals("99101", cache.get(101));
+
+        // Precondition: no value for key 102
+        assertFalse(cache.contains(102));
+        // Put a value - and test the return
+        assertEquals(true, cache.putAndCheckUpdate(102, "102", true));
+        assertEquals("102", cache.get(102));
+
+        cache.put(103, null);
+        assertEquals(true, cache.putAndCheckUpdate(103, "103", true));
+        // Repeat the put, this should not be an update
+        assertEquals(false, cache.putAndCheckUpdate(103, "103", true));
+
+        assertFalse(cache.contains(104));
+        assertEquals(true, cache.putAndCheckUpdate(104, null, true));
+        // Repeat putting null - still not an update, as we had that value a moment ago.
+        assertEquals(false, cache.putAndCheckUpdate(104, null, true));
+        // Now an update
+        assertEquals(true, cache.putAndCheckUpdate(104, "104", true));
+        // Another update
+        assertEquals(true, cache.putAndCheckUpdate(104, "99104", true));
+        // Another update, back to null
+        assertEquals(true, cache.putAndCheckUpdate(104, null, true));
+        // Not an update - still null
+        assertEquals(false, cache.putAndCheckUpdate(104, null, true));
+
+        cache.remove(104);
+        assertEquals(true, cache.putAndCheckUpdate(104, "104", true));
+        assertEquals(true, cache.putAndCheckUpdate(104, null, true));
+    }
     
     // TODO: Timer-based tests are not ideal. An alternative approach is to factor out the CacheBuilder.newBuilder()
     // call to a protected method, override that in this test class to return a mock and use the mock to check

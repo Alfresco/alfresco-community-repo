@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.util.Pair;
 
 /**

@@ -43,7 +43,7 @@ public class DBQueryBuilderPredicatePartCommand
 
     String alias;
     
-    QName propertyQName;
+    QName qName;
     
     DBQueryBuilderJoinCommandType joinCommandType;
 
@@ -202,13 +202,13 @@ public class DBQueryBuilderPredicatePartCommand
         }
     }
 
-    public void setPropertyQName(QName propertyQName)
+    public void setQName(QName propertyQName)
     {
-        this.propertyQName = propertyQName;
+        this.qName = propertyQName;
     }
 
-    public QName getPropertyQName()
+    public QName getQName()
     {
-        return this.propertyQName;
+        return this.qName;
     }
 }

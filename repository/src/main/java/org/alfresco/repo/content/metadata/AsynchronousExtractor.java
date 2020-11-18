@@ -89,6 +89,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private static final String EMBED = "embed";
     private static final String MIMETYPE_METADATA_EXTRACT = "alfresco-metadata-extract";
     private static final String MIMETYPE_METADATA_EMBED = "alfresco-metadata-embed";
+    private static final String EXTRACT_MAPPING = "extractMapping";
     private static final String METADATA = "metadata";
     private static final Map<String, Serializable> EMPTY_METADATA = Collections.emptyMap();
 
@@ -102,7 +103,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
     private TaggingService taggingService;
-    private RFC822MetadataExtracter rfc822MetadataExtracter;
+    private List<MetadataExtractorPropertyMappingOverride> metadataExtractorPropertyMappingOverrides;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -144,9 +145,9 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         this.taggingService = taggingService;
     }
 
-    public void setRfc822MetadataExtracter(RFC822MetadataExtracter rfc822MetadataExtracter)
+    public void setMetadataExtractorPropertyMappingOverrides(List<MetadataExtractorPropertyMappingOverride> metadataExtractorPropertyMappingOverrides)
     {
-        this.rfc822MetadataExtracter = rfc822MetadataExtracter;
+        this.metadataExtractorPropertyMappingOverrides = metadataExtractorPropertyMappingOverrides;
     }
 
     @Override
@@ -248,25 +249,37 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     {
         long timeoutMs = limits.getTimeoutMs();
 
-        // This is a horrible hack to allow the AGS (RM) AMP to specify the mapping of properties from the repository
-        // rather than just using the values defined in the T-Engine.
-        boolean overrideMappings = false;
-        if (!overrideMappings)
-        if (rfc822MetadataExtracter.isOverriddenByRmAndTypeIsRFC822(reader))
-        {
-
-        }
-        else
-        {
-
-        }
+        // This is to allow the AGS (RM) AMP to specify the mapping of properties from the repository
+        // rather than doing it out of process in the T-Engine.
         String sourceMimetype = reader.getMimetype();
-        return getNormalExtractOptions(timeoutMs);
+        for (MetadataExtractorPropertyMappingOverride override : metadataExtractorPropertyMappingOverrides)
+        {
+            if (override.match(sourceMimetype))
+            {
+                Map<String, Set<String>> extractMapping = override.getExtractMapping(nodeRef);
+                String extractMappingAsString = extractMappingToString(extractMapping);
+
+                Map<String, String> options = new HashMap<>(2);
+                options.put(TIMEOUT, Long.toString(timeoutMs));
+                options.put(EXTRACT_MAPPING, extractMappingAsString);
+                return options;
+            }
+        }
+
+        return Collections.singletonMap(TIMEOUT, Long.toString(timeoutMs));
     }
 
-    private Map<String, String> getNormalExtractOptions(long timeoutMs)
+    private String extractMappingToString(Map<String, Set<String>> map)
     {
-        return Collections.singletonMap(TIMEOUT, Long.toString(timeoutMs));
+        try
+        {
+            return jsonObjectMapper.writeValueAsString(map);
+        }
+        catch (JsonProcessingException e)
+        {
+            logger.error("Failed to save extractMapping as Json", e);
+            return null;
+        }
     }
 
     @Override

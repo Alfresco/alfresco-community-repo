@@ -30,6 +30,23 @@
                 <org.whitesource.orgToken>${env.WHITESOURCE_API_KEY}</org.whitesource.orgToken>
             </properties>
         </profile>
+        <profile>
+        <profile>
+            <id>internal</id>
+            <server>
+                <id>docker.io</id>
+                <username>${env.DOCKERHUB_USERNAME}</username>
+                <password>${env.DOCKERHUB_PASSWORD}</password>
+            </server>
+        </profile>
+        <profile>
+            <id>release</id>
+            <server>
+                <id>docker.io</id>
+                <username>${env.DOCKERHUB_USERNAME}</username>
+                <password>${env.DOCKERHUB_PASSWORD}</password>
+            </server>
+        </profile>
     </profiles>
 
     <servers>
@@ -47,11 +64,6 @@
             <id>quay.io</id>
             <username>${env.QUAY_USERNAME}</username>
             <password>${env.QUAY_PASSWORD}</password>
-        </server>
-        <server>
-            <id>docker.io</id>
-            <username>${env.DOCKERHUB_USERNAME}</username>
-            <password>${env.DOCKERHUB_PASSWORD}</password>
         </server>
     </servers>
 </settings>

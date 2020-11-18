@@ -97,7 +97,7 @@
         <dependency.postgresql.version>42.2.18</dependency.postgresql.version>
         <dependency.mysql.version>8.0.22</dependency.mysql.version>
         <dependency.mariadb.version>2.7.0</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.37</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.39</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
         <dependency.tas-restapi.version>1.48</dependency.tas-restapi.version>

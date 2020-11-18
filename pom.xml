@@ -683,8 +683,8 @@
                 </plugin>
                 <plugin>
                     <groupId>io.fabric8</groupId>
-                    <artifactId>fabric8-maven-plugin</artifactId>
-                    <version>4.4.0</version>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.34.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>

@@ -31,7 +31,6 @@
             </properties>
         </profile>
         <profile>
-        <profile>
             <id>internal</id>
             <server>
                 <id>docker.io</id>

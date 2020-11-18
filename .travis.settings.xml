@@ -32,19 +32,23 @@
         </profile>
         <profile>
             <id>internal</id>
-            <server>
-                <id>docker.io</id>
-                <username>${env.DOCKERHUB_USERNAME}</username>
-                <password>${env.DOCKERHUB_PASSWORD}</password>
-            </server>
+            <servers>
+                <server>
+                    <id>docker.io</id>
+                    <username>${env.DOCKERHUB_USERNAME}</username>
+                    <password>${env.DOCKERHUB_PASSWORD}</password>
+                </server>
+            </servers>
         </profile>
         <profile>
             <id>release</id>
-            <server>
-                <id>docker.io</id>
-                <username>${env.DOCKERHUB_USERNAME}</username>
-                <password>${env.DOCKERHUB_PASSWORD}</password>
-            </server>
+            <servers>
+                <server>
+                    <id>docker.io</id>
+                    <username>${env.DOCKERHUB_USERNAME}</username>
+                    <password>${env.DOCKERHUB_PASSWORD}</password>
+                </server>
+            </servers>
         </profile>
     </profiles>
 

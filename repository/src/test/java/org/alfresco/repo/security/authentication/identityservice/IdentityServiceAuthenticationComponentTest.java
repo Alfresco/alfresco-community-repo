@@ -25,6 +25,12 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.net.ConnectException;
+
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
@@ -39,12 +45,10 @@ import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.util.HttpResponseException;
 import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 {
-    private IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
+    private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
 
     @Autowired
     private AuthenticationContext authenticationContext;
@@ -87,6 +91,33 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         when(mockAuthzClient.obtainAccessToken("username", "password"))
                 .thenThrow(new HttpResponseException("Unauthorized", 401, "Unauthorized", null));
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+    }
+
+    @Test(expected = AuthenticationException.class)
+    public void testAuthenticationFail_connectionException()
+    {
+        when(mockAuthzClient.obtainAccessToken("username", "password")).thenThrow(
+                    new RuntimeException("Couldn't connect to server", new ConnectException("ConnectionRefused")));
+
+        try
+        {
+            authComponent.authenticateImpl("username", "password".toCharArray());
+        }
+        catch (RuntimeException ex)
+        {
+            Throwable cause = ExceptionStackUtil.getCause(ex, ConnectException.class);
+            assertNotNull(cause);
+            throw ex;
+        }
+    }
+
+    @Test (expected=AuthenticationException.class)
+    public void testAuthenticationFail_otherException()
+    {
+        when(mockAuthzClient.obtainAccessToken("username", "password"))
+                    .thenThrow(new RuntimeException("Some other errors!"));
 
         authComponent.authenticateImpl("username", "password".toCharArray());
     }

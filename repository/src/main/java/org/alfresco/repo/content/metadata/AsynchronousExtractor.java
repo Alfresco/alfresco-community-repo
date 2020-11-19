@@ -103,7 +103,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
     private TaggingService taggingService;
-    private List<MetadataExtractorPropertyMappingOverride> metadataExtractorPropertyMappingOverrides;
+    private List<MetadataExtractorPropertyMappingOverride> metadataExtractorPropertyMappingOverrides = Collections.emptyList();
 
     public void setNodeService(NodeService nodeService)
     {

@@ -72,7 +72,8 @@ import org.springframework.context.ApplicationContext;
     org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest.class,
     org.alfresco.repo.content.transform.ArchiveContentTransformerTest.class,
 
-    // Metadata tests - replaced with simplified test in LocalRenditionTest and ServiceRenditionTest
+    // Metadata tests - replaced with simplified tests in LocalRenditionTest and ServiceRenditionTest
+    org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
 
     // ----------------------------------------------------------------------

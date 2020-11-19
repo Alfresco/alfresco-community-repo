@@ -89,6 +89,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private static final String EMBED = "embed";
     private static final String MIMETYPE_METADATA_EXTRACT = "alfresco-metadata-extract";
     private static final String MIMETYPE_METADATA_EMBED = "alfresco-metadata-embed";
+    private static final String EXTRACT_MAPPING = "extractMapping";
     private static final String METADATA = "metadata";
     private static final Map<String, Serializable> EMPTY_METADATA = Collections.emptyMap();
 
@@ -102,6 +103,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
     private TaggingService taggingService;
+    private List<MetadataExtractorPropertyMappingOverride> metadataExtractorPropertyMappingOverrides = Collections.emptyList();
 
     public void setNodeService(NodeService nodeService)
     {
@@ -141,6 +143,11 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     public void setTaggingService(TaggingService taggingService)
     {
         this.taggingService = taggingService;
+    }
+
+    public void setMetadataExtractorPropertyMappingOverrides(List<MetadataExtractorPropertyMappingOverride> metadataExtractorPropertyMappingOverrides)
+    {
+        this.metadataExtractorPropertyMappingOverrides = metadataExtractorPropertyMappingOverrides;
     }
 
     @Override
@@ -223,7 +230,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     }
 
     @Override
-    // Not called. Overloaded method with the NodeRef is called.
+    // Not called. extractRawInThread is called.
     protected Map<String, Serializable> extractRaw(ContentReader reader)
     {
         return null;
@@ -233,10 +240,46 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits)
             throws Throwable
     {
-        long timeoutMs = limits.getTimeoutMs();
-        Map<String, String> options = Collections.singletonMap(TIMEOUT, Long.toString(timeoutMs));
+        Map<String, String> options = getExtractOptions(nodeRef, reader, limits);
         transformInBackground(nodeRef, reader, MIMETYPE_METADATA_EXTRACT, EXTRACT, options);
         return EMPTY_METADATA;
+    }
+
+    private Map<String, String> getExtractOptions(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits)
+    {
+        long timeoutMs = limits.getTimeoutMs();
+
+        // This is to allow the AGS (RM) AMP to specify the mapping of properties from the repository
+        // rather than doing it out of process in the T-Engine.
+        String sourceMimetype = reader.getMimetype();
+        for (MetadataExtractorPropertyMappingOverride override : metadataExtractorPropertyMappingOverrides)
+        {
+            if (override.match(sourceMimetype))
+            {
+                Map<String, Set<String>> extractMapping = override.getExtractMapping(nodeRef);
+                String extractMappingAsString = extractMappingToString(extractMapping);
+
+                Map<String, String> options = new HashMap<>(2);
+                options.put(TIMEOUT, Long.toString(timeoutMs));
+                options.put(EXTRACT_MAPPING, extractMappingAsString);
+                return options;
+            }
+        }
+
+        return Collections.singletonMap(TIMEOUT, Long.toString(timeoutMs));
+    }
+
+    private String extractMappingToString(Map<String, Set<String>> map)
+    {
+        try
+        {
+            return jsonObjectMapper.writeValueAsString(map);
+        }
+        catch (JsonProcessingException e)
+        {
+            logger.error("Failed to save extractMapping as Json", e);
+            return null;
+        }
     }
 
     @Override

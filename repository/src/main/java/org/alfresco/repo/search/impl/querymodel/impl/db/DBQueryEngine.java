@@ -92,13 +92,13 @@ public class DBQueryEngine implements QueryEngine
     
     protected SqlSessionTemplate template;
 
-    private QNameDAO qnameDAO;
+    protected QNameDAO qnameDAO;
     
     private NodeDAO nodeDAO;
 
     private DictionaryService dictionaryService;
 
-    private NamespaceService namespaceService;
+    protected NamespaceService namespaceService;
     
     private NodeService nodeService;
 

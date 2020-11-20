@@ -74,6 +74,7 @@ import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.codec.binary.Base64;
 import org.joda.time.DateTime;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -191,6 +192,22 @@ public class QuickShareServiceIntegrationTest
                         ContentModel.TYPE_CONTENT, 
                         user1.getUsername(),
                         "Quick Share Test Node Content");
+    }
+    
+    @After public void clearTestData()
+    {
+        if (testNode != null)
+        {
+            AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    nodeService.deleteNode(testNode);
+                    return null;
+                }
+            }, user1.getUsername());
+        }
     }
 
     @Test public void getMetaDataFromNodeRefByOwner() 
@@ -532,7 +549,8 @@ public class QuickShareServiceIntegrationTest
         }, user1.getUsername());
  
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        Assert.assertFalse(nodeService.exists(node));
+        final NodeRef archivedNode = nodeArchiveService.getArchivedNode(node);
+        assertNotNull("Node " + node.toString() + " hasn't been archived hence the deletion was unsuccessful", archivedNode);
     }
     
     /**

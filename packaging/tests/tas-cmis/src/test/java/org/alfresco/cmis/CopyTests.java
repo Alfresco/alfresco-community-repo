@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -48,7 +49,7 @@ public class CopyTests extends CmisTest
     
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to copy file to an existent location in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_ATOM })
     public void siteManagerCopyFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -100,10 +101,11 @@ public class CopyTests extends CmisTest
             .createFile(sourceFile).delete()
             .then().copyTo(targetFolder);
     }
-    
+
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION, 
             description = "Verify non existing user is not able to copy file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisUnauthorizedException.class)
     public void nonExistentUserIsNotAbleToCopyFile() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -114,10 +116,11 @@ public class CopyTests extends CmisTest
         cmisApi.authenticateUser(inexistentUser)
                 .then().copyTo(targetFolder);
     }
-    
+
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION, 
             description = "Verify non existing user is not able to copy folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisUnauthorizedException.class)
     public void nonExistentUserIsNotAbleToCopyFolder() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -130,11 +133,10 @@ public class CopyTests extends CmisTest
         cmisApi.authenticateUser(inexistentUser)
                 .then().copyTo(targetFolder);
     }
-    
-//    @Bug(id="ACE-5606")
+
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that checked out document can be copied with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-atom-REPO-5387", TestGroup.REGRESSION, TestGroup.CMIS })
     public void checkedOutDocumentCanBeCopied() throws Exception
     {
         targetFolder = FolderModel.getRandomFolderModel();
@@ -196,7 +198,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify copy PWC document object")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = { "bug-atom-REPO-5387", TestGroup.REGRESSION, TestGroup.CMIS })
     public void managerCopyPWCDocumentObject() throws Exception
     {
         sourceFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
@@ -252,7 +254,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot copy Document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotCopyDocument() throws Exception
     {
         sourceFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
@@ -263,7 +265,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot copy Folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotCopyFolder() throws Exception
     {
         sourceFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();
@@ -274,7 +276,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot copy Document from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCopyDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -285,7 +287,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot copy Folder from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCopyFolderFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -296,7 +298,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot copy Document from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCopyDocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createModeratedRandomSite();
@@ -307,7 +309,7 @@ public class CopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot copy Folder from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisUnauthorizedException.class, CmisPermissionDeniedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotCopyFolderFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createModeratedRandomSite();

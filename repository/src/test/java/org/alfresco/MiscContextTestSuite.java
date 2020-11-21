@@ -46,7 +46,8 @@ import org.springframework.context.ApplicationContext;
     // Minimum context [classpath:alfresco/minimal-context.xml]
     // ----------------------------------------------------------------------
 
-    // Metadata tests - replaced with simplified test in LocalRenditionTest and ServiceRenditionTest
+    // Metadata tests - replaced with simplified tests in LocalRenditionTest and ServiceRenditionTest
+    org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
 
     // ----------------------------------------------------------------------

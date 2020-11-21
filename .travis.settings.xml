@@ -15,7 +15,7 @@
                         <enabled>true</enabled>
                     </snapshots>
                     <name>Alfresco Internal Repository</name>
-                    <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
+                    <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
                 </repository>
             </repositories>
             <pluginRepositories>
@@ -42,16 +42,6 @@
             <id>alfresco-internal</id>
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
-        </server>
-        <server>
-            <id>quay.io</id>
-            <username>${env.QUAY_USERNAME}</username>
-            <password>${env.QUAY_PASSWORD}</password>
-        </server>
-        <server>
-            <id>docker.io</id>
-            <username>${env.DOCKERHUB_USERNAME}</username>
-            <password>${env.DOCKERHUB_PASSWORD}</password>
         </server>
     </servers>
 </settings>

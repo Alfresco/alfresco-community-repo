@@ -8,6 +8,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
@@ -75,10 +76,11 @@ public class DeleteTreeTests extends CmisTest
             .when().usingResource(parentTestFolder).deleteFolderTree().assertThat().doesNotExistInRepo()
             .deleteFolderTree();
     }
-    
+
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent user is NOT able to delete parent folder with multiple children in DocumentLibrary")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserCannotDeleteFolderTree() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
@@ -131,8 +133,7 @@ public class DeleteTreeTests extends CmisTest
             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                    .usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
-//    @Bug(id="REPO-1108")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to delete parent folder with unfile parameter set to DELETESINGLEFILED, using checked out document")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
@@ -212,8 +213,7 @@ public class DeleteTreeTests extends CmisTest
             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                    .usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
-//    @Bug(id="REPO-1108")
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete parent folder with continueOnFailure parameter set to false")
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -253,49 +253,47 @@ public class DeleteTreeTests extends CmisTest
                             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                                .usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site contributor is not able to delete parent folder with multiple children created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-atom-REPO-5390", TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCannotDeleteFolderTreeCreatedByManager() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
         childTestFolder = FolderModel.getRandomFolderModel();
         testFile = FileModel.getRandomFileModel(FileType.MSWORD, content);
-        cmisApi.authenticateUser(testUser)
-            .usingSite(testSite)
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFolder(parentTestFolder).and().assertThat().existsInRepo()
-                    .usingResource(parentTestFolder)
-                        .createFolder(childTestFolder).and().assertThat().existsInRepo()
-                        .createFile(testFile).and().assertThat().existsInRepo()
-                    .authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                        .when().usingResource(parentTestFolder).refreshResource()
-                            .deleteFolderTree().and().assertThat().hasFailedDeletedObject(parentTestFolder.getNodeRef())
-                                .and().assertThat().existsInRepo()
-                                .then().usingResource(childTestFolder).assertThat().existsInRepo()
-                                    .usingResource(testFile).assertThat().existsInRepo();
+                .usingResource(parentTestFolder)
+                .createFolder(childTestFolder).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo();
+        cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .usingResource(parentTestFolder).refreshResource()
+                .deleteFolderTree().and().assertThat().hasFailedDeletedObject(parentTestFolder.getNodeRef())
+                .and().assertThat().existsInRepo()
+                .usingResource(childTestFolder).assertThat().existsInRepo()
+                .usingResource(testFile).assertThat().existsInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site collaborator is not able to delete parent folder with multiple children created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-atom-REPO-5390", TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCannotDeleteFolderTreeCreatedByManager() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
         childTestFolder = FolderModel.getRandomFolderModel();
         testFile = FileModel.getRandomFileModel(FileType.MSWORD, content);
-        cmisApi.authenticateUser(testUser)
-            .usingSite(testSite)
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFolder(parentTestFolder).and().assertThat().existsInRepo()
-                    .usingResource(parentTestFolder)
-                        .createFolder(childTestFolder).and().assertThat().existsInRepo()
-                        .createFile(testFile).and().assertThat().existsInRepo()
-                    .authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                        .when().usingResource(parentTestFolder).refreshResource()
-                            .deleteFolderTree().and().assertThat().hasFailedDeletedObject(parentTestFolder.getNodeRef())
-                                .and().assertThat().existsInRepo()
-                                .then().usingResource(childTestFolder).assertThat().existsInRepo()
-                                    .usingResource(testFile).assertThat().existsInRepo();
+                .usingResource(parentTestFolder)
+                .createFolder(childTestFolder).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo();
+        cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .usingResource(parentTestFolder).refreshResource()
+                .deleteFolderTree().and().assertThat().hasFailedDeletedObject(parentTestFolder.getNodeRef())
+                .and().assertThat().existsInRepo()
+                .usingResource(childTestFolder).assertThat().existsInRepo()
+                .usingResource(testFile).assertThat().existsInRepo();
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
@@ -318,32 +316,31 @@ public class DeleteTreeTests extends CmisTest
                             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                                 .usingResource(testFile).assertThat().doesNotExistInRepo();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to delete parent folder with multiple children created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-atom-REPO-5390", TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerCannotDeleteFolderTreeCreatedByManager() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
         childTestFolder = FolderModel.getRandomFolderModel();
         testFile = FileModel.getRandomFileModel(FileType.MSWORD, content);
-        cmisApi.authenticateUser(testUser)
-            .usingSite(testSite)
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFolder(parentTestFolder).and().assertThat().existsInRepo()
-                    .usingResource(parentTestFolder)
-                        .createFolder(childTestFolder).and().assertThat().existsInRepo()
-                        .createFile(testFile).and().assertThat().existsInRepo()
-                    .authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                        .when().usingResource(parentTestFolder).refreshResource()
-                            .deleteFolderTree().and().assertThat().hasFailedDeletedObject(parentTestFolder.getNodeRef())
-                                .and().assertThat().existsInRepo()
-                                .then().usingResource(childTestFolder).assertThat().existsInRepo()
-                                    .usingResource(testFile).assertThat().existsInRepo();
+                .usingResource(parentTestFolder)
+                .createFolder(childTestFolder).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo();
+        cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                .usingResource(parentTestFolder).refreshResource()
+                .deleteFolderTree().and().assertThat().hasFailedDeletedObject(parentTestFolder.getNodeRef())
+                .and().assertThat().existsInRepo()
+                .usingResource(childTestFolder).assertThat().existsInRepo()
+                .usingResource(testFile).assertThat().existsInRepo();
     }
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to delete parent folder with multiple children in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotDeleteFolderTreeInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -363,22 +360,22 @@ public class DeleteTreeTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that only the parent folder is displayed in trash can after deleting it")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
     public void checkTrashCanAfterDeletingParentFolder() throws Exception
     {
         parentTestFolder = FolderModel.getRandomFolderModel();
         childTestFolder = FolderModel.getRandomFolderModel();
         testFile = FileModel.getRandomFileModel(FileType.MSWORD, content);
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFolder(parentTestFolder).and().assertThat().existsInRepo()
-            .usingResource(parentTestFolder)
+                .createFolder(parentTestFolder).and().assertThat().existsInRepo()
+                .usingResource(parentTestFolder)
                 .createFolder(childTestFolder).and().assertThat().existsInRepo()
                 .createFile(testFile).and().assertThat().existsInRepo()
-            .when().usingResource(parentTestFolder).refreshResource()
-            .deleteFolderTree()
+                .when().usingResource(parentTestFolder).refreshResource()
+                .deleteFolderTree()
                 .and().assertThat().doesNotExistInRepo()
-            .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
-                   .usingResource(testFile).assertThat().doesNotExistInRepo();
+                .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
+                .usingResource(testFile).assertThat().doesNotExistInRepo();
         dataUser.assertTrashCanHasContent(parentTestFolder);
         dataUser.assertTrashCanDoesNotHaveContent(childTestFolder, testFile);
     }

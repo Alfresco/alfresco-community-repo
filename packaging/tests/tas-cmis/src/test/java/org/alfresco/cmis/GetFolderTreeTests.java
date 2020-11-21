@@ -3,6 +3,7 @@ package org.alfresco.cmis;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
@@ -181,7 +182,7 @@ public class GetFolderTreeTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member of a private site cannot get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={ CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetFolderTreeForAFolderFromAPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -196,7 +197,7 @@ public class GetFolderTreeTests extends CmisTest
 
     @TestRail(section = {"cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member of a moderated site cannot get folder tree for valid parent folder with at least 2 children folders")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={ CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetFolderTreeForAFolderFromAModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

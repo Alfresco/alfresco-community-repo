@@ -3,6 +3,7 @@ package org.alfresco.cmis;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
@@ -135,7 +136,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a document from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisObjectTypeForADocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -149,7 +150,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a folder from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisFolderTypeForAFolderFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -163,7 +164,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a document from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisObjectTypeForADocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();
@@ -177,7 +178,7 @@ public class GetObjectTypeTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Non site member is not able to verify CMIS document type for a folder from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotVerifyCmisObjectTypeForAFolderFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

@@ -144,7 +144,7 @@ public class GetCheckedOutDocumentsTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get checked out documents")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserShouldNotGetCheckedOutDocuments() throws Exception
     {
         FileModel doc = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

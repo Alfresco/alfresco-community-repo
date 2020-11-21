@@ -162,7 +162,7 @@ public class IsLatestMajorVersionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user can verify is latest major version for document in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotVerifyIsLatestMajorVersionInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(managerUser).createPrivateRandomSite();
@@ -175,7 +175,7 @@ public class IsLatestMajorVersionTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user can verify is latest major version for document in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotVerifyIsLatestMajorVersionInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(managerUser).createPrivateRandomSite();

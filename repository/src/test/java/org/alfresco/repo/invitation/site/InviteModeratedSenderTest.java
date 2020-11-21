@@ -44,6 +44,8 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.admin.SysAdminParamsImpl;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 import org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate;
@@ -175,6 +177,7 @@ public class InviteModeratedSenderTest extends TestCase
         SearchService mockSearchService = mockSearchService();
         SiteService mockSiteService = mockSiteService();
         FileFolderService mockFileFolderService = mockFileFolderService();
+        SysAdminParams sysAdminParams = new SysAdminParamsImpl();
 
         ServiceRegistry services = mock(ServiceRegistry.class);
         when(services.getActionService()).thenReturn(mockActionService);
@@ -183,6 +186,7 @@ public class InviteModeratedSenderTest extends TestCase
         when(services.getSearchService()).thenReturn(mockSearchService);
         when(services.getSiteService()).thenReturn(mockSiteService);
         when(services.getFileFolderService()).thenReturn(mockFileFolderService);
+        when(services.getSysAdminParams()).thenReturn(sysAdminParams);
         return services;
     }
 

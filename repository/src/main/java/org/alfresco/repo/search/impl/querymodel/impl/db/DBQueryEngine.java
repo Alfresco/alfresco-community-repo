@@ -424,12 +424,13 @@ public class DBQueryEngine implements QueryEngine
 
     private int computeRequiredNodesCount(QueryOptions options)
     {
-        if (options.getMaxItems() == -1)
+        int maxItems = options.getMaxItems();
+        if (maxItems == -1 || maxItems == Integer.MAX_VALUE)
         {
             return Integer.MAX_VALUE;
         }
         
-        return options.getMaxItems() + options.getSkipCount() + 1;
+        return maxItems + options.getSkipCount() + 1;
     }
 
     private BitSet formInclusionMask(List<Node> nodes)

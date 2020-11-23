@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.domain.permissions;
 
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -394,6 +397,13 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         }
         else
         {
+            // If node has a pending acl, retrieve the sharedAclToReplace from node property and remove the aspect
+            if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+                removePendingAclAspect(nodeId);
+            }
+
             // Lazily retrieve/create the shared ACL
             if (mergeFrom == null)
             {
@@ -528,6 +538,17 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         {
             log.debug("Set Fixed Acl Pending : " + nodeId + " " + nodeDAO.getNodePair(nodeId).getSecond());
         }
+    }
+
+    public void removePendingAclAspect(Long nodeId)
+    {
+        Set<QName> aspects = new HashSet<>(1);
+        aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+        Set<QName> pendingFixAclProperties = new HashSet<>();
+        pendingFixAclProperties.add(ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+        pendingFixAclProperties.add(ContentModel.PROP_INHERIT_FROM_ACL);
+        nodeDAO.removeNodeAspects(nodeId, aspects);
+        nodeDAO.removeNodeProperties(nodeId, pendingFixAclProperties);
     }
     
     /**

@@ -53,7 +53,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -264,17 +263,17 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                     {
                         log.debug(String.format("Processing node %s", nodeRef));
                     }
+                    
                     final Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
-
+                    
                     // MNT-22009 - If node was deleted and in archive store, remove the aspect and properties and do not
                     // process
                     if (nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
                     {
-                        nodeDAO.removeNodeAspects(nodeId, aspects);
-                        nodeDAO.removeNodeProperties(nodeId, PENDING_FIX_ACL_ASPECT_PROPS);
+                        accessControlListDAO.removePendingAclAspect(nodeId);
                         return null;
                     }
-
+                    
                     // retrieve acl properties from node
                     Long inheritFrom = (Long) nodeDAO.getNodeProperty(nodeId,
                             ContentModel.PROP_INHERIT_FROM_ACL);
@@ -282,12 +281,11 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                             ContentModel.PROP_SHARED_ACL_TO_REPLACE);
 
                     // set inheritance using retrieved prop
-                    accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace,
-                            true);
+                    accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace, true);
 
-                    nodeDAO.removeNodeAspects(nodeId, aspects);
-                    nodeDAO.removeNodeProperties(nodeId, PENDING_FIX_ACL_ASPECT_PROPS);
-                    
+                    // Remove aspect
+                    accessControlListDAO.removePendingAclAspect(nodeId);
+
                     if (!policyIgnoreUtil.ignorePolicy(nodeRef))
                     {
                         boolean transformedToAsyncOperation = toBoolean((Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));

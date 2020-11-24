@@ -108,7 +108,6 @@
     
     <bean id="search.dbQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine" >
         <property name="permissionService" ref="permissionService"/>
-        <property name="ownableService" ref="ownableService"/>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="namespaceService" ref="namespaceService" />
         <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
@@ -117,7 +116,9 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodesCache" ref="node.nodesCache"/>
+        <property name="aspectsCache" ref="node.aspectsCache"/>
         <property name="propertiesCache" ref="node.propertiesCache"/>
+        <property name="aclCrudDAO" ref="aclCrudDAO"/>
         <property name="metadataIndexCheck2">
             <ref bean="metadataQueryIndexesCheck2" />
         </property>

@@ -27,10 +27,18 @@ package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine.NodePermissionAssessor;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,7 +73,6 @@ public class NodePermissionAssessorTest
         performChecks(20);
         
         assertTrue(assessor.shouldQuitChecks());
-        verify(assessor, times(5)).isReallyIncluded(node);
     }
     
     @Test
@@ -104,7 +111,14 @@ public class NodePermissionAssessorTest
     
     private NodePermissionAssessor createAssessor()
     {
-        NodePermissionAssessor assessor = spy(new DBQueryEngine().new NodePermissionAssessor());
+        AclCrudDAO aclCrudDAO = mock(AclCrudDAO.class);
+        PermissionService permissionService = mock(PermissionService.class);
+
+        DBQueryEngine engine = new DBQueryEngine();
+        engine.setPermissionService(permissionService);
+        engine.setAclCrudDAO(aclCrudDAO);
+        
+        NodePermissionAssessor assessor = spy(engine.new NodePermissionAssessor());
         doReturn(true).when(assessor).isReallyIncluded(any(Node.class));
         return assessor;
     }

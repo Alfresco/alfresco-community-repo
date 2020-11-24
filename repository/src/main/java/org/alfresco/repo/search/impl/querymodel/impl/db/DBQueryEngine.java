@@ -26,6 +26,10 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.alfresco.repo.domain.node.AbstractNodeDAOImpl.CACHE_REGION_NODES;
+import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclOwnerStopWatch;
+import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclReadStopWatch;
+import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.handlerStopWatch;
+import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.resetStopwatches;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +52,8 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOA
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeVersionKey;
+import org.alfresco.repo.domain.permissions.AclCrudDAO;
+import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
@@ -65,10 +71,10 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -79,6 +85,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.util.StopWatch;
 
 /**
  * @author Andy
@@ -105,18 +112,25 @@ public class DBQueryEngine implements QueryEngine
     private TenantService tenantService;
     
     private OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
-    
-    private EntityLookupCache<Long, Node, NodeRef> nodesCache;
 
     private PermissionService permissionService;
 
-    private OwnableService ownableService;
-    
     private int maxPermissionChecks;
     
     private long maxPermissionCheckTimeMillis;
 
     private SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache;
+    
+    EntityLookupCache<Long, Node, NodeRef> nodesCache;
+    
+    private SimpleCache<NodeVersionKey, Set<QName>> aspectsCache;
+    
+    private AclCrudDAO aclCrudDAO;
+
+    public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
+    {
+        this.aclCrudDAO = aclCrudDAO;
+    }
     
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
@@ -126,11 +140,6 @@ public class DBQueryEngine implements QueryEngine
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
-    }
-
-    public void setOwnableService(OwnableService ownableService)
-    {
-        this.ownableService = ownableService;
     }
 
     public void setTemplate(SqlSessionTemplate template)
@@ -212,6 +221,7 @@ public class DBQueryEngine implements QueryEngine
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
         logger.debug("Query request received");
+        resetStopwatches();
         
         Set<String> selectorGroup = null;
         if (query.getSource() != null)
@@ -271,21 +281,23 @@ public class DBQueryEngine implements QueryEngine
         
         ResultSet resultSet;
         // TEMPORARY - this first branch of the if statement simply allows us to easily clear the caches for now; it will be removed afterwards
-        if (cleanCacheRequest(options)) {
+        if (cleanCacheRequest(options)) 
+        {
             nodesCache.clear();
             propertiesCache.clear();
+            aspectsCache.clear();
             logger.info("Nodes cache cleared");
             resultSet = new DBResultSet(options.getAsSearchParmeters(), Collections.emptyList(), nodeDAO, nodeService, tenantService, Integer.MAX_VALUE);
         }
-        else if (resolvePermissionsNow(options))
-        {
-            resultSet = selectNodesWithPermissions(options, dbQuery);
-            logger.debug("Selected " +resultSet.length()+ " nodes with accelerated permission resolution");
-        }
-        else
+        else if (forceOldPermissionResolution(options))
         {
             resultSet = selectNodesStandard(options, dbQuery);
             logger.debug("Selected " +resultSet.length()+ " nodes with standard permission resolution");
+        }
+        else
+        {
+            resultSet = selectNodesWithPermissions(options, dbQuery);
+            logger.debug("Selected " +resultSet.length()+ " nodes with accelerated permission resolution");
         }
         
         return asQueryEngineResults(resultSet);
@@ -327,15 +339,37 @@ public class DBQueryEngine implements QueryEngine
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
     {
+        StopWatch sw = DBStats.queryStopWatch();
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
         
         logger.debug("- query sent to the database");
+        sw.start("ttfr");
         template.select(pickQueryTemplate(options, dbQuery), dbQuery, new ResultHandler<Node>()
         {
             @Override
             public void handleResult(ResultContext<? extends Node> context)
             {
+                handlerStopWatch().start();
+                try
+                {
+                    doHandleResult(permissionAssessor, sw, nodes, requiredNodes, context);
+                }
+                finally
+                {
+                    handlerStopWatch().stop();
+                }
+            }
+            
+            private void doHandleResult(NodePermissionAssessor permissionAssessor, StopWatch sw, List<Node> nodes,
+                    int requiredNodes, ResultContext<? extends Node> context)
+            {
+                if (permissionAssessor.isFirstRecord())
+                {
+                    sw.stop();
+                    sw.start("ttlr");
+                }
+                
                 if (nodes.size() >= requiredNodes)
                 {
                     context.stop();
@@ -363,9 +397,12 @@ public class DBQueryEngine implements QueryEngine
                 if (permissionAssessor.shouldQuitChecks())
                 {
                     context.stop();
+                    return;
                 }
+                
             }
         });
+        sw.stop();
 
         int numberFound = nodes.size();
         nodes.removeAll(Collections.singleton(null));
@@ -387,12 +424,13 @@ public class DBQueryEngine implements QueryEngine
 
     private int computeRequiredNodesCount(QueryOptions options)
     {
-        if (options.getMaxItems() == -1)
+        int maxItems = options.getMaxItems();
+        if (maxItems == -1 || maxItems == Integer.MAX_VALUE)
         {
             return Integer.MAX_VALUE;
         }
         
-        return options.getMaxItems() + options.getSkipCount() + 1;
+        return maxItems + options.getSkipCount() + 1;
     }
 
     private BitSet formInclusionMask(List<Node> nodes)
@@ -443,30 +481,39 @@ public class DBQueryEngine implements QueryEngine
         return new DBQueryModelFactory();
     }
 
-    public class NodePermissionAssessor {
-        
-        private int maxPermissionChecks;
+    public class NodePermissionAssessor
+    {
+        private final boolean isAdminReading;
+
+        private final Authority authority;
+
+        private final Map<Long, Boolean> aclReadCache = new HashMap<>();
+
         private int checksPerformed;
+
+        private long startTime;
+
+        private int maxPermissionChecks;
+
         private long maxPermissionCheckTimeMillis;
-        private long timeCreated;
-        
+
         public NodePermissionAssessor()
         {
            this.checksPerformed = 0;
            this.maxPermissionChecks = Integer.MAX_VALUE;
            this.maxPermissionCheckTimeMillis = Long.MAX_VALUE;
+           
+           Set<String> authorisations = permissionService.getAuthorisations();
+           this.isAdminReading = authorisations.contains(AuthenticationUtil.getAdminRoleName());
+
+           authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
         }
-        
+
         public boolean isIncluded(Node node)
         { 
             if (isFirstRecord())
             {
-                this.timeCreated = System.currentTimeMillis();
-            }
-            
-            if (shouldQuitChecks())
-            {
-                return false;
+                this.startTime = System.currentTimeMillis();
             }
             
             checksPerformed++;
@@ -480,8 +527,9 @@ public class DBQueryEngine implements QueryEngine
 
         boolean isReallyIncluded(Node node)
         {
-            return adminRead() || canRead(node.getAclId()) ||
-                    ownerRead(node.getNodeRef());
+            return  isAdminReading || 
+                    canRead(node.getAclId()) ||
+                    isOwnerReading(node, authority);
         }
 
         public void setMaxPermissionChecks(int maxPermissionChecks)
@@ -498,45 +546,42 @@ public class DBQueryEngine implements QueryEngine
                 result = true;
             }
             
-            if ((System.currentTimeMillis() - timeCreated) >= maxPermissionCheckTimeMillis)
+            if ((System.currentTimeMillis() - startTime) >= maxPermissionCheckTimeMillis)
             {
                 result = true;
             }
             
             return result;
         }
-        
-        public int getMaxPermissionChecks()
-        {
-            return this.maxPermissionChecks;
-        }
 
         public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
         {
             this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
         }
-        
-        public long getMaxPermissionCheckTimeMillis()
+                
+        boolean canRead(Long aclId)
         {
-            return this.maxPermissionCheckTimeMillis;
+            aclReadStopWatch().start();
+            try
+            {
+                Boolean res = aclReadCache.get(aclId);
+                if (res == null)
+                {
+                    res = canCurrentUserRead(aclId);
+                    aclReadCache.put(aclId, res);
+                }
+                return res;
+            }
+            finally
+            {
+                aclReadStopWatch().stop();
+            }
         }
     }
     
-    private boolean ownerRead(NodeRef nodeRef)
+    protected boolean canCurrentUserRead(Long aclId)
     {
-        String username = AuthenticationUtil.getRunAsUser();
-        String owner = ownableService.getOwner(nodeRef);
-        return EqualsHelper.nullSafeEquals(username, owner);
-    }
-
-    private boolean adminRead()
-    {
-        Set<String> authorisations = permissionService.getAuthorisations();
-        return authorisations.contains(AuthenticationUtil.getAdminRoleName());
-    }
-    
-    private boolean canRead(Long aclId)
-    {
+        // cache resolved ACLs
         Set<String> authorities = permissionService.getAuthorisations();
 
         Set<String> aclReadersDenied = permissionService.getReadersDenied(aclId);
@@ -544,7 +589,7 @@ public class DBQueryEngine implements QueryEngine
         {
             if (authorities.contains(auth))
             {
-                return false;
+                return false; 
             }
         }
 
@@ -553,13 +598,53 @@ public class DBQueryEngine implements QueryEngine
         {
             if (authorities.contains(auth))
             {
-                return true;
+                return true; 
             }
         }
 
         return false;
     }
+    
+    protected boolean isOwnerReading(Node node, Authority authority)
+    {
+        aclOwnerStopWatch().start();
+        try
+        {
+            String owner = getOwner(node);
+            if (EqualsHelper.nullSafeEquals(authority.getAuthority(), owner))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        finally
+        {
+            aclOwnerStopWatch().stop();
+        }
+    }
 
+    private String getOwner(Node node)
+    {
+        nodesCache.setValue(node.getId(), node);
+        Set<QName> nodeAspects = nodeService.getAspects(node.getNodeRef());
+        
+        String userName = null;
+        if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
+        {
+            userName = node.getAuditableProperties().getAuditCreator();
+        }
+        else if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
+        {
+            Serializable owner = nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_OWNER);
+            userName = DefaultTypeConverter.INSTANCE.convert(String.class, owner);
+        }
+        
+        return userName;
+    }
+    
     private boolean cleanCacheRequest(QueryOptions options)
     {
         return "xxx".equals(getLocaleLanguage(options));
@@ -571,9 +656,9 @@ public class DBQueryEngine implements QueryEngine
         return lang.length() > index ? lang.charAt(index) : ' ';
     }
     
-    private boolean resolvePermissionsNow(QueryOptions options)
+    private boolean forceOldPermissionResolution(QueryOptions options)
     {
-        return getMagicCharFromLocale(options, 2) == 'f';
+        return getMagicCharFromLocale(options, 2) == 's';
     }
     
     private String getLocaleLanguage(QueryOptions options)
@@ -625,5 +710,13 @@ public class DBQueryEngine implements QueryEngine
     public void setPropertiesCache(SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache)
     {
         this.propertiesCache = propertiesCache;
+    }
+    
+    /*
+     * TEMPORARY - Injection of nodes cache for clean-up when required
+     */
+    public void setAspectsCache(SimpleCache<NodeVersionKey, Set<QName>> aspectsCache)
+    {
+        this.aspectsCache = aspectsCache;
     }
 }

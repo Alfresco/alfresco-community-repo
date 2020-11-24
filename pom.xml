@@ -4,7 +4,7 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-governance-services</artifactId>
    <packaging>pom</packaging>
-   <version>3.4.1-SNAPSHOT</version>
+   <version>3.4.1-A3</version>
    <name>Alfresco Governance Services</name>
 
    <url>http://www.alfresco.org/</url>
@@ -18,7 +18,7 @@
       <connection>scm:git:https://github.com/Alfresco/governance-services.git</connection>
       <developerConnection>scm:git:https://github.com/Alfresco/governance-services.git</developerConnection>
       <url>https://github.com/Alfresco/governance-services</url>
-     <tag>V3.4.0</tag>
+     <tag>V3.4.1-A3</tag>
   </scm>
 
    <issueManagement>

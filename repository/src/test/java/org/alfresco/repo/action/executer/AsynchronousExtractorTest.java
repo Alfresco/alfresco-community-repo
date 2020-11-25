@@ -36,6 +36,8 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.TransformClient;
 import org.alfresco.repo.search.impl.noindex.NoIndexCategoryServiceImpl;
@@ -130,6 +132,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     private TransformerDebug transformerDebug;
     private TransactionService transactionService;
     private TransformServiceRegistry transformServiceRegistry;
+    private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
     private TaggingServiceImpl taggingService;
     private ContentMetadataExtracter contentMetadataExtracter;
     private ContentMetadataEmbedder contentMetadataEmbedder;
@@ -186,6 +189,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
             setContentService(contentService);
             setTransactionService(transactionService);
             setTransformServiceRegistry(transformServiceRegistry);
+            setRenditionDefinitionRegistry2(renditionDefinitionRegistry2);
             setEnableStringTagging(true);
             setTaggingService(taggingService);
             setRegistry(metadataExtracterRegistry);
@@ -330,6 +334,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         renditionService2 = (RenditionService2Impl) applicationContext.getBean("renditionService2");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         transformServiceRegistry = (TransformServiceRegistry) applicationContext.getBean("transformServiceRegistry");
+        renditionDefinitionRegistry2 = (RenditionDefinitionRegistry2Impl) applicationContext.getBean("renditionDefinitionRegistry2");
         taggingService = (TaggingServiceImpl) applicationContext.getBean("taggingService");
         transformClient = (TransformClient) applicationContext.getBean("transformClient");
         asynchronousExtractor = (AsynchronousExtractor) applicationContext.getBean("extractor.Asynchronous");

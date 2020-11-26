@@ -95,32 +95,13 @@ var Evaluator =
          }
          catch (e) {}
       }
-
-      var nodeJSON = appUtils.toJSON(node, true);
-      var stripLinkedNodeProperties = (args["stripLinkedNodeProperties"] == "true" ? true : false);
-
-      if (isLink && stripLinkedNodeProperties) {
-         var nodeJsonObj = jsonUtils.toObject(nodeJSON);
-         var linkedPropsInclude = ["cm:taggable","cm:categories"];
-         var linkedNodePropsCompact = {};
-
-         for each (var linkedProp in linkedPropsInclude) {
-            var prop = nodeJsonObj.linkedNode.properties[linkedProp];
-            if (prop) {
-               linkedNodePropsCompact[linkedProp] = prop;
-            }
-         }
-
-         nodeJsonObj.linkedNode.properties = linkedNodePropsCompact;
-         nodeJSON = jsonUtils.toJSONString(nodeJsonObj);
-      }
-
+      
       if (node !== null)
       {
          return(
          {
             node: node,
-            nodeJSON: nodeJSON,
+            nodeJSON: appUtils.toJSON(node, true),
             type: nodeType,
             isLink: isLink,
             linkedNode: linkedNode,

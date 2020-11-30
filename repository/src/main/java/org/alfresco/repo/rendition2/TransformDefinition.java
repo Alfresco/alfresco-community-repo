@@ -54,18 +54,14 @@ public class TransformDefinition extends RenditionDefinition2Impl
      * if the transform will take place, will be cached against the transformName.
      */
     public TransformDefinition(String transformName, String targetMimetype, Map<String, String> transformOptions,
-                               String clientData, String replyQueue, String requestId)
+                               String clientData, String replyQueue, String requestId,
+                               RenditionDefinitionRegistry2Impl registry)
     {
-        super(convertToRenditionName(transformName), targetMimetype, transformOptions, null);
+        super(convertToRenditionName(transformName), targetMimetype, transformOptions, registry);
         this.clientData = clientData;
         this.replyQueue = replyQueue;
         this.requestId = requestId;
         this.errorMessage = null;
-    }
-
-    static String convertToRenditionName(String transformName)
-    {
-        return transformName == null ? null : TRANSFORM_NAMESPACE+transformName;
     }
 
     /**
@@ -74,7 +70,12 @@ public class TransformDefinition extends RenditionDefinition2Impl
     public TransformDefinition(String targetMimetype, Map<String, String> transformOptions,
                                String clientData, String replyQueue, String requestId)
     {
-        this(null, targetMimetype, transformOptions, clientData, replyQueue, requestId);
+        this(null, targetMimetype, transformOptions, clientData, replyQueue, requestId, null);
+    }
+
+    public static String convertToRenditionName(String transformName)
+    {
+        return transformName == null ? null : TRANSFORM_NAMESPACE+transformName;
     }
 
     public String getTransformName()

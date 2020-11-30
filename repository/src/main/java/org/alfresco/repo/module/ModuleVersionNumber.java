@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,6 +29,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.util.VersionNumber;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -49,7 +51,11 @@ public class ModuleVersionNumber implements Externalizable
     
     public static final ModuleVersionNumber VERSION_ZERO = new ModuleVersionNumber("0");;
     public static final ModuleVersionNumber VERSION_BIG  = new ModuleVersionNumber("999.999.999.99");
-    
+
+    // Matches versions with 3 or 4 parts to their basic number such as 1.2.3 or 1.2.3.4
+    // that also optionally have a -A9 -M9 or -RC9 suffix whe 9 is an integer.
+    private static Pattern A_M_RC_VERSION_PATTERN = Pattern.compile("((\\d+\\.){2,3}\\d+)(-(A|M|RC)\\d+)?");
+
     protected ComparableVersion delegate;
     
     public ModuleVersionNumber()
@@ -67,9 +73,54 @@ public class ModuleVersionNumber implements Externalizable
         this(versionCurrent.toString());
     }
 
+    /**
+     * Now that we create internal releases of the form {@code M.m.r-M9} (milestone), {@code M.m.r-A9} (alpha) and
+     * {@code M.m.r-RC9} (release candidate) during development and testing, we need to ensure we can upgrade from any
+     * of these to any other, as they may occur in any order and also to the final external release {@code M.m.r}. We
+     * also will allow a change from the final release back to an internal one for regression testing.
+     *
+     * The code within {@link ModuleComponentHelper} which calls this method, checks if it is the same version
+     * ({@code 0}) and then if it is downgrading ({@code > 0}), so if they share the same {@code M.m.r} part matches
+     * AND is one of these formats, we return {@code <0}.
+     *
+     * @param installingVersion the new version
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than
+     *         the specified object.
+     */
     public int compareTo(ModuleVersionNumber installingVersion)
     {
+        String thisVersion = toString();
+        String thatVersion = installingVersion.toString();
+        if (thisVersion.equals(thatVersion))
+        {
+            return 0;
+        }
+
+        String thisVersionWithoutSuffix = getVersionWithoutSuffix();
+        if (thisVersionWithoutSuffix != null)
+        {
+            String thatVersionWithoutSuffix = installingVersion.getVersionWithoutSuffix();
+            if (thisVersionWithoutSuffix.equals(thatVersionWithoutSuffix))
+            {
+                return -1;
+            }
+        }
+
         return delegate.compareTo(installingVersion.delegate);
+    }
+
+    String getVersionWithoutSuffix()
+    {
+        String versionWithoutAMOrRc = null;
+        String fullVersion = toString();
+        Matcher matcher = A_M_RC_VERSION_PATTERN.matcher(fullVersion);
+        if (matcher.matches())
+        {
+            versionWithoutAMOrRc = matcher.group(1);
+            // matcher.group(3) would be the suffix, such as "-M4"
+            // matcher.group(4) would be the type of release: "RC", "A" or "M"
+        }
+        return versionWithoutAMOrRc;
     }
 
     @Override
@@ -114,6 +165,4 @@ public class ModuleVersionNumber implements Externalizable
         String versionString = in.readUTF();
         delegate = new ComparableVersion(versionString);
     }
-
-
 }

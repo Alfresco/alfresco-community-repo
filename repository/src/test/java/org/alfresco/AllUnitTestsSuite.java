@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -79,6 +79,7 @@ import org.junit.runners.Suite;
     org.alfresco.service.cmr.calendar.CalendarRecurrenceHelperTest.class,
     org.alfresco.service.cmr.calendar.CalendarTimezoneHelperTest.class,
     org.alfresco.tools.RenameUserTest.class,
+    org.alfresco.util.VersionNumberTest.class,
     org.alfresco.util.FileNameValidatorTest.class,
     org.alfresco.util.HttpClientHelperTest.class,
     org.alfresco.util.JSONtoFmModelTest.class,

@@ -75,7 +75,7 @@ public class ModuleVersionNumber implements Externalizable
 
     /**
      * Now that we create internal releases of the form {@code M.m.r-M9} (milestone), {@code M.m.r-A9} (alpha) and
-     * {@code M.m.r-RC9} (release candidate) during development and testing, we need to ensure we can upgrade form any
+     * {@code M.m.r-RC9} (release candidate) during development and testing, we need to ensure we can upgrade from any
      * of these to any other, as they may occur in any order and also to the final external release {@code M.m.r}. We
      * also will allow a change from the final release back to an internal one for regression testing.
      *

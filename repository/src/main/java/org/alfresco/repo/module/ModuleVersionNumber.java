@@ -54,7 +54,7 @@ public class ModuleVersionNumber implements Externalizable
 
     // Matches versions with 3 or 4 parts to their basic number such as 1.2.3 or 1.2.3.4
     // that also optionally have a -A9 -M9 or -RC9 suffix whe 9 is an integer.
-    private static Pattern A_M_RC_VERSION_PATTERN = Pattern.compile("((\\d+\\.){2,3}\\d+)(-(A|M|RC)\\d+)*");
+    private static Pattern A_M_RC_VERSION_PATTERN = Pattern.compile("((\\d+\\.){2,3}\\d+)(-(A|M|RC)\\d+)?");
 
     protected ComparableVersion delegate;
     

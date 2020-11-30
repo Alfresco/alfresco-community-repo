@@ -249,6 +249,7 @@ public class ModuleVersionNumberTest extends TestCase
                  {null,          "1.2.3-456"},
                  {null,          "1.2.3-X12"},
 
+                 {null,          "1.2.5-A6-A6"},
                  {null,          "1.2.3.4.5-A6"},
                  {null,          "1.2-M3"},
 
@@ -284,7 +285,7 @@ public class ModuleVersionNumberTest extends TestCase
                  {"downgrade", "7.0.0",          "6.2.3"},
                  {"upgrade",   "6.2.3",          "7.0.0"},
 
-                 // standard maven compare - note sure these even make sense!
+                 // standard maven compare - note sure these even make sense as these are not maven format versions!
                  {"upgrade",   "7.0.0-A15",      "7.0.0-1234"},
                  {"downgrade", "7.0.0-1234",     "7.0.0-M2"},
                  {"downgrade", "7.0.0-Rubbish1", "7.0.0-M3"},

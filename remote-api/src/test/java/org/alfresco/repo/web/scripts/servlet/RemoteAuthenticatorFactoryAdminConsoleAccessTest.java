@@ -37,12 +37,15 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -204,6 +207,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         complexCheckOfScriptCases(families);
     }
 
+    @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
     public void testAdminCanAccessAdminConsoleHelperScript()
     {

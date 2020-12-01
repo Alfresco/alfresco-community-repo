@@ -149,6 +149,7 @@ public class DeleteTreeTests extends CmisTest
                 .createFile(testFile).and().assertThat().existsInRepo()
                 .and().checkOut()
             .when().usingResource(parentTestFolder).deleteFolderTree(true, UnfileObject.DELETESINGLEFILED, true)
+                /* @Category(IntermittentlyFailingTests.class) ACS-959 Intermittent failure on next line. @Category not supported by TAS tests. */
                 .and().assertThat().doesNotExistInRepo()
             .then().usingResource(childTestFolder).assertThat().doesNotExistInRepo()
                    .usingResource(testFile).assertThat().doesNotExistInRepo();

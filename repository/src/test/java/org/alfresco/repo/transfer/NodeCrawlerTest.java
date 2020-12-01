@@ -49,6 +49,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Before;
 import org.junit.Test;
@@ -162,6 +163,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         assertEquals(node15, new ArrayList<NodeRef>(results).get(0));
     }
 
+    @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
     public void testCrawler()
     {

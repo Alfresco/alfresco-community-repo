@@ -61,6 +61,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -466,6 +467,7 @@ public class OpenCmisLocalTest extends TestCase
      * This test would have fit better within CheckOutCheckInServiceImplTest but
      * was added here to make use of existing methods
      */
+    @Category(FrequentlyFailingTests.class) // ACS-962
     public void testCancelCheckoutWhileInCheckedOutState()
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);

@@ -532,7 +532,7 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>8.5</alfresco-spring-webscripts.version>
+      <alfresco-spring-webscripts.version>8.14</alfresco-spring-webscripts.version>
       <api.explorer.version>7.0.0-M1</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
@@ -559,7 +559,7 @@
       <maven.resources.version>3.1.0</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.11.2</jackson.version>
+      <jackson.version>2.11.3</jackson.version>
       <jackson-databind.version>2.11.2</jackson-databind.version>
       <fabric8.docker.version>0.31.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>

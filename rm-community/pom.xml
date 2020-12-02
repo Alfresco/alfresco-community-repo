@@ -28,7 +28,7 @@
          <dependency>
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-community-repo</artifactId>
-            <version>${alfresco.version}</version>
+            <version>${alfresco-community-repo.version}</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -74,8 +74,7 @@
 
    <properties>
       <spring.version>5.2.9.RELEASE</spring.version>
-      <alfresco.version>8.339</alfresco.version>
-      <alfresco.min.version>6.2.1</alfresco.min.version>
+      <alfresco.min.version>7.0.0</alfresco.min.version>
       <share.version>7.0.0-A12</share.version>
       <!-- The properties app.amp.* need to be set for share to work. -->
       <app.filtering.enabled>true</app.filtering.enabled>

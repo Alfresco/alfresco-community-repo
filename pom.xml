@@ -596,6 +596,8 @@
       <javax-jaxb-impl.version>3.0.0-M4</javax-jaxb-impl.version>
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
+      <!-- 7.0.0 dependencies -->
+      <alfresco-community-repo.version>8.339</alfresco-community-repo.version>
    </properties>
 
    <dependencyManagement>

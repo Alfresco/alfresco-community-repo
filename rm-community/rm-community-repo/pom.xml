@@ -323,6 +323,12 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-data-model</artifactId>
+         <version>${dependency.alfresco-community-repo.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
          <version>${dependency.alfresco-community-repo.version}</version>

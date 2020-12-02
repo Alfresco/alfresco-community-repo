@@ -518,6 +518,18 @@
         </property>
     </bean>
 
+    <bean id="nodes.personLookupProperties" class="org.springframework.beans.factory.config.SetFactoryBean">
+        <property name="sourceSet">
+            <set>
+                <value>{http://www.alfresco.org/model/content/1.0}creator</value>
+                <value>{http://www.alfresco.org/model/content/1.0}modifier</value>
+                <value>{http://www.alfresco.org/model/content/1.0}owner</value>
+                <value>{http://www.alfresco.org/model/content/1.0}lockOwner</value>
+                <value>{http://www.alfresco.org/model/content/1.0}workingCopyOwner</value>
+            </set>
+        </property>
+    </bean>
+
     <bean id="nodeDefinitionMapper" class="org.alfresco.rest.api.impl.NodeDefinitionMapperImpl"/>
 
     <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl" init-method="init">
@@ -527,6 +539,7 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="personLookupProperties" ref="nodes.personLookupProperties"/>
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
         <property name="nodeDefinitionMapper" ref="nodeDefinitionMapper" />
@@ -835,14 +848,15 @@
     <bean id="publicapi.personPropertyLookup" class="org.alfresco.rest.api.lookups.PersonPropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">
-            <list>
-                <value>cm:creator</value>
-                <value>cm:modifier</value>
-                <value>cm:owner</value>
-                <value>creator</value>
-                <value>modifier</value>
-                <value>owner</value>
-            </list>
+            <bean parent="nodes.personLookupProperties" class="org.springframework.beans.factory.config.SetFactoryBean">
+                <property name="sourceSet">
+                    <set merge="true">
+                        <value>creator</value>
+                        <value>modifier</value>
+                        <value>owner</value>
+                    </set>
+                </property>
+            </bean>
         </property>
     </bean>
 

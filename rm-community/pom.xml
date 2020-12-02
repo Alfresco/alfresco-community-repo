@@ -27,8 +27,8 @@
       <dependencies>
          <dependency>
             <groupId>${alfresco.groupId}</groupId>
-            <artifactId>acs-community-packaging</artifactId>
-            <version>${acs-community-packaging.version}</version>
+            <artifactId>alfresco-community-repo</artifactId>
+            <version>${alfresco.version}</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>

@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-import static org.apache.commons.lang3.BooleanUtils.toBoolean;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +41,6 @@ import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
-import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -397,7 +394,8 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         }
         else
         {
-            // When node is copied when the aspect is applied, the sharedACLtoReplace will not match the children's ACLS to replace, we need to use the current one.
+            // When node is copied when the aspect is applied, the sharedACLtoReplace will not match the children's ACLS
+            // to replace, we need to use the current one.
             Long currentAcl = nodeDAO.getNodeAclId(nodeId);
 
             if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
@@ -539,6 +537,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
 
     private void addFixedAclPendingAspect(Long nodeId, Long sharedAclToReplace, Long inheritFrom, Long mergeFrom)
     {
+        //If the node already has the pending ACL aspect, just update the new inheritFrom value
         if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
         {
             Map<QName, Serializable> pendingAclProperties = new HashMap<>();

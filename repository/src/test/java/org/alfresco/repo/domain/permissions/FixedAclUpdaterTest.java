@@ -1254,7 +1254,7 @@ public class FixedAclUpdaterTest extends TestCase
     {
         return txnHelper.doInTransaction((RetryingTransactionCallback<NodeRef>) () -> {
             NodeRef parent = createFile(fileFolderService, homeFolderNodeRef, folderName, ContentModel.TYPE_FOLDER);
-            createFolderHierchy(fileFolderService, parent, 0, filesPerLevel, folderName);
+            createFolderHierchy(fileFolderService, parent, 0, filesPerLevel);
             return parent;
         }, false, true);
     }
@@ -1545,8 +1545,7 @@ public class FixedAclUpdaterTest extends TestCase
      * @param filesPerLevel
      *            - array containing number of folders/files per level
      */
-    private static void createFolderHierchy(FileFolderService fileFolderService, NodeRef parent, int level, int[] filesPerLevel,
-            String topName)
+    private static void createFolderHierchy(FileFolderService fileFolderService, NodeRef parent, int level, int[] filesPerLevel)
     {
         int levels = filesPerLevel.length;
         // intermediate level
@@ -1555,8 +1554,8 @@ public class FixedAclUpdaterTest extends TestCase
             int numFiles = filesPerLevel[level];
             for (int i = 0; i < numFiles; i++)
             {
-                NodeRef node = createFile(fileFolderService, parent, topName + "-LVL" + level + i, ContentModel.TYPE_FOLDER);
-                createFolderHierchy(fileFolderService, node, level + 1, filesPerLevel, topName);
+                NodeRef node = createFile(fileFolderService, parent, "-LVL" + level + i, ContentModel.TYPE_FOLDER);
+                createFolderHierchy(fileFolderService, node, level + 1, filesPerLevel);
             }
         }
         // last level
@@ -1565,7 +1564,7 @@ public class FixedAclUpdaterTest extends TestCase
             int numFiles = filesPerLevel[level];
             for (int i = 0; i < numFiles; i++)
             {
-                createFile(fileFolderService, parent, topName + "-File" + i, ContentModel.TYPE_CONTENT);
+                createFile(fileFolderService, parent, "-File" + i, ContentModel.TYPE_CONTENT);
             }
         }
     }

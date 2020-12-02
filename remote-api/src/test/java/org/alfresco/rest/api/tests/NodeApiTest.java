@@ -710,6 +710,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String title = "test title";
         Map<String,String> docProps = new HashMap<>();
         docProps.put("cm:title", title);
+        docProps.put("cm:owner", user2);
         String contentName = "content " + RUNID + ".txt";
         String content1Id = createTextFile(folderB_Id, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
 
@@ -743,9 +744,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         props.put("cm:title", title);
         props.put("cm:versionLabel", "1.0");
         props.put("cm:versionType", "MAJOR");
+        props.put("cm:owner", new UserInfo(user2).toJSON());
 
         d1.setProperties(props);
-        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable","cm:author"));
+        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable","cm:author","cm:ownable"));
 
         // Note: Path is not part of the default info
         d1.expected(documentResp);

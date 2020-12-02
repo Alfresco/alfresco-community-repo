@@ -189,6 +189,22 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         return MIMETYPE_METADATA_EMBED.equals(targetMimetype);
     }
 
+    public static String getTargetMimetypeFromTransformName(String transformName)
+    {
+        return transformName == null ? null
+                : transformName.startsWith(MIMETYPE_METADATA_EXTRACT) ? MIMETYPE_METADATA_EXTRACT
+                : transformName.startsWith(MIMETYPE_METADATA_EMBED)   ? MIMETYPE_METADATA_EMBED
+                : null;
+    }
+
+    public static String getSourceMimetypeFromTransformName(String transformName)
+    {
+        return transformName == null ? null
+                : transformName.startsWith(MIMETYPE_METADATA_EXTRACT) ? transformName.substring(MIMETYPE_METADATA_EXTRACT.length()+1)
+                : transformName.startsWith(MIMETYPE_METADATA_EMBED)   ? transformName.substring(MIMETYPE_METADATA_EMBED.length()+1)
+                : null;
+    }
+
     /**
      * Returns a file extension used as the target in a transform. The normal extension is changed if the
      * {@code targetMimetype} is an extraction or embedding type.

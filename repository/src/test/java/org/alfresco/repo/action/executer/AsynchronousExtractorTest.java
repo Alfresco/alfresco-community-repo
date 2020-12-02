@@ -857,9 +857,15 @@ public class AsynchronousExtractorTest extends BaseSpringTest
                 AsynchronousExtractor.getTargetMimetypeFromTransformName("alfresco-metadata-extract/text/plain"));
         assertEquals("getTargetMimetypeFromTransformName", "alfresco-metadata-embed",
                 AsynchronousExtractor.getTargetMimetypeFromTransformName("alfresco-metadata-embed/text/plain"));
+
         assertEquals("getTargetMimetypeFromTransformName", null,
                 AsynchronousExtractor.getTargetMimetypeFromTransformName("anything else"));
         assertEquals("getTargetMimetypeFromTransformName", null,
                 AsynchronousExtractor.getTargetMimetypeFromTransformName(null));
+
+        assertEquals("getTargetMimetypeFromTransformName", "text/plain",
+                AsynchronousExtractor.getSourceMimetypeFromTransformName("alfresco-metadata-extract/text/plain"));
+        assertEquals("getTargetMimetypeFromTransformName", "text/plain",
+                AsynchronousExtractor.getSourceMimetypeFromTransformName("alfresco-metadata-embed/text/plain"));
     }
 }

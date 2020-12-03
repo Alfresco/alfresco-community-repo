@@ -23,7 +23,6 @@ branches:
     - /release\/.*/
     - /feature\/.*/
     - /fix\/.*/
-    - feature/ACS-986_gson_downgrade
 
 env:
   global:

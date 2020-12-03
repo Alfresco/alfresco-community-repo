@@ -77,7 +77,7 @@
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
         <dependency.gytheio.version>0.11.6</dependency.gytheio.version>
         <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
-        <dependency.groovy.version>2.5.9</dependency.groovy.version>
+        <dependency.groovy.version>3.0.7</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
         <dependency.tika.version>1.24.1</dependency.tika.version>
         <dependency.spring-security.version>5.4.1</dependency.spring-security.version>

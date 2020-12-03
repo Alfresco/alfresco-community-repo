@@ -844,4 +844,28 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         assertEquals("Unexpected tags", 0, tags.size());
     }
+
+    @Test
+    public void testStaticMethods()
+    {
+        assertTrue("isMetadataExtractMimetype", AsynchronousExtractor.isMetadataExtractMimetype("alfresco-metadata-extract"));
+        assertTrue("isMetadataEmbedMimetype", AsynchronousExtractor.isMetadataEmbedMimetype("alfresco-metadata-embed"));
+        assertFalse("isMetadataExtractMimetype", AsynchronousExtractor.isMetadataExtractMimetype("alfresco-metadata-embed"));
+        assertFalse("isMetadataEmbedMimetype", AsynchronousExtractor.isMetadataEmbedMimetype("alfresco-metadata-extract"));
+
+        assertEquals("getTargetMimetypeFromTransformName", "alfresco-metadata-extract",
+                AsynchronousExtractor.getTargetMimetypeFromTransformName("alfresco-metadata-extract/text/plain"));
+        assertEquals("getTargetMimetypeFromTransformName", "alfresco-metadata-embed",
+                AsynchronousExtractor.getTargetMimetypeFromTransformName("alfresco-metadata-embed/text/plain"));
+
+        assertEquals("getTargetMimetypeFromTransformName", null,
+                AsynchronousExtractor.getTargetMimetypeFromTransformName("anything else"));
+        assertEquals("getTargetMimetypeFromTransformName", null,
+                AsynchronousExtractor.getTargetMimetypeFromTransformName(null));
+
+        assertEquals("getTargetMimetypeFromTransformName", "text/plain",
+                AsynchronousExtractor.getSourceMimetypeFromTransformName("alfresco-metadata-extract/text/plain"));
+        assertEquals("getTargetMimetypeFromTransformName", "text/plain",
+                AsynchronousExtractor.getSourceMimetypeFromTransformName("alfresco-metadata-embed/text/plain"));
+    }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
@@ -64,6 +65,7 @@ import org.junit.experimental.categories.Category;
 
 public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterpriseOpenCMISTCKTest
 {
+    @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
     public void testCMISTCKBasics() throws Exception
     {

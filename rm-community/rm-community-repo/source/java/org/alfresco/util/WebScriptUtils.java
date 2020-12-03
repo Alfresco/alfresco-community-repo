@@ -238,7 +238,7 @@ public final class WebScriptUtils
 
         try
         {
-            value = jsonObject.getString(key);
+            value = jsonObject.get(key).toString();
             if (checkValue && isBlank(value))
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The value is missing for the key '" + key + "'.");
@@ -413,7 +413,7 @@ public final class WebScriptUtils
         mandatory("jsonObject", jsonObject);
         mandatoryString("key", key);
 
-        JSONObject value;
+        JSONObject value = null;
 
         try
         {

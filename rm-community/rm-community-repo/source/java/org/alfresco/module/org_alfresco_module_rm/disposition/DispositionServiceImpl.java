@@ -527,7 +527,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
             else if (filePlanService.isRecordCategory(item) && getAssociatedDispositionScheduleImpl(item) == null)
             {
-                return hasDisposableItemsImpl(isRecordLevelDisposition, item);
+                if (hasDisposableItemsImpl(isRecordLevelDisposition, item));
+                {
+                    return true;
+                }
             }
         }
         return false;

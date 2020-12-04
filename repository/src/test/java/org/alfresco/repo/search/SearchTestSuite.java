@@ -25,39 +25,28 @@
  */
 package org.alfresco.repo.search;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.alfresco.repo.search.impl.parsers.CMISTest;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSTest;
 import org.alfresco.repo.search.impl.parsers.FTSTest;
+import org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactoryTest;
 import org.alfresco.util.NumericEncodingTest;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-/**
- * @author Andy Hind
- *
- */
-public class SearchTestSuite extends TestSuite
+@RunWith(Categories.class)
+@Suite.SuiteClasses({
+    MLAnaysisModeExpansionTest.class, 
+    QueryRegisterComponentTest.class,
+    SearcherComponentTest.class,
+    DocumentNavigatorTest.class,
+    NumericEncodingTest.class,
+    CMIS_FTSTest.class,
+    CMISTest.class,
+    FTSTest.class,
+    SolrChildApplicationContextFactoryTest.class
+})
+
+public class SearchTestSuite
 {
-
-    /**
-     * Creates the test suite
-     * 
-     * @return  the test suite
-     */
-    public static Test suite() 
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(MLAnaysisModeExpansionTest.class);
-        suite.addTestSuite(QueryRegisterComponentTest.class);
-        suite.addTestSuite(SearcherComponentTest.class);
-        suite.addTestSuite(SearchServiceTest.class);
-        suite.addTestSuite(DocumentNavigatorTest.class);
-        suite.addTestSuite(NumericEncodingTest.class);
-        suite.addTestSuite(CMIS_FTSTest.class);
-        suite.addTestSuite(CMISTest.class);
-        suite.addTestSuite(FTSTest.class);
-
-        return suite;
-    }
 }

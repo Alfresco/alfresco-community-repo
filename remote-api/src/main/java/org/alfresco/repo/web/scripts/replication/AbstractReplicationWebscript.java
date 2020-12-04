@@ -122,10 +122,15 @@ public abstract class AbstractReplicationWebscript extends DeclarativeWebScript
           
           if(schedule.has("start") && !schedule.isNull("start")) {
              // Look for start:.... or start:{"iso8601":....}
-             String startDate = schedule.getString("start");
-             if(schedule.get("start") instanceof JSONObject) {
-                startDate = schedule.getJSONObject("start").getString("iso8601");
+             String startDate = null; 
+             if (schedule.get("start") instanceof String) 
+             {
+            	 startDate = schedule.getString("start");
              }
+             else 
+             {
+                startDate = schedule.getJSONObject("start").getString("iso8601");
+             }  
              
              replicationDefinition.setScheduleStart( ISO8601DateFormat.parse(startDate) );
           } else {

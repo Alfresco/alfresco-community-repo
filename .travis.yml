@@ -18,7 +18,7 @@ branches:
     - /release\/V3.\d+.*/
     - /feature-3.\d+\/.*/
     - /merge-3.\d+\/.*/
-    - /hotfix-3.2.0.11/.*/
+    - /hotfix-3.\d+\/.*/
 
 cache:
   directories:

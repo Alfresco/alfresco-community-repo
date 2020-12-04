@@ -63,6 +63,15 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     protected static final String ARCHIVE_DISK = "tracker.archive.disk";
     protected static final String ARCHIVE_MEMORY = "tracker.archive.memory";
     
+    private static final String SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB = "Total Searcher Cache (GB)";
+    private static final String SUMMARY_FIELD_ON_DISK_GB = "On disk (GB)";
+    private static final String SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING = "Approx transaction indexing time remaining";
+    private static final String SUMMARY_FIELD_APPROX_TRANSACTIONS_REMAINING = "Approx transactions remaining";
+    private static final String SUMMARY_FIELD_ID_FOR_LAST_TX_IN_INDEX = "Id for last TX in index";
+    private static final String SUMMARY_FIELD_TX_DURATION = "TX Duration";
+    private static final String SUMMARY_FIELD_TX_LAG = "TX Lag";
+    private static final String SUMMARY_FIELD_ACTIVE = "Active";
+
     private SolrAdminHTTPClient adminClient;
     
     public void setAdminClient(SolrAdminHTTPClient adminClient)
@@ -121,28 +130,28 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         {
             case SolrChildApplicationContextFactory.ALFRESCO_ACTIVE:
             case SolrChildApplicationContextFactory.ARCHIVE_ACTIVE:
-                return core.getBoolean("Active") ? "true" : "false";
+                return core.getBoolean(SUMMARY_FIELD_ACTIVE) ? "true" : "false";
             case SolrChildApplicationContextFactory.ALFRESCO_LAG:
             case SolrChildApplicationContextFactory.ARCHIVE_LAG:
-                return core.getString("TX Lag");
+                return core.getString(SUMMARY_FIELD_TX_LAG);
             case SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION:
             case SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION:
-                return core.getString("TX Duration");
+                return core.getString(SUMMARY_FIELD_TX_DURATION);
             case SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN:
             case SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN:
-                return core.getNumber("Id for last TX in index").toString();
+                return core.getNumber(SUMMARY_FIELD_ID_FOR_LAST_TX_IN_INDEX).toString();
             case SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING:
             case SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING:
-                return core.getNumber("Approx transactions remaining").toString();
+                return core.getNumber(SUMMARY_FIELD_APPROX_TRANSACTIONS_REMAINING).toString();
             case SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING:
             case SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING:
-                return core.getString("Approx transaction indexing time remaining");
+                return core.getString(SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING);
             case SolrChildApplicationContextFactory.ALFRESCO_DISK:
             case SolrChildApplicationContextFactory.ARCHIVE_DISK:
-                return core.getNumber("On disk (GB)").toString();
+                return core.getNumber(SUMMARY_FIELD_ON_DISK_GB).toString();
             case SolrChildApplicationContextFactory.ALFRESCO_MEMORY:
             case SolrChildApplicationContextFactory.ARCHIVE_MEMORY:
-                return core.getNumber("Total Searcher Cache (GB)").toString();
+                return core.getNumber(SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB).toString();
             default:
                 return null;
             

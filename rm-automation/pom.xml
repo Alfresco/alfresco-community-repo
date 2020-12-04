@@ -49,7 +49,7 @@
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <redirectTestOutputToFile>true</redirectTestOutputToFile>
+               <redirectTestOutputToFile>false</redirectTestOutputToFile>
                <suiteXmlFiles>
                   <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
                </suiteXmlFiles>

@@ -532,7 +532,7 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>8.14</alfresco-spring-webscripts.version>
+      <alfresco-spring-webscripts.version>8.12</alfresco-spring-webscripts.version>
       <api.explorer.version>7.0.0-M1</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
@@ -597,7 +597,7 @@
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
       <!-- 7.0.0 dependencies -->
-      <alfresco-community-repo.version>8.341</alfresco-community-repo.version>
+      <alfresco-community-repo.version>8.344</alfresco-community-repo.version>
    </properties>
 
    <dependencyManagement>

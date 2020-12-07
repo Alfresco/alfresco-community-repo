@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_INDEX_SQL;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -433,7 +435,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         }
 
         // FIXME see: RM-6895
-        if (returnedObject.getResultSetMetaData().getSearchParameters().getLanguage().equalsIgnoreCase("solr-sql"))
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getLanguage().equalsIgnoreCase(LANGUAGE_INDEX_SQL))
         {
             return returnedObject;
         }

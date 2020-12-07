@@ -33,12 +33,20 @@ jobs:
         - sudo free -m -t
       script:
         - travis_wait 90 mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+      after_failure:
+        - bash scripts/getLogs.sh
+        - docker ps -a | grep '_activemq_1' | awk '{print $1}' | xargs docker logs | tail -5000
+        - docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
       addons:
         artifacts:
           paths:
             - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
             - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
+            - alfresco.log
+            - solr.log
+            - share.log
+            - activemq.log
+          target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
 
     - name: "Enterprise Rest API WORM Tests"
       stage: Tests

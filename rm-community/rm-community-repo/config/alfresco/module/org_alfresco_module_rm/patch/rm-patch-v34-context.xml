@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- RM v3.4 Patches -->
+
+   <bean id="rm.holdChildAssocPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v34.RMv34HoldNewChildAssocPatch">
+      <property name="description" value="Create new hold child association to link the record to the hold"/>
+      <property name="fixesFromSchema" value="2400" />
+      <property name="fixesToSchema" value="3410" />
+      <property name="filePlanService" ref="filePlanService" />
+      <property name="holdService" ref="holdService" />
+      <property name="nodeService" ref="nodeService" />
+   </bean>
+</beans>

@@ -18,7 +18,7 @@ jobs:
             bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH false
           fi
         - bash scripts/waitForAlfrescoToStart.sh
-      script: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
+      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
     - name: "Enterprise Rest API Tests"
@@ -32,8 +32,13 @@ jobs:
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
       script:
-        - mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
+        - travis_wait 90 mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
       after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+      addons:
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
+            - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
 
     - name: "Enterprise Rest API WORM Tests"
       stage: Tests

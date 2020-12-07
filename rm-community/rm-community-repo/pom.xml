@@ -24,11 +24,9 @@
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
-      <!-- 6.2.2-A1 changes -->
-      <dependency.alfresco-core.version>7.33</dependency.alfresco-core.version>
-      <dependency.alfresco-repository.version>7.188</dependency.alfresco-repository.version>
-      <dependency.alfresco-remote-api.version>7.140</dependency.alfresco-remote-api.version>
-      <alfresco.alfresco-share-services.version>6.2.2</alfresco.alfresco-share-services.version>
+      <!-- 7.0.0 dependencies -->
+      <!--  Alfresco Share version  -->
+      <alfresco.alfresco-share-services.version>7.0.0-A13</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
       <maven.javadoc.skip>false</maven.javadoc.skip>
@@ -203,7 +201,7 @@
                            <groupId>${alfresco.groupId}</groupId>
                            <artifactId>content-services-community</artifactId>
                            <type>war</type>
-                           <version>${alfresco.version}</version>
+                           <version>${alfresco-community-repo.version}</version>
                         </artifactItem>
                      </artifactItems>
                   </configuration>
@@ -323,35 +321,41 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-data-model</artifactId>
+         <version>${alfresco-community-repo.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${dependency.alfresco-remote-api.version}</version>
+         <version>${alfresco-community-repo.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-repository</artifactId>
-         <version>${dependency.alfresco-repository.version}</version>
+         <version>${alfresco-community-repo.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-repository</artifactId>
-         <version>${dependency.alfresco-repository.version}</version>
+         <version>${alfresco-community-repo.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${dependency.alfresco-remote-api.version}</version>
+         <version>${alfresco-community-repo.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-core</artifactId>
-         <version>${dependency.alfresco-core.version}</version>
+         <version>${alfresco-community-repo.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
@@ -491,7 +495,7 @@
                                  <groupId>${alfresco.groupId}</groupId>
                                  <artifactId>content-services-community</artifactId>
                                  <type>war</type>
-                                 <version>${alfresco.version}</version>
+                                 <version>${alfresco-community-repo.version}</version>
                               </artifactItem>
                            </artifactItems>
                         </configuration>

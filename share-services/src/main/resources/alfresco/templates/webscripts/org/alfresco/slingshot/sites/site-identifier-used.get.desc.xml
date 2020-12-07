@@ -4,7 +4,7 @@
   <url>/slingshot/site-identifier-used?shortName={shortName?}</url>
   <url>/slingshot/site-identifier-used?title={title?}</url>
   <format default="json">argument</format>
-  <authentication runas="admin">user</authentication>
+  <authentication runas="System">user</authentication>
   <transaction allow="readonly">required</transaction>
   <lifecycle>limited_support</lifecycle>
 </webscript>

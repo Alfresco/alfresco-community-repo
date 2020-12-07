@@ -36,6 +36,15 @@
 
    <repositories>
       <repository>
+         <id>central</id>
+         <name>Central Repository</name>
+         <url>https://repo.maven.apache.org/maven2</url>
+         <layout>default</layout>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </repository>
+      <repository>
          <id>alfresco-internal</id>
          <name>Alfresco Internal Repository</name>
          <url>https://artifacts.alfresco.com/nexus/content/groups/internal/</url>
@@ -51,6 +60,18 @@
    </repositories>
 
    <pluginRepositories>
+      <pluginRepository>
+         <id>central</id>
+         <name>Central Repository</name>
+         <url>https://repo.maven.apache.org/maven2</url>
+         <layout>default</layout>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+         <releases>
+            <updatePolicy>never</updatePolicy>
+         </releases>
+      </pluginRepository>
       <pluginRepository>
          <id>alfresco-private</id>
          <name>Alfresco Internal Repository</name>
@@ -100,11 +121,32 @@
          </modules>
          <repositories>
             <repository>
+               <id>central</id>
+               <name>Central Repository</name>
+               <url>https://repo.maven.apache.org/maven2</url>
+               <layout>default</layout>
+               <snapshots>
+                  <enabled>false</enabled>
+               </snapshots>
+            </repository>
+            <repository>
                <id>alfresco-internal</id>
                <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
             </repository>
          </repositories>
          <pluginRepositories>
+            <pluginRepository>
+               <id>central</id>
+               <name>Central Repository</name>
+               <url>https://repo.maven.apache.org/maven2</url>
+               <layout>default</layout>
+               <snapshots>
+                  <enabled>false</enabled>
+               </snapshots>
+               <releases>
+                  <updatePolicy>never</updatePolicy>
+               </releases>
+            </pluginRepository>
             <pluginRepository>
                <id>alfresco-private</id>
                <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>

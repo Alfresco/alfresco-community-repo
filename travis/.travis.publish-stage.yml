@@ -9,7 +9,7 @@ jobs:
       deploy:
         - provider: s3
           access_key_id: ${RELEASE_AWS_ACCESS_KEY}
-          secret_access_key: $RELEASE_AWS_ACCESS_SECRET}
+          secret_access_key: ${RELEASE_AWS_SECRET_KEY}
           region: "eu-west-1"
           bucket: "eu.dl.alfresco.com"
           upload_dir: "release/community/RM/${RELEASE_VERSION}"
@@ -30,7 +30,7 @@ jobs:
       deploy:
         - provider: s3
           access_key_id: ${RELEASE_AWS_ACCESS_KEY}
-          secret_access_key: ${RELEASE_AWS_ACCESS_SECRET}
+          secret_access_key: ${RELEASE_AWS_SECRET_KEY}
           region: "eu-west-1"
           bucket: "eu.dl.alfresco.com"
           upload_dir: "release/enterprise/RM/${RELEASE_VERSION}"

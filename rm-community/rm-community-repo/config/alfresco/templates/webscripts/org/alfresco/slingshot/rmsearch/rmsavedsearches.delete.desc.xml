@@ -3,7 +3,7 @@
   <description>RM Saved Searches</description>
   <url>/slingshot/rmsavedsearches/site/{site}/{name}</url>
   <format default="json">argument</format>
-  <authentication runas="System">user</authentication>
+  <authentication runas="admin">user</authentication>
   <transaction>required</transaction>
   <lifecycle>internal</lifecycle>
 </webscript>

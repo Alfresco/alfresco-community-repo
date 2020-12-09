@@ -26,13 +26,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v34;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_RECORDS;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
-import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -47,11 +43,6 @@ import org.alfresco.service.cmr.repository.NodeService;
  */
 public class RMv34HoldNewChildAssocPatch extends AbstractModulePatch
 {
-    /**
-     * Data abstraction layer for QName and Namespace entities.
-     */
-    private QNameDAO qnameDAO;
-
     /**
      * File plan service interface
      */

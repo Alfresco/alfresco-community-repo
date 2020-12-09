@@ -86,6 +86,7 @@ public class IntegrationFullTests extends IntegrationTest
         SiteModel testSite = dataSite.usingUser(testUser).createIMAPSite();
         FileModel testFile = dataContent.usingUser(testUser).usingSite(testSite).createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
         imapProtocol.authenticateUser(testUser).usingSite(testSite).usingResource(testFile).deleteMessage();
+        /* @Category(IntermittentlyFailingTests.class) ACS-959 Intermittent failure on next line. @Category not supported by TAS tests. */
         cmisAPI.authenticateUser(testUser).usingSite(testSite).usingResource(testFile).rename("new file name");
     }
 

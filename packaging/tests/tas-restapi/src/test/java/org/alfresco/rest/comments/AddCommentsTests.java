@@ -242,7 +242,8 @@ public class AddCommentsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.CANNOT_COMMENT);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
+    /* @Category(FrequentlyFailingTests.class) ACS-968 - @Category not supported by TAS tests, so commenting out for now
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that comments cannot be added to a tag")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addCommentsToATag() throws JsonToModelConversionException, Exception
@@ -257,6 +258,7 @@ public class AddCommentsTests extends RestTest
         
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.CANNOT_COMMENT);
     }
+    */
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can provide a large string for one comment")

@@ -274,6 +274,13 @@
       <property name="properties">
          <ref bean="global-properties" />
       </property>
+      <property name="supportedDateFormats">
+          <list>
+              <value>EEE, d MMM yyyy HH:mm:ss Z</value>
+              <value>EEE, d MMM yy HH:mm:ss Z</value>
+              <value>d MMM yyyy HH:mm:ss Z</value>
+          </list>
+      </property>
    </bean>
    
    <bean id="pdfBoxEmbededDocumentSelector"
@@ -310,13 +317,6 @@
     <!-- No longer used as an extractor but still extended by RM to provide additional mappings -->
     <bean id="extracter.RFC822"        class="org.alfresco.repo.content.metadata.RFC822MetadataExtracter"        parent="baseMetadataExtracter" >
         <property name="nodeService" ref="nodeService"/>
-        <property name="supportedDateFormats">
-            <list>
-                <value>EEE, d MMM yyyy HH:mm:ss Z</value>
-                <value>EEE, d MMM yy HH:mm:ss Z</value>
-                <value>d MMM yyyy HH:mm:ss Z</value>
-            </list>
-        </property>
     </bean>
 
    <!-- Content Transformation Regisitry -->

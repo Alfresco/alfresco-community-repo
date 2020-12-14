@@ -503,7 +503,52 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     @Override
     public boolean hasDisposableItems(DispositionSchedule dispositionSchdule)
     {
-    	return !getDisposableItems(dispositionSchdule).isEmpty();
+        ParameterCheck.mandatory("dispositionSchedule", dispositionSchdule);
+
+        // Get the associated container
+        NodeRef rmContainer = getAssociatedRecordsManagementContainer(dispositionSchdule);
+
+        return hasDisposableItemsImpl(dispositionSchdule.isRecordLevelDisposition(), rmContainer);
+    }
+
+    /**
+     * Method that provides a boolean if given Records Management Container has disposable items.
+     * This method is similar to getDisposableItemsImpl(boolean isRecordLevelDisposition, NodeRef rmContainer) but with improved performance:
+     * For RecordLevelDisposition it will limit Record retrieval to 1.
+     * Early returns once the first occurrence is found.
+     * @param isRecordLevelDisposition
+     * @param rmContainer
+     * @return
+     */
+    private boolean hasDisposableItemsImpl(boolean isRecordLevelDisposition, NodeRef rmContainer)
+    {
+        List<NodeRef> items = filePlanService.getAllContained(rmContainer);
+        for (NodeRef item : items)
+        {
+            if (recordFolderService.isRecordFolder(item))
+            {
+                if (isRecordLevelDisposition)
+                {
+                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(item, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL, 1, true);
+                    if (!assocs.isEmpty())
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else if (filePlanService.isRecordCategory(item) && getAssociatedDispositionScheduleImpl(item) == null)
+            {
+                if (hasDisposableItemsImpl(isRecordLevelDisposition, item));
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

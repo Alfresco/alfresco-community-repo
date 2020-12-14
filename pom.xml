@@ -63,7 +63,7 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
         <dependency.webscripts.version>8.14</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.67</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.6.0</dependency.mockito-core.version>
         <dependency.org-json.version>20200518</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>

@@ -39,9 +39,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * @author Adina Ababei
@@ -348,7 +346,6 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("cm:contains", getChildAssocResource(childAssocEvents.get(2)).getAssocType());
     }
 
-    @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
     public void testOneParentMultipleChildrenSameTransaction()
     {

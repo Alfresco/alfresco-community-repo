@@ -29,29 +29,18 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.model.ContentModel.PROP_STORE_NAME;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.Serializable;
-import java.util.Locale;
-import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
-import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;

@@ -26,9 +26,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v34;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -58,6 +60,8 @@ public class RMv34HoldNewChildAssocPatch extends AbstractModulePatch
      */
     private NodeService nodeService;
 
+    private BehaviourFilter behaviourFilter;
+
     /**
      * Setter for fileplanservice
      * @param filePlanService File plan service interface
@@ -85,19 +89,39 @@ public class RMv34HoldNewChildAssocPatch extends AbstractModulePatch
         this.nodeService = nodeService;
     }
 
+    public BehaviourFilter getBehaviourFilter()
+    {
+        return behaviourFilter;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     @Override
     public void applyInternal()
     {
-        for (NodeRef filePlan : filePlanService.getFilePlans())
+        behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        try
         {
-            for (NodeRef hold : holdService.getHolds(filePlan))
+            for (NodeRef filePlan : filePlanService.getFilePlans())
             {
-                for (ChildAssociationRef ref : nodeService.getChildAssocs(hold))
+                for (NodeRef hold : holdService.getHolds(filePlan))
                 {
-                    holdService.removeFromHold(hold, ref.getChildRef());
-                    holdService.addToHold(hold, ref.getChildRef());
+                    for (ChildAssociationRef ref : nodeService.getChildAssocs(hold))
+                    {
+                        holdService.removeFromHold(hold, ref.getChildRef());
+                        holdService.addToHold(hold, ref.getChildRef());
+                    }
                 }
             }
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
     }
 }

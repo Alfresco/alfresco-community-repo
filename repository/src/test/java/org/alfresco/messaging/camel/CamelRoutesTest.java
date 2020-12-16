@@ -65,7 +65,7 @@ public class CamelRoutesTest
     @Produce(uri = "direct-vm:alfresco.test.2")
     protected ProducerTemplate template2;
     
-    @Produce(uri = "direct-vm://alfresco.default")
+    @Produce(uri = "direct-vm:alfresco.default")
     protected ProducerTemplate template3;
     
     @Produce(uri = "direct-vm:alfresco.test.transacted")

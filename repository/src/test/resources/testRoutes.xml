@@ -7,7 +7,7 @@
 
     <routeContext id="deadLetterRoutes" xmlns="http://camel.apache.org/schema/spring">
         <route>
-            <from uri="direct-vm://alfresco.default" />
+            <from uri="direct-vm:alfresco.default" />
             <to uri="mock:dlq" />
         </route>
     </routeContext>

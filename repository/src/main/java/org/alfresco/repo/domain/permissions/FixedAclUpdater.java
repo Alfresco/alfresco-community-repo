@@ -53,6 +53,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -91,8 +92,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     private int maxItemBatchSize = 100;
     private int numThreads = 4;
 
-    private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;    
-    private PolicyComponent policyComponent;    
+    private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
+    private PolicyComponent policyComponent;
     private PolicyIgnoreUtil policyIgnoreUtil;
 
     public void setNumThreads(int numThreads)
@@ -135,8 +136,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     {
         this.lockTimeToLive = lockTimeToLive;
         this.lockRefreshTime = lockTimeToLive / 2;
-    }    
-    
+    }
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
@@ -149,7 +150,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     public void init()
     {
-        onInheritPermissionsDisabledDelegate = policyComponent.registerClassPolicy(PermissionServicePolicies.OnInheritPermissionsDisabled.class);
+        onInheritPermissionsDisabledDelegate = policyComponent
+                .registerClassPolicy(PermissionServicePolicies.OnInheritPermissionsDisabled.class);
     }
 
     private class GetNodesWithAspects
@@ -262,26 +264,34 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                     {
                         log.debug(String.format("Processing node %s", nodeRef));
                     }
+
                     final Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
 
+                    // MNT-22009 - If node was deleted and in archive store, remove the aspect and properties and do not
+                    // process
+                    if (nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
+                    {
+                        accessControlListDAO.removePendingAclAspect(nodeId);
+                        return null;
+                    }
+
                     // retrieve acl properties from node
-                    Long inheritFrom = (Long) nodeDAO.getNodeProperty(nodeId,
-                            ContentModel.PROP_INHERIT_FROM_ACL);
-                    Long sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId,
-                            ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+                    Long inheritFrom = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_INHERIT_FROM_ACL);
+                    Long sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
 
                     // set inheritance using retrieved prop
-                    accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace,
-                            true);
+                    accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace, true);
 
-                    nodeDAO.removeNodeAspects(nodeId, aspects);
-                    nodeDAO.removeNodeProperties(nodeId, PENDING_FIX_ACL_ASPECT_PROPS);
-                    
+                    // Remove aspect
+                    accessControlListDAO.removePendingAclAspect(nodeId);
+
                     if (!policyIgnoreUtil.ignorePolicy(nodeRef))
                     {
-                        boolean transformedToAsyncOperation = toBoolean((Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
+                        boolean transformedToAsyncOperation = toBoolean(
+                                (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
 
-                        OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate.get(ContentModel.TYPE_BASE);
+                        OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate
+                                .get(ContentModel.TYPE_BASE);
                         onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
                     }
 
@@ -395,12 +405,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
             AclWorkProvider provider = new AclWorkProvider();
             AclWorker worker = new AclWorker();
-            BatchProcessor<NodeRef> bp = new BatchProcessor<>(
-                    "FixedAclUpdater",
-                    transactionService.getRetryingTransactionHelper(),
-                    provider,
-                    numThreads, maxItemBatchSize,
-                    applicationContext,
+            BatchProcessor<NodeRef> bp = new BatchProcessor<>("FixedAclUpdater",
+                    transactionService.getRetryingTransactionHelper(), provider, numThreads, maxItemBatchSize, applicationContext,
                     log, 100);
             int count = bp.process(worker, true);
             return count;
@@ -413,7 +419,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         finally
         {
             jobLockRefreshCallback.isActive.set(false);
-            if(lockToken != null)
+            if (lockToken != null)
             {
                 jobLockService.releaseLock(lockToken, lockQName);
             }

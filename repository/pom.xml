@@ -687,10 +687,10 @@
                     <groupId>org.apache.tika</groupId>
                     <artifactId>tika-core</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>org.apache.camel</groupId>-->
-<!--                    <artifactId>camel-core</artifactId>-->
-<!--                </exclusion>-->
+                <exclusion>
+                    <groupId>org.apache.camel</groupId>
+                    <artifactId>camel-core</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.apache.camel</groupId>
                     <artifactId>camel-jackson</artifactId>
@@ -748,11 +748,11 @@
             <artifactId>camel-http</artifactId>
             <version>3.6.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
-            <version>3.7.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.camel</groupId>-->
+<!--            <artifactId>camel-core</artifactId>-->
+<!--            <version>3.7.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-cdi</artifactId>

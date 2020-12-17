@@ -105,7 +105,7 @@
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
-        <dependency.tas-dataprep.version>2.3</dependency.tas-dataprep.version>
+        <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
     </properties>
 
     <scm>

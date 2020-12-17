@@ -106,8 +106,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private final static String TEST_NAME = "test node";
     private static byte[] TEST_CONTENT = null;
     private final static String TEST_MIMETYPE_JPEG = MimetypeMap.MIMETYPE_IMAGE_JPEG;
-    private final static String TEST_MIMETYPE_PNG =
-        MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=UTF-8";
+    private final static String TEST_MIMETYPE_PNG = MimetypeMap.MIMETYPE_IMAGE_PNG;
     private static File quickFile = null;
 
     private MutableAuthenticationService authenticationService;
@@ -244,7 +243,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         // get content thumbnail for node (authenticated)
         rsp = sendRequest(new GetRequest(AUTH_CONTENT_THUMBNAIL_URL.replace("{node_ref_3}", testNodeRef_3).replace("{thumbnailname}", "doclib")), expectedStatusOK, USER_ONE);
         String type = rsp.getContentType();
-        assertEquals(TEST_MIMETYPE_PNG, type);
+        assertEquals(TEST_MIMETYPE_PNG + ";charset=UTF-8", type);
         
         // As user two ...
         
@@ -280,7 +279,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         // get content thumbnail for share (note: can be unauthenticated)
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_THUMBNAIL_URL.replace("{shared_id}", sharedId).replace("{thumbnailname}", "doclib")), expectedStatusOK, USER_TWO);
         type = rsp.getContentType();
-        assertEquals(TEST_MIMETYPE_PNG, type);
+        assertEquals(TEST_MIMETYPE_PNG + ";charset=UTF-8", type);
         
         // As user one ...
         

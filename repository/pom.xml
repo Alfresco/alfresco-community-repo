@@ -750,6 +750,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jms</artifactId>
+            <version>${dependency.camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
             <artifactId>camel-base</artifactId>
             <version>${dependency.camel.version}</version>
         </dependency>

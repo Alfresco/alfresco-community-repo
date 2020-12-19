@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -58,8 +58,10 @@ import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.api.trashcan.TrashcanEntityResource;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.Status;
 
 import com.google.common.collect.Ordering;
@@ -329,6 +331,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
      * <p>GET:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/content}
      */
+    @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
     public void testDownloadFileContent() throws Exception
     {

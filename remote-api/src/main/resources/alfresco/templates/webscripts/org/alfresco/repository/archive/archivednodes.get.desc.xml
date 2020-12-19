@@ -8,7 +8,7 @@
    </description>
    <url>/api/archive/{store_type}/{store_id}?maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;nf={namefilter?}</url>
    <format default="json" />
-   <authentication runas="admin">user</authentication>
+   <authentication runas="System">user</authentication>
    <transaction allow="readonly">required</transaction>
    <lifecycle>internal</lifecycle>
    <args>

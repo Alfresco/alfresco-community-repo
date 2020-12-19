@@ -64,6 +64,7 @@ public class GetChildrenTests extends CmisTest
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS} , expectedExceptions = CmisObjectNotFoundException.class)
     public void getChildrenFromDeletedFolder() throws Exception
     {
+        /* @Category(IntermittentlyFailingTests.class) ACS-959 Intermittent failure. @Category not supported by TAS tests. */
         cmisApi.authenticateUser(testUser).usingSite(testSite)
             .createFolder(testFolder)
             .and().usingResource(testFolder)

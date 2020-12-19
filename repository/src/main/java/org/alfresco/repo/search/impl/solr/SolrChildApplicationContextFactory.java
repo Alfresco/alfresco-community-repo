@@ -26,14 +26,13 @@
 package org.alfresco.repo.search.impl.solr;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.search.QueryParserException;
-import org.alfresco.service.cmr.repository.datatype.Duration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
@@ -43,40 +42,63 @@ import org.springframework.context.ApplicationContext;
  */
 public class SolrChildApplicationContextFactory extends ChildApplicationContextFactory
 {
+    
+    private static final Log LOGGER = LogFactory.getLog(SolrChildApplicationContextFactory.class);
 
-    private static String ALFRESCO_ACTIVE = "tracker.alfresco.active";
+    protected static final String ALFRESCO_ACTIVE = "tracker.alfresco.active";
+    protected static final String ALFRESCO_LAG = "tracker.alfresco.lag";
+    protected static final String ALFRESCO_LAG_DURATION = "tracker.alfresco.lag.duration";
+    protected static final String ALFRESCO_LAST_INDEXED_TXN = "tracker.alfresco.last.indexed.txn";
+    protected static final String ALFRESCO_APPROX_TXNS_REMAINING = "tracker.alfresco.approx.txns.remaining";
+    protected static final String ALFRESCO_APPROX_INDEXING_TIME_REMAINING = "tracker.alfresco.approx.indexing.time.remaining";
+    protected static final String ALFRESCO_DISK = "tracker.alfresco.disk";
+    protected static final String ALFRESCO_MEMORY = "tracker.alfresco.memory";
 
-    private static String ALFRESCO_LAG = "tracker.alfresco.lag";
+    protected static final String ARCHIVE_ACTIVE = "tracker.archive.active";
+    protected static final String ARCHIVE_LAG = "tracker.archive.lag";
+    protected static final String ARCHIVE_LAG_DURATION = "tracker.archive.lag.duration";
+    protected static final String ARCHIVE_LAST_INDEXED_TXN = "tracker.archive.last.indexed.txn";
+    protected static final String ARCHIVE_APPROX_TXNS_REMAINING = "tracker.archive.approx.txns.remaining";
+    protected static final String ARCHIVE_APPROX_INDEXING_TIME_REMAINING = "tracker.archive.approx.indexing.time.remaining";
+    protected static final String ARCHIVE_DISK = "tracker.archive.disk";
+    protected static final String ARCHIVE_MEMORY = "tracker.archive.memory";
+    
+    private static final String SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB = "Total Searcher Cache (GB)";
+    private static final String SUMMARY_FIELD_ON_DISK_GB = "On disk (GB)";
+    private static final String SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING = "Approx transaction indexing time remaining";
+    private static final String SUMMARY_FIELD_APPROX_TRANSACTIONS_REMAINING = "Approx transactions remaining";
+    private static final String SUMMARY_FIELD_ID_FOR_LAST_TX_IN_INDEX = "Id for last TX in index";
+    private static final String SUMMARY_FIELD_TX_DURATION = "TX Duration";
+    private static final String SUMMARY_FIELD_TX_LAG = "TX Lag";
+    private static final String SUMMARY_FIELD_ACTIVE = "Active";
 
-    private static String ALFRESCO_LAG_DURATION = "tracker.alfresco.lag.duration";
+    private SolrAdminHTTPClient adminClient;
     
-    private static String ALFRESCO_LAST_INDEXED_TXN = "tracker.alfresco.last.indexed.txn";
+    public void setAdminClient(SolrAdminHTTPClient adminClient)
+    {
+        this.adminClient = adminClient;
+    }
     
-    private static String ALFRESCO_APPROX_TXNS_REMAINING = "tracker.alfresco.approx.txns.remaining";
+    public SolrAdminHTTPClient getAdminClient()
+    {
+        if (adminClient == null)
+        {
+            ApplicationContext ctx = getApplicationContext();
+            adminClient = (SolrAdminHTTPClient) ctx.getBean("search.solrAdminHTTPCLient");
+        }
+        return adminClient;
+    }
     
-    private static String ALFRESCO_APPROX_INDEXING_TIME_REMAINING = "tracker.alfresco.approx.indexing.time.remaining";
-    
-    private static String ALFRESCO_DISK = "tracker.alfresco.disk";
-    
-    private static String ALFRESCO_MEMORY = "tracker.alfresco.memory";
+    private static boolean isAlfrescoCoreProperty(String name)
+    {
+        return name.startsWith("tracker.alfresco.");
+    }
 
-    private static String ARCHIVE_ACTIVE = "tracker.archive.active";
-
-    private static String ARCHIVE_LAG = "tracker.archive.lag";
-
-    private static String ARCHIVE_LAG_DURATION = "tracker.archive.lag.duration";
+    private static boolean isArchiveCoreProperty(String name)
+    {
+        return name.startsWith("tracker.archive.");
+    }
     
-    private static String ARCHIVE_LAST_INDEXED_TXN = "tracker.archive.last.indexed.txn";
-    
-    private static String ARCHIVE_APPROX_TXNS_REMAINING = "tracker.archive.approx.txns.remaining";
-    
-    private static String ARCHIVE_APPROX_INDEXING_TIME_REMAINING = "tracker.archive.approx.indexing.time.remaining";
-    
-    private static String ARCHIVE_DISK = "tracker.archive.disk";
-    
-    private static String ARCHIVE_MEMORY = "tracker.archive.memory";
-    
-
     @Override
     public boolean isUpdateable(String name)
     {
@@ -101,118 +123,96 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                 && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_MEMORY)
                 ;
     }
-
+    
+    private String getPropertyValue(JSONObject core, String name)
+    {
+        switch (name)
+        {
+            case SolrChildApplicationContextFactory.ALFRESCO_ACTIVE:
+            case SolrChildApplicationContextFactory.ARCHIVE_ACTIVE:
+                return core.getBoolean(SUMMARY_FIELD_ACTIVE) ? "true" : "false";
+            case SolrChildApplicationContextFactory.ALFRESCO_LAG:
+            case SolrChildApplicationContextFactory.ARCHIVE_LAG:
+                return core.getString(SUMMARY_FIELD_TX_LAG);
+            case SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION:
+            case SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION:
+                return core.getString(SUMMARY_FIELD_TX_DURATION);
+            case SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN:
+            case SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN:
+                return core.getNumber(SUMMARY_FIELD_ID_FOR_LAST_TX_IN_INDEX).toString();
+            case SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING:
+            case SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING:
+                return core.getNumber(SUMMARY_FIELD_APPROX_TRANSACTIONS_REMAINING).toString();
+            case SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING:
+            case SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING:
+                return core.getString(SUMMARY_FIELD_APPROX_TRANSACTION_INDEXING_TIME_REMAINING);
+            case SolrChildApplicationContextFactory.ALFRESCO_DISK:
+            case SolrChildApplicationContextFactory.ARCHIVE_DISK:
+                return core.getNumber(SUMMARY_FIELD_ON_DISK_GB).toString();
+            case SolrChildApplicationContextFactory.ALFRESCO_MEMORY:
+            case SolrChildApplicationContextFactory.ARCHIVE_MEMORY:
+                return core.getNumber(SUMMARY_FIELD_TOTAL_SEARCHER_CACHE_GB).toString();
+            default:
+                return null;
+            
+        }
+    }
+    
+    private JSONObject getSolrSummary()
+    {
+        HashMap<String, String> args = new HashMap<String, String>();
+        args.put("action", "SUMMARY");
+        args.put("wt", "json");
+        JSONObject json = getAdminClient().execute(args);
+        return json.getJSONObject("Summary");
+    }
+    
     @Override
     public String getProperty(String name)
     {
-        // MNT-9254 fix, use search.solrAdminHTTPCLient bean to retrive property value only if sorl subsystem is active and started (application context in state should be not null)
+        // MNT-9254 fix, use search.solrAdminHTTPCLient bean to retrieve property value only if sorl subsystem is active and started (application context in state should be not null)
         if (false == isUpdateable(name) && ((ApplicationContextState) getState(false)).getApplicationContext(false) != null)
         {
             try
             {
-                ApplicationContext ctx = getApplicationContext();
-                SolrAdminHTTPClient adminClient = (SolrAdminHTTPClient) ctx.getBean("search.solrAdminHTTPCLient");
-                HashMap<String, String> args = new HashMap<String, String>();
-                args.put("action", "SUMMARY");
-                args.put("wt", "json");
-                JSONObject json = adminClient.execute(args);
-                JSONObject summary = json.getJSONObject("Summary");
-
-	            JSONObject alfresco = null;
-                try
+                
+                JSONObject summary = getSolrSummary();
+                
+                if (isAlfrescoCoreProperty(name))
                 {
-                    alfresco = summary.getJSONObject("alfresco");
-                }
-                catch (JSONException e)
-                {
-                    // The core might be absent.
-                }
-
-                if (alfresco != null)
-                {
-                    if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
+    	            JSONObject alfresco = null;
+                    try
                     {
-                        String alfrescoActive = alfresco.getString("Active");
-                        if (alfrescoActive == null || alfrescoActive.isEmpty())
-                        {
-                            // Admin Console is expecting a true/false value, not blank
-                            return "false";
-                        }
-                        return alfrescoActive;
+                        alfresco = summary.getJSONObject("alfresco");
                     }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG))
+                    catch (JSONException e)
                     {
-                        return alfresco.getString("TX Lag");
+                        // The core might be absent.
+                        LOGGER.debug("Node alfresco not found", e);
                     }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION))
+    
+                    if (alfresco != null)
                     {
-                        return alfresco.getString("TX Duration");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN))
-                    {
-                        return alfresco.getString("Id for last TX in index");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING))
-                    {
-                        return alfresco.getString("Approx transactions remaining");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING))
-                    {
-                        return alfresco.getString("Approx transaction indexing time remaining");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_DISK))
-                    {
-                        return alfresco.getString("On disk (GB)");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_MEMORY))
-                    {
-                        return alfresco.getString("Total Searcher Cache (GB)");
+                        return getPropertyValue(alfresco, name);
                     }
                 }
-
-                JSONObject archive = null;
-                try
+                
+                if (isArchiveCoreProperty(name))
                 {
-                    archive = summary.getJSONObject("archive");
-                }
-                catch (JSONException e)
-                {
-                    // The core might be absent.
-                }
-
-                if (archive != null)
-                {
-                    if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE))
+                    JSONObject archive = null;
+                    try
                     {
-                        return archive.getString("Active");
+                        archive = summary.getJSONObject("archive");
                     }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG))
+                    catch (JSONException e)
                     {
-                        return archive.getString("TX Lag");
+                        // The core might be absent.
+                        LOGGER.debug("Node archive not found", e);
                     }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
+    
+                    if (archive != null)
                     {
-                        return archive.getString("TX Duration");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN))
-                    {
-                        return archive.getString("Id for last TX in index");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING))
-                    {
-                        return archive.getString("Approx transactions remaining");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING))
-                    {
-                        return archive.getString("Approx transaction indexing time remaining");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_DISK))
-                    {
-                        return archive.getString("On disk (GB)");
-                    }
-                    else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_MEMORY))
-                    {
-                        return archive.getString("Total Searcher Cache (GB)");
+                        return getPropertyValue(archive, name);
                     }
                 }
 

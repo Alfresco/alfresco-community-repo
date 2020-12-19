@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -59,6 +59,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 public class EncryptionTests extends TestCase
@@ -335,7 +337,8 @@ public class EncryptionTests extends TestCase
 	{
 		testChangeKeysImpl(true);
 	}
-	
+
+	@Category(IntermittentlyFailingTests.class) // ACS-959
 	public void testFailedEncryptionWithCachedCiphers() throws Throwable
 	{
 		Pair<byte[], AlgorithmParameters> pair = null;

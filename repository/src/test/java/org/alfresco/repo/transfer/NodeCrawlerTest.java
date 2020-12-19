@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -49,6 +49,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Before;
 import org.junit.Test;
@@ -162,6 +163,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         assertEquals(node15, new ArrayList<NodeRef>(results).get(0));
     }
 
+    @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
     public void testCrawler()
     {

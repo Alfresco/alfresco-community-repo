@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.349-SNAPSHOT</version>
+    <version>8.352-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -55,14 +55,14 @@
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.11</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.2.9.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.2.12.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.11.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.1</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
-        <dependency.webscripts.version>8.14</dependency.webscripts.version>
+        <dependency.webscripts.version>8.15</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.67</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.6.0</dependency.mockito-core.version>
         <dependency.org-json.version>20200518</dependency.org-json.version>
@@ -96,8 +96,8 @@
 
         <dependency.postgresql.version>42.2.18</dependency.postgresql.version>
         <dependency.mysql.version>8.0.22</dependency.mysql.version>
-        <dependency.mariadb.version>2.7.0</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.40</dependency.tas-utility.version>
+        <dependency.mariadb.version>2.7.1</dependency.mariadb.version>
+        <dependency.tas-utility.version>3.0.41</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
         <dependency.tas-restapi.version>1.50</dependency.tas-restapi.version>
@@ -105,7 +105,7 @@
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
-        <dependency.tas-dataprep.version>2.3</dependency.tas-dataprep.version>
+        <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
     </properties>
 
     <scm>

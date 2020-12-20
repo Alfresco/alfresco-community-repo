@@ -18,7 +18,10 @@
  */
 package org.alfresco.util.transaction;
 
+import static java.util.Collections.emptyList;
+
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -612,5 +615,11 @@ public class SpringAwareUserTransaction
                 isCallStackTraced = true;
             }
         }
+    }
+
+    @Override
+    public Collection<String> getLabels()
+    {
+        return emptyList();
     }
 }

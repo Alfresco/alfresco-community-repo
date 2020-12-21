@@ -394,6 +394,18 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         }
         else
         {
+            // When node is copied when the aspect is applied, the sharedACLtoReplace will not match the children's ACLS
+            // to replace, we need to use the current one.
+            Long currentAcl = nodeDAO.getNodeAclId(nodeId);
+
+            if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                // If node has a pending acl, retrieve the sharedAclToReplace from node property. When the job calls
+                // this, it already does it but on move and copy operations, it uses the new parents old ACL.
+                sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+                
+            }
+
             // Lazily retrieve/create the shared ACL
             if (mergeFrom == null)
             {
@@ -407,31 +419,24 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
             
             List<NodeIdAndAclId> children = nodeDAO.getPrimaryChildrenAcls(nodeId);
             
-            if(children.size() > 0)
-            {
-                nodeDAO.setPrimaryChildrenSharedAclId(nodeId, sharedAclToReplace, mergeFrom);
-            }
-            
             if (!propagateOnChildren)
             {
                 return;
             }
+            
             for (NodeIdAndAclId child : children)
             {
-                Long acl = child.getAclId();
-                
+                //Use the current ACL instead of the stored value, it could've been changed meanwhile
+                Long acl = nodeDAO.getNodeAclId(child.getId());
+               
                 if (acl == null)
                 {
                     propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
                 }
                 else
                 {
-//                    if(acl.equals(mergeFrom))
-//                    {
-//                        setFixedAcls(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false);
-//                    }
                     // Still has old shared ACL or already replaced
-                    if(acl.equals(sharedAclToReplace) || acl.equals(mergeFrom))
+                    if(acl.equals(sharedAclToReplace) || acl.equals(mergeFrom) || acl.equals(currentAcl))
                     {
                         propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
                     }
@@ -456,6 +461,21 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                         }
                     }
                 }
+            }
+
+            // By doing an eager update of the direct children we canot see if another thread has changed the ACL
+            // between the time we get the child nodes and we update them. By updating the direct children last it is
+            // possible to verify if any child has changed meanwhile.
+            if(children.size() > 0)
+            {
+                nodeDAO.setPrimaryChildrenSharedAclId(nodeId, sharedAclToReplace, mergeFrom);
+            }
+            
+            // When this is not executed triggered by the job, but a move or copy operation occures on a pending
+            // node, we don't want to apply the OLD ACL that was pending
+            if(nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                removePendingAclAspect(nodeId);
             }
         }
     }
@@ -509,14 +529,23 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         }
         // set ASPECT_PENDING_FIX_ACL aspect on node to be later on processed with FixedAclUpdater amd switch flag
         // FIXED_ACL_ASYNC_REQUIRED_KEY
-        addFixedAclPendingAspect(nodeId, sharedAclToReplace, inheritFrom);
+        addFixedAclPendingAspect(nodeId, sharedAclToReplace, inheritFrom, mergeFrom);
         AlfrescoTransactionSupport.bindResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY, true);
         // stop propagating on children nodes
         return false;
     }
 
-    private void addFixedAclPendingAspect(Long nodeId, Long sharedAclToReplace, Long inheritFrom)
+    private void addFixedAclPendingAspect(Long nodeId, Long sharedAclToReplace, Long inheritFrom, Long mergeFrom)
     {
+        //If the node already has the pending ACL aspect, just update the new inheritFrom value
+        if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+        {
+            Map<QName, Serializable> pendingAclProperties = new HashMap<>();
+            pendingAclProperties.put(ContentModel.PROP_INHERIT_FROM_ACL, inheritFrom);
+            nodeDAO.addNodeProperties(nodeId, pendingAclProperties);
+            return;
+        }
+        
         Set<QName> aspect = new HashSet<>();
         aspect.add(ContentModel.ASPECT_PENDING_FIX_ACL);
         nodeDAO.addNodeAspects(nodeId, aspect);
@@ -528,6 +557,17 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         {
             log.debug("Set Fixed Acl Pending : " + nodeId + " " + nodeDAO.getNodePair(nodeId).getSecond());
         }
+    }
+
+    public void removePendingAclAspect(Long nodeId)
+    {
+        Set<QName> aspects = new HashSet<>(1);
+        aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+        Set<QName> pendingFixAclProperties = new HashSet<>();
+        pendingFixAclProperties.add(ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+        pendingFixAclProperties.add(ContentModel.PROP_INHERIT_FROM_ACL);
+        nodeDAO.removeNodeAspects(nodeId, aspects);
+        nodeDAO.removeNodeProperties(nodeId, pendingFixAclProperties);
     }
     
     /**

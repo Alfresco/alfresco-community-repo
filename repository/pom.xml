@@ -660,34 +660,6 @@
             <version>${dependency.gytheio.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool</groupId>
-                    <artifactId>commons-pool</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.tika</groupId>
-                    <artifactId>tika-core</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.apache.camel</groupId>
                     <artifactId>camel-core</artifactId>
                 </exclusion>
@@ -718,16 +690,6 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client</artifactId>
             <version>${dependency.activemq.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -735,30 +697,10 @@
             <version>${dependency.activemq.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-camel</artifactId>
-            <version>${dependency.activemq.version}</version>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-activemq</artifactId>
+            <version>${dependency.camel.version}</version>
             <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-beans</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool</groupId>
-                    <artifactId>commons-pool</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
                 <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
                 <exclusion>
                     <groupId>org.apache.geronimo.specs</groupId>
@@ -771,14 +713,6 @@
             <artifactId>activemq-pool</artifactId>
             <version>${dependency.activemq.version}</version>
             <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
                 <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
                 <exclusion>
                     <groupId>org.apache.geronimo.specs</groupId>

@@ -40,7 +40,7 @@ public class TestingRouteBuilder extends SpringRouteBuilder
     @Override
     public void configure() throws Exception
     {
-        from("direct-vm:alfresco.test.2").to("mock:result2");
+        from("direct-vm:alfresco.test.2").process("mock:result2");
     }
 
 }

@@ -60,8 +60,10 @@ public class RepoNodeEventsRouteBuilder extends SpringRouteBuilder
             logger.debug("targetTopic is "+targetTopic);
         }
 
-        from(sourceQueue).routeId("alfresco.events -> topic:alfresco.repo.events")
-        .marshal("defaultDataFormat").to(targetTopic)
-        .end();
+        from(sourceQueue)
+            .routeId("alfresco.events -> topic:alfresco.repo.events")
+            .marshal("defaultDataFormat")
+            .process(targetTopic)
+            .end();
     }
 }

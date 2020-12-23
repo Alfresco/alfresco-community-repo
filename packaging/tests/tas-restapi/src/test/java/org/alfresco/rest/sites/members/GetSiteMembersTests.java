@@ -6,6 +6,7 @@ import org.alfresco.rest.model.RestSiteMemberModel;
 import org.alfresco.rest.model.RestSiteMemberModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.model.GroupModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -20,7 +21,7 @@ import org.testng.annotations.Test;
  */
 public class GetSiteMembersTests extends RestTest
 {
-    private SiteModel publicSite, privateSite, moderatedSite, moderatedSite2, moderatedSite3;
+    private SiteModel publicSite, privateSite, moderatedSite, moderatedSite2, moderatedSite3, moderatedSite4;
     private RestSiteMemberModelsCollection siteMembers;
     private ListUserWithRoles usersWithRoles, moderatedSiteUsers;
     private UserModel regularUser, privateSiteConsumer, siteCreator;
@@ -38,6 +39,7 @@ public class GetSiteMembersTests extends RestTest
         moderatedSite = dataSite.usingUser(siteCreator).createModeratedRandomSite();
         moderatedSite2 = dataSite.usingUser(siteCreator).createModeratedRandomSite();
         moderatedSite3 = dataSite.usingUser(siteCreator).createModeratedRandomSite();
+        moderatedSite4 = dataSite.usingUser(siteCreator).createModeratedRandomSite();
 
         dataUser.addUserToSite(privateSiteConsumer, privateSite, UserRole.SiteConsumer);
         dataUser.addUserToSite(privateSiteConsumer, moderatedSite3, UserRole.SiteConsumer);
@@ -350,5 +352,33 @@ public class GetSiteMembersTests extends RestTest
         siteMembers.assertThat().entriesListCountIs(1)
                 .and().entriesListContains("role", UserRole.SiteManager.toString())
                 .and().entriesListContains("id", siteCreator.getUsername());
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+            description= "Verify if isMemberOfGroup if user part of the group")
+    public void verifyIsMemberOfGroupProps() throws Exception
+    {
+        GroupModel firstGroup = dataGroup.createRandomGroup();
+        UserModel user =  dataUser.createRandomTestUser();
+        dataGroup.addListOfUsersToGroup(firstGroup, user);
+
+        siteMembers = restClient.authenticateUser(siteCreator).withCoreAPI()
+                .usingSite(moderatedSite4).getSiteMembers();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        siteMembers.assertThat().entriesListCountIs(1);
+
+        restClient.withCoreAPI().usingSite(moderatedSite4).addSiteGroup("GROUP_" + firstGroup.getGroupIdentifier(), UserRole.SiteCollaborator);
+
+        siteMembers = restClient.withCoreAPI().usingSite(moderatedSite4).getSiteMembers();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        siteMembers.assertThat().entriesListCountIs(2);
+        siteMembers.getEntryByIndex(0).assertThat().field("isMemberOfGroup").isNotNull();
+        siteMembers.getEntryByIndex(1).assertThat().field("isMemberOfGroup").isNotNull();
+
+        siteMembers = restClient.withCoreAPI().usingSite(moderatedSite4).usingParams("where=(isMemberOfGroup=false)").getSiteMembers();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        siteMembers.assertThat().entriesListCountIs(1);
+        siteMembers.getEntries().get(0).assertThat().field("isMemberOfGroup").is(false);
     }
 }

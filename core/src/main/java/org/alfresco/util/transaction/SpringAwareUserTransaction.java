@@ -138,7 +138,9 @@ public class SpringAwareUserTransaction
     private long threadId = Long.MIN_VALUE;
     /** make sure that we clean up the thread transaction stack properly */
     private boolean finalized = false;
-    
+
+    private Collection<String> labels = emptyList();
+
     /**
      * Creates a user transaction that defaults to {@link TransactionDefinition#PROPAGATION_REQUIRED}.
      * 
@@ -201,6 +203,21 @@ public class SpringAwareUserTransaction
     public String getQualifier()
     {
         return null;
+    }
+
+    /**
+     * Associate one or more labels with this transaction attribute.
+     * <p>This may be used for applying specific transactional behavior
+     * or follow a purely descriptive nature.
+     */
+    public void setLabels(Collection<String> labels) {
+        this.labels = labels;
+    }
+
+    @Override
+    public Collection<String> getLabels()
+    {
+        return this.labels;
     }
 
     /**
@@ -615,11 +632,5 @@ public class SpringAwareUserTransaction
                 isCallStackTraced = true;
             }
         }
-    }
-
-    @Override
-    public Collection<String> getLabels()
-    {
-        return emptyList();
     }
 }

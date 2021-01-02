@@ -39,7 +39,7 @@ import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
-import org.apache.camel.spring.SpringRouteBuilder;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ import org.springframework.stereotype.Component;
  * @author Cristian Turlica
  */
 @Component
-public class OnContentUpdateRenditionRoute extends SpringRouteBuilder
+public class OnContentUpdateRenditionRoute extends RouteBuilder
 {
     private static Log logger = LogFactory.getLog(OnContentUpdateRenditionRoute.class);
 

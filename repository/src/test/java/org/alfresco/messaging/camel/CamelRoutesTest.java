@@ -47,28 +47,28 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = "/test-messaging-context.xml")
 public class CamelRoutesTest
 {
-    @EndpointInject(uri = "mock:result1")
+    @EndpointInject("mock:result1")
     protected MockEndpoint resultEndpoint1;
     
-    @EndpointInject(uri = "mock:result2")
+    @EndpointInject("mock:result2")
     protected MockEndpoint resultEndpoint2;
     
-    @EndpointInject(uri = "mock:dlq")
+    @EndpointInject("mock:dlq")
     protected MockEndpoint dlqEndpoint;
     
     @Autowired
     protected CamelContext camelContext;
     
-    @Produce(uri = "direct-vm:alfresco.test.1")
+    @Produce("direct-vm:alfresco.test.1")
     protected ProducerTemplate template1;
     
-    @Produce(uri = "direct-vm:alfresco.test.2")
+    @Produce("direct-vm:alfresco.test.2")
     protected ProducerTemplate template2;
     
-    @Produce(uri = "direct-vm:alfresco.default")
+    @Produce("direct-vm:alfresco.default")
     protected ProducerTemplate template3;
     
-    @Produce(uri = "direct-vm:alfresco.test.transacted")
+    @Produce("direct-vm:alfresco.test.transacted")
     protected ProducerTemplate template4;
     
     @Autowired

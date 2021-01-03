@@ -39,11 +39,9 @@
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
-        <img.exe>convert</img.exe>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
-        <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
@@ -61,7 +59,6 @@
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
         <dependency.webscripts.version>8.15</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.6.0</dependency.mockito-core.version>
@@ -82,8 +79,6 @@
         <dependency.tika.version>1.25</dependency.tika.version>
         <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>4.1.2</dependency.poi.version>
-        <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>11.0.0-alfresco-001</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.24.2</dependency.camel.version>
@@ -164,20 +159,6 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-mmt</artifactId>
                 <version>${dependency.alfresco-mmt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-pdf-renderer</artifactId>
-                <version>${dependency.alfresco-pdf-renderer.version}</version>
-                <classifier>linux</classifier>
-                <type>tgz</type>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-pdf-renderer</artifactId>
-                <version>${dependency.alfresco-pdf-renderer.version}</version>
-                <classifier>win64</classifier>
-                <type>tgz</type>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
@@ -533,12 +514,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.20</version>
-            </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>${dependency.pdfbox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

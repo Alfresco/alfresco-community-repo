@@ -55,7 +55,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     public static void before()
     {
         AbstractRenditionIntegrationTest.before();
-        legacyLocal();
+        local();
     }
 
     // PDF transformation

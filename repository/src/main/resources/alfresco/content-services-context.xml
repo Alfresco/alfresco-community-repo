@@ -152,20 +152,12 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService"/>
       </property>
-      <property name="imageMagickContentTransformer">
-         <ref bean="transformer.ImageMagick" />
-      </property>
       <property name="eagerContentStoreCleaner" >
          <ref bean="eagerContentStoreCleaner" />
       </property>
       <property name="ignoreEmptyContent" >
          <value>${policy.content.update.ignoreEmpty}</value>
       </property>
-      <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
-      <property name="synchronousTransformClient" ref="synchronousTransformClient" />
-       <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
-       <property name="localTransformServiceRegistryImpl" ref="localTransformServiceRegistryImpl" />
-       <property name="converter" ref="transformOptionsConverter" />
    </bean>
    
    <bean id="contentService" parent="baseContentService">
@@ -283,17 +275,6 @@
       </property>
    </bean>
    
-   <bean id="pdfBoxEmbededDocumentSelector"
-         class="org.alfresco.repo.content.metadata.MediaTypeDisablingDocumentSelector">
-      <property name="disabledMediaTypes">
-         <list>
-            <value>image/jpeg</value>
-            <value>image/tiff</value>
-            <value>image/png</value>
-         </list>
-       </property>
-   </bean>
-
    <!-- Content Metadata Extractors -->
    <!-- The last one listed for any mimetype will be used if available -->
 
@@ -319,49 +300,14 @@
         <property name="nodeService" ref="nodeService"/>
     </bean>
 
-   <!-- Content Transformation Regisitry -->
-   <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" >
-      <constructor-arg>
-         <ref bean="transformerSelector"/>
-      </constructor-arg>
-       <property name="enabled" value="${legacy.transform.service.enabled}" />
-       <property name="transformerDebug" ref="transformerDebug" />
-   </bean>
-
    <!-- Transformation Debug -->
-    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.LegacyTransformerDebug">
+    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.AdminUiTransformerDebug">
        <property name="nodeService" ref="nodeService" />
        <property name="mimetypeService" ref="mimetypeService" />
-       <property name="transformerRegistry" ref="contentTransformerRegistry" />
-       <property name="transformerConfig" ref="transformerConfig" />
        <property name="transformerLog" ref="transformerLog" />
        <property name="transformerDebugLog" ref="transformerDebugLog" />
-        <property name="localTransformServiceRegistryImpl" ref="localTransformServiceRegistryImpl" />
-        <property name="remoteTransformServiceRegistry" ref="remoteTransformServiceRegistry" />
-   </bean>
-
-   <!-- Import the transformer configuration from the transformers subsystem -->
-   <bean id="transformerConfig" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Transformers" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.transform.TransformerConfig</value>
-         </list>
-      </property>
-   </bean>
-
-   <!-- Import the transformer selector from the transformers subsystem -->
-   <bean id="transformerSelector" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Transformers" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.transform.TransformerSelector</value>
-         </list>
-      </property>
+       <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
+       <property name="remoteTransformServiceRegistry" ref="remoteTransformServiceRegistry" />
    </bean>
 
    <!-- Transformer JMX bean (in addition to sub system properties) -->
@@ -406,273 +352,5 @@
       </property>
    </bean>
 
-   <!-- Abstract bean definition defining base definition for all transformers -->
-   <bean id="baseContentTransformer"
-         class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
-         abstract="true"
-         init-method="register"
-         parent="unregisteredBaseContentTransformer">
-      <property name="registerTransformer">
-         <value>true</value>
-      </property>
-      <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
-      <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
-   </bean>
    
-   <!-- Abstract bean definition defining base definition for all transformer that are not registered.
-        Since 4.2 normally defined as available=false transformers in Alfresco global properties
-        rather than in Spring XML. 
-    -->
-   <bean id="unregisteredBaseContentTransformer"
-         class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
-         abstract="true"
-         init-method="register">
-      <property name="mimetypeService">
-         <ref bean="mimetypeService" />
-      </property>
-      <property name="transformerDebug">
-         <ref bean="transformerDebug" />
-      </property>
-      <property name="transformerConfig">
-         <ref bean="transformerConfig" />
-      </property>
-      <property name="registry">
-         <ref bean="contentTransformerRegistry" />
-      </property>
-   </bean>
-   
-   <!-- Abstract bean definition defining base definition for all complex transformers.
-        Since 4.2 normally defined as 'pipeline' transformers in Alfresco global properties
-        rather than in Spring XML.
-    -->
-   <bean id="baseComplexContentTransformer"
-         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-         abstract="true"
-         init-method="register"
-         parent="baseContentTransformer">
-      <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
-   </bean>
-
-   <bean name="tikaRemoteTransformerClient"
-         class="org.alfresco.repo.content.transform.RemoteTransformerClient">
-       <constructor-arg>
-          <value>Tika</value>
-       </constructor-arg>
-       <constructor-arg>
-          <value>${tika.url}</value>
-       </constructor-arg>
-       <property name="startupRetryPeriodSeconds">
-          <value>${tika.startupRetryPeriodSeconds}</value>
-       </property>
-   </bean>
-
-    <bean name="miscRemoteTransformerClient"
-          class="org.alfresco.repo.content.transform.RemoteTransformerClient">
-        <constructor-arg>
-            <value>MiscellaneousTransformers</value>
-        </constructor-arg>
-        <constructor-arg>
-            <value>${transform.misc.url}</value>
-        </constructor-arg>
-        <property name="startupRetryPeriodSeconds">
-            <value>${transform.misc.startupRetryPeriodSeconds}</value>
-        </property>
-    </bean>
-
-    <bean id="baseTikaContentTransformer"
-         class="org.alfresco.repo.content.transform.TikaPoweredContentTransformer"
-         abstract="true"
-         parent="baseContentTransformer">
-       <property name="enabled" value="${legacy.transform.service.enabled}" />
-       <property name="remoteTransformerClient">
-          <ref bean="tikaRemoteTransformerClient" />
-      </property>
-   </bean>
-
-    <!-- Content Transformations -->
-    <bean id="transformer.StringExtracter"
-          class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
-          parent="baseContentTransformer" >
-        <property name="enabled" value="${legacy.transform.service.enabled}" />
-        <property name="remoteTransformerClient">
-            <ref bean="miscRemoteTransformerClient" />
-        </property>
-    </bean>
-
-   <bean id="transformer.BinaryPassThrough"
-         class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer"
-         parent="baseContentTransformer" />
-
-    <bean id="transformer.iWorksQuicklooks"
-          class="org.alfresco.repo.content.transform.AppleIWorksContentTransformer"
-          parent="baseContentTransformer" >
-        <property name="enabled" value="${legacy.transform.service.enabled}" />
-        <property name="remoteTransformerClient">
-            <ref bean="miscRemoteTransformerClient" />
-        </property>
-    </bean>
-
-   <bean id="transformer.OOXMLThumbnail"
-         class="org.alfresco.repo.content.transform.OOXMLThumbnailContentTransformer"
-         parent="baseContentTransformer" >
-   </bean>
-
-	<bean id="transformer.PdfBox"
-		class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
-		parent="baseTikaContentTransformer">
-		<property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
-		<property name="pdfParserConfig" ref="pdfBoxPDFParserConfig"/>
-		<property name="extractBookmarksText">
-			<value>${content.transformer.PdfBox.extractBookmarksText}</value>
-		</property>
-	</bean>
-	
-	<bean id="pdfBoxPDFParserConfig" class="org.apache.tika.parser.pdf.PDFParserConfig">
-	</bean>
-   
-   <bean id="transformer.PdfBox.TextToPdf"
-         class="org.alfresco.repo.content.transform.TextToPdfContentTransformer"
-         parent="baseContentTransformer" >
-       <property name="enabled" value="${legacy.transform.service.enabled}" />
-       <property name="remoteTransformerClient">
-           <ref bean="miscRemoteTransformerClient" />
-       </property>
-   </bean>
-
-   <bean id="transformer.TikaAuto"
-         class="org.alfresco.repo.content.transform.TikaAutoContentTransformer"
-         parent="baseTikaContentTransformer">
-      <constructor-arg><ref bean="tikaConfig"/></constructor-arg>
-   </bean>
-
-   <!-- This one does excel only -->
-   <bean id="transformer.Poi"
-         class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
-         parent="baseTikaContentTransformer" />
-
-   <!-- This one does the other office formats, like word and powerpoint -->
-   <bean id="transformer.Office"
-         class="org.alfresco.repo.content.transform.PoiContentTransformer"
-         parent="baseTikaContentTransformer" />
-
-   <!-- This one handles the ooxml office formats, such as .xlsx and .docx -->
-   <bean id="transformer.OOXML"
-         class="org.alfresco.repo.content.transform.PoiOOXMLContentTransformer"
-         parent="baseTikaContentTransformer" />
-
-   <bean id="transformer.TextMining"
-         class="org.alfresco.repo.content.transform.TextMiningContentTransformer"
-         parent="baseTikaContentTransformer" >
-   </bean>
-
-    <bean id="transformer.HtmlParser"
-          class="org.alfresco.repo.content.transform.HtmlParserContentTransformer"
-          parent="baseContentTransformer" >
-        <property name="enabled" value="${legacy.transform.service.enabled}" />
-        <property name="remoteTransformerClient">
-            <ref bean="miscRemoteTransformerClient" />
-        </property>
-    </bean>
-
-   <bean id="transformer.MediaWikiParser"
-         class="org.alfresco.repo.content.transform.MediaWikiContentTransformer"
-         parent="baseContentTransformer">
-      <property name="nodeService">
-         <ref bean="NodeService" />
-      </property>
-      <property name="fileFolderService">
-         <ref bean="FileFolderService" />
-      </property>
-   </bean>
-
-   <!-- Import the JodConverter transformer worker from the OOoJodconverter subsystem -->
-   <bean id="transformer.worker.JodConverter"
-         class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="OOoJodconverter" />
-      </property>
-      <property name="sourceBeanName">
-         <value>transformer.worker.JodConverter</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="transformer.JodConverter"
-         class="org.alfresco.repo.content.transform.ProxyContentTransformer"
-         parent="baseContentTransformer">
-      <property name="worker">
-         <ref bean="transformer.worker.JodConverter" />
-      </property>
-   </bean>
-         
-   <bean id="transformer.OutlookMsg"
-         class="org.alfresco.repo.content.transform.MailContentTransformer"
-         parent="baseTikaContentTransformer" />
-         
-   <bean id="transformer.RFC822"
-         class="org.alfresco.repo.content.transform.EMLTransformer"
-         parent="baseContentTransformer">
-       <property name="enabled" value="${legacy.transform.service.enabled}" />
-       <property name="remoteTransformerClient">
-           <ref bean="miscRemoteTransformerClient" />
-       </property>
-   </bean>
-
-   <!-- Import the ImageMagick transformer from the third party subsystem -->
-   <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="thirdparty" />
-      </property>
-      <property name="sourceBeanName">
-         <value>transformer.worker.ImageMagick</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="transformer.ImageMagick" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
-      <property name="worker">
-         <ref bean="transformer.worker.ImageMagick" />
-      </property>
-   </bean>
-   
-   <!-- Import the Alfresco-PDF-Renderer transformer from the third party subsystem -->
-   <bean id="transformer.worker.alfresco-pdf-renderer" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="thirdparty" />
-      </property>
-      <property name="sourceBeanName">
-         <value>transformer.worker.subsys.alfresco-pdf-renderer</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="transformer.alfresco-pdf-renderer" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
-      <property name="worker">
-         <ref bean="transformer.worker.alfresco-pdf-renderer" />
-      </property>
-   </bean>
-   
-   
-   <!-- This transformer allows for the indexing and therefore searching of zip files. -->   
-   <bean id="transformer.Archive"
-         class="org.alfresco.repo.content.transform.ArchiveContentTransformer"
-         parent="baseTikaContentTransformer" >
-      <property name="includeContents" value="${transformer.Archive.includeContents}" />
-      <property name="tikaConfig">
-         <ref bean="tikaConfig"/>
-      </property>
-   </bean>
-
 </beans>

@@ -621,11 +621,22 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html",
                 UNCHANGED_HASHCODE, fileSize, expectedProperties, OverwritePolicy.PRAGMATIC);
 
-        // Check the metadata sent to the T-Engine contains one of the fixed property values and a modified test value
-        // that is a collection.
+        // Check the metadata sent to the T-Engine contains one of the fixed property values.
         String metadata = transformOptionsPassedToTEngine.get("metadata");
+        System.err.println("METADATA="+metadata);
         assertTrue("System properties were not set: simple value", metadata.contains("\"{http://www.alfresco.org/model/content/1.0}creator\":\"System\""));
-        assertTrue("System properties were not set: collection value", metadata.contains("\"{http://www.alfresco.org/model/content/1.0}title\":[\"one\",\"two\",\"three\"]"));
+
+        // Check the metadata sent to the T-Engine contains the collection value added by the mockTransform.
+        // The order of elements in the collection may change, so we cannot use a simple string compare.
+        int i = metadata.indexOf("\"{http://www.alfresco.org/model/content/1.0}title\":[");
+        assertTrue("The title is missing: "+metadata, i > 0);
+        int j = metadata.indexOf(']', i);
+        assertTrue("No closing ] : "+metadata.substring(i), j > 0);
+        String collection = metadata.substring(i, j);
+        assertTrue("There should have 3 elements: "+collection, collection.split(",").length == 3);
+        assertTrue("\"one\" is missing", collection.contains("\"one\""));
+        assertTrue("\"two\" is missing", collection.contains("\"two\""));
+        assertTrue("\"three\" is missing", collection.contains("\"three\""));
     }
 
     @Test

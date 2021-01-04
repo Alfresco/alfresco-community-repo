@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,7 +36,6 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
-import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.TransformClient;
@@ -97,6 +96,7 @@ import static org.alfresco.model.ContentModel.PROP_CREATED;
 import static org.alfresco.model.ContentModel.PROP_CREATOR;
 import static org.alfresco.model.ContentModel.PROP_MODIFIED;
 import static org.alfresco.model.ContentModel.PROP_MODIFIER;
+import static org.alfresco.model.ContentModel.PROP_TITLE;
 import static org.alfresco.repo.rendition2.RenditionService2Impl.SOURCE_HAS_NO_CONTENT;
 
 /**
@@ -145,6 +145,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     private Map<QName, Serializable> origProperties;
     private Map<QName, Serializable> expectedProperties;
     private Map<QName, Serializable> properties;
+    private Map<String, String> transformOptionsPassedToTEngine;
 
     private class TestAsynchronousExtractor extends AsynchronousExtractor
     {
@@ -215,8 +216,20 @@ public class AsynchronousExtractorTest extends BaseSpringTest
             return true;
         }
 
+        @Override
+        protected Map<String, Serializable> mapSystemToRaw(Map<QName, Serializable> systemMetadata)
+        {
+            // Add a property value that is a Collection, to ensure we can handle it.
+            Map<QName, Serializable> metadataWithCollection = new HashMap<>(systemMetadata);
+            Serializable collection = new ArrayList(Set.of("one", "two", "three"));
+            metadataWithCollection.put(PROP_TITLE, collection);
+
+            return super.mapSystemToRaw(metadataWithCollection);
+        }
+
         private void mockTransform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int sourceContentHashCode)
         {
+            transformOptionsPassedToTEngine = renditionDefinition.getTransformOptions();
             try
             {
                 transformerDebug.pushMisc();
@@ -604,8 +617,15 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         File file = new File(resource.toURI());
         long fileSize = file.length();
 
-        assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html", // just replace the pdf with html!
+        // Replace the source pdf with html so we can see the content change size
+        assertAsyncMetadataExecute(contentMetadataEmbedder, "quick/quick.html",
                 UNCHANGED_HASHCODE, fileSize, expectedProperties, OverwritePolicy.PRAGMATIC);
+
+        // Check the metadata sent to the T-Engine contains one of the fixed property values and a modified test value
+        // that is a collection.
+        String metadata = transformOptionsPassedToTEngine.get("metadata");
+        assertTrue("System properties were not set: simple value", metadata.contains("\"{http://www.alfresco.org/model/content/1.0}creator\":\"System\""));
+        assertTrue("System properties were not set: collection value", metadata.contains("\"{http://www.alfresco.org/model/content/1.0}title\":[\"one\",\"two\",\"three\"]"));
     }
 
     @Test

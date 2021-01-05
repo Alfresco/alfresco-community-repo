@@ -41,7 +41,7 @@ public class TestingRouteBuilder extends RouteBuilder
     public void configure() throws Exception
     {
         from("direct-vm:alfresco.test.2")
-            .process("mock:result2");
+            .to("mock:result2");
     }
 
 }

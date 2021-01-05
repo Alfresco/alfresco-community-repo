@@ -8,7 +8,7 @@ docker stats --no-stream
 docker update --memory=2.5Gb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_alfresco_' | awk '{print $1}')
 docker update --memory=1200Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_search_' | awk '{print $1}')
 docker update --memory=512Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_postgres_' | awk '{print $1}')
-docker update --memory=850Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_activemq_' | awk '{print $1}')
+docker update --memory=900Mb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_activemq_' | awk '{print $1}')
 docker update --memory=1Gb --memory-swap -1 --restart on-failure $(docker ps -a | grep '_transform-core-aio_' | awk '{print $1}')
 
 shareContainerId=$(docker ps -a | grep '_share_' | awk '{print $1}')

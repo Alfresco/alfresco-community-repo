@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import java.util.Collections;
 
 /**
- * Repeats quick file rendition tests with local transforms and legacy transformers disabled.
+ * Repeats quick file rendition tests with local transforms disabled.
  * The Transform Service does not exist for the Community edition.
  *
  * @author adavis

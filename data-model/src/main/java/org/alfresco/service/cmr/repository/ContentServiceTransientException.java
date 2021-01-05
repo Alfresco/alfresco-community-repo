@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,8 +33,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * same action might succeed, all other things not having changed.
  * <p/>
  * An example of this would be the case where a request to create a thumbnail
- * has failed because the necessary thumbnailing software is not available e.g. because the OpenOffice.org process
- * is not currently running.
+ * has failed because the necessary thumbnailing software is not available.
  * 
  * @author Neil Mc Erlean
  * @since 4.0.1

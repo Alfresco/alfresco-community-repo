@@ -25,17 +25,15 @@
  */
 package org.alfresco.repo.content.transform;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-import java.util.Deque;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for TransformerDebugLog.
@@ -48,7 +46,7 @@ public class TransformerDebugLogTest
     private TransformerDebug transformerDebug;
     
     @Mock
-    private TransformerConfig transformerConfig;
+    private Properties properties;
     
     private TransformerDebugLog log;
 
@@ -59,7 +57,7 @@ public class TransformerDebugLogTest
         
         log = new TransformerDebugLog();
         log.setTransformerDebug(transformerDebug);
-        log.setTransformerConfig(transformerConfig);
+        log.setProperties(properties);
     }
 
     static void assertDebugEntriesEquals(String[] expected, String[] actual)
@@ -91,7 +89,7 @@ public class TransformerDebugLogTest
     @Test
     public void oneTest()
     {
-        when(transformerConfig.getProperty("transformer.debug.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.debug.entries")).thenReturn("3");
         log.debug("56 one");
         log.debug("56 Finished in 23 ms");
         
@@ -101,7 +99,7 @@ public class TransformerDebugLogTest
     @Test
     public void incompleteTest()
     {
-        when(transformerConfig.getProperty("transformer.debug.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.debug.entries")).thenReturn("3");
         log.debug("56 one");
         
         assertDebugEntriesEquals(new String[] {"56 one\n             <<-- INCOMPLETE -->>"}, log.getEntries(10));
@@ -110,7 +108,7 @@ public class TransformerDebugLogTest
     @Test
     public void nullEntryTest()
     {
-        when(transformerConfig.getProperty("transformer.debug.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.debug.entries")).thenReturn("3");
         log.debug(null);
         
         assertDebugEntriesEquals(new String[] {}, log.getEntries(10));
@@ -119,7 +117,7 @@ public class TransformerDebugLogTest
     @Test
     public void zeroLengthIdEntryTest()
     {
-        when(transformerConfig.getProperty("transformer.debug.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.debug.entries")).thenReturn("3");
         log.debug("one"); // as the 1st char is not a digit the id is taken to be ""
         
         assertDebugEntriesEquals(new String[] {"one\n             <<-- INCOMPLETE -->>"}, log.getEntries(10));
@@ -128,7 +126,7 @@ public class TransformerDebugLogTest
     @Test
     public void twoAndAHalfTest()
     {
-        when(transformerConfig.getProperty("transformer.debug.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.debug.entries")).thenReturn("3");
         log.debug("56 one");
         log.debug("56 Finished in 23 ms");
         log.debug("57 one");
@@ -150,7 +148,7 @@ public class TransformerDebugLogTest
     {
         // The sequence will still be based on the first entry of each request,
         // but subsequent debug may be out of order. 
-        when(transformerConfig.getProperty("transformer.debug.entries")).thenReturn("3");
+        when(properties.getProperty("transformer.debug.entries")).thenReturn("3");
         log.debug("56 one");
         log.debug("57 one");
         log.debug("56 Finished in 23 ms");

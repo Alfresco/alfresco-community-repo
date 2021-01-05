@@ -42,17 +42,14 @@ import org.apache.commons.logging.Log;
  * Only supports debug level logging.
  * 
  * @author Alan Davis
- *
- * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
-@Deprecated
 @AlfrescoPublicApi
 abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
 {
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
 
     private TransformerDebug transformerDebug;
-    private TransformerConfig transformerConfig;
+    private Properties properties;
     
     private int maxEntries = -1;
     private Deque<T> entries = new LinkedList<T>();
@@ -67,22 +64,19 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         this.transformerDebug = transformerDebug;
     }
 
-    /**
-     * @param transformerConfig used to access the property.
-     */
-    public void setTransformerConfig(TransformerConfig transformerConfig)
+    public void setProperties(Properties properties)
     {
-        this.transformerConfig = transformerConfig;
+        this.properties = properties;
     }
-    
+
     /**
      * Returns an int from a property.
      * @param propertyName
      */
-    private int getProperty(TransformerConfig transformerConfig, String propertyName, int min, int max)
+    private int getProperty(String propertyName, int min, int max)
     {
         int i = 0;
-        String value = transformerConfig.getProperty(propertyName);
+        String value = properties.getProperty(propertyName);
         if (value != null)
         {
             try
@@ -106,7 +100,7 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
     {
         if (maxEntries < 0)
         {
-            maxEntries = getProperty(transformerConfig, getPropertyName(), 0, getUpperMaxEntries());
+            maxEntries = getProperty(getPropertyName(), 0, getUpperMaxEntries());
         }
         return maxEntries;
     }
@@ -185,26 +179,22 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         }
     }
     
-    /**
-     * The transformer property and value used to set this logger. This is commented
-     * out if the property has not been overridden (default is 0).
-     * @param defaultProperties the transformer.properties file values that may be overridden. 
-     * @return the transformer property and value.
-     */
-    public String getPropertyAndValue(Properties defaultProperties)
+    private static void appendProperty(StringBuilder sb, String propertyName, String value, String defaultValue)
     {
-        getMaxEntries();
-        String value = Integer.toString(maxEntries);
-        
-        String propertyName = getPropertyName();
-        String defaultValue = defaultProperties == null ? null : defaultProperties.getProperty(propertyName);
-        defaultValue = defaultValue == null ? "0" : defaultValue;
-        
-        StringBuilder sb = new StringBuilder();
-        TransformerPropertyGetter.appendProperty(sb, propertyName, value, defaultValue);
-        return sb.toString();
+        boolean isDefaultValue = value.equals(defaultValue);
+        if (isDefaultValue)
+        {
+            sb.append("# ");
+        }
+        sb.append(propertyName);
+        sb.append('=');
+        sb.append(value);
+        if (!isDefaultValue)
+        {
+            sb.append("  # default=");
+            sb.append(defaultValue);
+        }
     }
-
     /**
      * Overridden to specify the maximum value the maxEntries property may set.
      * Generally quite a small number as values are stored in memory.

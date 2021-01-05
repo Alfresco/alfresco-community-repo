@@ -63,7 +63,7 @@ public class RepoNodeEventsRouteBuilder extends RouteBuilder
         from(sourceQueue)
             .routeId("alfresco.events -> topic:alfresco.repo.events")
             .marshal("defaultDataFormat")
-            .process(targetTopic)
+            .to(targetTopic)
             .end();
     }
 }

@@ -34,7 +34,7 @@ Repository is a library packaged as a jar file which contains the following:
 Tests are combined into test classes split by test type or Spring application context used in the test, see classes
 in _src/test/java/org/alfresco_. All of these classes as well as individual tests can be run by specifying the test
 class name and a set of DB connection properties. Check the travis.yml file for docker images that should be started
-to provide a sutable test environment. For example:
+to provide a suitable test environment. For example:
 ~~~
 mvn clean test -Dtest=SomeRepoTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql:alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 ~~~
@@ -114,7 +114,7 @@ want to make changes to both of them if you are changing the repository code.
 
 ~~~
 mkdir work
-cd works
+cd work
 git clone git@github.com:Alfresco/alfresco-community-repo.git
 git clone git@github.com:Alfresco/acs-community-packaging.git
 ~~~

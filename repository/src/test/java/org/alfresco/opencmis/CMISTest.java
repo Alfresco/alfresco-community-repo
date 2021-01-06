@@ -3,7 +3,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -119,7 +119,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.PerformanceTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -744,6 +746,7 @@ public class CMISTest
     /**
      * ALF-18006 Test content mimetype auto-detection into CmisStreamInterceptor when "Content-Type" is not defined.
      */
+    @Category(FrequentlyFailingTests.class) // ACS-962
     @Test
     public void testContentMimeTypeDetection()
     {
@@ -3952,6 +3955,7 @@ public class CMISTest
      *  This test makes sure that once a copy is checked out, updateProperties method can be called
      *  and properly adds the new properties.
      */
+    @Category(FrequentlyFailingTests.class) // ACS-961
     @Test
     public void aPrivateCopyMustAllowTheAdditionOfAspects_CMIS_1_1_Version()
     {

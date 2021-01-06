@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2020 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -69,6 +69,22 @@ public class VersionNumberTest extends TestCase
         try
         {
             new VersionNumber("1.2.3a");
+            fail("Should not have created an invalid version");
+        } catch (Exception exception)
+        {
+            // OK
+        }
+        try
+        {
+            new VersionNumber("1.2.3-M4");
+            fail("Should not have created an invalid version");
+        } catch (Exception exception)
+        {
+            // OK
+        }
+        try
+        {
+            new VersionNumber("1.2.3-A4");
             fail("Should not have created an invalid version");
         } catch (Exception exception)
         {

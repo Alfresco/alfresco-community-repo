@@ -64,6 +64,7 @@ public class GetChildrenTests extends CmisTest
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS} , expectedExceptions = CmisObjectNotFoundException.class)
     public void getChildrenFromDeletedFolder() throws Exception
     {
+        /* @Category(IntermittentlyFailingTests.class) ACS-959 Intermittent failure. @Category not supported by TAS tests. */
         cmisApi.authenticateUser(testUser).usingSite(testSite)
             .createFolder(testFolder)
             .and().usingResource(testFolder)
@@ -167,7 +168,7 @@ public class GetChildrenTests extends CmisTest
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member cannot get children for a folder from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={ CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetChildrenFromValidFolderFromAPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -185,7 +186,7 @@ public class GetChildrenTests extends CmisTest
 
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member cannot get children for a folder from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions={ CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetChildrenFromValidFolderFromAModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

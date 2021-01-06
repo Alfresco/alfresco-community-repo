@@ -165,7 +165,7 @@ public class GetContentStreamTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify unauthorized is not able to get content of file created in a private site with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = { CmisPermissionDeniedException.class, CmisUnauthorizedException.class })
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserShouldNotGetFileContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);

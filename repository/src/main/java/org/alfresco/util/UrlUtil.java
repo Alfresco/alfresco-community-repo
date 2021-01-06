@@ -39,7 +39,8 @@ public class UrlUtil
 {
     // ${shareUrl} placeholder
     public static final Pattern PATTERN = Pattern.compile("\\$\\{shareUrl\\}");
-
+    // ${alfrescoUrl} placeholder
+    public static final Pattern REPO_PATTERN = Pattern.compile("\\$\\{alfrescoUrl\\}");
     /**
      * Builds up the Url to Alfresco based on the settings in the 
      *  {@link SysAdminParams}. 
@@ -109,6 +110,15 @@ public class UrlUtil
         {
             return PATTERN.matcher(value).replaceAll(
                         getShareUrl(sysAdminParams));
+        }
+        return value;
+    }
+
+    public static String replaceAlfrescoUrlPlaceholder(String value, SysAdminParams sysAdminParams)
+    {
+        if (value != null)
+        {
+            return REPO_PATTERN.matcher(value).replaceAll(getAlfrescoUrl(sysAdminParams));
         }
         return value;
     }

@@ -25,15 +25,11 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 
 import java.util.Map;
 
@@ -83,7 +79,7 @@ public interface SynchronousTransformClient
             throws UnsupportedTransformationException, ContentIOException;
 
     /**
-     * @return type of transform (Local, Legacy) for use in debug.
+     * @return type of transform (Local) for use in debug.
      */
     String getName();
 }

@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -37,20 +38,20 @@ public class IsPrivateWorkingCopyTests extends CmisTest
             .createFile(checkedOutDoc).and().checkOut()
             .createFile(simpleDoc);
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to verify if checked out document is private working copy")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(managerUser).usingResource(checkedOutDoc)
             .assertThat().isPrivateWorkingCopy()
                 .then().usingResource(simpleDoc).assertThat().isNotPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to verify if pwc document is private working copy")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerCanVerifyIsPrivateWorkingCopyOnPwc() throws Exception
     {
         cmisApi.authenticateUser(managerUser).usingResource(checkedOutDoc)
@@ -69,10 +70,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                 .then().delete().and().assertThat().doesNotExistInRepo()
                     .assertThat().isPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to verify if checked out document is private working copy")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -80,10 +81,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                 .assertThat().isPrivateWorkingCopy()
                     .then().usingResource(simpleDoc).assertThat().isNotPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site contributor is able to verify if checked out document is private working copy")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
@@ -91,10 +92,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                 .assertThat().isPrivateWorkingCopy()
                     .then().usingResource(simpleDoc).assertThat().isNotPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site consumer is able to verify if checked out document is private working copy")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -102,10 +103,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                 .assertThat().isPrivateWorkingCopy()
                     .then().usingResource(simpleDoc).assertThat().isNotPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is able to verify if checked out document is private working copy in public site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
     public void nonInvitedUserCanVerifyIsPrivateWorkingCopyInPublicSite() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -113,10 +114,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                 .assertThat().isPrivateWorkingCopy()
                     .then().usingResource(simpleDoc).assertThat().isNotPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to verify if checked out document is private working copy in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotVerifyIsPrivateWorkingCopyInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(managerUser).createPrivateRandomSite();
@@ -126,10 +127,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                  .then().authenticateUser(nonInvitedUser)
                      .assertThat().isPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to verify if checked out document is private working copy in moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotVerifyIsPrivateWorkingCopyInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(managerUser).createPrivateRandomSite();
@@ -139,10 +140,10 @@ public class IsPrivateWorkingCopyTests extends CmisTest
                  .then().authenticateUser(nonInvitedUser)
                      .assertThat().isPrivateWorkingCopy();
     }
-    
+
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to verify if document created with CHECKEDOUT versioning state is private working copy")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
     public void verifyIsPrivateWorkingCopyForDocumentWithCheckedOutVersioningState() throws Exception
     {
         FileModel checkedDoc = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);

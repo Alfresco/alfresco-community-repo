@@ -72,7 +72,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.apache.tika.metadata.Metadata;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -143,8 +142,6 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
         this.nodeService = (NodeService) ctx.getBean("NodeService");
         this.contentService = (ContentService) ctx.getBean("ContentService");
         this.metadataExtracterRegistry = (MetadataExtracterRegistry) ctx.getBean("metadataExtracterRegistry");
-        metadataExtracterRegistry.setAsyncExtractEnabled(false);
-        metadataExtracterRegistry.setAsyncEmbedEnabled(false);
 
         this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
         this.auditService = (AuditService)ctx.getBean("auditService");
@@ -209,9 +206,6 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        metadataExtracterRegistry.setAsyncExtractEnabled(true);
-        metadataExtracterRegistry.setAsyncEmbedEnabled(true);
-
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
             fail("Test is not transaction-safe.  Fix up transaction handling and re-test.");
@@ -311,8 +305,8 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
             super(Sets.newHashSet(MimetypeMap.MIMETYPE_IMAGE_JPEG));
             Properties mappingProperties = new Properties();
             // TODO move to new keyword once tika is upgraded
-            mappingProperties.put(Metadata.KEYWORDS, ContentModel.PROP_TAGS.toString());
-            mappingProperties.put(Metadata.DESCRIPTION, ContentModel.PROP_DESCRIPTION.toString());
+            mappingProperties.put("Keywords", ContentModel.PROP_TAGS.toString());
+            mappingProperties.put("description", ContentModel.PROP_DESCRIPTION.toString());
             setMappingProperties(mappingProperties);
         }
         
@@ -341,7 +335,7 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
             // Add some test keywords to those actually extracted from the file including a nodeRef
             List<String> keywords = new ArrayList<String>(Arrays.asList(
                     new String[] { existingTagNodeRef, TAG_2, TAG_3, TAG_NONEXISTENT_NODEREF }));
-            Serializable extractedKeywords = rawMap.get(Metadata.KEYWORDS);
+            Serializable extractedKeywords = rawMap.get("Keywords");
             if (extractedKeywords != null && extractedKeywords instanceof String)
             {
                 keywords.add((String) extractedKeywords);
@@ -350,7 +344,7 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
             {
                 keywords.addAll((Collection<? extends String>) extractedKeywords);
             }
-            putRawValue(Metadata.KEYWORDS, (Serializable) keywords, rawMap);
+            putRawValue("Keywords", (Serializable) keywords, rawMap);
             return rawMap;
         }
     }

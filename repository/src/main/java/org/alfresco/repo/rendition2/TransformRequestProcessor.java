@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.camel.Exchange;
-import org.apache.camel.NoSuchEndpointException;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -125,7 +124,7 @@ public class TransformRequestProcessor implements Processor
         String requestId = event.getRequestId();
 
         TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMediaType, transformOptions,
-            clientData, replyQueue, requestId);
+            clientData, replyQueue, requestId, null);
 
         NodeRef nodeRef = new NodeRef(event.getNodeRef());
 

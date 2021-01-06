@@ -15,12 +15,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
+import org.apache.chemistry.opencmis.commons.exceptions.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -62,10 +57,11 @@ public class CreateFolderTests extends CmisTest
         cmisApi.authenticateUser(testUser).usingSite(testSite)
                 .createFolder(testFolder).and().assertThat().existsInRepo();
     }
-    
+
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify inexistent user can't create folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisUnauthorizedException.class)
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void inexistentUserShouldNotCreateFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -105,7 +101,9 @@ public class CreateFolderTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is not able to create folder with cmis:document base type id with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisConstraintException.class)
+    @Test(groups = { "bug-atom-REPO-5389", TestGroup.REGRESSION, TestGroup.CMIS},
+            expectedExceptions = CmisConstraintException.class,
+            expectedExceptionsMessageRegExp = ".*Type is not a folder type.*")
     public void siteManagerCannotCreateFolderWithDocumentTypeId() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -186,7 +184,7 @@ public class CreateFolderTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify consumer is not able to create folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotCreateFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -194,10 +192,10 @@ public class CreateFolderTests extends CmisTest
                 .createFolder(testFolder);
     }
 
-    @Bug(id="REPO-4301")
+    @Bug(id = "REPO-5388")
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify disabled user is not able to create folder in Shared location")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void disabledUserShouldNotCreateFolder() throws Exception
     {
         UserModel disabled = dataUser.createRandomTestUser();
@@ -210,7 +208,7 @@ public class CreateFolderTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to create folder in private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserShouldNotCreateDocumentInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();

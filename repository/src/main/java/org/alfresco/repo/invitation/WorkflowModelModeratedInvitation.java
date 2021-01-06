@@ -66,6 +66,11 @@ public interface WorkflowModelModeratedInvitation
     public static final QName WF_PROP_REVIEWER= QName.createQName(NAMESPACE_URI, "reviewer");
     public static final QName WF_PROP_MODIFIED_AT= QName.createQName(NAMESPACE_URI, "modifiedAt");
 
+    public static final QName WF_PROP_CLIENT_NAME= QName.createQName(NAMESPACE_URI, "clientName");
+    public static final QName WF_WORKSPACE_URL = QName.createQName(NAMESPACE_URI, "workspaceUrl");
+    public static final QName WF_SHARED_LINK_BASE_URL = QName.createQName(NAMESPACE_URI, "sharedLinkBaseUrl");
+    public static final QName WF_TEMPLATE_ASSETS_URL = QName.createQName(NAMESPACE_URI, "templateAssetsUrl");
+
     // workflow execution context variable names
     public static final String wfVarInviteeUserName = "imwf_inviteeUserName";
     public static final String wfVarInviteeRole = "imwf_inviteeRole";
@@ -75,4 +80,8 @@ public interface WorkflowModelModeratedInvitation
     public static final String wfVarReviewer = "imwf_reviewer";
     public static final String wfVarReviewComments = "imwf_reviewComments";
     public static final String bpmGroupAssignee = "bpm_groupAssignee";
+
+    public static final String wfVarClientName = "imwf_clientName";
+    public static final String wfVarWorkspaceUrl = "imwf_workspaceUrl";
+    public static final String wfVarTemplateAssetsUrl = "imwf_templateAssetsUrl";
 }

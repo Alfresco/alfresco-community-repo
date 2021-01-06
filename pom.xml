@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.327-SNAPSHOT</version>
+    <version>8.357-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -39,11 +39,9 @@
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
-        <img.exe>convert</img.exe>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
-        <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
@@ -53,23 +51,22 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.transform.model.version>1.0.2.11</dependency.transform.model.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.10</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.11</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.2.9.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.3.2</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.11.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.4.1</dependency.cxf.version>
+        <dependency.cxf.version>3.4.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.pdfbox.version>2.0.21</dependency.pdfbox.version>
-        <dependency.webscripts.version>8.14</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.66</dependency.bouncycastle.version>
+        <dependency.webscripts.version>8.15</dependency.webscripts.version>
+        <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.6.0</dependency.mockito-core.version>
         <dependency.org-json.version>20200518</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.guava.version>28.2-jre</dependency.guava.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
-        <dependency.gson.version>2.8.6</dependency.gson.version>
+        <dependency.gson.version>2.8.5</dependency.gson.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.13</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
@@ -79,7 +76,7 @@
         <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
-        <dependency.tika.version>1.24.1</dependency.tika.version>
+        <dependency.tika.version>1.25</dependency.tika.version>
         <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
@@ -96,17 +93,16 @@
 
         <dependency.postgresql.version>42.2.18</dependency.postgresql.version>
         <dependency.mysql.version>8.0.22</dependency.mysql.version>
-        <dependency.mariadb.version>2.7.0</dependency.mariadb.version>
-
-        <dependency.tas-utility.version>3.0.36</dependency.tas-utility.version>
+        <dependency.mariadb.version>2.7.1</dependency.mariadb.version>
+        <dependency.tas-utility.version>3.0.41</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
-        <dependency.tas-restapi.version>1.48</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.21</dependency.tas-cmis.version>
+        <dependency.tas-restapi.version>1.50</dependency.tas-restapi.version>
+        <dependency.tas-cmis.version>1.25</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
-        <dependency.tas-dataprep.version>2.3</dependency.tas-dataprep.version>
+        <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
     </properties>
 
     <scm>
@@ -165,20 +161,6 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-mmt</artifactId>
                 <version>${dependency.alfresco-mmt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-pdf-renderer</artifactId>
-                <version>${dependency.alfresco-pdf-renderer.version}</version>
-                <classifier>linux</classifier>
-                <type>tgz</type>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-pdf-renderer</artifactId>
-                <version>${dependency.alfresco-pdf-renderer.version}</version>
-                <classifier>win64</classifier>
-                <type>tgz</type>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
@@ -475,7 +457,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.67</version>
+                <version>1.68</version>
 <!--                <version>${dependency.bouncycastle.version}</version>-->
             </dependency>
             <dependency>
@@ -534,12 +516,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.20</version>
-            </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>${dependency.pdfbox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

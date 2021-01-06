@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
 import org.alfresco.repo.event.v1.model.EventData;
+import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -385,6 +386,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
+        checkNumOfEvents(7);
         // 3 assoc.child.Created events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_CREATED);
         assertEquals("Wrong association events number",3, childAssocEvents.size());

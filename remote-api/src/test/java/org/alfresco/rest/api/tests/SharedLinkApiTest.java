@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -64,6 +65,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.joda.time.DateTime;
@@ -192,6 +194,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Map<String, String> body = new HashMap<>();
         body.put("nodeId", d1Id);
 
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
+
         response = post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
         QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
@@ -209,7 +214,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(new Long(file1_originalBytes.length), resp.getContent().getSizeInBytes());
         assertEquals("UTF-8", resp.getContent().getEncoding());
 
-        assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
+       // assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
         assertEquals(docModifiedBy, resp.getModifiedByUser().getId()); // not changed (ie. not user2)
         assertEquals(UserInfo.getTestDisplayName(docModifiedBy), resp.getModifiedByUser().getDisplayName());
 
@@ -364,7 +369,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // create rendition of pdf doc - note: for some reason create rendition of txt doc fail on build m/c (TBC) ?
         setRequestContext(user2);
-        
+
         Rendition rendition = createAndGetRendition(d1Id, "doclib");
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
@@ -417,12 +422,12 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             // -ve test - unauthenticated
             setRequestContext(null);
             deleteSharedLink(shared1Id, 401);
-            
+
             setRequestContext(user1);
 
             // -ve test - user1 cannot delete shared link
             deleteSharedLink(shared1Id, 403);
-            
+
             // -ve test - delete - cannot delete non-existent link
             deleteSharedLink("dummy", 404);
         }
@@ -479,7 +484,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(NodesEntityResource.class, d1Id, null, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
-        assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed
+//        assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed - now can be as metadata extract is async
         assertEquals(docModifiedBy, nodeResp.getModifiedByUser().getId()); // not changed (ie. not user2)
 
 

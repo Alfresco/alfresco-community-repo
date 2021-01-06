@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -172,7 +173,7 @@ public class GetObjectOfLatestVersionTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get last versions for document from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetLastVersionsForDocumentCreatedByManagerInPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.createPrivateRandomSite();
@@ -187,7 +188,7 @@ public class GetObjectOfLatestVersionTests extends CmisTest
     
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
             description = "Verify non invited user is not able to get last versions for document from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonInvitedUserCannotGetLastVersionsForDocumentCreatedByManagerInModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.createModeratedRandomSite();

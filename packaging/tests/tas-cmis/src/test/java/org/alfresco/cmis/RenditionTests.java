@@ -8,6 +8,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -17,7 +18,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedExceptio
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS})
+@Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS })
 public class RenditionTests extends CmisTest
 {
     private SiteModel testSite;
@@ -132,7 +133,7 @@ public class RenditionTests extends CmisTest
                 .assertThat().thumbnailRenditionIsAvailable());
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS}, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user cannot get renditions in private site")
     public void nonInvitedUserCannotGetRenditionsInPrivateSite() throws Exception
@@ -147,7 +148,7 @@ public class RenditionTests extends CmisTest
                 .assertThat().thumbnailRenditionIsAvailable();
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.RENDITIONS }, expectedExceptions = CmisPermissionDeniedException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user cannot get renditions in moderated site")
     public void nonInvitedUserCannotGetRenditionsInModeratedSite() throws Exception

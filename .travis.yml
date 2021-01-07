@@ -23,6 +23,7 @@ branches:
     - /release\/.*/
     - /feature\/.*/
     - /fix\/.*/
+    - feature/ACS-1043-camel-upgrade-3
 
 env:
   global:

@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "22:00"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 30
+    ignore:
+      # OpenCMIS dependencies
+      - dependency-name: "org.apache.chemistry.opencmis:chemistry-opencmis-server-bindings"
+      - dependency-name: "org.apache.chemistry.opencmis:chemistry-opencmis-commons-impl"
+      - dependency-name: "org.apache.chemistry.opencmis:chemistry-opencmis-client-impl"
+      - dependency-name: "org.apache.chemistry.opencmis:chemistry-opencmis-test-tck"
+      # Fabric8
+      - dependency-name: "io.fabric8:fabric8-maven-plugin"
+      # Activiti
+      - dependency-name: "org.activiti:activiti-spring"
+  - package-ecosystem: "docker"
+    directory: "packaging/docker-alfresco/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "22:00"
+      timezone: "Europe/London"

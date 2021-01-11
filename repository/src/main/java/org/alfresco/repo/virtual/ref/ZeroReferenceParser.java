@@ -113,7 +113,7 @@ public class ZeroReferenceParser implements ReferenceParser, ZeroEncoding
                                                 parameters);
             return reference;
         }
-        catch (ArrayIndexOutOfBoundsException e)
+        catch (ArrayIndexOutOfBoundsException | NumberFormatException e)
         {
             throw new ReferenceParseException("Invalid reference",
                                               e);

@@ -148,7 +148,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>5.0.3</version>
+            <version>6.2.3</version>
         </dependency>
         <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
         <dependency>

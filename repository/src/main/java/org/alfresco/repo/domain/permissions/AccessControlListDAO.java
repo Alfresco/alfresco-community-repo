@@ -106,4 +106,6 @@ public interface AccessControlListDAO
     public void updateInheritance(Long childNodeId, Long oldParentAclId, Long newParentAclId);
     
     public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set);
+
+    public void removePendingAclAspect(Long nodeId);
 }

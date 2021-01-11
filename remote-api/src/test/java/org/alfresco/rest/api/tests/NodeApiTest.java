@@ -5605,6 +5605,279 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(((ArrayList) (propUpdateResponse.get("custom:locations"))).size() == 1);
     }
 
+    @Test
+    public void versioningEnabledMultipartNodeCreationTest() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+        // Test Scenarios:
+        // 1:  majorVersion not set -  versioningEnabled not set  Expect: MAJOR version
+        // 2:  majorVersion not set -  versioningEnabled false    Expect: versioning disabled
+        // 3:  majorVersion true    -  versioningEnabled false    Expect: versioning disabled
+        // 4:  majorVersion false   -  versioningEnabled false    Expect: versioning disabled
+        // 5:  majorVersion not set -  versioningEnabled true     Expect: MAJOR version
+        // 6:  majorVersion true    -  versioningEnabled true     Expect: MAJOR version
+        // 7:  majorVersion false   -  versioningEnabled true     Expect: Minor version
+        // 8:  majorVersion not set -  versioningEnabled False    Expect: versioning disabled
+        // 9:  majorVersion not set -  versioningEnabled invalid   Expect: MAJOR version
+
+        // Scenario 1:
+        String fileName = "myfile" + UUID.randomUUID() + ".txt";
+        File file = getResourceFile("quick-2.pdf");
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+
+        MultiPartRequest reqBody = multiPartBuilder.build();
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Default behaviour, expect to be MAJOR Version 1.0
+        Map<String, Object> documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 2:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningEnabled("false");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 3:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(true);
+        multiPartBuilder.setVersioningEnabled("false");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 4:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(false);
+        multiPartBuilder.setVersioningEnabled("false");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 5:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningEnabled("true");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 6:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(true);
+        multiPartBuilder.setVersioningEnabled("true");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 7:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setMajorVersion(false);
+        multiPartBuilder.setVersioningEnabled("true");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MINOR", documentProperties.get("cm:versionType"));
+        assertEquals("0.1", documentProperties.get("cm:versionLabel"));
+
+        // Scenario 8:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningEnabled("False");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        // Scenario 9:
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setVersioningEnabled("invalid");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+    }
+
+    @Test
+    public void versioningEnabledJSONNodeCreationTest() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+
+        // Test Scenarios:
+        // 1: majorVersion not set -  versioningEnabled not set  Expect: versioning disabled
+        // 2: majorVersion not set -  versioningEnabled false    Expect: versioning disabled
+        // 3: majorVersion true    -  versioningEnabled false    Expect: versioning disabled
+        // 4: majorVersion false   -  versioningEnabled false    Expect: versioning disabled
+        // 5: majorVersion not set -  versioningEnabled true     Expect: MAJOR version
+        // 6: majorVersion true    -  versioningEnabled true     Expect: MAJOR version
+        // 7: majorVersion false   -  versioningEnabled true     Expect: Minor version
+        // 8: majorVersion not set -  versioningEnabled False    Expect: versioning disabled
+        // 9: majorVersion not set -  versioningEnabled invalid   Expect: versioning disabled
+        // 10 majorVersion not set -  versioningenabled true     Expect: versioning disabled
+
+        Document d1 = new Document();
+        Map<String, String> requestHeaders = new HashMap<>();
+
+        //Scenario 1:
+        d1.setName("testDoc" + UUID.randomUUID());
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        Map<String, Object> documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        //Scenario 2:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","false");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        //Scenario 3:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","false");
+        requestHeaders.put("majorVersion","true");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        //Scenario 4:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","false");
+        requestHeaders.put("majorVersion","false");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        //Scenario 5:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","true");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        //Scenario 6:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","true");
+        requestHeaders.put("majorVersion","true");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        //Scenario 7:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","true");
+        requestHeaders.put("majorVersion","false");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertEquals("MINOR", documentProperties.get("cm:versionType"));
+        assertEquals("0.1", documentProperties.get("cm:versionLabel"));
+
+        //Scenario 8:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","False");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        //Scenario 9:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","invalid");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+
+        //Scenario 10:
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningenabled","true");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull(documentProperties);
+    }
+
     @Test public void testAuditableProperties() throws Exception
     {
         setRequestContext(user1);
@@ -5706,6 +5979,55 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String currentPath = folderBPath.toDisplayPath(nodeService, permissionService) + "/" + pathBLastElement.getRef().getQName().getLocalName();
         String expectedPath = "/Company Home/User Homes/" + user1 + "/" + nameA02 + "/" + nameB;
         assertTrue(currentPath.equals(expectedPath));
+    }
+
+    @Test
+    public void testPrimaryPathVersion() throws Exception
+    {
+        setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        String myNodeId = getMyNodeId();
+
+        // /Company Home/User Homes/user<timestamp>/folder_A
+        String folderName = "folder_A";
+        Folder folder = createFolder(myNodeId, folderName);
+        NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder.getId());
+
+        // /Company Home/User Homes/user<timestamp>/folder_A/testDoc<GUID>
+        String docName = "testDoc" + GUID.generate();
+        Document doc = new Document();
+        doc.setName(docName);
+        doc.setNodeType(TYPE_CM_CONTENT);
+        HttpResponse response = post(getNodeChildrenUrl(folderNodeRef.getId()), toJsonAsStringNonNull(doc), 201);
+        Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        NodeRef docNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, docResp.getId());
+
+        // Checks that current path and name match
+        String expectedPath1 = "/Company Home/User Homes/" + user1 + "/" + folderName + "/" + docName;
+        Path docPath1 = nodeService.getPath(docNodeRef);
+        Path.ChildAssocElement docPathLast1 = (Path.ChildAssocElement) docPath1.last();
+        String docLocalName1 = docPathLast1.getRef().getQName().getLocalName();
+        String currentPath1 = docPath1.toDisplayPath(nodeService, permissionService) + "/" + docLocalName1;
+        assertTrue(docName.equals(docLocalName1));
+        assertTrue(expectedPath1.equals(currentPath1));
+
+        // Upload document new content supplying a different name
+        String docName2 = "testDoc2" + GUID.generate();
+        Map<String, String> params = new HashMap<>();
+        params.put("name", docName2);
+        Document docResp2 = updateTextFileWithRandomContent(docNodeRef.getId(), 1024L, params);
+        NodeRef docNodeRef2 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, docResp2.getId());
+
+        // Checks new path and name after new version upload
+        String expectedPath2 = "/Company Home/User Homes/" + user1 + "/" + folderName + "/" + docName2;
+        Path docPath2 = nodeService.getPath(docNodeRef2);
+        Path.ChildAssocElement docPathLast2 = (Path.ChildAssocElement) docPath2.last();
+        String docLocalName2 = docPathLast2.getRef().getQName().getLocalName();
+        String currentPath2 = docPath2.toDisplayPath(nodeService, permissionService) + "/" + docLocalName2;
+        assertFalse(docLocalName1.equals(docLocalName2));
+        assertTrue(docName2.equals(docLocalName2));
+        assertFalse(expectedPath1.equals(currentPath2));
+        assertTrue(expectedPath2.equals(currentPath2));
     }
 
     private String getDataDictionaryNodeId() throws Exception

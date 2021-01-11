@@ -2568,7 +2568,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 ContentReader reader = contentService.getReader(newImageRendition, ContentModel.PROP_CONTENT);
                 assertNotNull("Reader to rendered image was null", reader);
                 BufferedImage srcImg = ImageIO.read(reader.getContentInputStream());
-                checkTopLeftBottomRight(srcImg, topLeft, bottomRight);
+                checkTopLeftBottomRight(srcImg, topLeft, bottomRight, "rendered image");
 
                 return null;
             }
@@ -2581,16 +2581,16 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         File imageFile = new File(url.getFile());
         BufferedImage img = ImageIO.read(url);
         assertNotNull("image was null", img);
-        checkTopLeftBottomRight(img, WHITE, BLACK);
+        checkTopLeftBottomRight(img, WHITE, BLACK, "original image");
         return imageFile;
     }
     
-    private static void checkTopLeftBottomRight(BufferedImage img, String topLeft, String bottomRight)
+    private static void checkTopLeftBottomRight(BufferedImage img, String topLeft, String bottomRight, String srcImage)
     {
-        int rgbAtTopLeft = img.getRGB(1, 1);
-        assertTrue("upper left should be "+topLeft, Integer.toHexString(rgbAtTopLeft).endsWith(topLeft));
-        int rgbAtBottomRight = img.getRGB(img.getWidth() - 1, img.getHeight() - 1);
-        assertTrue("lower right should be "+bottomRight, Integer.toHexString(rgbAtBottomRight).endsWith(bottomRight));
+        String rgbAtTopLeft = Integer.toHexString(img.getRGB(1, 1));
+        assertTrue("upper left "+ rgbAtTopLeft +" should end with "+topLeft+" "+srcImage, rgbAtTopLeft.endsWith(topLeft));
+        String rgbAtBottomRight = Integer.toHexString(img.getRGB(img.getWidth() - 1, img.getHeight() - 1));
+        assertTrue("lower right "+ rgbAtBottomRight +" should end with "+bottomRight+" "+srcImage, rgbAtBottomRight.endsWith(bottomRight));
     }
     
     /**

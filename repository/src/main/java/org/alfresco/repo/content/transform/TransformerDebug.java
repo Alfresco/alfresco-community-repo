@@ -56,7 +56,6 @@ import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
  * messages include a prefix to identify the transformation. A numeric dot notation
  * is used (such as {@code 123.1.2} indicating the second third level transformation
  * of the 123rd top level transformation).
- * 
  * @author Alan Davis
  */
 public class TransformerDebug

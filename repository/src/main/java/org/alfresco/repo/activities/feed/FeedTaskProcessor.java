@@ -211,7 +211,7 @@ public abstract class FeedTaskProcessor
                 }
                 catch (Exception e)
                 {
-                    logger.error("Skipping activity post " + activityPost.getId() + " since failed to get recipients: ", e);
+                    logger.trace("Skipping activity post " + activityPost.getId() + " since failed to get recipients: ", e);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }

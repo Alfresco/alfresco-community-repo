@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.354-SNAPSHOT</version>
+        <version>8.363-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>65.1</version>
+            <version>68.2</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -265,21 +265,6 @@
             <artifactId>xmlbeans</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>fontbox</artifactId>
-            <version>${dependency.pdfbox.version}</version>
-        </dependency>
-        <dependency>
-            <!-- we need this for TextToPdfContentTransformer -->
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox-tools</artifactId>
-            <version>${dependency.pdfbox.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
         </dependency>
@@ -309,17 +294,7 @@
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
             <artifactId>FastInfoset</artifactId>
-            <version>1.2.18</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-jodconverter-core</artifactId>
-            <version>3.0.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jmagick</groupId>
-            <artifactId>jmagick</artifactId>
-            <version>6.6.9</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlparser</groupId>
@@ -433,7 +408,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>5.0.3</version>
+            <version>6.2.3</version>
         </dependency>
 
         <!-- GData -->
@@ -446,10 +421,6 @@
             <groupId>com.google.gdata</groupId>
             <artifactId>gdata-media-1.0</artifactId>
             <version>1.47.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -916,7 +887,7 @@
         <dependency>
            <groupId>com.sun.activation</groupId>
            <artifactId>jakarta.activation</artifactId>
-           <version>1.2.2</version>
+           <version>2.0.0</version>
         </dependency>
         <!-- Repo Event Model-->
         <dependency>
@@ -931,102 +902,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-	        <!-- Profiles to extract the alfresco-pdf-renderer -->
-		<profile>
-			<id>win-alfresco-pdf-renderer-test</id>
-			<activation>
-				<os>
-					<family>windows</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.alfresco</groupId>
-					<artifactId>alfresco-pdf-renderer</artifactId>
-					<classifier>win64</classifier>
-					<type>tgz</type>
-				</dependency>
-			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<inherited>false</inherited>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>extract-alfresco-pdf-renderer-test</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-								<configuration>
-									<skip>${skipTests}</skip>
-									<target>
-										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
-										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-										<untar compression="gzip" src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz" dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-									</target>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-			<properties>
-				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
-			</properties>
-		</profile>
-		<profile>
-			<id>linux-alfresco-pdf-renderer-test</id>
-			<activation>
-				<os>
-					<family>linux</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.alfresco</groupId>
-					<artifactId>alfresco-pdf-renderer</artifactId>
-					<classifier>linux</classifier>
-					<type>tgz</type>
-				</dependency>
-			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<inherited>false</inherited>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>extract-alfresco-pdf-renderer-test</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-								<configuration>
-									<skip>${skipTests}</skip>
-									<target>
-										<echo message="Extracting alfresco-pdf-renderer (linux) for testing..." />
-										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
-											<arg value="xf" />
-											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-linux.tgz" />
-										</exec>
-									</target>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-			<properties>
-				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
-			</properties>
-		</profile>
-
-    </profiles>
 
     <build>
         <plugins>
@@ -1053,8 +928,6 @@
                             <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <systemPropertyVariables>
-                                <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
-
                                 <!-- Database related properties -->
                                 <db.url>${db.url}</db.url>
                                 <db.driver>${db.driver}</db.driver>
@@ -1062,7 +935,6 @@
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <dir.root>${dir.root}</dir.root>
-                                <img.exe>${img.exe}</img.exe>
                                 <!-- BDE-91 -->
                                 <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
                                 <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>

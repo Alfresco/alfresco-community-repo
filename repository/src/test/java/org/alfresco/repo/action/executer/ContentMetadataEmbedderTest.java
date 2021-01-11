@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,18 +43,12 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.apache.tika.embedder.Embedder;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,6 +76,8 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
     private NodeRef nodeRef;
 
     private ContentMetadataEmbedder executer;
+    private long origSize = -1;
+    private long newSize = -1;
 
     private final static String ID = GUID.generate();
 
@@ -128,73 +124,81 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
     @Test
     public void testFailingEmbedder()
     {
-        AbstractMappingMetadataExtracter embedder = new FailingMappingMetadataEmbedder(Arrays.asList(MimetypeMap.MIMETYPE_PDF));
+        AbstractMappingMetadataExtracter embedder = new MockFailingEmbedder();
+        setupEmbedderActionAndThenExecute(embedder);
+
+        assertEquals("The original content should remain unchanged on embed failures", origSize, newSize);
+    }
+
+    /**
+     * Test that a successful embedder does change the original content
+     */
+    @Test
+    public void testSuccessfulEmbedder()
+    {
+        AbstractMappingMetadataExtracter embedder = new MockSuccessfulEmbedder();
+        setupEmbedderActionAndThenExecute(embedder);
+
+        assertNotSame("The original content should remain unchanged on embed failures", origSize, newSize);
+    }
+
+    private void setupEmbedderActionAndThenExecute(AbstractMappingMetadataExtracter embedder)
+    {
         embedder.setRegistry(metadataExtracterRegistry);
-        embedder.setDictionaryService(this.dictionaryService);
-        embedder.setMimetypeService(this.mimetypeService);
+        embedder.setDictionaryService(dictionaryService);
+        embedder.setMimetypeService(mimetypeService);
         embedder.register();
-        
+
         String myCreator = "Embedded creator";
 
         // Get the old props
-        Map<QName, Serializable> props = this.nodeService.getProperties(this.nodeRef);
-        props.put(ContentModel.PROP_AUTHOR, myCreator);
-        this.nodeService.setProperties(this.nodeRef, props);
+        Map<QName, Serializable> origProps = nodeService.getProperties(nodeRef);
+        origProps.put(ContentModel.PROP_AUTHOR, myCreator);
+        nodeService.setProperties(nodeRef, origProps);
 
-        // Execute the action
+        // Create the action
         ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
-        
-        ContentReader origReader = this.contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        long origSize = origReader.getSize();
+
+        ContentReader origReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+        origSize = origReader.getSize();
         assertTrue(origSize > 0);
 
-        this.executer.execute(action, this.nodeRef);
-        
-        ContentReader embeddedReader = this.contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        
-        assertEquals("The original content should remain unchanged on embed failures", origSize, embeddedReader.getSize());
-    }
-    
-    /**
-     * Embedder which fails upon calling embed on its {@link FailingEmbedder}
-     */
-    private class FailingMappingMetadataEmbedder extends AbstractMappingMetadataExtracter
-    {
-        /**
-         * Constructor for setting supported extract and embed mimetypes
-         * 
-         * @param mimetypes the supported extract and embed mimetypes
-         */
-        public FailingMappingMetadataEmbedder(Collection<String> mimetypes)
-        {
-            super(
-                    new HashSet<String>(mimetypes), 
-                    new HashSet<String>(mimetypes));
-        }
+        // Execute the action
+        executer.execute(action, nodeRef);
 
+        ContentReader embeddedReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+        newSize = embeddedReader.getSize();
+    }
+
+    private static class MockFailingEmbedder extends MockEmbedder
+    {
         @Override
         protected void embedInternal(Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
         {
-            Embedder embedder = getEmbedder();
-            if (embedder == null)
-            {
-                return;
-            }
-
-            Map<String, String> metadataAsStrings = convertMetadataToStrings(metadata);
-            Metadata metadataToEmbed = new Metadata();
-            metadataAsStrings.forEach((k,v)->metadataToEmbed.add(k, v));
-
-            InputStream inputStream = reader.getContentInputStream();
-            OutputStream outputStream = writer.getContentOutputStream();
-            embedder.embed(metadataToEmbed, null, outputStream, null);
+            throw new IOException("Forced test failure");
         }
+    }
 
-        protected Embedder getEmbedder()
+    private static class MockSuccessfulEmbedder extends MockEmbedder
+    {
+        @Override
+        protected void embedInternal(Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
         {
-            return new FailingEmbedder();
+            // Just set the content as this is testing embedding in the repo rather than via the AsynchronousExtractor and T-Engines.
+            File htmlFile = AbstractContentTransformerTest.loadQuickTestFile("html");
+            writer.putContent(htmlFile);
         }
-        
+    }
+
+    private static class MockEmbedder extends AbstractMappingMetadataExtracter
+    {
+        private static final Collection<String> MIMETYPES = Arrays.asList(MimetypeMap.MIMETYPE_PDF);
+
+        public MockEmbedder()
+        {
+            super(new HashSet<String>(MIMETYPES), new HashSet<String>(MIMETYPES));
+        }
+
         @Override
         protected Map<String, Set<QName>> readMappingProperties(String propertiesUrl)
         {
@@ -217,26 +221,4 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
             return null;
         }
     }
-    
-    /**
-     * Metadata embedder which fails on a call to embed.
-     */
-    private class FailingEmbedder implements Embedder
-    {
-        private static final long serialVersionUID = -4954679684941467571L;
-
-        @Override
-        public Set<MediaType> getSupportedEmbedTypes(ParseContext context)
-        {
-            return null;
-        }
-
-        @Override
-        public void embed(Metadata metadata, InputStream originalStream, OutputStream outputStream, ParseContext context)
-                throws IOException
-        {
-            throw new IOException("Forced failure");
-        }
-    }
-    
 }

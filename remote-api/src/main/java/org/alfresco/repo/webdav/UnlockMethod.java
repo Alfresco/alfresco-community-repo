@@ -82,8 +82,6 @@ public class UnlockMethod extends WebDAVMethod
         {
             if (!(strLockTokenHeader.startsWith("<") && strLockTokenHeader.endsWith(">")))
             {
-                // ALF-13904: Header isn't correctly enclosed in < and > characters. Try correcting this
-                // to allow for Windows 7 + OpenOffice.org bug.
                 strLockTokenHeader = "<" + strLockTokenHeader + ">";
             }
             if (strLockTokenHeader.startsWith("<" + WebDAV.OPAQUE_LOCK_TOKEN) && strLockTokenHeader.endsWith(">"))

@@ -224,25 +224,6 @@ public class UnlockMethodTest
     }
     
     /**
-     * OpenOffice.org on Windows 7 results in a lock token header that is NOT enclosed in
-     * the required &lt; and &gt; characters. Whilst technically an invalid header, we treat
-     * this case specially for reasons of interoperability (ALF-13904)
-     * 
-     * @throws WebDAVServerException 
-     */
-    @Test
-    public void parseLockTokenHeaderFromOOoOnWindows7() throws WebDAVServerException
-    {        
-        String lockToken = "976e2f82-40ab-4852-a867-986e9ce11f82:admin";
-        // Note the missing enclosing < and > characters
-        String lockHeaderValue = WebDAV.OPAQUE_LOCK_TOKEN + lockToken;
-        request.addHeader(WebDAV.HEADER_LOCK_TOKEN, lockHeaderValue);
-        unlockMethod.parseRequestHeaders();
-        
-        assertEquals(lockToken, unlockMethod.getLockToken());
-    }
-
-    /**
      * Test MNT-9680: Working copies are open in read-only mode when using Webdav online edit
      *
      * @throws Exception

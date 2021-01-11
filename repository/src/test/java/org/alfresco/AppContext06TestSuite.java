@@ -54,11 +54,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformServiceRegistryIntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyTransformServiceRegistryIntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyTransformClientIntegrationTest.class,
     org.alfresco.repo.rendition2.LocalRenditionTest.class,
-    org.alfresco.repo.rendition2.LegacyRenditionTest.class,
-    org.alfresco.repo.rendition2.LegacyLocalRenditionTest.class,
     org.alfresco.repo.rendition2.NoneRenditionTest.class,
 
     org.alfresco.repo.solr.SOLRTrackingComponentTest.class,

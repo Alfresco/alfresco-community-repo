@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -157,11 +157,16 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     {
         boolean first = true;
         
-        for (TaskInfo task : watch.getTaskInfo()) {
+        for (TaskInfo task : watch.getTaskInfo())
+        {
             if (first)
+            {
                 first = false;
+            }
             else
+            {
                 sb.append(",");
+            }
             
             sb.append(task.getTaskName())
             .append("=")
@@ -244,5 +249,4 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         this.statsEnabled = Boolean.valueOf(enabled);
         logger.info("API stats header: " + (this.statsEnabled ? "enabled" : "disabled"));
     }
-    
 }

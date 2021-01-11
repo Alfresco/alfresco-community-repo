@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -93,9 +93,9 @@ import org.springframework.util.StopWatch;
 @NotThreadSafe
 public class DBQueryEngine implements QueryEngine
 {
-    protected static final Log logger = LogFactory.getLog(DBQueryEngine.class);
+    private static final Log logger = LogFactory.getLog(DBQueryEngine.class);
     
-    protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
+    private static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
     
     protected SqlSessionTemplate template;
 
@@ -105,7 +105,7 @@ public class DBQueryEngine implements QueryEngine
 
     private DictionaryService dictionaryService;
 
-    protected NamespaceService namespaceService;
+    private NamespaceService namespaceService;
     
     private NodeService nodeService;
 
@@ -277,7 +277,8 @@ public class DBQueryEngine implements QueryEngine
         dbQuery.setSinceTxId(sinceTxId);
         
         logger.debug("- query is being prepared");
-        dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, null, functionContext, metadataIndexCheck2.getPatchApplied());
+        dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup,
+                null, functionContext, metadataIndexCheck2.getPatchApplied());
         
         ResultSet resultSet;
         // TEMPORARY - this first branch of the if statement simply allows us to easily clear the caches for now; it will be removed afterwards
@@ -287,7 +288,8 @@ public class DBQueryEngine implements QueryEngine
             propertiesCache.clear();
             aspectsCache.clear();
             logger.info("Nodes cache cleared");
-            resultSet = new DBResultSet(options.getAsSearchParmeters(), Collections.emptyList(), nodeDAO, nodeService, tenantService, Integer.MAX_VALUE);
+            resultSet = new DBResultSet(options.getAsSearchParmeters(), Collections.emptyList(), nodeDAO, nodeService,
+                    tenantService, Integer.MAX_VALUE);
         }
         else if (forceOldPermissionResolution(options))
         {
@@ -331,7 +333,9 @@ public class DBQueryEngine implements QueryEngine
     {
         NodePermissionAssessor permissionAssessor = new NodePermissionAssessor();
         int maxPermsChecks = options.getMaxPermissionChecks() < 0 ? maxPermissionChecks : options.getMaxPermissionChecks();
-        long maxPermCheckTimeMillis = options.getMaxPermissionCheckTimeMillis() < 0 ? maxPermissionCheckTimeMillis : options.getMaxPermissionCheckTimeMillis();
+        long maxPermCheckTimeMillis = options.getMaxPermissionCheckTimeMillis() < 0
+                ? maxPermissionCheckTimeMillis
+                : options.getMaxPermissionCheckTimeMillis();
         permissionAssessor.setMaxPermissionChecks(maxPermsChecks);
         permissionAssessor.setMaxPermissionCheckTimeMillis(maxPermCheckTimeMillis);
         return permissionAssessor;

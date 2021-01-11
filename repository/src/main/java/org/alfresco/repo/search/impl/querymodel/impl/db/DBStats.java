@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,28 +36,31 @@ public final class DBStats
     
     private DBStats() {}
     
-    public static void resetStopwatches() {
+    public static void resetStopwatches()
+    {
         QUERY_STOPWATCH.set(new StopWatch());
         HANDLER_STOPWATCH.set(new SingleTaskRestartableWatch("tot"));
         ACL_READ_STOPWATCH.set(new SingleTaskRestartableWatch("acl"));
         ACL_OWNER_STOPWATCH.set(new SingleTaskRestartableWatch("own"));
     }
     
-    public static StopWatch queryStopWatch() {
+    public static StopWatch queryStopWatch()
+    {
         return QUERY_STOPWATCH.get();
     }
     
-    public static SingleTaskRestartableWatch aclReadStopWatch() {
+    public static SingleTaskRestartableWatch aclReadStopWatch()
+    {
         return ACL_READ_STOPWATCH.get();
     }
     
-    public static SingleTaskRestartableWatch aclOwnerStopWatch() {
+    public static SingleTaskRestartableWatch aclOwnerStopWatch()
+    {
         return ACL_OWNER_STOPWATCH.get();
     }
     
-    public static SingleTaskRestartableWatch handlerStopWatch() {
+    public static SingleTaskRestartableWatch handlerStopWatch()
+    {
         return HANDLER_STOPWATCH.get();
     }
 }
-
-

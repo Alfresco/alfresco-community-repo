@@ -100,12 +100,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -150,7 +150,7 @@ public class ContentDiskDriverTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
-        applicationContext = ApplicationContextHelper.getApplicationContext();
+        applicationContext = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
         repositoryHelper = (Repository)this.applicationContext.getBean("repositoryHelper");
         ApplicationContextFactory fileServers = (ApplicationContextFactory) this.applicationContext.getBean("fileServers");
         cifsHelper = (CifsHelper) fileServers.getApplicationContext().getBean("cifsHelper");

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2020 Alfresco Software Limited
+ * Copyright (C) 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.rendition2.TransformDefinition;
@@ -44,6 +43,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -59,6 +60,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -306,6 +308,64 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         }
     }
 
+    /**
+     * As T-Engines do the mapping, all this method can do is convert QNames to fully qualified Strings and the
+     * values to Strings or a Collection of Strings.
+     * @param systemMetadata   Metadata keyed by system properties
+     * @return the original map but with QNames turned into Strings.
+     */
+    @Override
+    protected Map<String, Serializable> mapSystemToRaw(Map<QName, Serializable> systemMetadata)
+    {
+        Map<String, Serializable> metadataProperties = new HashMap<>(systemMetadata.size());
+        for (Map.Entry<QName, Serializable> entry : systemMetadata.entrySet())
+        {
+            Serializable serializableValue = entry.getValue();
+            if (serializableValue == null)
+            {
+                continue;
+            }
+
+            QName modelProperty = entry.getKey();
+            String key = modelProperty.toString();
+
+            if (serializableValue instanceof Collection<?>)
+            {
+                Collection<?> serializableCollection = (Collection<?>) serializableValue;
+                ArrayList<String> collection = new ArrayList<>(serializableCollection.size());
+                for (Object singleValue : serializableCollection)
+                {
+                    try
+                    {
+                        String value = DefaultTypeConverter.INSTANCE.convert(String.class, singleValue);
+                        collection.add(value);
+                    }
+                    catch (TypeConversionException e)
+                    {
+                        logger.info("Could not convert " + key + ": " + e.getMessage());
+                    }
+                }
+                if (!collection.isEmpty())
+                {
+                    metadataProperties.put(key, collection);
+                }
+            }
+            else
+            {
+                try
+                {
+                    String value = DefaultTypeConverter.INSTANCE.convert(String.class, serializableValue);
+                    metadataProperties.put(key, value);
+                }
+                catch (TypeConversionException e)
+                {
+                    logger.info("Could not convert " + key + ": " + e.getMessage());
+                }
+            }
+        }
+        return metadataProperties;
+    }
+
     @Override
     protected void embedInternal(NodeRef nodeRef, Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer)
     {
@@ -475,10 +535,9 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
 
     private String metadataToString(Map<String, Serializable> metadata)
     {
-        Map<String, String> metadataAsStrings = AbstractMappingMetadataExtracter.convertMetadataToStrings(metadata);
         try
         {
-            return jsonObjectMapper.writeValueAsString(metadataAsStrings);
+            return jsonObjectMapper.writeValueAsString(metadata);
         }
         catch (JsonProcessingException e)
         {

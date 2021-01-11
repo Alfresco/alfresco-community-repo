@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.357-SNAPSHOT</version>
+        <version>8.361-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -294,7 +294,7 @@
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
             <artifactId>FastInfoset</artifactId>
-            <version>1.2.18</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlparser</groupId>
@@ -408,7 +408,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>5.0.3</version>
+            <version>6.2.3</version>
         </dependency>
 
         <!-- GData -->

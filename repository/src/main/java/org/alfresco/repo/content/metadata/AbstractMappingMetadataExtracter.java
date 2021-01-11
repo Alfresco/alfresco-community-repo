@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1348,8 +1348,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
 
         try
         {
-            embedInternal(nodeRef, mapSystemToRaw(properties), reader, writer);
-            if(logger.isDebugEnabled())
+            Map<String, Serializable> metadata = mapSystemToRaw(properties);
+            embedInternal(nodeRef, metadata, reader, writer);
+            if (logger.isDebugEnabled())
             {
                logger.debug("Embedded Metadata into " + writer);
             }
@@ -1462,7 +1463,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * @param systemMetadata   Metadata keyed by system properties
      * @return              Returns the metadata keyed by the content file metadata properties
      */
-    private Map<String, Serializable> mapSystemToRaw(Map<QName, Serializable> systemMetadata)
+    protected Map<String, Serializable> mapSystemToRaw(Map<QName, Serializable> systemMetadata)
     {
         Map<String, Serializable> metadataProperties = new HashMap<String, Serializable>(systemMetadata.size() * 2 + 1);
         for (Map.Entry<QName, Serializable> entry : systemMetadata.entrySet())
@@ -2260,46 +2261,5 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     protected void embedInternal(Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
     {
         // TODO make this an abstract method once more extracters support embedding
-    }
-
-    public static Map<String, String> convertMetadataToStrings(Map<String, Serializable> properties)
-    {
-        Map<String, String> propertiesAsStrings = new HashMap<>();
-        for (String metadataKey : properties.keySet())
-        {
-            Serializable value = properties.get(metadataKey);
-            if (value == null)
-            {
-                continue;
-            }
-            if (value instanceof Collection<?>)
-            {
-                for (Object singleValue : (Collection<?>) value)
-                {
-                    try
-                    {
-                        // Convert to a string value
-                        propertiesAsStrings.put(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, singleValue));
-                    }
-                    catch (TypeConversionException e)
-                    {
-                        logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
-                    }
-                }
-            }
-            else
-            {
-                try
-                {
-                    // Convert to a string value
-                    propertiesAsStrings.put(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, value));
-                }
-                catch (TypeConversionException e)
-                {
-                    logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
-                }
-            }
-        }
-        return propertiesAsStrings;
     }
 }

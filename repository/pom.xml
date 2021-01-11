@@ -31,11 +31,6 @@
                     <groupId>javax.transaction</groupId>
                     <artifactId>jta</artifactId>
                 </exclusion>
-                <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -493,6 +488,10 @@
                     <groupId>javax.xml.bind</groupId>
                     <artifactId>jaxb-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <!-- Duplicates classes from org.jboss.spec.javax.rmi:jboss-rmi-api and org.jacorb:jacorb-omgapi -->
                 <exclusion>
                     <groupId>org.glassfish.corba</groupId>
@@ -535,6 +534,10 @@
                 <exclusion>
                     <groupId>javax.xml.bind</groupId>
                     <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
                 <!-- Duplicates classes from org.jboss.spec.javax.rmi:jboss-rmi-api and org.jacorb:jacorb-omgapi -->
                 <exclusion>
@@ -677,6 +680,10 @@
             <artifactId>camel-spring</artifactId>
             <version>${dependency.camel.version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-context</artifactId>
@@ -861,11 +868,6 @@
                 <exclusion>
                     <groupId>javax.transaction</groupId>
                     <artifactId>jta</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

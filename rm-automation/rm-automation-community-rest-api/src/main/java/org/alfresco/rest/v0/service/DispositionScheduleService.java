@@ -31,7 +31,7 @@ import java.util.HashMap;
 
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.v0.RecordCategoriesAPI;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUserAIS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class DispositionScheduleService extends BaseAPI
     private RecordCategoriesAPI recordCategoriesAPI;
 
     @Autowired
-    private DataUser dataUser;
+    private DataUserAIS dataUser;
 
     /**
      * Helper method for adding a retain after period step

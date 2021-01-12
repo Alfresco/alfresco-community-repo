@@ -40,6 +40,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -363,14 +364,14 @@ public class ResultMapperTests
         assertEquals("created",statsFacet.getLabel());
         Set<Metric> statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
         assertEquals(8,statsMetrics.size());
-        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sumOfSquares, 2.1513045770343806E27 )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sumOfSquares, BigDecimal.valueOf(2.1513045770343806E27) )));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.min, "2011-02-15T20:16:27.080Z" )));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.max, "2017-04-10T15:06:30.143Z" )));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.mean, "2016-09-05T04:20:12.898Z" )));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.countValues, 990 )));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.missing, 290 )));
-        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, 1.458318720769983E15)));
-        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, 5.6250677994522545E10)));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, BigDecimal.valueOf(1.458318720769983E15))));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, BigDecimal.valueOf(5.6250677994522545E10))));
 
         statsFacet = searchContext.getFacets().get(6);
         assertEquals("numericLabel",statsFacet.getLabel());

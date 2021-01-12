@@ -165,13 +165,11 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>2.0.0</version>
         </dependency>
         <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
         <dependency>
             <groupId>com.sun.activation</groupId>
             <artifactId>jakarta.activation</artifactId>
-            <version>2.0.0</version>
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->
         <dependency>

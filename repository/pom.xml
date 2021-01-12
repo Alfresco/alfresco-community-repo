@@ -25,13 +25,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>jta</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -248,7 +241,6 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -632,16 +624,20 @@
             <groupId>org.gytheio</groupId>
             <artifactId>gytheio-messaging-camel</artifactId>
             <version>${dependency.gytheio.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.camel</groupId>
+                    <artifactId>camel-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.camel</groupId>
+                    <artifactId>camel-jackson</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.xml.bind</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -735,13 +731,6 @@
             <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>jta</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -767,16 +756,6 @@
             <artifactId>alfresco-data-model</artifactId>
             <version>${project.version}</version>
             <exclusions>
-                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
-                <exclusion>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
-                </exclusion>
-                <!-- Duplicate classes from jakarta.annotation:jakarta.annotation-api-->
-                <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
-                </exclusion>
                 <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031)-->
                 <exclusion>
                   <groupId>org.apache.geronimo.specs</groupId>
@@ -850,11 +829,6 @@
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
               </exclusion>
-              <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
-              <exclusion>
-                  <groupId>javax.annotation</groupId>
-                  <artifactId>javax.annotation-api</artifactId>
-              </exclusion>
               <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>
@@ -881,7 +855,6 @@
         <dependency>
            <groupId>com.sun.activation</groupId>
            <artifactId>jakarta.activation</artifactId>
-           <version>2.0.0</version>
         </dependency>
         <!-- Repo Event Model-->
         <dependency>

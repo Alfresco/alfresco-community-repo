@@ -21,20 +21,10 @@
             <artifactId>alfresco-data-model</artifactId>
             <version>${project.version}</version>
             <exclusions>
-                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
-                <exclusion>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
-                </exclusion>
                 <!-- REPO-4998 - Exclusion due to classpath conflicts between org.codehaus.woodstox:woodstox-core-asl and com.fasterxml.woodstox:woodstox-core -->
                 <exclusion>
                   <groupId>org.codehaus.woodstox</groupId>
                   <artifactId>woodstox-core-asl</artifactId>
-                </exclusion>
-                <!-- Duplicate classes from jakarta.annotation:jakarta.annotation-api-->
-                <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
                 </exclusion>
                 <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
                 <exclusion>
@@ -141,13 +131,6 @@
             <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>jta</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco.surf</groupId>
@@ -190,6 +173,11 @@
             <version>2.0</version>
             <scope>test</scope>
             <exclusions>
+              <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+              <exclusion>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-jta_1.1_spec</artifactId>
+              </exclusion>
               <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>

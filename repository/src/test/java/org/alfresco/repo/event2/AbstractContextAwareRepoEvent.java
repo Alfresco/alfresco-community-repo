@@ -131,10 +131,9 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         // authenticate as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
-        this.rootNodeRef = retryingTransactionHelper.doInTransaction(() -> {
+        rootNodeRef = retryingTransactionHelper.doInTransaction(() -> {
             // create a store and get the root node
-            StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE,
-                this.getClass().getName());
+            StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, getClass().getName());
             if (!nodeService.exists(storeRef))
             {
                 storeRef = nodeService.createStore(storeRef.getProtocol(),

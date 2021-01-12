@@ -25,7 +25,7 @@
  */
 package org.alfresco.messaging.camel.routes;
 
-import org.apache.camel.spring.SpringRouteBuilder;
+import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,13 +34,14 @@ import org.springframework.stereotype.Component;
  * @author Ray Gauss II
  */
 @Component
-public class TestingRouteBuilder extends SpringRouteBuilder
+public class TestingRouteBuilder extends RouteBuilder
 {
 
     @Override
     public void configure() throws Exception
     {
-        from("direct-vm:alfresco.test.2").to("mock:result2");
+        from("direct-vm:alfresco.test.2")
+            .to("mock:result2");
     }
 
 }

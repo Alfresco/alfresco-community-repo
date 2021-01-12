@@ -25,7 +25,7 @@
  */
 package org.alfresco.messaging.camel.routes;
 
-import org.apache.camel.spring.SpringRouteBuilder;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,11 +33,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * Route builder for Repo node events
- * 
+ *
  * @author sglover
  */
 @Component
-public class RepoNodeEventsRouteBuilder extends SpringRouteBuilder
+public class RepoNodeEventsRouteBuilder extends RouteBuilder
 {
     private static Log logger = LogFactory.getLog(RepoNodeEventsRouteBuilder.class);
 
@@ -60,8 +60,10 @@ public class RepoNodeEventsRouteBuilder extends SpringRouteBuilder
             logger.debug("targetTopic is "+targetTopic);
         }
 
-        from(sourceQueue).routeId("alfresco.events -> topic:alfresco.repo.events")
-        .marshal("defaultDataFormat").to(targetTopic)
-        .end();
+        from(sourceQueue)
+            .routeId("alfresco.events -> topic:alfresco.repo.events")
+            .marshal("defaultDataFormat")
+            .to(targetTopic)
+            .end();
     }
 }

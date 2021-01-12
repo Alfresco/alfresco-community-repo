@@ -14,10 +14,6 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
 fi
 
-# Enable experimental docker features (for the image squash option)
-echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
-sudo service docker restart
-
 # not helpful in this script
 # export HOST_IP=$(hostname  -I | cut -f1 -d' ')
 

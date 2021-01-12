@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -240,7 +240,8 @@ public class PropertySupport implements DBQueryBuilderComponent
                 predicatePartCommands.add(command);
                 break;
             }
-   
+            
+            command.setQName(propertyQName);
         }
         else
         {
@@ -350,11 +351,11 @@ public class PropertySupport implements DBQueryBuilderComponent
             
             command.setFieldName(fieldName);
             command.setFunction(luceneFunction);
+            command.setQName(propertyQName);
             predicatePartCommands.add(command);
         }       
         
     }
- 
 
     /**
      * @param luceneFunction LuceneFunction
@@ -371,5 +372,4 @@ public class PropertySupport implements DBQueryBuilderComponent
     {
         this.leftOuter = leftOuter;
     }
-
 }

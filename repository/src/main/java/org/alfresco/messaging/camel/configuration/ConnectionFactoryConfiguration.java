@@ -33,6 +33,7 @@ import javax.jms.ConnectionFactory;
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
+import org.apache.camel.component.jms.JmsComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,6 +79,12 @@ public class ConnectionFactoryConfiguration
         }
         //Default is not SSL
         return createConnectionFactory();
+    }
+
+    @Bean
+    public JmsComponent jms()
+    {
+        return JmsComponent.jmsComponent(activeMqConnectionFactory());
     }
 
     protected ConnectionFactory createConnectionFactory()

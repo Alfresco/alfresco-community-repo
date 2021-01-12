@@ -4,7 +4,7 @@
 
 <mapper namespace="alfresco.metadata.query">
 
-  <select id="select_byDynamicQuery" fetchSize="-2147483648" parameterType="org.alfresco.repo.search.impl.querymodel.impl.db.DBQuery" resultMap="alfresco.node.result_NodeRef">
+  <select id="select_byDynamicQuery" fetchSize="-2147483648" parameterType="org.alfresco.repo.search.impl.querymodel.impl.db.DBQuery" resultMap="alfresco.node.result_Node">
       <include refid="sql_select_byDynamicQuery"/>   
   </select>
 

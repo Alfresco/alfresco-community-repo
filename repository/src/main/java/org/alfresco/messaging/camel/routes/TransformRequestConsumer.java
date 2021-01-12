@@ -26,7 +26,7 @@
 package org.alfresco.messaging.camel.routes;
 
 import org.apache.camel.Processor;
-import org.apache.camel.spring.SpringRouteBuilder;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
  * @author aepure
  */
 @Component
-public class TransformRequestConsumer extends SpringRouteBuilder
+public class TransformRequestConsumer extends RouteBuilder
 {
     private static Log logger = LogFactory.getLog(TransformRequestConsumer.class);
 

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.359-SNAPSHOT</version>
+    <version>8.367-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -55,22 +55,21 @@
 
         <dependency.spring.version>5.3.2</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
-        <dependency.jackson.version>2.11.3</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.11.2</dependency.jackson-databind.version>
+        <dependency.jackson.version>2.12.1</dependency.jackson.version>
+        <dependency.jackson-databind.version>${dependency.jackson.version}</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.15</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>3.6.0</dependency.mockito-core.version>
+        <dependency.mockito-core.version>3.7.0</dependency.mockito-core.version>
         <dependency.org-json.version>20200518</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
-        <dependency.guava.version>28.2-jre</dependency.guava.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
-        <dependency.httpcore.version>4.4.13</dependency.httpcore.version>
+        <dependency.httpcore.version>4.4.14</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
-        <dependency.xercesImpl.version>2.12.0-alfresco-patched-20191004</dependency.xercesImpl.version>
+        <dependency.xercesImpl.version>2.12.1</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
         <dependency.gytheio.version>0.11.6</dependency.gytheio.version>
         <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
@@ -81,9 +80,9 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
-        <dependency.keycloak.version>11.0.0-alfresco-001</dependency.keycloak.version>
+        <dependency.keycloak.version>12.0.1</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>2.25.3</dependency.camel.version>
+        <dependency.camel.version>3.7.0</dependency.camel.version>
         <dependency.activemq.version>5.16.0</dependency.activemq.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
@@ -243,11 +242,6 @@
                 <groupId>commons-digester</groupId>
                 <artifactId>commons-digester</artifactId>
                 <version>2.1</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>2.6</version>
             </dependency>
             <dependency>
                 <groupId>commons-fileupload</groupId>
@@ -497,19 +491,13 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>4.0.0</version>
+                <version>7.4.0</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>1.13.1</version>
-            </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${dependency.guava.version}</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -604,7 +592,7 @@
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
-                <version>2.10.8</version>
+                <version>2.10.9</version>
             </dependency>
 
             <!-- provided dependencies -->
@@ -644,6 +632,44 @@
                 <artifactId>gson</artifactId>
                 <version>${dependency.gson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-spring</artifactId>
+                <version>${dependency.camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-amqp</artifactId>
+                <version>${dependency.camel.version}</version>
+                <exclusions>
+                    <!-- conflicts with activemq geronimo-jms_1.1_spec -->
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-jms_2.0_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-jackson</artifactId>
+                <version>${dependency.camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-directvm</artifactId>
+                <version>${dependency.camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-direct</artifactId>
+                <version>${dependency.camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-mock</artifactId>
+                <version>${dependency.camel.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -660,8 +686,8 @@
                 </plugin>
                 <plugin>
                     <groupId>io.fabric8</groupId>
-                    <artifactId>fabric8-maven-plugin</artifactId>
-                    <version>4.4.0</version>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.34.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>

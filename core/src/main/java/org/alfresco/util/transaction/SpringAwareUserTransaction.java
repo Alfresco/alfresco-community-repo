@@ -18,9 +18,10 @@
  */
 package org.alfresco.util.transaction;
 
+import static java.util.Collections.emptyList;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -138,8 +139,8 @@ public class SpringAwareUserTransaction
     /** make sure that we clean up the thread transaction stack properly */
     private boolean finalized = false;
 
-    private Collection<String> labels = Collections.emptyList();
-    
+    private Collection<String> labels = emptyList();
+
     /**
      * Creates a user transaction that defaults to {@link TransactionDefinition#PROPAGATION_REQUIRED}.
      * 
@@ -212,7 +213,7 @@ public class SpringAwareUserTransaction
     public void setLabels(Collection<String> labels) {
         this.labels = labels;
     }
-    
+
     @Override
     public Collection<String> getLabels()
     {

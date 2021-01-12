@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -822,6 +822,27 @@ public class NodePropertyValue implements Cloneable, Serializable
     {
         ValueType valueType = makeValueType(typeQName);
         return valueType.getOrdinalNumber();
+    }
+    
+    /**
+     * Given an actual type qualified name, returns the <tt>int</tt> ordinal number
+     * that represents its persisted in the database.
+     * 
+     * @param typeQName     the type qualified name
+     * @param value         the value going to be persisted (optional, null for the default)
+     * @return Returns the <tt>int</tt> representation of the type,
+     *      e.g. <b>CONTENT.getOrdinalNumber()</b> for type <b>d:content</b>.
+     */
+    public static int convertToPersistedTypeOrdinal(QName typeQName, Serializable value)
+    {
+        ValueType valueType = makeValueType(typeQName);
+        if (valueType == null)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Unable to get value type from type qname " + typeQName + " and value " + value);
+        }
+
+        return valueType.getPersistedType(value).getOrdinalNumber();
     }
     
     /**

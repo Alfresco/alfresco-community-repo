@@ -154,7 +154,7 @@
         <dependency>
             <groupId>jakarta.jws</groupId>
             <artifactId>jakarta.jws-api</artifactId>
-            <version>1.1.1</version>
+            <version>3.0.0</version>
         </dependency>
         <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
         <dependency>

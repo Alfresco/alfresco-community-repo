@@ -93,9 +93,9 @@ import org.springframework.util.StopWatch;
 @NotThreadSafe
 public class DBQueryEngine implements QueryEngine
 {
-    private static final Log logger = LogFactory.getLog(DBQueryEngine.class);
+    protected static final Log logger = LogFactory.getLog(DBQueryEngine.class);
     
-    private static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
+    protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
     
     protected SqlSessionTemplate template;
 
@@ -105,7 +105,7 @@ public class DBQueryEngine implements QueryEngine
 
     private DictionaryService dictionaryService;
 
-    private NamespaceService namespaceService;
+    protected NamespaceService namespaceService;
     
     private NodeService nodeService;
 

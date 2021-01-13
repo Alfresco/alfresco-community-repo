@@ -48,6 +48,10 @@ public class FTSPhrase extends BaseFunction
 
     public final static String ARG_PROPERTY = "Property";
 
+    /**
+     * This a boolean arguments, that it is "true", if the input phrase 
+     * is enclosed between quotation marks, false otherwise.
+     */
     public final static String ARG_IS_PHRASE = "IsPhrase";
     
     public final static String ARG_SLOP = "Slop";

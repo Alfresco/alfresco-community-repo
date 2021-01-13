@@ -506,6 +506,7 @@ public class HomeFolderProviderSynchronizerTest
         List<Tenant> tenants = tenantAdminService.getAllTenants();
         for (Tenant tenant : tenants)
         {
+            System.out.println("###STOP_DEBUG: "+ tenant.getTenantDomain());
             deleteTenant(tenant.getTenantDomain());
         }
 

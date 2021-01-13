@@ -177,6 +177,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.impl.parsers.CMIS_FTSTest.class,
     org.alfresco.repo.search.impl.parsers.CMISTest.class,
     org.alfresco.repo.search.impl.parsers.FTSTest.class,
+    org.alfresco.repo.search.impl.parsers.FTSQueryParserTest.class,
     org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactoryTest.class,
     org.alfresco.repo.security.authentication.AuthorizationTest.class,
     org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSetTest.class,

@@ -58,7 +58,7 @@ public class FTSQueryParserTest extends TestCase
         String query = "\"peace and love\"";
         LuceneFunctionalConstraint functionalConstraint = (LuceneFunctionalConstraint) parseQuery(query, functionContext);
         
-        assertTrue((Boolean) functionalConstraint.getFunctionArguments().get(FTSPhrase.ARG_IS_PHRASE)
+        assertTrue((Boolean) functionalConstraint.getFunctionArguments().get(FTSPhrase.ARG_HAS_QUOTAS)
                                      .getValue(functionContext));
         assertEquals("peace and love",
                 functionalConstraint.getFunctionArguments().get(FTSPhrase.ARG_PHRASE).getValue(functionContext));
@@ -69,7 +69,7 @@ public class FTSQueryParserTest extends TestCase
         String query = "peace and love";
         LuceneFunctionalConstraint functionalConstraint = (LuceneFunctionalConstraint)parseQuery(query, functionContext);
         
-        assertFalse((Boolean) functionalConstraint.getFunctionArguments().get(FTSPhrase.ARG_IS_PHRASE)
+        assertFalse((Boolean) functionalConstraint.getFunctionArguments().get(FTSPhrase.ARG_HAS_QUOTAS)
                                       .getValue(functionContext));
         assertEquals("peace love",
                 functionalConstraint.getFunctionArguments().get(FTSPhrase.ARG_PHRASE).getValue(functionContext));

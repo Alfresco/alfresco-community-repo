@@ -52,7 +52,7 @@ public class FTSPhrase extends BaseFunction
      * This a boolean arguments, that it is "true", if the input phrase 
      * is enclosed between quotation marks, false otherwise.
      */
-    public final static String ARG_IS_PHRASE = "IsPhrase";
+    public final static String ARG_HAS_QUOTAS = "hasQuotas";
     
     public final static String ARG_SLOP = "Slop";
     
@@ -67,7 +67,7 @@ public class FTSPhrase extends BaseFunction
         args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, false));
         args.put(ARG_SLOP, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_SLOP, DataTypeDefinition.INT, false));
         args.put(ARG_TOKENISATION_MODE, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TOKENISATION_MODE, DataTypeDefinition.ANY, false));
-        args.put(ARG_IS_PHRASE, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_IS_PHRASE, DataTypeDefinition.ANY, false));
+        args.put(ARG_HAS_QUOTAS, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_HAS_QUOTAS, DataTypeDefinition.ANY, false));
     }
 
     public FTSPhrase()

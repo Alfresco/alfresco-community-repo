@@ -659,7 +659,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         larg = factory.createLiteralArgument(FTSPhrase.ARG_TOKENISATION_MODE, DataTypeDefinition.ANY, AnalysisMode.DEFAULT);
         functionArguments.put(larg.getName(), larg);
-        LiteralArgument isPhraseLiterlalArgument = factory.createLiteralArgument(FTSPhrase.ARG_IS_PHRASE, DataTypeDefinition.BOOLEAN, "PHRASE".equals(testNode.getText()));
+        LiteralArgument isPhraseLiterlalArgument = factory.createLiteralArgument(FTSPhrase.ARG_HAS_QUOTAS, DataTypeDefinition.BOOLEAN, "PHRASE".equals(testNode.getText()));
         functionArguments.put(isPhraseLiterlalArgument.getName(), isPhraseLiterlalArgument);
         if (fuzzy != null)
         {

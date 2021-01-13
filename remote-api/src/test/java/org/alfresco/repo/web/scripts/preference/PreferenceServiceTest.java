@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.web.scripts.preference;
 
+import java.math.BigDecimal;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -204,7 +206,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
     {
         assertEquals("value", jsonObject.get("stringValue"));
         assertEquals(10, jsonObject.get("numberValue"));
-        assertEquals(3.142, jsonObject.get("numberValue2"));
+        assertEquals(BigDecimal.valueOf(3.142), jsonObject.get("numberValue2"));
     }
 
 }

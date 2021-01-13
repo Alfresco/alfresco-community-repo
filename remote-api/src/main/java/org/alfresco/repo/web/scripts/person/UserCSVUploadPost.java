@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.person.PersonServiceImpl;
@@ -233,7 +233,7 @@ public class UserCSVUploadPost extends DeclarativeWebScript
                 {
                     // Make sure we rollback from this
                     UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
-                    if (userTrx != null && userTrx.getStatus() != javax.transaction.Status.STATUS_MARKED_ROLLBACK)
+                    if (userTrx != null && userTrx.getStatus() != jakarta.transaction.Status.STATUS_MARKED_ROLLBACK)
                     {
                         try
                         {

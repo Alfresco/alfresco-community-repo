@@ -31,7 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;

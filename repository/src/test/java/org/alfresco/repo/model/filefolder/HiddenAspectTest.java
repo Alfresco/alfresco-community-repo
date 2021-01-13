@@ -40,10 +40,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;

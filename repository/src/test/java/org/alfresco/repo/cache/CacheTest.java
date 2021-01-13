@@ -28,8 +28,8 @@ package org.alfresco.repo.cache;
 import java.sql.SQLException;
 import java.util.Collection;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

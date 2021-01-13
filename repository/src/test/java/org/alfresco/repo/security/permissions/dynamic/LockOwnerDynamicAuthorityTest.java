@@ -28,8 +28,8 @@ package org.alfresco.repo.security.permissions.dynamic;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

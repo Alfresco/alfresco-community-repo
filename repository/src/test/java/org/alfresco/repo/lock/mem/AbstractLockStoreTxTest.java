@@ -27,9 +27,9 @@ package org.alfresco.repo.lock.mem;
 
 import java.util.Date;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.LockType;

@@ -35,8 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.SystemException;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.mem.Lifetime;

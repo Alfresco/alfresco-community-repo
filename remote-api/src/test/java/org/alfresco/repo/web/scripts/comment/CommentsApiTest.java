@@ -30,7 +30,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;

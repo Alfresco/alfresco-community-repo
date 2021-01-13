@@ -595,433 +595,428 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         // The MimeMessagePreparator.prepare() signature does not allow us to return a value and yet
         // we can't set a result on a bare, non-final object reference due to Java language restrictions.
         final MimeMessageHelper[] messageRef = new MimeMessageHelper[1];
-        MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
-        {
-            @SuppressWarnings("unchecked")
-            public void prepare(MimeMessage mimeMessage) throws MessagingException
+        MimeMessagePreparator mailPreparer = mimeMessage -> {
+            if (logger.isDebugEnabled())
             {
-                if (logger.isDebugEnabled())
-                {
-                   logger.debug(ruleAction.getParameterValues());
-                }
-                
-                messageRef[0] = new MimeMessageHelper(mimeMessage);
-                
-                // set header encoding if one has been supplied
-                if (headerEncoding != null && headerEncoding.length() != 0)
-                {
-                    mimeMessage.setHeader("Content-Transfer-Encoding", headerEncoding);
-                }
-                
-                // set recipient
-                String to = (String)ruleAction.getParameterValue(PARAM_TO);
-                String toRecipients = null;
-                if (to != null && to.length() != 0)
-                {
-                    messageRef[0].setTo(to);
-                    toRecipients = to;
+               logger.debug(ruleAction.getParameterValues());
+            }
 
-                    // Note: there is no validation on the username to check that it actually is an email address.
-                    // TODO Fix this.
+            messageRef[0] = new MimeMessageHelper(mimeMessage);
 
-                    Serializable ccValue = (Serializable)ruleAction.getParameterValue(PARAM_CC);
-                    if(ccValue != null)
+            // set header encoding if one has been supplied
+            if (headerEncoding != null && headerEncoding.length() != 0)
+            {
+                mimeMessage.setHeader("Content-Transfer-Encoding", headerEncoding);
+            }
+
+            // set recipient
+            String to = (String)ruleAction.getParameterValue(PARAM_TO);
+            String toRecipients = null;
+            if (to != null && to.length() != 0)
+            {
+                messageRef[0].setTo(to);
+                toRecipients = to;
+
+                // Note: there is no validation on the username to check that it actually is an email address.
+                // TODO Fix this.
+
+                Serializable ccValue = (Serializable)ruleAction.getParameterValue(PARAM_CC);
+                if(ccValue != null)
+                {
+                    if (ccValue instanceof String)
                     {
-                        if (ccValue instanceof String)
+                        String cc = (String)ccValue;
+                        if(cc.length() > 0)
                         {
-                            String cc = (String)ccValue;
-                            if(cc.length() > 0)
-                            {
-                                messageRef[0].setCc(cc);
-                            }
+                            messageRef[0].setCc(cc);
+                        }
 
-                        }
-                        else if (ccValue instanceof List<?>)
-                        {
-                            List<String>s = (List<String>)ccValue;
-                            messageRef[0].setCc(s.toArray(new String[s.size()]));
-                        }
-                        else if (ccValue.getClass().isArray())
-                        {
-                            messageRef[0].setCc((String[])ccValue);
-                        }
-                        
                     }
-                    Serializable bccValue = (Serializable)ruleAction.getParameterValue(PARAM_BCC);
-                    if(bccValue != null)
+                    else if (ccValue instanceof List<?>)
                     {
-                        if (bccValue instanceof String)
-                        {
-                            String bcc = (String)bccValue;
-                            if(bcc.length() > 0)
-                            {
-                                messageRef[0].setBcc(bcc);
-                            }
+                        List<String>s = (List<String>)ccValue;
+                        messageRef[0].setCc(s.toArray(new String[s.size()]));
+                    }
+                    else if (ccValue.getClass().isArray())
+                    {
+                        messageRef[0].setCc((String[])ccValue);
+                    }
 
-                        }
-                        else if (bccValue instanceof List<?>)
-                        {
-                            List<String>s = (List<String>)bccValue;
-                            messageRef[0].setBcc(s.toArray(new String[s.size()]));
-                        }
-                        else if (bccValue.getClass().isArray())
-                        {
-                            messageRef[0].setBcc((String[])bccValue);
-                        }
-                    }
-                    
                 }
-                else
+                Serializable bccValue = (Serializable)ruleAction.getParameterValue(PARAM_BCC);
+                if(bccValue != null)
                 {
-                    // see if multiple recipients have been supplied - as a list of authorities
-                    Serializable authoritiesValue = ruleAction.getParameterValue(PARAM_TO_MANY);
-                    List<String> authorities = null;
-                    if (authoritiesValue != null)
+                    if (bccValue instanceof String)
                     {
-                        if (authoritiesValue instanceof String)
+                        String bcc = (String)bccValue;
+                        if(bcc.length() > 0)
                         {
-                            authorities = new ArrayList<String>(1);
-                            authorities.add((String)authoritiesValue);
+                            messageRef[0].setBcc(bcc);
                         }
-                        else
-                        {
-                            authorities = (List<String>)authoritiesValue;
-                        }
+
                     }
-                    
-                    if (authorities != null && authorities.size() != 0)
+                    else if (bccValue instanceof List<?>)
                     {
-                        List<String> recipients = new ArrayList<String>(authorities.size());
-                        
-                        if (logger.isTraceEnabled()) { logger.trace(authorities.size() + " recipient(s) for mail"); }
-                        
-                        for (String authority : authorities)
-                        {
-                            final AuthorityType authType = AuthorityType.getAuthorityType(authority);
-                            
-                            if (logger.isTraceEnabled()) { logger.trace(" authority type: " + authType); }
-                            
-                            if (authType.equals(AuthorityType.USER))
-                            {
-                                if (personService.personExists(authority) == true)
-                                {
-                                    NodeRef person = personService.getPerson(authority);
-                                    
-                                    if (!personService.isEnabled(authority) && !nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
-                                    {
-                                        continue;
-                                    }
-                                    
-                                    String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
-                                    if (address != null && address.length() != 0 && validateAddress(address))
-                                    {
-                                        if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco with known email."); }
-                                        recipients.add(address);
-                                    }
-                                    else
-                                    {
-                                        if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco without known email."); }
-                                        // If the username looks like an email address, we'll use that.
-                                        if (validateAddress(authority)) { recipients.add(authority); }
-                                    }
-                                }
-                                else
-                                {
-                                    if (logger.isTraceEnabled()) { logger.trace("Recipient does not exist in Alfresco."); }
-                                    if (validateAddress(authority)) { recipients.add(authority); }
-                                }
-                            }
-                            else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
-                            {
-                                if (logger.isTraceEnabled()) { logger.trace("Recipient is a group..."); }
-                                // Notify all members of the group
-                                Set<String> users;
-                                if (authType.equals(AuthorityType.GROUP))
-                                {        
-                                    users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
-                                }
-                                else
-                                {
-                                    users = authorityService.getAllAuthorities(AuthorityType.USER);
-                                }
-                                
-                                for (String userAuth : users)
-                                {
-                                    if (personService.personExists(userAuth) == true)
-                                    {
-                                        if (!personService.isEnabled(userAuth))
-                                        {
-                                            continue;
-                                        }
-                                        NodeRef person = personService.getPerson(userAuth);
-                                        String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
-                                        if (address != null && address.length() != 0)
-                                        {
-                                            recipients.add(address);
-                                            if (logger.isTraceEnabled()) { logger.trace("   Group member email is known."); }
-                                        }
-                                        else
-                                        {
-                                            if (logger.isTraceEnabled()) { logger.trace("   Group member email not known."); }
-                                            if (validateAddress(authority)) { recipients.add(userAuth); }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (logger.isTraceEnabled()) { logger.trace("   Group member person not found"); }
-                                        if (validateAddress(authority)) { recipients.add(userAuth); }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (logger.isTraceEnabled()) { logger.trace(recipients.size() + " valid recipient(s)."); }
-                        
-                        if(recipients.size() > 0)
-                        {
-                            messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
-                            toRecipients = String.join(",", recipients);
-                        }
-                        else
-                        {
-                            // All recipients were invalid
-                            throw new MailPreparationException(
-                                    "All recipients for the mail action were invalid"
-                            );
-                        }
+                        List<String>s = (List<String>)bccValue;
+                        messageRef[0].setBcc(s.toArray(new String[s.size()]));
+                    }
+                    else if (bccValue.getClass().isArray())
+                    {
+                        messageRef[0].setBcc((String[])bccValue);
+                    }
+                }
+
+            }
+            else
+            {
+                // see if multiple recipients have been supplied - as a list of authorities
+                Serializable authoritiesValue = ruleAction.getParameterValue(PARAM_TO_MANY);
+                List<String> authorities = null;
+                if (authoritiesValue != null)
+                {
+                    if (authoritiesValue instanceof String)
+                    {
+                        authorities = new ArrayList<String>(1);
+                        authorities.add((String)authoritiesValue);
                     }
                     else
                     {
-                        // No recipients have been specified
+                        authorities = (List<String>)authoritiesValue;
+                    }
+                }
+
+                if (authorities != null && authorities.size() != 0)
+                {
+                    List<String> recipients = new ArrayList<String>(authorities.size());
+
+                    if (logger.isTraceEnabled()) { logger.trace(authorities.size() + " recipient(s) for mail"); }
+
+                    for (String authority : authorities)
+                    {
+                        final AuthorityType authType = AuthorityType.getAuthorityType(authority);
+
+                        if (logger.isTraceEnabled()) { logger.trace(" authority type: " + authType); }
+
+                        if (authType.equals(AuthorityType.USER))
+                        {
+                            if (personService.personExists(authority) == true)
+                            {
+                                NodeRef person = personService.getPerson(authority);
+
+                                if (!personService.isEnabled(authority) && !nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
+                                {
+                                    continue;
+                                }
+
+                                String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                                if (address != null && address.length() != 0 && validateAddress(address))
+                                {
+                                    if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco with known email."); }
+                                    recipients.add(address);
+                                }
+                                else
+                                {
+                                    if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco without known email."); }
+                                    // If the username looks like an email address, we'll use that.
+                                    if (validateAddress(authority)) { recipients.add(authority); }
+                                }
+                            }
+                            else
+                            {
+                                if (logger.isTraceEnabled()) { logger.trace("Recipient does not exist in Alfresco."); }
+                                if (validateAddress(authority)) { recipients.add(authority); }
+                            }
+                        }
+                        else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
+                        {
+                            if (logger.isTraceEnabled()) { logger.trace("Recipient is a group..."); }
+                            // Notify all members of the group
+                            Set<String> users;
+                            if (authType.equals(AuthorityType.GROUP))
+                            {
+                                users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                            }
+                            else
+                            {
+                                users = authorityService.getAllAuthorities(AuthorityType.USER);
+                            }
+
+                            for (String userAuth : users)
+                            {
+                                if (personService.personExists(userAuth) == true)
+                                {
+                                    if (!personService.isEnabled(userAuth))
+                                    {
+                                        continue;
+                                    }
+                                    NodeRef person = personService.getPerson(userAuth);
+                                    String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                                    if (address != null && address.length() != 0)
+                                    {
+                                        recipients.add(address);
+                                        if (logger.isTraceEnabled()) { logger.trace("   Group member email is known."); }
+                                    }
+                                    else
+                                    {
+                                        if (logger.isTraceEnabled()) { logger.trace("   Group member email not known."); }
+                                        if (validateAddress(authority)) { recipients.add(userAuth); }
+                                    }
+                                }
+                                else
+                                {
+                                    if (logger.isTraceEnabled()) { logger.trace("   Group member person not found"); }
+                                    if (validateAddress(authority)) { recipients.add(userAuth); }
+                                }
+                            }
+                        }
+                    }
+
+                    if (logger.isTraceEnabled()) { logger.trace(recipients.size() + " valid recipient(s)."); }
+
+                    if(recipients.size() > 0)
+                    {
+                        messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
+                        toRecipients = String.join(",", recipients);
+                    }
+                    else
+                    {
+                        // All recipients were invalid
                         throw new MailPreparationException(
-                                "No recipient has been specified for the mail action"
+                                "All recipients for the mail action were invalid"
                         );
                     }
                 }
-                
-                // from person - not to be performed for the "admin" or "system" users
-                NodeRef fromPerson = null;
-                
-                final String currentUserName = authService.getCurrentUserName();
-                
-                final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[] {AuthenticationUtil.getSystemUserName(),
-                                                                                             AuthenticationUtil.getGuestUserName()});
-                if ( !usersNotToBeUsedInFromField.contains(currentUserName))
+                else
                 {
-                    fromPerson = personService.getPerson(currentUserName);
+                    // No recipients have been specified
+                    throw new MailPreparationException(
+                            "No recipient has been specified for the mail action"
+                    );
                 }
-                
-                if(isFromEnabled())
-                {   
-                    // Use the FROM parameter in preference to calculating values.
-                    String from = (String)ruleAction.getParameterValue(PARAM_FROM);
-                    if (from != null && from.length() > 0)
+            }
+
+            // from person - not to be performed for the "admin" or "system" users
+            NodeRef fromPerson = null;
+
+            final String currentUserName = authService.getCurrentUserName();
+
+            final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[] {AuthenticationUtil.getSystemUserName(),
+                                                                                         AuthenticationUtil.getGuestUserName()});
+            if ( !usersNotToBeUsedInFromField.contains(currentUserName))
+            {
+                fromPerson = personService.getPerson(currentUserName);
+            }
+
+            if(isFromEnabled())
+            {
+                // Use the FROM parameter in preference to calculating values.
+                String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                if (from != null && from.length() > 0)
+                {
+                    if(logger.isDebugEnabled())
                     {
-                        if(logger.isDebugEnabled())
+                        logger.debug("from specified as a parameter, from:" + from);
+                    }
+
+                    // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
+                    String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
+                    if(fromPersonalName != null && fromPersonalName.length() > 0)
+                    {
+                        try
                         {
-                            logger.debug("from specified as a parameter, from:" + from);
+                            messageRef[0].setFrom(from, fromPersonalName);
                         }
-                        
-                        // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
-                        String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
-                        if(fromPersonalName != null && fromPersonalName.length() > 0) 
+                        catch (UnsupportedEncodingException error)
                         {
-                            try
-                            {
-                                messageRef[0].setFrom(from, fromPersonalName);
-                            }
-                            catch (UnsupportedEncodingException error)
-                            {
-                                // Uses the JVM's default encoding, can never be unsupported. Just in case, revert to simple email
-                                messageRef[0].setFrom(from);
-                            }
-                        }
-                        else
-                        {
+                            // Uses the JVM's default encoding, can never be unsupported. Just in case, revert to simple email
                             messageRef[0].setFrom(from);
                         }
                     }
                     else
                     {
-                        // set the from address from the current user
-                        String fromActualUser = null;
-                        if (fromPerson != null)
-                        {
-                            fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
-                        }
-                    
-                        if (fromActualUser != null && fromActualUser.length() != 0)
-                        {
-                            if(logger.isDebugEnabled())
-                            {
-                                logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
-                            }
-                            messageRef[0].setFrom(fromActualUser);
-                        }
-                        else
-                        {
-                            // from system or user does not have email address
-                            messageRef[0].setFrom(fromDefaultAddress);
-                        }
+                        messageRef[0].setFrom(from);
                     }
-
                 }
                 else
                 {
-                    if(logger.isDebugEnabled())
+                    // set the from address from the current user
+                    String fromActualUser = null;
+                    if (fromPerson != null)
                     {
-                        logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
+                        fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
                     }
-                    // from is not enabled.
-                    messageRef[0].setFrom(fromDefaultAddress);
+
+                    if (fromActualUser != null && fromActualUser.length() != 0)
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
+                        }
+                        messageRef[0].setFrom(fromActualUser);
+                    }
+                    else
+                    {
+                        // from system or user does not have email address
+                        messageRef[0].setFrom(fromDefaultAddress);
+                    }
                 }
-                
+
+            }
+            else
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
+                }
+                // from is not enabled.
+                messageRef[0].setFrom(fromDefaultAddress);
+            }
 
 
-                
+
+
+            // set subject line
+            messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
+
+            if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
+            {
+                // If we have an override for the email recipient, we'll send the email to that address instead.
+                // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
+                messageRef[0].setTo(testModeRecipient);
+
+                String emailRecipient = (String)ruleAction.getParameterValue(PARAM_TO);
+                if (emailRecipient == null)
+                {
+                   Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
+                   if (obj != null)
+                   {
+                       emailRecipient = obj.toString();
+                   }
+                }
+
+                String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String)ruleAction.getParameterValue(PARAM_SUBJECT);
+
+                messageRef[0].setSubject(recipientPrefixedSubject);
+            }
+
+
+            // See if an email template has been specified
+            String text = null;
+
+            // templateRef: either a nodeRef or classpath (see ClasspathRepoTemplateLoader)
+            Serializable ref = ruleAction.getParameterValue(PARAM_TEMPLATE);
+            String templateRef = (ref instanceof NodeRef ? ((NodeRef)ref).toString() : (String)ref);
+            if (templateRef != null)
+            {
+                Map<String, Object> suppliedModel = null;
+                if(ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL) != null)
+                {
+                    Object m = ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL);
+                    if(m instanceof Map)
+                    {
+                        suppliedModel = (Map<String, Object>)m;
+                    }
+                    else
+                    {
+                        logger.warn("Skipping unsupported email template model parameters of type "
+                                + m.getClass().getName() + " : " + m.toString());
+                    }
+                }
+
+                // build the email template model
+                Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson, toRecipients);
+
+                // Determine the locale to use to send the email.
+                Locale locale = recipient.getSecond();
+                if (locale == null)
+                {
+                    locale = (Locale)ruleAction.getParameterValue(PARAM_LOCALE);
+                }
+                if (locale == null)
+                {
+                    locale = sender.getSecond();
+                }
+
                 // set subject line
-                messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
-                
+                String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
+                Object subjectParamsObject = ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
+                Object[] subjectParams = null;
+                //Javasctipt pass SubjectParams as ArrayList. see MNT-12534
+                if (subjectParamsObject instanceof List)
+                {
+                    subjectParams = ((List<Object>)subjectParamsObject).toArray();
+                }
+                else if (subjectParamsObject instanceof Object[])
+                {
+                    subjectParams = (Object[])subjectParamsObject;
+                }
+                else
+                {
+                    if (subjectParamsObject != null)
+                    {
+                        subjectParams = new Object[]{subjectParamsObject.toString()};
+                    }
+                }
+                String localizedSubject = getLocalizedSubject(subject, subjectParams, locale);
+                if (locale == null)
+                {
+                    // process the template against the model
+                    text = templateService.processTemplate("freemarker", templateRef, model);
+                }
+                else
+                {
+                    // process the template against the model
+                    text = templateService.processTemplate("freemarker", templateRef, model, locale);
+                }
                 if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
                 {
                     // If we have an override for the email recipient, we'll send the email to that address instead.
                     // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
                     messageRef[0].setTo(testModeRecipient);
-                    
-                    String emailRecipient = (String)ruleAction.getParameterValue(PARAM_TO);
-                    if (emailRecipient == null)
-                    {
-                       Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
-                       if (obj != null)
-                       {
-                           emailRecipient = obj.toString();
-                       }
-                    }
-                    
-                    String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String)ruleAction.getParameterValue(PARAM_SUBJECT);
-                    
-                    messageRef[0].setSubject(recipientPrefixedSubject);
-                }
-                
-                
-                // See if an email template has been specified
-                String text = null;
-                
-                // templateRef: either a nodeRef or classpath (see ClasspathRepoTemplateLoader)
-                Serializable ref = ruleAction.getParameterValue(PARAM_TEMPLATE);
-                String templateRef = (ref instanceof NodeRef ? ((NodeRef)ref).toString() : (String)ref);
-                if (templateRef != null)
-                {
-                    Map<String, Object> suppliedModel = null;
-                    if(ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL) != null)
-                    {
-                        Object m = ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL);
-                        if(m instanceof Map)
-                        {
-                            suppliedModel = (Map<String, Object>)m;
-                        }
-                        else
-                        {
-                            logger.warn("Skipping unsupported email template model parameters of type "
-                                    + m.getClass().getName() + " : " + m.toString());
-                        }
-                    }
-                    
-                    // build the email template model
-                    Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson, toRecipients);
 
-                    // Determine the locale to use to send the email.
-                    Locale locale = recipient.getSecond();
-                    if (locale == null)
-                    {
-                        locale = (Locale)ruleAction.getParameterValue(PARAM_LOCALE);
-                    }
-                    if (locale == null)
-                    {
-                        locale = sender.getSecond();
-                    }
-                    
-                    // set subject line
-                    String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
-                    Object subjectParamsObject = ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
-                    Object[] subjectParams = null;
-                    //Javasctipt pass SubjectParams as ArrayList. see MNT-12534 
-                    if (subjectParamsObject instanceof List)
-                    {
-                        subjectParams = ((List<Object>)subjectParamsObject).toArray();
-                    }
-                    else if (subjectParamsObject instanceof Object[])
-                    {
-                        subjectParams = (Object[])subjectParamsObject;
-                    }
-                    else
-                    {
-                        if (subjectParamsObject != null)
-                        {
-                            subjectParams = new Object[]{subjectParamsObject.toString()};
-                        }
-                    }
-                    String localizedSubject = getLocalizedSubject(subject, subjectParams, locale);
-                    if (locale == null)
-                    {
-                        // process the template against the model
-                        text = templateService.processTemplate("freemarker", templateRef, model);
-                    }
-                    else
-                    {
-                        // process the template against the model
-                        text = templateService.processTemplate("freemarker", templateRef, model, locale);
-                    }
-                    if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
-                    {
-                        // If we have an override for the email recipient, we'll send the email to that address instead.
-                        // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
-                        messageRef[0].setTo(testModeRecipient);
-                        
-                        String emailRecipient = recipient.getFirst();
-                        
-                        String recipientPrefixedSubject = "(" + emailRecipient + ") " + localizedSubject;
-                        
-                        messageRef[0].setSubject(recipientPrefixedSubject);
-                    }
-                    else 
-                    {
-                        messageRef[0].setTo(recipient.getFirst());
-                        messageRef[0].setSubject(localizedSubject);
-                    }
-                }
-                
-                // set the text body of the message
-                
-                boolean isHTML = false;
-                if (text == null)
-                {
-                    text = (String)ruleAction.getParameterValue(PARAM_TEXT);
-                }
-                
-                if (text != null)
-                {
-                    if (isHTML(text))
-                    {
-                        isHTML = true;
-                    }
+                    String emailRecipient = recipient.getFirst();
+
+                    String recipientPrefixedSubject = "(" + emailRecipient + ") " + localizedSubject;
+
+                    messageRef[0].setSubject(recipientPrefixedSubject);
                 }
                 else
                 {
-                    text = (String)ruleAction.getParameterValue(PARAM_HTML);
-                    if (text != null)
-                    {
-                        // assume HTML
-                        isHTML = true;
-                    }
+                    messageRef[0].setTo(recipient.getFirst());
+                    messageRef[0].setSubject(localizedSubject);
                 }
-                
+            }
+
+            // set the text body of the message
+
+            boolean isHTML = false;
+            if (text == null)
+            {
+                text = (String)ruleAction.getParameterValue(PARAM_TEXT);
+            }
+
+            if (text != null)
+            {
+                if (isHTML(text))
+                {
+                    isHTML = true;
+                }
+            }
+            else
+            {
+                text = (String)ruleAction.getParameterValue(PARAM_HTML);
                 if (text != null)
                 {
-                    messageRef[0].setText(text, isHTML);
+                    // assume HTML
+                    isHTML = true;
                 }
-                
             }
+
+            if (text != null)
+            {
+                messageRef[0].setText(text, isHTML);
+            }
+
         };
         MimeMessage mimeMessage = mailService.createMimeMessage(); 
         try

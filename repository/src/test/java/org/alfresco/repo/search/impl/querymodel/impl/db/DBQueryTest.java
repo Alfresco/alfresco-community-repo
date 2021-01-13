@@ -41,8 +41,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;

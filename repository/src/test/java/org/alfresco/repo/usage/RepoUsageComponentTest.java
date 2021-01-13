@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.usage;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

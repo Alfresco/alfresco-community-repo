@@ -34,8 +34,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

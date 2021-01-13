@@ -43,7 +43,6 @@ import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -89,16 +88,13 @@ public abstract class AbstractMimeMessage extends MimeMessage
         this.serviceRegistry = serviceRegistry;
         this.imapService = serviceRegistry.getImapService();
         this.messageFileInfo = fileInfo;
-        this.isMessageInSitesLibrary = imapService.getNodeSiteContainer(messageFileInfo.getNodeRef()) != null ? true : false;
+        this.isMessageInSitesLibrary = imapService.getNodeSiteContainer(messageFileInfo.getNodeRef()) != null;
         RetryingTransactionHelper txHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
         txHelper.setMaxRetries(MAX_RETRIES);
         txHelper.setReadOnly(false);
-        txHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
-            public Object execute() throws Throwable
-            {
-                buildMessageInternal();
-                return null;
-            }
+        txHelper.doInTransaction(() -> {
+            buildMessageInternal();
+            return null;
         }, false);
         
     }

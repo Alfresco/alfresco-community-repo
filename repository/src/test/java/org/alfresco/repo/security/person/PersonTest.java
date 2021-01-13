@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;

@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
@@ -175,7 +175,7 @@ public class TransferServiceCallbackTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        if (tx.getStatus() == javax.transaction.Status.STATUS_ACTIVE)
+        if (tx.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE)
         {
             tx.rollback();
         }

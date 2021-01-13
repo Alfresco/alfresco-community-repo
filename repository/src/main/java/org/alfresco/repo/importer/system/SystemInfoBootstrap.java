@@ -28,7 +28,7 @@ package org.alfresco.repo.importer.system;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationContext;

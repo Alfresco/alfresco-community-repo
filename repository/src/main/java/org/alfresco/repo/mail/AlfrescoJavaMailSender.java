@@ -28,7 +28,6 @@ package org.alfresco.repo.mail;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.URLName;
@@ -50,7 +49,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
  */
 public class AlfrescoJavaMailSender extends JavaMailSenderImpl
 {
-    private static final long DEAFULT_TIME_BETWEEN_EVICTION_RUNS = 30000l;
+    private static final long DEAFULT_TIME_BETWEEN_EVICTION_RUNS = 30000L;
     
     private static final Logger log = LoggerFactory.getLogger(AlfrescoJavaMailSender.class);
 
@@ -69,13 +68,13 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         @Override
         public Object makeObject(Object key) throws Exception
         {
-            if ((key instanceof URLName) == false)
+            if (!(key instanceof URLName))
             {
                 throw new IllegalArgumentException("Invlid key type");
             }
             log.debug("Creating new Transport");
             URLName urlName = (URLName) key;
-            Transport transport = getSession().getTransport(urlName.getProtocol()); 
+            Transport transport = getSession().getTransport(urlName.getProtocol());
             transport.connect(urlName.getHost(), urlName.getPort(), urlName.getUsername(), urlName.getPassword());
             return transport;
         }
@@ -89,7 +88,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         @Override
         public void destroyObject(Object key, Object object) throws Exception
         {
-            if (object instanceof Transport == false)
+            if (!(object instanceof Transport))
             {
                 throw new IllegalArgumentException("Unexpected object type");
             }
@@ -109,7 +108,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         @Override
         public boolean validateObject(Object key, Object object)
         {
-            if (object instanceof Transport == false)
+            if (!(object instanceof Transport))
             {
                 throw new IllegalArgumentException("Unexpected object type");
             }
@@ -122,7 +121,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
          * Do nothing
          */
         @Override
-        public void activateObject(Object key, Object obj) throws Exception
+        public void activateObject(Object key, Object obj)
         {
         }
 
@@ -130,7 +129,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
          * Do Noting
          */
         @Override
-        public void passivateObject(Object key, Object obj) throws Exception
+        public void passivateObject(Object key, Object obj)
         {
         }
     }
@@ -143,7 +142,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     private static class PooledTransportWrapper extends Transport
     {
         private Transport wrapped = null;
-        private String protocol;
+        private final String protocol;
         private GenericKeyedObjectPool pool;
         
         /**
@@ -179,8 +178,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         @Override
         public synchronized void close() throws MessagingException
         {
-            if (this.wrapped == null ||
-                isConnected() == false) 
+            if (this.wrapped == null || !isConnected())
             {
                 throw new IllegalStateException("Already closed");
             }
@@ -222,11 +220,9 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
                 throw new MessagingException("Unexpected exception borrowing connection from pool", ex);
             }
         }
-
-        
     }
     
-    private GenericKeyedObjectPool transportPool = new GenericKeyedObjectPool(new TransportFactory());
+    private final GenericKeyedObjectPool transportPool = new GenericKeyedObjectPool(new TransportFactory());
 
     public AlfrescoJavaMailSender() 
     {
@@ -242,10 +238,9 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
      *             the pool on close.  
      */
     @Override
-    protected Transport getTransport(Session session) throws NoSuchProviderException
+    protected Transport getTransport(Session session)
     {
         return new PooledTransportWrapper(transportPool, session, getProtocol());
-
     }
     
 

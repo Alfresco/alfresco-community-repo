@@ -25,9 +25,9 @@
  */
 package org.alfresco.filesys.auth.ftp;
 
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.ftp.FTPSrvSession;

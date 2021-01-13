@@ -84,7 +84,7 @@
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>
                     <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
                 <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
                 <exclusion>

@@ -64,6 +64,7 @@ public class IncomingImapMessage extends AbstractMimeMessage
 {
     private Log logger = LogFactory.getLog(IncomingImapMessage.class);
     private ContentReader contentReader;
+
     /**
      * Constructs {@link IncomingImapMessage} object based on {@link MimeMessage}
      * 
@@ -108,11 +109,7 @@ public class IncomingImapMessage extends AbstractMimeMessage
             wrappedMessage = null; // it is not used any more and it is available to GC (to avoid memory leak with byte[] MimeMessage.content field)
             this.contentReader = serviceRegistry.getContentService().getReader(messageFileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
         }
-        catch (ContentIOException e)
-        {
-            throw new MessagingException(e.getMessage(), e);
-        }
-        catch (IOException e)
+        catch (ContentIOException | IOException e)
         {
             throw new MessagingException(e.getMessage(), e);
         }
@@ -134,5 +131,4 @@ public class IncomingImapMessage extends AbstractMimeMessage
             throw new MessagingException(e.getMessage(),e);
         }
     }
-
 }

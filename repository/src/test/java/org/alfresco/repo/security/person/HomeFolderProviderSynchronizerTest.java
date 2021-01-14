@@ -507,6 +507,7 @@ public class HomeFolderProviderSynchronizerTest
         for (Tenant tenant : tenants)
         {
             System.out.println("###STOP_DEBUG: "+ tenant.getTenantDomain());
+            System.out.println("###STOP_DEBUG: "+ tenant.getTenantDomain());
             deleteTenant(tenant.getTenantDomain());
         }
 

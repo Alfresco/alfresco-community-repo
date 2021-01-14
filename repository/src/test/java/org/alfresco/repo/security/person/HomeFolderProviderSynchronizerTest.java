@@ -108,8 +108,6 @@ public class HomeFolderProviderSynchronizerTest
 
     private UserTransaction trans;
 
-    private static final String DEFAULT_DOMAIN = "defaultDomain";
-
     @BeforeClass
     public static void classSetup() throws Exception
     {
@@ -246,7 +244,7 @@ public class HomeFolderProviderSynchronizerTest
                     nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
             final String domainUsername = tenantService.getBaseNameUser(username);
             String tenantDomain = tenantService.getUserDomain(username);
-            boolean disabled = !DEFAULT_DOMAIN.equals(tenantDomain) &&
+            boolean disabled = !TenantService.DEFAULT_DOMAIN.equals(tenantDomain) &&
                                !tenantAdminService.isEnabledTenant(tenantDomain);
             try
             {
@@ -312,13 +310,13 @@ public class HomeFolderProviderSynchronizerTest
     
     private NodeRef createUser(String parentPath, String username) throws Exception
     {
-        return createUser(DEFAULT_DOMAIN, parentPath, username);
+        return createUser(TenantService.DEFAULT_DOMAIN, parentPath, username);
     }
         
     private NodeRef createUser(String parentPath,
             String username, String homeFolderProviderName, boolean createHomeDirectory) throws Exception
     {
-        return createUser(DEFAULT_DOMAIN, parentPath, username,
+        return createUser(TenantService.DEFAULT_DOMAIN, parentPath, username,
                 homeFolderProviderName, createHomeDirectory);
     }
 
@@ -540,7 +538,7 @@ public class HomeFolderProviderSynchronizerTest
 
     private void assertHomeFolderLocation(String username, String expectedPath) throws Exception
     {
-        assertHomeFolderLocation(DEFAULT_DOMAIN, username, expectedPath);
+        assertHomeFolderLocation(TenantService.DEFAULT_DOMAIN, username, expectedPath);
     }
     
     private void assertHomeFolderLocation(String tenantDomain, final String username,

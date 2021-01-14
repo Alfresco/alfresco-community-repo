@@ -76,6 +76,7 @@ public class LuceneDisjunction<Q, S, E extends Throwable> extends BaseDisjunctio
                     {
                     case DEFAULT:
                     case MANDATORY:
+                        expressionBuilder.addRequired(constraintQuery, constraint.getBoost());
                     case OPTIONAL:
                         expressionBuilder.addOptional(constraintQuery, constraint.getBoost());
                         break;

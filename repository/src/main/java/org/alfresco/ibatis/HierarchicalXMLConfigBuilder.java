@@ -253,7 +253,7 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
             configuration.setLazyLoadTriggerMethods(stringSetValueOf(props.getProperty("lazyLoadTriggerMethods"), "equals,clone,hashCode,toString"));
             configuration.setSafeResultHandlerEnabled(booleanValueOf(props.getProperty("safeResultHandlerEnabled"), true));
             configuration.setDefaultScriptingLanguage(resolveClass(props.getProperty("defaultScriptingLanguage")));
-            configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), false));
+            configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), true));
             configuration.setLogPrefix(props.getProperty("logPrefix"));
             configuration.setLogImpl(resolveClass(props.getProperty("logImpl")));
         }

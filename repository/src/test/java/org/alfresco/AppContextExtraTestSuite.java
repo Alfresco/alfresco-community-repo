@@ -39,12 +39,6 @@ import org.junit.runners.Suite;
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
     // ----------------------------------------------------------------------
-    // mtAllContext [classpath:alfresco/application-context.xml, classpath:tenant/mt-*context.xml]
-    // ----------------------------------------------------------------------
-    org.alfresco.repo.tenant.MultiTDemoTest.class,
-    org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest.class,
-
-    // ----------------------------------------------------------------------
     // globalIntegrationTestContext [classpath:alfresco/application-context.xml, classpath:alfresco/test/global-integration-test-context.xml]
     // ----------------------------------------------------------------------
 
@@ -121,6 +115,12 @@ import org.junit.runners.Suite;
 
     // [classpath:alfresco/application-context.xml, classpath:subsystem-test-context.xml]
     org.alfresco.repo.management.subsystems.test.SubsystemsTest.class,
+
+    // ----------------------------------------------------------------------
+    // mtAllContext [classpath:alfresco/application-context.xml, classpath:tenant/mt-*context.xml]
+    // ----------------------------------------------------------------------
+    org.alfresco.repo.tenant.MultiTDemoTest.class,
+    org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest.class,
 
     // ======================================================================
     // any other order may lead to failing tests

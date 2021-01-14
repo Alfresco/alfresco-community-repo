@@ -82,6 +82,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.domain.audit.AuditDAOTest.class,
     org.alfresco.repo.model.ModelTestSuite.class,
     org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class,
+    org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class,
     org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest.class
 })
 public class AppContext05TestSuite

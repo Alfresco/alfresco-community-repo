@@ -55,7 +55,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.permissions.impl.ReadPermissionTest.class,
     org.alfresco.repo.security.authentication.UpgradePasswordHashTest.class,
     org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest.class,
-    org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest.class,
     org.alfresco.repo.domain.permissions.FixedAclUpdaterTest.class,
     org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest.class,
     org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponentTest.class,
@@ -83,7 +82,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.domain.audit.AuditDAOTest.class,
     org.alfresco.repo.model.ModelTestSuite.class,
     org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class,
-    org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class,
+    org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest.class
 })
 public class AppContext05TestSuite
 {

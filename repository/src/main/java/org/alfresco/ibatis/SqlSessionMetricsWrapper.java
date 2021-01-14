@@ -490,4 +490,5 @@ public class SqlSessionMetricsWrapper implements SqlSession
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
+
 }

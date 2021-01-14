@@ -39,6 +39,12 @@ import org.junit.runners.Suite;
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
     // ----------------------------------------------------------------------
+    // mtAllContext [classpath:alfresco/application-context.xml, classpath:tenant/mt-*context.xml]
+    // ----------------------------------------------------------------------
+    org.alfresco.repo.tenant.MultiTDemoTest.class,
+    org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest.class,
+
+    // ----------------------------------------------------------------------
     // globalIntegrationTestContext [classpath:alfresco/application-context.xml, classpath:alfresco/test/global-integration-test-context.xml]
     // ----------------------------------------------------------------------
 
@@ -156,13 +162,7 @@ import org.junit.runners.Suite;
     // ----------------------------------------------------------------------
     // cacheTestContext [classpath:alfresco/application-context.xml, classpath:cache-test/cache-test-context.xml]
     // ----------------------------------------------------------------------
-    org.alfresco.repo.cache.CacheTest.class,
-
-    // ----------------------------------------------------------------------
-    // mtAllContext [classpath:alfresco/application-context.xml, classpath:tenant/mt-*context.xml]
-    // ----------------------------------------------------------------------
-    org.alfresco.repo.tenant.MultiTDemoTest.class,
-    org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest.class
+    org.alfresco.repo.cache.CacheTest.class
 })
 public class AppContextExtraTestSuite
 {

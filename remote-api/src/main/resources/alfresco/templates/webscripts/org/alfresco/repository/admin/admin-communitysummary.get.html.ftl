@@ -6,7 +6,9 @@
       <@section label=msg("communitysummary.repository") />
       <@field value=alfrescoAttributes["edition"] label=msg("communitysummary.system-information.alfresco-edition") />
       <@field value=alfrescoAttributes["version"] label=msg("communitysummary.system-information.alfresco-version") />
-      <@field value=alfrescoAttributes["versionLabel"] label=msg("communitysummary.system-information.version-label") description=msg("communitysummary.system-information.version-label.description") />
+      <#if alfrescoAttributes["versionLabel"].value?has_content>
+         <@field value=alfrescoAttributes["versionLabel"] label=msg("communitysummary.system-information.version-label") description=msg("communitysummary.system-information.version-label.description") />
+      </#if>
       <@field value=alfrescoAttributes["schema"] label=msg("communitysummary.system-information.schema") description=msg("communitysummary.system-information.schema.description") />
       <@field value=alfrescoAttributes["id"] label=msg("communitysummary.system-information.id") description=msg("communitysummary.system-information.id.description") />
    </div>

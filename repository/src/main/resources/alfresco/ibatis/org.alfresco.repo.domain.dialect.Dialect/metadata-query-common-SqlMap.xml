@@ -6,9 +6,26 @@
 
    <sql id="sql_select_byDynamicQuery">
         select 
-            node.id             as id
+            node.id             as id,
+            node.version        as version,
+            store.id            as store_id,
+            store.protocol      as protocol,
+            store.identifier    as identifier,
+            node.uuid           as uuid,
+            node.type_qname_id  as type_qname_id,
+            node.locale_id      as locale_id,
+            node.acl_id         as acl_id,
+            txn.id              as txn_id,
+            txn.change_txn_id   as txn_change_id,
+            node.audit_creator  as audit_creator,
+            node.audit_created  as audit_created,
+            node.audit_modifier as audit_modifier,
+            node.audit_modified as audit_modified,
+            node.audit_accessed as audit_accessed
         from
             alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
             <foreach item="item" index="index" collection="joins">
                 <choose>
                     <when test="item.type == 'PARENT'">

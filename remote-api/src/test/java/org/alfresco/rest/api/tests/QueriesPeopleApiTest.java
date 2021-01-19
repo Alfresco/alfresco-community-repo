@@ -25,6 +25,26 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
+import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
+import static org.alfresco.rest.api.Queries.PARAM_PERSON_ID;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Queries;
@@ -34,34 +54,12 @@ import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-
-import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
-import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
-import static org.alfresco.rest.api.Queries.PARAM_PERSON_ID;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
 * V1 REST API tests for pre-defined 'live' search Queries on People

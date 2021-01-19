@@ -131,16 +131,6 @@ cd ..
 In Intellij IDEA, create a new project using the `work` directory as the source.
 * File > New Project from Existing Sources > .../work > Maven
 
-## Docker
-We generally use Docker for testing. In order to reduce the size of images we also supply a squash option that collapses
-the layers in the image. This is a long-standing experimental feature that we have fould useful. However you will need
-to enable experimental features in your Docker Engine. 
-~~~
-{
-  "experimental": true,
-  "debug": true
-}
-~~~
 ## Branches
 As multiple projects have been combined, branch names use the ACS version they are targeting.
 For example the code used to create the repository in ACS 6.2.1 is a branch called `releases/6.2.1`.

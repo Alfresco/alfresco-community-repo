@@ -100,26 +100,25 @@ public abstract class BaseApplicationContextHelper
     		classpath[i] = resources[i].getURL();
     	}
     	// Let's give our classloader 'child-first' resource loading qualities!
-    	ClassLoader classLoader = new URLClassLoader(classpath, Thread.currentThread().getContextClassLoader())
-    	{
-    		@Override
-    		public URL getResource(String name)
-    		{
-    			URL ret = findResource(name);
-    			return ret == null ? super.getResource(name) : ret;
-    		}
+        return new URLClassLoader(classpath, Thread.currentThread().getContextClassLoader())
+        {
+            @Override
+            public URL getResource(String name)
+            {
+                URL ret = findResource(name);
+                return ret == null ? super.getResource(name) : ret;
+            }
 
-    		@SuppressWarnings("rawtypes")
-    		@Override
-    		public Enumeration<URL> getResources(String name) throws IOException
-    		{
-    			Enumeration[] tmp = new Enumeration[2];
-    			tmp[0] = findResources(name);
-    			tmp[1] = super.getResources(name);
-    			return new CompoundEnumeration<URL>(tmp);
-    		}
-    	};
-    	return classLoader;
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Enumeration<URL> getResources(String name) throws IOException
+            {
+                Enumeration[] tmp = new Enumeration[2];
+                tmp[0] = findResources(name);
+                tmp[1] = super.getResources(name);
+                return new CompoundEnumeration<URL>(tmp);
+            }
+        };
     }
 
     /**

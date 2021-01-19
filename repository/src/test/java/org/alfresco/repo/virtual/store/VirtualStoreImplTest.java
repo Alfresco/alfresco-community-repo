@@ -265,6 +265,9 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         // vp...
         createAndCheckNodeId("v"+Encodings.PLAIN.encoding.token+"file", "specialFile5.txt");
 
+        // MNT-21968
+        createAndCheckNodeId("v"+Encodings.ZERO.encoding.token+"0Draft.pdf", "specialFile6.txt");
+
         NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(), VIRTUAL_FOLDER_3_NAME, TEST_TEMPLATE_4_JSON_SYS_PATH);
 
         assertTrue(smartStore.canVirtualize(virtualFolder));

@@ -195,10 +195,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
             String adminPassword,
             String userName,
             String password,
-            String email,
-            String role,
-            String firstName,
-            String lastName)
+            String role)
     {
         if (!userService.userExists(adminUser, adminPassword, userName))
         {

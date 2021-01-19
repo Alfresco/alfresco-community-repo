@@ -199,7 +199,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
     {
         if (!userService.userExists(adminUser, adminPassword, userName))
         {
-            //userService.create(adminUser, adminPassword, userName, password, email, firstName, lastName);
             dataUser.createUser(userName, password);
 
         }

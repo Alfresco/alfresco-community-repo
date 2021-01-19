@@ -434,6 +434,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 				}
 
 				@Override
+				public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile)
+				{
+					return null;
+				}
+
+				@Override
 				public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException
 				{
 					return null;
@@ -549,6 +555,48 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
 				@Override
 				public void declareRoles(String... roleNames)
+				{
+
+				}
+
+				@Override
+				public String getVirtualServerName()
+				{
+					return null;
+				}
+
+				@Override
+				public int getSessionTimeout()
+				{
+					return 0;
+				}
+
+				@Override
+				public void setSessionTimeout(int sessionTimeout)
+				{
+
+				}
+
+				@Override
+				public String getRequestCharacterEncoding()
+				{
+					return null;
+				}
+
+				@Override
+				public void setRequestCharacterEncoding(String encoding)
+				{
+
+				}
+
+				@Override
+				public String getResponseCharacterEncoding()
+				{
+					return null;
+				}
+
+				@Override
+				public void setResponseCharacterEncoding(String encoding)
 				{
 
 				}

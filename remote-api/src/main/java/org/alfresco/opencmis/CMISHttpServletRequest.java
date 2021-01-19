@@ -49,6 +49,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
@@ -201,6 +202,9 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		return httpReq.getContentLength();
 	}
+
+	@Override
+	public long getContentLengthLong() { return httpReq.getContentLengthLong(); }
 
 	@Override
 	public String getContentType()
@@ -527,6 +531,9 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	}
 
 	@Override
+	public String changeSessionId() { return httpReq.changeSessionId(); }
+
+	@Override
 	public HttpSession getSession(boolean arg0)
 	{
 		return httpReq.getSession(arg0);
@@ -596,6 +603,12 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	public Part getPart(String name) throws IOException, ServletException
 	{
 		return httpReq.getPart(name);
+	}
+
+	@Override
+	public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException
+	{
+		return httpReq.upgrade(handlerClass);
 	}
 
 	@Override

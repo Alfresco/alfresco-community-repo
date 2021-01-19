@@ -247,6 +247,12 @@ public class CMISHttpServletResponse implements HttpServletResponse
     }
 
     @Override
+    public void setContentLengthLong(long len)
+    {
+        httpResp.setContentLengthLong(len);
+    }
+
+    @Override
     public void setContentType(String type)
     {
         httpResp.setContentType(type);

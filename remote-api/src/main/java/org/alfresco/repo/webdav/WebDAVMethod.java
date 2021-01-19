@@ -43,6 +43,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -201,6 +202,24 @@ public abstract class WebDAVMethod
                     final FileInputStream in = new FileInputStream(getRequestBodyAsFile(req));
                     WebDAVMethod.this.m_inputStream = new ServletInputStream()
                     {
+
+                        @Override
+                        public boolean isFinished()
+                        {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean isReady()
+                        {
+                            return true;
+                        }
+
+                        @Override
+                        public void setReadListener(ReadListener readListener)
+                        {
+                            //ignore
+                        }
 
                         @Override
                         public int read() throws IOException

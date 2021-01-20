@@ -8,6 +8,11 @@
     <select id="select_GetArchivedNodesCannedQuery" parameterType="ArchivedNodes" resultMap="alfresco.node.result_ArchivedNodes">
         select
         <include refid="alfresco.node.select_GetAllArchivedNodesCannedQuery"/>
+        <if test="offset != 0">offset ${offset}</if>
         <if test="limit != 0">limit ${limit}</if>
+    </select>
+
+    <select id="select_CountAllArchivedNodes" parameterType="ArchivedNodes" resultType="long">
+        select count(id) from alf_child_assoc where parent_node_id = #{parentNodeId} and type_qname_id = #{assocTypeQNameId}
     </select>
 </mapper>

@@ -80,7 +80,7 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
-        <dependency.keycloak.version>12.0.2</dependency.keycloak.version>
+        <dependency.keycloak.version>11.0.0-alfresco-001</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.0</dependency.camel.version>
         <dependency.activemq.version>5.16.0</dependency.activemq.version>

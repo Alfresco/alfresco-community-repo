@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.367-SNAPSHOT</version>
+    <version>8.372-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -61,8 +61,8 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.15</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>3.7.0</dependency.mockito-core.version>
-        <dependency.org-json.version>20200518</dependency.org-json.version>
+        <dependency.mockito-core.version>3.7.7</dependency.mockito-core.version>
+        <dependency.org-json.version>20201115</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
@@ -81,7 +81,7 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
-        <dependency.keycloak.version>12.0.1</dependency.keycloak.version>
+        <dependency.keycloak.version>12.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.0</dependency.camel.version>
         <dependency.activemq.version>5.16.0</dependency.activemq.version>
@@ -92,7 +92,7 @@
         <alfresco.aos-module.version>1.4.0-M1</alfresco.aos-module.version>
 
         <dependency.postgresql.version>42.2.18</dependency.postgresql.version>
-        <dependency.mysql.version>8.0.22</dependency.mysql.version>
+        <dependency.mysql.version>8.0.23</dependency.mysql.version>
         <dependency.mariadb.version>2.7.1</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.41</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>

@@ -15,7 +15,7 @@
       <maven.javadoc.skip>false</maven.javadoc.skip>
       <ags.share>alfresco-governance-services-community-share</ags.share>
       <ags.repo>alfresco-governance-services-community-repo</ags.repo>
-      <tas.restapi.version>1.38</tas.restapi.version>
+      <tas.restapi.version>1.51</tas.restapi.version>
       <fluent.json.version>2.0.0</fluent.json.version>
       <jackson.databind.version>2.7.9.1</jackson.databind.version>
    </properties>

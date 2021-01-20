@@ -26,12 +26,12 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -39,7 +39,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +47,6 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.StoreEntity;
-import org.alfresco.repo.domain.permissions.AuthorityEntity;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine.NodePermissionAssessor;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
@@ -202,6 +200,13 @@ public class DBQueryEngineTest
         
         assertEquals(0, result.length());
         verify(resultContext).stop();
+    }
+    
+    @Test
+    public void shouldIsOwnerReadingReturnFalseWhenTheAuthorityIsNull()
+    {
+        boolean result = engine.isOwnerReading(createNode(1), null);
+        assertFalse(result);
     }
             
     private void prepareTemplate(DBQuery dbQuery, List<Node> nodes)

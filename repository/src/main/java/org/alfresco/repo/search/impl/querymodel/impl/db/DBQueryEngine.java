@@ -614,6 +614,11 @@ public class DBQueryEngine implements QueryEngine
         aclOwnerStopWatch().start();
         try
         {
+            if (authority == null)
+            {
+                return false;
+            }
+            
             String owner = getOwner(node);
             if (EqualsHelper.nullSafeEquals(authority.getAuthority(), owner))
             {

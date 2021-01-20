@@ -269,7 +269,6 @@
         <dependency>
             <groupId>jakarta.jws</groupId>
             <artifactId>jakarta.jws-api</artifactId>
-            <version>3.0.0</version>
         </dependency>
 
         <dependency>
@@ -441,6 +440,15 @@
             <version>1.2.5</version>
         </dependency>
 
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+        </dependency>
+
         <!-- Activiti -->
         <!-- Updated commons-email to 1.5 -->
         <!-- see dependencyManagement section -->
@@ -500,6 +508,14 @@
                     <groupId>com.sun.mail</groupId>
                     <artifactId>javax.mail</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.ws</groupId>
+                    <artifactId>jaxws-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.soap</groupId>
+                    <artifactId>javax.xml.soap-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -507,6 +523,14 @@
             <artifactId>activiti-spring</artifactId>
             <version>${dependency.activiti.version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.ws</groupId>
+                    <artifactId>jaxws-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.soap</groupId>
+                    <artifactId>javax.xml.soap-api</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-jdbc</artifactId>

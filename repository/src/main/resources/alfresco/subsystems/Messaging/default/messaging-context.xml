@@ -34,6 +34,12 @@
         <property name="transacted" value="${messaging.transacted}" />
         <property name="transactionManager" ref="messagingTransactionManager" />
     </bean>
+
+    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="transacted" value="${messaging.transacted}" />
+        <property name="transactionManager" ref="messagingTransactionManager" />
+    </bean>
     
     <bean id="CAMEL_PROPAGATION_MANDATORY" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
         <property name="transactionManager" ref="messagingTransactionManager" />

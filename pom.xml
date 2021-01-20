@@ -71,11 +71,10 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.1</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
-        <dependency.gytheio.version>0.12-A1</dependency.gytheio.version>
-        <dependency.jaxb.version>3.0.0</dependency.jaxb.version>
+        <dependency.gytheio.version>0.12</dependency.gytheio.version>
+        <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
-        <!-- Cant upgrade to jakarta.mail:2.0.0 as Spring 5.3.3 still uses 1.6.5 -->
-        <dependency.jakarta.mail.version>1.6.5</dependency.jakarta.mail.version>
+        <dependency.jakarta-mail.version>1.6.5</dependency.jakarta-mail.version>
         <dependency.tika.version>1.25</dependency.tika.version>
         <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
@@ -259,7 +258,8 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-core</artifactId>
-                <version>${dependency.jaxb.version}</version>
+                <!-- Replace this version with ${dependency.jaxb.version} at the next upgrade -->
+                <version>2.3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
@@ -607,17 +607,17 @@
             <dependency>
                 <groupId>jakarta.transaction</groupId>
                 <artifactId>jakarta.transaction-api</artifactId>
-                <version>2.0.0</version>
+                <version>1.3.3</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
-                <version>2.0.0</version>
+                <version>1.3.5</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.soap</groupId>
                 <artifactId>jakarta.xml.soap-api</artifactId>
-                <version>2.0.0</version>
+                <version>1.4.2</version>
             </dependency>
 
             <!-- includes the classes from jakarta.activation:jakarta.activation-api -->
@@ -625,6 +625,12 @@
                 <groupId>com.sun.activation</groupId>
                 <artifactId>jakarta.activation</artifactId>
                 <version>1.2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>2.1.0</version>
             </dependency>
 
             <dependency>

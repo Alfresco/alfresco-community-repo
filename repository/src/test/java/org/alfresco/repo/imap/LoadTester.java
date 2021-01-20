@@ -31,7 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.mail.Flags;
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

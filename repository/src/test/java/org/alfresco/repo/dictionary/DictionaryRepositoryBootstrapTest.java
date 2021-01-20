@@ -54,7 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)

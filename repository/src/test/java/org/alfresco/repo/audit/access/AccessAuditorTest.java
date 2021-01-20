@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;

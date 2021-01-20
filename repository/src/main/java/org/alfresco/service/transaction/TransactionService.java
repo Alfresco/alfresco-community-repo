@@ -25,7 +25,7 @@
  */
 package org.alfresco.service.transaction;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.NotAuditable;

@@ -32,8 +32,8 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.UserTransaction;
+import javax.transaction.RollbackException;
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

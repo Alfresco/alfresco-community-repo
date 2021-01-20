@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.subscriptions;
 
-import jakarta.transaction.Status;
-import jakarta.transaction.UserTransaction;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

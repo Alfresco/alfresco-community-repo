@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 

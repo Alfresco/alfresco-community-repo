@@ -54,7 +54,7 @@ import javax.mail.search.ReceivedDateTerm;
 import javax.mail.search.SearchTerm;
 import javax.mail.search.SentDateTerm;
 import javax.mail.search.SubjectTerm;
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

@@ -37,7 +37,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

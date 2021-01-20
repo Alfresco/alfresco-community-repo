@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
-import jakarta.transaction.Status;
-import jakarta.transaction.UserTransaction;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;

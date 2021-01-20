@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ManagementService;

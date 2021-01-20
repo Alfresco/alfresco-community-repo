@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;

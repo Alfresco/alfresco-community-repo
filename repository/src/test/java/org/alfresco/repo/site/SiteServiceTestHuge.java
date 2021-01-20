@@ -31,8 +31,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.Set;
 
-import jakarta.transaction.SystemException;
-import jakarta.transaction.UserTransaction;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;

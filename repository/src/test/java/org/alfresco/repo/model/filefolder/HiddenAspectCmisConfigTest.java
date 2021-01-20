@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.model.filefolder;
 
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.SystemException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
 
 import org.junit.After;
 import org.junit.Before;

@@ -27,7 +27,7 @@ package org.alfresco.repo.web.scripts.action;
 
 import java.util.List;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;

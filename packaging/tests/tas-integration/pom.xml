@@ -41,14 +41,14 @@
         <dependency>
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
-            <version>${dependency.jakarta.mail.version}</version>
+            <version>${dependency.jakarta-mail.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>${dependency.jakarta.mail.version}</version>
+            <version>${dependency.jakarta-mail.version}</version>
         </dependency>
 
         <dependency>

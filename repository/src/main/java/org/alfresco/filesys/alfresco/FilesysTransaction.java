@@ -25,7 +25,7 @@
  */
 package org.alfresco.filesys.alfresco;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 
 
 /**

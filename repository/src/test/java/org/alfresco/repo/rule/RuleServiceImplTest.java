@@ -71,7 +71,7 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
-import jakarta.transaction.UserTransaction;
+import javax.transaction.UserTransaction;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;

@@ -47,6 +47,7 @@ import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.core.v0.RMEvents;
+import org.alfresco.utility.data.DataUserAIS;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
@@ -90,6 +91,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private DataUserAIS dataUser;
     /**
      * Get all the configured RM roles.
      *
@@ -192,14 +195,12 @@ public class RMRolesAndActionsAPI extends BaseAPI
             String adminPassword,
             String userName,
             String password,
-            String email,
-            String role,
-            String firstName,
-            String lastName)
+            String role)
     {
         if (!userService.userExists(adminUser, adminPassword, userName))
         {
-            userService.create(adminUser, adminPassword, userName, password, email, firstName, lastName);
+            dataUser.createUser(userName, password);
+
         }
         assignRoleToUser(adminUser, adminPassword, userName, role);
     }

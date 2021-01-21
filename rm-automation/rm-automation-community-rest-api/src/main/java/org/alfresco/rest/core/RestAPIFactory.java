@@ -30,6 +30,8 @@ import static lombok.AccessLevel.PROTECTED;
 
 import javax.annotation.Resource;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.requests.search.SearchAPI;
@@ -46,15 +48,12 @@ import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * REST API Factory which provides access to the APIs
@@ -68,7 +67,7 @@ public class RestAPIFactory
 {
     @Autowired
     @Getter (value = PROTECTED)
-    private DataUser dataUser;
+    private DataUserAIS dataUser;
 
     @Resource(name = "RMRestWrapper")
     @Getter

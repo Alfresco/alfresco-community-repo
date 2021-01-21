@@ -781,7 +781,7 @@
     <bean id="siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
         <property name="configPath" value="alfresco/bootstrap/site"/>
     </bean>
-    
+
     <bean id="Sites" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Sites</value>
@@ -1490,5 +1490,30 @@
 
     <bean class="org.alfresco.rest.api.groups.SiteGroupsRelation">
         <property name="sites" ref="Sites" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.aspects.AspectEntityResource">
+        <property name="aspects" ref="Aspects" />
+    </bean>
+
+    <bean id="aspects" class="org.alfresco.rest.api.impl.AspectsImpl">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="customModels" ref="customModels"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="nodeDefinitionMapper" ref="nodeDefinitionMapper" />
+    </bean>
+
+    <bean id="Aspects" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Aspects</value>
+        </property>
+        <property name="target">
+            <ref bean="aspects" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
     </bean>
 </beans>

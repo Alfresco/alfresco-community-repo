@@ -36,6 +36,7 @@ import org.alfresco.rest.api.NodeDefinitionMapper;
 import org.alfresco.rest.api.model.NodeDefinitionConstraint;
 import org.alfresco.rest.api.model.NodeDefinition;
 import org.alfresco.rest.api.model.NodeDefinitionProperty;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -65,6 +66,20 @@ public class NodeDefinitionMapperImpl implements NodeDefinitionMapper
         NodeDefinition nodeDefinition = new NodeDefinition();
         nodeDefinition.setProperties(getProperties(typeDefinition.getProperties(), messageLookup));
         
+        return nodeDefinition;
+    }
+
+    @Override
+    public NodeDefinition fromAspectDefinition(AspectDefinition aspectDefinition, MessageLookup messageLookup)
+    {
+
+        if (aspectDefinition == null)
+        {
+            throw new AlfrescoRuntimeException("Undefined aspect");
+        }
+        NodeDefinition nodeDefinition = new NodeDefinition();
+        nodeDefinition.setProperties(getProperties(aspectDefinition.getProperties(), messageLookup));
+
         return nodeDefinition;
     }
 

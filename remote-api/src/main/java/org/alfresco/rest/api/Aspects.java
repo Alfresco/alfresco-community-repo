@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,21 +23,15 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.NodeDefinition;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.i18n.MessageLookup;
+import org.alfresco.rest.api.model.Aspect;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-/**
- * Maps representations from TypeDefinition to NodeDefinition
- *
- * @author gfertuso
- */
-public interface NodeDefinitionMapper
+public interface Aspects
 {
-    NodeDefinition fromTypeDefinition(TypeDefinition typeDefinition, MessageLookup messageLookup);
-
-    NodeDefinition fromAspectDefinition(AspectDefinition aspectDefinition, MessageLookup messageLookup);
+    CollectionWithPagingInfo<Aspect> listAspects(Parameters params);
+    Aspect listAspectById(String nameSpace);
 }

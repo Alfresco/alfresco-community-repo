@@ -75,7 +75,6 @@ import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
-import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
@@ -85,7 +84,7 @@ import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -111,7 +110,7 @@ public class BaseRMRestTest extends RestTest
 
     @Autowired
     @Getter (value = PROTECTED)
-    private DataUser dataUser;
+    protected DataUserAIS dataUser;
 
     @Autowired
     @Getter(value = PROTECTED)

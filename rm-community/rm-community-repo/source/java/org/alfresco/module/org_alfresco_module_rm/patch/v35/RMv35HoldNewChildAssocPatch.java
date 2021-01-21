@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.patch.v34;
+package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -41,9 +41,9 @@ import org.alfresco.service.cmr.repository.NodeService;
  * See: https://alfresco.atlassian.net/browse/APPS-659
  *
  *
- * @since 3.4.1
+ * @since 3.5
  */
-public class RMv34HoldNewChildAssocPatch extends AbstractModulePatch
+public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 {
     /**
      * File plan service interface

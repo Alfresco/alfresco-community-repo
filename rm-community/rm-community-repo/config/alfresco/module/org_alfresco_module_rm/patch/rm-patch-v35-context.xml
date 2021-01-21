@@ -8,7 +8,7 @@
 
    <bean id="rm.holdChildAssocPatch"
          parent="rm.parentModulePatch"
-         class="org.alfresco.module.org_alfresco_module_rm.patch.v34.RMv34HoldNewChildAssocPatch">
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35HoldNewChildAssocPatch">
       <property name="description" value="Create new hold child association to link the record to the hold"/>
       <property name="fixesFromSchema" value="3201" />
       <property name="fixesToSchema" value="3410"/>

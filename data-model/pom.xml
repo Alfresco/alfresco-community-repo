@@ -127,9 +127,29 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--
-            | compile dependencies
-            -->
+
+        <!-- Jakarta... -->
+        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+        </dependency>
+        <!-- REPO-5047 - Replaces javax.annotation:javax.annotation-api -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
+        <dependency>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
@@ -150,26 +170,7 @@
             <artifactId>woodstox-core</artifactId>
             <version>6.2.3</version>
         </dependency>
-        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
-        </dependency>
-        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-        </dependency>
-        <!-- REPO-5047 - Replaces javax.annotation:javax.annotation-api -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-        </dependency>
-        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-        </dependency>
+
         <!-- the cxf libs were updated, see dependencyManagement section -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>

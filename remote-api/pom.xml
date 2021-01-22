@@ -48,6 +48,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Jakarta... -->
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jaxrpc-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -79,11 +86,6 @@
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
         </dependency>
-        <dependency>
-            <groupId>javax.xml</groupId>
-            <artifactId>jaxrpc-api</artifactId>
-        </dependency>
-
         <!-- This is needed at runtime by Web Client, so not really a test dependency -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>

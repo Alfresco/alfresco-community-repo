@@ -13,6 +13,24 @@
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031)-->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
             <exclusions>
                 <exclusion>
@@ -50,14 +68,40 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-greenmail</artifactId>
             <version>${dependency.alfresco-greenmail.version}</version>
         </dependency>
+
+        <!-- Jakarta... -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <!-- Added to replace transitive dependencies com.sun.activation:javax.activation and javax.activation:activation -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+        </dependency>
+        <!-- [ACS-544] xml-apis dependency excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c. -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <!-- REPO-5031 Added jakarta.jws:jakarta.jws-api instead of javax.jws:javax.jws-api - since javax.* has moved to jakarta -->
+        <dependency>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -184,10 +228,6 @@
             <version>3.6.3</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-driver-zip</artifactId>
             <version>${dependency.truezip.version}</version>
@@ -236,11 +276,6 @@
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
         </dependency>
-        <!-- [ACS-544] xml-apis dependency excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c. -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
@@ -263,12 +298,6 @@
             <groupId>net.sf.jsr107cache</groupId>
             <artifactId>jsr107cache</artifactId>
             <version>1.1</version>
-        </dependency>
-
-        <!-- REPO-5031 Added jakarta.jws:jakarta.jws-api instead of javax.jws:javax.jws-api - since javax.* has moved to jakarta -->
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
         </dependency>
 
         <dependency>
@@ -326,11 +355,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
 
         <dependency>
@@ -749,23 +773,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-data-model</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031)-->
-                <exclusion>
-                  <groupId>org.apache.geronimo.specs</groupId>
-                  <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
@@ -852,11 +859,6 @@
            <groupId>org.apache.taglibs</groupId>
            <artifactId>taglibs-standard-jstlel</artifactId>
            <version>${dependency.apache.taglibs.version}</version>
-        </dependency>
-        <!-- Added to replace transitive dependencies com.sun.activation:javax.activation and javax.activation:activation -->
-        <dependency>
-           <groupId>com.sun.activation</groupId>
-           <artifactId>jakarta.activation</artifactId>
         </dependency>
         <!-- Repo Event Model-->
         <dependency>

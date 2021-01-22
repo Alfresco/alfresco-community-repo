@@ -86,8 +86,8 @@
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
 
         <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
-        <dependency.jakarta-ws-api.version>2.3.1</dependency.jakarta-ws-api.version>
-        <dependency.jakarta-soap-api.version>1.4.0</dependency.jakarta-soap-api.version>
+        <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
+        <dependency.jakarta-soap-api.version>1.4.2</dependency.jakarta-soap-api.version>
         <dependency.jakarta-activation-api.version>1.2.2</dependency.jakarta-activation-api.version>
         <dependency.jakarta-annotation-api.version>1.3.5</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
@@ -155,14 +155,14 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.xml.ws</groupId>
-                <artifactId>jaxws-api</artifactId>
+                <groupId>jakarta.xml.ws</groupId>
+                <artifactId>jakarta.xml.ws-api</artifactId>
                 <version>${dependency.jakarta-ws-api.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>javax.xml.soap</groupId>
-                <artifactId>javax.xml.soap-api</artifactId>
+                <groupId>jakarta.xml.soap</groupId>
+                <artifactId>jakarta.xml.soap-api</artifactId>
                 <version>${dependency.jakarta-soap-api.version}</version>
             </dependency>
 

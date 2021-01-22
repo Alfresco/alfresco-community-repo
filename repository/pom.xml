@@ -62,6 +62,14 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
         </dependency>
@@ -492,6 +500,10 @@
                     <groupId>javax.xml.ws</groupId>
                     <artifactId>jaxws-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.soap</groupId>
+                    <artifactId>javax.xml.soap-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -502,6 +514,10 @@
                 <exclusion>
                     <groupId>javax.xml.ws</groupId>
                     <artifactId>jaxws-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.soap</groupId>
+                    <artifactId>javax.xml.soap-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.springframework</groupId>

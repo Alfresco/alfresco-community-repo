@@ -47,6 +47,13 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-greenmail</artifactId>
             <version>${dependency.alfresco-greenmail.version}</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
+                <exclusion>
+                    <groupId>com.sun.mail</groupId>
+                    <artifactId>javax.mail</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Jakarta... -->
@@ -74,8 +81,12 @@
             <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
         </dependency>
 
         <dependency>
@@ -187,6 +198,7 @@
             <artifactId>subethasmtp</artifactId>
             <version>3.1.7</version>
             <exclusions>
+                <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
                     <groupId>javax.mail</groupId>
                     <artifactId>mail</artifactId>
@@ -456,6 +468,7 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
+                <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
                     <groupId>javax.mail</groupId>
                     <artifactId>mail</artifactId>
@@ -484,6 +497,15 @@
                     <groupId>javax.annotation</groupId>
                     <artifactId>javax.annotation-api</artifactId>
                 </exclusion>
+                <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
+                <exclusion>
+                    <groupId>com.sun.mail</groupId>
+                    <artifactId>javax.mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.ws</groupId>
+                    <artifactId>jaxws-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -491,6 +513,10 @@
             <artifactId>activiti-spring</artifactId>
             <version>${dependency.activiti.version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.ws</groupId>
+                    <artifactId>jaxws-api</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-jdbc</artifactId>

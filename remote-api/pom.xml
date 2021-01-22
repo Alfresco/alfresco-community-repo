@@ -19,8 +19,8 @@
 
         <!-- Jakarta... -->
         <dependency>
-            <groupId>javax.xml</groupId>
-            <artifactId>jaxrpc-api</artifactId>
+            <groupId>jakarta.xml.rpc</groupId>
+            <artifactId>jakarta.xml.rpc-api</artifactId>
         </dependency>
 
         <dependency>

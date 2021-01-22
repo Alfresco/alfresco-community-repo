@@ -91,10 +91,10 @@
         <dependency.jakarta-activation-api.version>2.0.0</dependency.jakarta-activation-api.version>
         <dependency.jakarta-annotation-api.version>1.3.5</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
-        <dependency.jakarta-jws-api.version>1.1.1</dependency.jakarta-jws-api.version>
-        <dependency.jakarta-mail-api.version>1.6.2</dependency.jakarta-mail-api.version>
-        <dependency.jakarta-json-api.version>1.1.4</dependency.jakarta-json-api.version>
-        <dependency.jakarta-rpc-api.version>1.1</dependency.jakarta-rpc-api.version>
+        <dependency.jakarta-jws-api.version>2.1.0</dependency.jakarta-jws-api.version>
+        <dependency.jakarta-mail-api.version>1.6.5</dependency.jakarta-mail-api.version>
+        <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
+        <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.0-M1</alfresco.aos-module.version>
@@ -191,32 +191,35 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>javax.mail-api</artifactId>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
                 <version>${dependency.jakarta-mail-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
-                <artifactId>javax.mail</artifactId>
+                <artifactId>jakarta.mail</artifactId>
                 <version>${dependency.jakarta-mail-api.version}</version>
-                <exclusions>
-                    <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
-                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
+                <groupId>jakarta.json</groupId>
+                <artifactId>jakarta.json-api</artifactId>
+                <version>${dependency.jakarta-json-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.json</artifactId>
+                <artifactId>jakarta.json</artifactId>
                 <version>${dependency.jakarta-json-api.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>javax.xml</groupId>
-                <artifactId>jaxrpc-api</artifactId>
+                <groupId>jakarta.xml.rpc</groupId>
+                <artifactId>jakarta.xml.rpc-api</artifactId>
+                <version>${dependency.jakarta-rpc-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.rpc</groupId>
+                <artifactId>jaxrpc-impl</artifactId>
                 <version>${dependency.jakarta-rpc-api.version}</version>
             </dependency>
 

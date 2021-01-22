@@ -86,10 +86,10 @@
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
 
         <dependency.javax-jaxb-api.version>2.3.3</dependency.javax-jaxb-api.version>
-        <!--<dependency.javax-ws-api.version></dependency.javax-ws-api.version>-->
+        <dependency.javax-ws-api.version>2.3.1</dependency.javax-ws-api.version>
         <dependency.javax-soap-api.version>1.4.0</dependency.javax-soap-api.version>
         <dependency.jakarta-activation-api.version>2.0.0</dependency.jakarta-activation-api.version>
-        <dependency.javax-annotation-api.version>1.3.5</dependency.javax-annotation-api.version>
+        <dependency.jakarta-annotation-api.version>1.3.5</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
         <dependency.javax-jws-api.version>1.1.1</dependency.javax-jws-api.version>
         <dependency.javax-mail-api.version>1.6.2</dependency.javax-mail-api.version>
@@ -154,20 +154,17 @@
                 <version>${dependency.javax-jaxb-api.version}</version>
             </dependency>
 
-
-
-
+            <dependency>
+                <groupId>javax.xml.ws</groupId>
+                <artifactId>jaxws-api</artifactId>
+                <version>${dependency.javax-ws-api.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>javax.xml.soap</groupId>
                 <artifactId>javax.xml.soap-api</artifactId>
                 <version>${dependency.javax-soap-api.version}</version>
             </dependency>
-
-
-
-
-
 
             <dependency>
                 <groupId>com.sun.activation</groupId>
@@ -178,7 +175,7 @@
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
-                <version>${dependency.javax-annotation-api.version}</version>
+                <version>${dependency.jakarta-annotation-api.version}</version>
             </dependency>
 
             <dependency>
@@ -193,6 +190,11 @@
                 <version>${dependency.javax-jws-api.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>javax.mail-api</artifactId>
+                <version>${dependency.javax-mail-api.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>javax.mail</artifactId>
@@ -232,6 +234,13 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-heartbeat-data-sender</artifactId>
                 <version>${dependency.alfresco-hb-data-sender.version}</version>
+                <exclusions>
+                    <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>xalan</groupId>

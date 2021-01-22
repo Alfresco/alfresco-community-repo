@@ -26,11 +26,6 @@
             <artifactId>alfresco-core</artifactId>
             <version>${project.version}</version>
             <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>jta</artifactId>
-                </exclusion>
                 <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
                 <exclusion>
                     <groupId>javax.xml.bind</groupId>
@@ -727,11 +722,6 @@
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>jta</artifactId>
-                </exclusion>
                 <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
                 <exclusion>
                     <groupId>javax.xml.bind</groupId>
@@ -763,16 +753,6 @@
             <artifactId>alfresco-data-model</artifactId>
             <version>${project.version}</version>
             <exclusions>
-                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
-                <exclusion>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
-                </exclusion>
-                <!-- Duplicate classes from jakarta.annotation:jakarta.annotation-api-->
-                <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
-                </exclusion>
                 <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031)-->
                 <exclusion>
                   <groupId>org.apache.geronimo.specs</groupId>

@@ -41,14 +41,12 @@
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>javax.mail-api</artifactId>
-            <version>${dependency.javax.mail.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <version>${dependency.javax.mail.version}</version>
         </dependency>
 
         <dependency>

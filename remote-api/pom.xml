@@ -141,11 +141,6 @@
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>jta</artifactId>
-                </exclusion>
                 <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
                 <exclusion>
                     <groupId>javax.xml.bind</groupId>

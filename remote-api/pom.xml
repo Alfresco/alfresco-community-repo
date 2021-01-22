@@ -60,11 +60,6 @@
             <artifactId>chemistry-opencmis-test-tck</artifactId>
             <version>${dependency.opencmis.version}</version>
             <exclusions>
-                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
-                <exclusion>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
-                </exclusion>
                 <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
                 <exclusion>
                   <groupId>org.apache.geronimo.specs</groupId>
@@ -152,6 +147,11 @@
             <version>2.0</version>
             <scope>test</scope>
             <exclusions>
+              <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+              <exclusion>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-jta_1.1_spec</artifactId>
+              </exclusion>
               <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>

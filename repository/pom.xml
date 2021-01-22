@@ -15,18 +15,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031)-->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -36,18 +24,6 @@
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>spring-surf-core-configservice</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-core</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

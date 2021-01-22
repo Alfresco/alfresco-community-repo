@@ -35,13 +35,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-heartbeat-data-sender</artifactId>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -57,10 +50,6 @@
         </dependency>
 
         <!-- Jakarta... -->
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>jakarta.xml.ws</groupId>
             <artifactId>jakarta.xml.ws-api</artifactId>
@@ -476,6 +465,14 @@
                     <groupId>javax.xml.bind</groupId>
                     <artifactId>jaxb-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                </exclusion>
                 <!-- Duplicates classes from org.jboss.spec.javax.rmi:jboss-rmi-api and org.jacorb:jacorb-omgapi -->
                 <exclusion>
                     <groupId>org.glassfish.corba</groupId>
@@ -544,6 +541,14 @@
                 <exclusion>
                     <groupId>javax.xml.bind</groupId>
                     <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
                 </exclusion>
                 <!-- Duplicates classes from org.jboss.spec.javax.rmi:jboss-rmi-api and org.jacorb:jacorb-omgapi -->
                 <exclusion>
@@ -754,13 +759,6 @@
             <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>

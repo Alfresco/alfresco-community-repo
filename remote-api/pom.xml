@@ -82,7 +82,6 @@
         <dependency>
             <groupId>javax.xml</groupId>
             <artifactId>jaxrpc-api</artifactId>
-            <version>1.1</version>
         </dependency>
 
         <!-- This is needed at runtime by Web Client, so not really a test dependency -->

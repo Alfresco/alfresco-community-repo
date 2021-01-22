@@ -72,9 +72,7 @@
         <dependency.xercesImpl.version>2.12.1</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
         <dependency.gytheio.version>0.12</dependency.gytheio.version>
-        <dependency.jaxb.version>2.3.3</dependency.jaxb.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
-        <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
         <dependency.tika.version>1.25</dependency.tika.version>
         <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
@@ -87,6 +85,17 @@
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
 
+        <dependency.javax-jaxb-api.version>2.3.3</dependency.javax-jaxb-api.version>
+        <!--<dependency.javax-ws-api.version></dependency.javax-ws-api.version>-->
+        <dependency.javax-soap-api.version>1.4.0</dependency.javax-soap-api.version>
+        <dependency.jakarta-activation-api.version>2.0.0</dependency.jakarta-activation-api.version>
+        <dependency.javax-annotation-api.version>1.3.5</dependency.javax-annotation-api.version>
+        <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
+        <dependency.javax-jws-api.version>1.1.1</dependency.javax-jws-api.version>
+        <dependency.javax-mail-api.version>1.6.2</dependency.javax-mail-api.version>
+        <dependency.javax-json-api.version>1.1.4</dependency.javax-json-api.version>
+        <dependency.javax-rpc-api.version>1.1</dependency.javax-rpc-api.version>
+
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.0-M1</alfresco.aos-module.version>
 
@@ -95,7 +104,6 @@
         <dependency.mariadb.version>2.7.1</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.41</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
         <dependency.tas-restapi.version>1.51</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.26</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
@@ -124,6 +132,92 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Javax... -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${dependency.javax-jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>2.3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${dependency.javax-jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${dependency.javax-jaxb-api.version}</version>
+            </dependency>
+
+
+
+
+
+            <dependency>
+                <groupId>javax.xml.soap</groupId>
+                <artifactId>javax.xml.soap-api</artifactId>
+                <version>${dependency.javax-soap-api.version}</version>
+            </dependency>
+
+
+
+
+
+
+            <dependency>
+                <groupId>com.sun.activation</groupId>
+                <artifactId>jakarta.activation</artifactId>
+                <version>${dependency.jakarta-activation-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${dependency.javax-annotation-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${dependency.jakarta-transaction-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>${dependency.javax-jws-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
+                <version>${dependency.javax-mail-api.version}</version>
+                <exclusions>
+                    <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+                <version>${dependency.javax-json-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.xml</groupId>
+                <artifactId>jaxrpc-api</artifactId>
+                <version>${dependency.javax-rpc-api.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-jlan-embed</artifactId>
@@ -248,11 +342,7 @@
                 <artifactId>commons-fileupload</artifactId>
                 <version>1.4</version>
             </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${dependency.jaxb.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -375,11 +465,6 @@
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jaxb-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>2.3.3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
@@ -543,12 +628,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.json</artifactId>
-                <version>${dependency.javax.json.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>restapi</artifactId>
                 <version>${dependency.tas-restapi.version}</version>
@@ -583,11 +662,6 @@
                 <artifactId>dataprep</artifactId>
                 <version>${dependency.tas-dataprep.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.transaction</groupId>
-                <artifactId>jakarta.transaction-api</artifactId>
-                <version>1.3.3</version>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>

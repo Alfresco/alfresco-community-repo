@@ -263,15 +263,6 @@
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
                 </exclusion>
-                <!-- Duplicate classes from com.sun.xml.bind:jaxb-core-->
-                <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>txw2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.istack</groupId>
-                    <artifactId>istack-commons-runtime</artifactId>
-                </exclusion>
                 <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
                 <exclusion>
                     <groupId>org.apache.geronimo.specs</groupId>

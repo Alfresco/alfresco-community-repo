@@ -52,6 +52,7 @@ import org.alfresco.rest.api.tests.TestSites;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.data.Action;
+import org.alfresco.rest.api.tests.client.data.Aspect;
 import org.alfresco.rest.api.tests.client.data.Activities;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.AuditApp;
@@ -133,7 +134,8 @@ public class PublicApiClient
     private RawProxy rawProxy;
     private AuditApps auditApps;
     private Actions actions;
-    
+    private Aspects aspects;
+
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -159,6 +161,7 @@ public class PublicApiClient
         rawProxy = new RawProxy();
         auditApps = new AuditApps();
         actions = new Actions();
+        aspects = new Aspects();
     }
 
     public void setRequestContext(RequestContext rc)
@@ -234,7 +237,12 @@ public class PublicApiClient
     {
         return actions;
     }
-    
+
+    public Aspects aspects()
+    {
+        return aspects;
+    }
+
     public CmisSession createPublicApiCMISSession(Binding binding, String version)
     {
        return createPublicApiCMISSession(binding, version, null);
@@ -1667,6 +1675,20 @@ public class PublicApiClient
         public void removeNodeRating(String nodeId, NodeRating rating) throws PublicApiException
         {
             remove("nodes", nodeId, "ratings", rating.getId(), "Failed to remove node rating");
+        }
+    }
+
+    public class Aspects extends AbstractProxy {
+        public PublicApiClient.ListResponse<Aspect> getAspects(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("aspects", null, null, null, params, "Failed to get aspects");
+            return Aspect.parseAspects(response.getJsonResponse());
+        }
+
+        public Aspect getAspect(String aspectId) throws PublicApiException
+        {
+            HttpResponse response = getAll("aspects", aspectId, null, null, null, "Failed to get aspects");
+            return Aspect.parseAspect(response.getJsonResponse());
         }
     }
 

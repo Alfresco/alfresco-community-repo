@@ -29,10 +29,12 @@ package org.alfresco.rest.api.impl;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.NodeDefinitionMapper;
-import org.alfresco.rest.api.model.*;
+import org.alfresco.rest.api.model.Aspect;
+import org.alfresco.rest.api.model.NodeDefinitionProperty;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -44,27 +46,23 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AspectsImpl implements Aspects
 {
 
     static String PARAM_MODEL_IDS = "modelIds";
-    static String PARAM_CUSTOM_MODEL_ONLY = "customModelOnly";
+    static String PARAM_URI_PREFIX = "uriPrefix";
 
     protected DictionaryService dictionaryService;
-    protected CustomModelsImpl customModels;
     protected NamespacePrefixResolver namespaceService;
     protected NodeDefinitionMapper nodeDefinitionMapper;
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-
-    public void setCustomModels(CustomModelsImpl customModels)
-    {
-        this.customModels = customModels;
     }
 
     public void setNamespaceService(NamespacePrefixResolver namespaceService)
@@ -80,7 +78,6 @@ public class AspectsImpl implements Aspects
     public void init()
     {
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
-        PropertyCheck.mandatory(this, "customModels", customModels);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeDefinitionMapper", nodeDefinitionMapper);
     }
@@ -90,42 +87,37 @@ public class AspectsImpl implements Aspects
     public CollectionWithPagingInfo<Aspect> listAspects(Parameters params)
     {
         Paging paging = params.getPaging();
+        AspectsFilter query = getQuery(params.getQuery());
 
-        MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(new HashSet<>(Arrays.asList(PARAM_CUSTOM_MODEL_ONLY, PARAM_MODEL_IDS)), null);;
-        QueryHelper.walk(params.getQuery(), propertyWalker);
-
-        String queryIds = propertyWalker.getProperty(PARAM_MODEL_IDS, WhereClauseParser.EQUALS, String.class);
-        String[] ids = queryIds != null ? queryIds.split(",") : null;
-
-        Boolean customModelOnly = propertyWalker.getProperty(PARAM_CUSTOM_MODEL_ONLY, WhereClauseParser.EQUALS, Boolean.class);
-
-        if(customModelOnly != null && customModelOnly)
+        Stream<QName> aspectList = null;
+        if(query != null && query.getModelIds() != null)
         {
-            List<Aspect> allAspects = this.customModels.getCustomModels(params).getCollection().stream().map(CustomModel::getAspects)
-                    .flatMap(Collection::stream)
-                    .map(customAspect -> listAspectById(customAspect.getPrefixedName()))
-                    .collect(Collectors.toList());
-            return createPagedResult(allAspects, paging);
-        }
-
-        Collection<QName> aspectList = null;
-        if(ids != null)
-        {
-            aspectList = Arrays.stream(ids)
+            aspectList = query.getModelIds().parallelStream()
                     .map((prefixedName) -> {
                         ModelDefinition modelDefinition = this.dictionaryService.getModel(QName.createQName(prefixedName));
                         return this.dictionaryService.getAspects(modelDefinition.getName());
                     })
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
+                    .flatMap(Collection::parallelStream);
         }
         else
         {
-            aspectList = this.dictionaryService.getAllAspects();
+            aspectList = this.dictionaryService.getAllAspects().parallelStream();
         }
 
-        List<Aspect> allAspects = aspectList.parallelStream()
+        List<Aspect> allAspects = aspectList
                 .filter((qName) -> !qName.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
+                .filter((qName) -> {
+                    if (query != null && query.getMatchedPrefix() != null)
+                    {
+                        return Pattern.matches(query.getMatchedPrefix(), qName.getNamespaceURI());
+                    }
+
+                    if (query != null && query.getNotMatchedPrefix() != null)
+                    {
+                       return  !Pattern.matches(query.getNotMatchedPrefix(), qName.getNamespaceURI());
+                    }
+                    return  true;
+                })
                 .map((qName) -> this.convertToAspect(dictionaryService.getAspect(qName)))
                 .collect(Collectors.toList());
 
@@ -143,6 +135,17 @@ public class AspectsImpl implements Aspects
     {
         List<NodeDefinitionProperty> properties = this.nodeDefinitionMapper.fromAspectDefinition(aspectDefinition, dictionaryService).getProperties();
         return new Aspect(aspectDefinition, dictionaryService, properties);
+    }
+
+    AspectsFilter getQuery(Query queryParameters)
+    {
+        if (queryParameters != null)
+        {
+            AspectQueryWalker propertyWalker = new AspectQueryWalker();
+            QueryHelper.walk(queryParameters, propertyWalker);
+            return new AspectsFilter(propertyWalker.getModelIds(), propertyWalker.getMatchedPrefix(), propertyWalker.getNotMatchedPrefix());
+        }
+        return null;
     }
 
     private CollectionWithPagingInfo<Aspect> createPagedResult(List<Aspect> list, Paging paging)
@@ -165,6 +168,82 @@ public class AspectsImpl implements Aspects
 
             list = list.subList(skipCount, end);
             return CollectionWithPagingInfo.asPaged(paging, list, hasMoreItems, totalItems);
+        }
+    }
+
+    public static class AspectQueryWalker extends MapBasedQueryWalker
+    {
+        private String notMatchedPrefix = null;
+        private String matchedPrefix = null;
+
+        public AspectQueryWalker()
+        {
+            super(new HashSet<>(Collections.singleton(PARAM_MODEL_IDS)), new HashSet<>(Collections.singleton(PARAM_URI_PREFIX)));
+        }
+
+
+        @Override
+        public void matches(String property, String value, boolean negated)
+        {
+            if(negated && property.equals(PARAM_URI_PREFIX))
+            {
+                notMatchedPrefix = value;
+            }
+            else if (property.equals(PARAM_URI_PREFIX))
+            {
+                matchedPrefix = value;
+            }
+        }
+
+        public Set<String> getModelIds()
+        {
+            String paramModelId = getProperty(PARAM_MODEL_IDS, WhereClauseParser.EQUALS, String.class);
+            Set<String> modelIds = null;
+
+            if(paramModelId != null)
+            {
+                modelIds = new HashSet<>(Arrays.asList(paramModelId.split(",")));
+            }
+            return modelIds;
+        }
+
+        public String getNotMatchedPrefix()
+        {
+            return this.notMatchedPrefix;
+        }
+
+        public String getMatchedPrefix()
+        {
+            return this.matchedPrefix;
+        }
+    }
+
+    public static class AspectsFilter
+    {
+        private Set<String> modelIds;
+        private String matchedPrefix;
+        private String notMatchedPrefix;
+
+        public AspectsFilter(Set<String> modelIds, String matchedPrefix, String notMatchedPrefix)
+        {
+            this.modelIds = modelIds;
+            this.matchedPrefix = matchedPrefix;
+            this.notMatchedPrefix = notMatchedPrefix;
+        }
+
+        public Set<String> getModelIds()
+        {
+            return modelIds;
+        }
+
+        public String getMatchedPrefix()
+        {
+            return matchedPrefix;
+        }
+
+        public String getNotMatchedPrefix()
+        {
+            return notMatchedPrefix;
         }
     }
 }

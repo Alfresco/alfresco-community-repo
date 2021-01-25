@@ -1498,7 +1498,6 @@
 
     <bean id="aspects" class="org.alfresco.rest.api.impl.AspectsImpl">
         <property name="dictionaryService" ref="DictionaryService" />
-        <property name="customModels" ref="customModels"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="nodeDefinitionMapper" ref="nodeDefinitionMapper" />
     </bean>

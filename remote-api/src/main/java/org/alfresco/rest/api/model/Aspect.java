@@ -34,10 +34,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Aspect extends AbstractCommonDetails
+public class Aspect extends AbstractModel
 {
+    String parentId;
     List<NodeDefinitionProperty> properties = Collections.emptyList();
-    String parentName;
 
     public Aspect()
     {
@@ -45,11 +45,10 @@ public class Aspect extends AbstractCommonDetails
 
     public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup, List<NodeDefinitionProperty> properties)
     {
-        this.name = aspectDefinition.getName().getLocalName();
-        this.prefixedName = aspectDefinition.getName().toPrefixString();
+        this.id = aspectDefinition.getName().toPrefixString();
         this.title = aspectDefinition.getTitle(messageLookup);
         this.description = aspectDefinition.getDescription(messageLookup);
-        this.parentName = getParentNameAsString(aspectDefinition.getParentName());
+        this.parentId = getParentNameAsString(aspectDefinition.getParentName());
         this.properties = setList(properties);
     }
 
@@ -63,15 +62,15 @@ public class Aspect extends AbstractCommonDetails
         this.properties = properties;
     }
 
-    public String getParentName()
+    public String getParentId()
     {
-        return parentName;
+        return parentId;
     }
 
 
-    public void setParentName(String parentName)
+    public void setParentId(String parentId)
     {
-        this.parentName = parentName;
+        this.parentId = parentId;
     }
 
     <T> List<T> setList(List<T> sourceList)
@@ -96,11 +95,10 @@ public class Aspect extends AbstractCommonDetails
     public String toString()
     {
         StringBuilder builder = new StringBuilder(512);
-        builder.append("Aspect [name=").append(this.name)
-                .append(", prefixedName=").append(this.prefixedName)
+        builder.append("Aspect [id=").append(this.id)
                 .append(", title=").append(this.title)
                 .append(", description=").append(this.description)
-                .append(", parentName=").append(parentName)
+                .append(", parentId=").append(parentId)
                 .append(", properties=").append(properties)
                 .append(']');
         return builder.toString();

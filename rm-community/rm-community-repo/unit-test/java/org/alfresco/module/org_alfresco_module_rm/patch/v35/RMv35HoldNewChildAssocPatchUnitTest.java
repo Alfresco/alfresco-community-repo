@@ -27,11 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +47,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -56,16 +62,16 @@ import org.mockito.MockitoAnnotations;
 public class RMv35HoldNewChildAssocPatchUnitTest
 {
     @Mock
-    private FilePlanService filePlanService;
+    private FilePlanService mockFilePlanService;
 
     @Mock
-    private HoldService holdService;
+    private HoldService mockHoldService;
 
     @Mock
-    private NodeService nodeService;
+    private NodeService mockNodeService;
 
     @Mock
-    private BehaviourFilter behaviourFilter;
+    private BehaviourFilter mockBehaviourFilter;
 
     @InjectMocks
     private RMv35HoldNewChildAssocPatch patch;
@@ -100,34 +106,53 @@ public class RMv35HoldNewChildAssocPatchUnitTest
     @Test
     public void testAHoldIsRemovedAndReplacedDuringUpgrade()
     {
-        when(filePlanService.getFilePlans()).thenReturn(fileplans);
-        when(holdService.getHolds(filePlanRef)).thenReturn(holds);
+        when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
+        when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
         when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
-        when(nodeService.getChildAssocs(holdRef)).thenReturn(childAssocs);
+        when(mockNodeService.getChildAssocs(holdRef)).thenReturn(childAssocs);
         patch.applyInternal();
-        verify(holdService, times(1)).removeFromHold(holdRef, heldItemRef);
-        verify(holdService, times(1)).addToHold(holdRef, heldItemRef);
+        verify(mockHoldService, times(1)).removeFromHold(holdRef, heldItemRef);
+        verify(mockHoldService, times(1)).addToHold(holdRef, heldItemRef);
     }
 
     @Test
-    public void patchRunWithSuccessWhenNoHoldEntries()
+    public void patchRunWithSuccessWhenNoHoldChilds()
     {
-        //no holds
         List<NodeRef> holdList = new ArrayList<>();
-        when(filePlanService.getFilePlans()).thenReturn(fileplans);
-        when(holdService.getHolds(filePlanRef)).thenReturn(holdList);
-
-        verify(holdService, times(0)).removeFromHold(holdRef, heldItemRef);
-        verify(holdService, times(0)).addToHold(holdRef, heldItemRef);
-
-        //child assocs
         holdList.add(holdRef);
         when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
-        when(nodeService.getChildAssocs(holdRef)).thenReturn(new ArrayList<>());
+        when(mockNodeService.getChildAssocs(holdRef)).thenReturn(new ArrayList<>());
         patch.applyInternal();
-        verify(holdService, times(0)).removeFromHold(holdRef, heldItemRef);
-        verify(holdService, times(0)).addToHold(holdRef, heldItemRef);
+
+        verify(mockHoldService, times(0)).removeFromHold(holdRef, heldItemRef);
+        verify(mockHoldService, times(0)).addToHold(holdRef, heldItemRef);
 
     }
 
+    @Test
+    public void patchRunWithSuccessWhenNoHolds()
+    {
+        //no holds
+        List<NodeRef> holdList = new ArrayList<>();
+        when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
+        when(mockHoldService.getHolds(filePlanRef)).thenReturn(holdList);
+        patch.applyInternal();
+
+        verify(mockHoldService, times(0)).removeFromHold(holdRef, heldItemRef);
+        verify(mockHoldService, times(0)).addToHold(holdRef, heldItemRef);
+    }
+
+    @Test
+    public void patchRunWithSuccessWhenNoFilePlan()
+    {
+        // given
+        doReturn(Collections.EMPTY_SET).when(mockFilePlanService).getFilePlans();
+
+        // when
+        patch.applyInternal();
+
+        // then
+        verifyZeroInteractions(mockHoldService);
+        verify(mockNodeService, times(0)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
+    }
 }

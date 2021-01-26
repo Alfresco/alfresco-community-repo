@@ -8,7 +8,6 @@
     <select id="select_GetArchivedNodesCannedQuery" parameterType="ArchivedNodes" resultMap="alfresco.node.result_ArchivedNodes">
         select
         <include refid="alfresco.node.select_GetAllArchivedNodesCannedQuery"/>
-        <if test="offset != 0">offset ${offset}</if>
         <if test="limit != 0">limit ${limit}</if>
     </select>
 

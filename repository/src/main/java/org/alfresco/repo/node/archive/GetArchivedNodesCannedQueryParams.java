@@ -37,8 +37,6 @@ public class GetArchivedNodesCannedQueryParams extends ArchivedNodeEntity
 
     private int limit;
 
-    private int offset;
-
     /**
      *
      * @param parentNodeId Long
@@ -72,28 +70,6 @@ public class GetArchivedNodesCannedQueryParams extends ArchivedNodeEntity
         this(parentNodeId, assocTypeQNameId, filter, filterIgnoreCase, nameQNameId,
                 sortOrderAscending);
         this.setLimit(limit);
-        this.setOffset(0);
-    }
-
-    /**
-     *
-     * @param parentNodeId
-     * @param assocTypeQNameId
-     * @param filter
-     * @param filterIgnoreCase
-     * @param nameQNameId
-     * @param sortOrderAscending
-     * @param limit
-     * @param offset
-     */
-    public GetArchivedNodesCannedQueryParams(Long parentNodeId, Long assocTypeQNameId,
-        String filter, Boolean filterIgnoreCase, Long nameQNameId, Boolean sortOrderAscending,
-        int limit, int offset)
-    {
-        this(parentNodeId, assocTypeQNameId, filter, filterIgnoreCase, nameQNameId,
-            sortOrderAscending);
-        this.setLimit(limit);
-        this.setOffset(offset);
     }
 
     public int getLimit()
@@ -104,16 +80,6 @@ public class GetArchivedNodesCannedQueryParams extends ArchivedNodeEntity
     public void setLimit(int limit)
     {
         this.limit = limit;
-    }
-
-    public int getOffset()
-    {
-        return offset;
-    }
-
-    public void setOffset(int offset)
-    {
-        this.offset = offset;
     }
 
 }

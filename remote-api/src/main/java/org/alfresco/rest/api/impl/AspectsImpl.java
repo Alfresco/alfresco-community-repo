@@ -173,10 +173,9 @@ public class AspectsImpl implements Aspects
 
     private Collection<QName> getChildAspects(String aspectId) {
         Collection<QName> subAspects = null;
-        QName parentAspect = QName.createQName(aspectId, this.namespaceService);
-
         try
         {
+            QName parentAspect = QName.createQName(aspectId, this.namespaceService);
             subAspects = this.dictionaryService.getSubAspects(parentAspect, true);
         }
         catch (NamespaceException exception)
@@ -222,7 +221,6 @@ public class AspectsImpl implements Aspects
         {
             int end = Math.min(skipCount + maxItems, totalItems);
             boolean hasMoreItems = totalItems > end;
-
             list = list.subList(skipCount, end);
             return CollectionWithPagingInfo.asPaged(paging, list, hasMoreItems, totalItems);
         }
@@ -252,7 +250,8 @@ public class AspectsImpl implements Aspects
             }
         }
 
-        private Set<String> parseProperty(String property){
+        private Set<String> parseProperty(String property)
+        {
             String propertyParam = getProperty(property, WhereClauseParser.EQUALS, String.class);
             Set<String> ids = null;
 

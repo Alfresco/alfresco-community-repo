@@ -157,7 +157,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     private void testListAspectException(String query) {
-        try {
+        try
+        {
             otherParams.put("where", query); // wrong model id
             publicApiClient.aspects().getAspects(createParams(paging, otherParams));
         }

@@ -117,7 +117,7 @@ public class AspectsImpl implements Aspects
     }
 
     @Override
-    public Aspect listAspectById(String aspectId)
+    public Aspect getAspectById(String aspectId)
     {
         if(aspectId == null)
             throw new InvalidArgumentException("aspectId is null");

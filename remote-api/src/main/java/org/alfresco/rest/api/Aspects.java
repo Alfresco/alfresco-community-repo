@@ -33,5 +33,5 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 public interface Aspects
 {
     CollectionWithPagingInfo<Aspect> listAspects(Parameters params);
-    Aspect listAspectById(String nameSpace);
+    Aspect getAspectById(String aspectId);
 }

@@ -60,8 +60,8 @@ public class AspectEntityResource implements EntityResourceAction.ReadById<Aspec
     }
 
     @Override
-    public Aspect readById(String id, Parameters parameters) throws EntityNotFoundException
+    public Aspect readById(String id, Parameters parameters)
     {
-        return aspects.listAspectById(id);
+        return aspects.getAspectById(id);
     }
 }

@@ -57,7 +57,8 @@ public class GetArchivedNodesCannedQuery extends AbstractCannedQueryPermissions<
     private CannedQueryDAO cannedQueryDAO;
     private NodeDAO nodeDAO;
 
-    public GetArchivedNodesCannedQuery(CannedQueryDAO cannedQueryDAO, NodeDAO nodeDAO, MethodSecurityBean<ArchivedNodeEntity> methodSecurity, CannedQueryParameters params)
+    public GetArchivedNodesCannedQuery(CannedQueryDAO cannedQueryDAO, NodeDAO nodeDAO,
+                MethodSecurityBean<ArchivedNodeEntity> methodSecurity, CannedQueryParameters params)
     {
         super(params, methodSecurity);
         this.cannedQueryDAO = cannedQueryDAO;
@@ -126,15 +127,27 @@ public class GetArchivedNodesCannedQuery extends AbstractCannedQueryPermissions<
     {
         Object paramBeanObj = super.getParameters().getParameterBean();
         if (paramBeanObj == null)
-            throw new NullPointerException("Null GetArchivedNodes query params");
+        {
+            throw new NullPointerException(
+                "Required parameters not provided for GetArchivedNodes canned query, unexpected null value for query params");
+        }
 
-        // Get parameters
         GetArchivedNodesCannedQueryParams paramBean = (GetArchivedNodesCannedQueryParams) paramBeanObj;
+        if (paramBean.getParentNodeId() == null)
+        {
+            throw new NullPointerException(
+                "Required parameters not provided for GetArchivedNodes canned queryUnexpected null value for parentNodeId");
+        }
 
-        long resultsRequired = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_SELECT_COUNT_ARCHIVED_NODES, paramBean);
+        Long totalResultCountLongValue = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_SELECT_COUNT_ARCHIVED_NODES, paramBean);
 
-        int totalResults = Integer.valueOf((int) resultsRequired);
-        return new Pair<>(totalResults, totalResults);
+        int totalResultCount = totalResultCountLongValue.intValue();
+        if (totalResultCount < 0)
+        {
+            totalResultCount = Integer.MAX_VALUE;
+        }
+
+        return new Pair<>(totalResultCount, totalResultCount);
     }
 
     @Override

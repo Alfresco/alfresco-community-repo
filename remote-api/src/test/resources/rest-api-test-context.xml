@@ -16,6 +16,7 @@
                 <value>models/custom-model.xml</value>
                 <value>models/bpmDelegateeModel.xml</value>
                 <value>models/people-api.xml</value>
+                <value>models/example-model.xml</value>
             </list>
         </property>
     </bean>

@@ -9,12 +9,12 @@
 
     <test name="Part3">
         <packages>
-            <package name="org.alfresco.rest.renditions.*"/>
-            <package name="org.alfresco.rest.sharedLinks.*"/>
-            <package name="org.alfresco.rest.sites.*"/>
-            <package name="org.alfresco.rest.tags.*"/>
-            <package name="org.alfresco.rest.trashcan.*"/>
-            <package name="org.alfresco.rest.workflow.*"/>
+<!--            <package name="org.alfresco.rest.renditions.*"/>-->
+<!--            <package name="org.alfresco.rest.sharedLinks.*"/>-->
+            <package name="org.alfresco.rest.sites.groups"/>
+<!--            <package name="org.alfresco.rest.tags.*"/>-->
+<!--            <package name="org.alfresco.rest.trashcan.*"/>-->
+<!--            <package name="org.alfresco.rest.workflow.*"/>-->
         </packages>
     </test>
 </suite>

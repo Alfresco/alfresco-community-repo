@@ -31,6 +31,7 @@ import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.NodeDefinitionMapper;
 import org.alfresco.rest.api.model.Aspect;
 import org.alfresco.rest.api.model.NodeDefinitionProperty;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -40,20 +41,26 @@ import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AspectsImpl implements Aspects
 {
-
     static String PARAM_MODEL_IDS = "modelIds";
+    static String PARAM_PARENT_IDS = "parentIds";
     static String PARAM_URI_PREFIX = "uriPrefix";
 
     protected DictionaryService dictionaryService;
@@ -88,46 +95,44 @@ public class AspectsImpl implements Aspects
     {
         Paging paging = params.getPaging();
         AspectsFilter query = getQuery(params.getQuery());
-
         Stream<QName> aspectList = null;
+
         if(query != null && query.getModelIds() != null)
         {
-            aspectList = query.getModelIds().parallelStream()
-                    .map((prefixedName) -> {
-                        ModelDefinition modelDefinition = this.dictionaryService.getModel(QName.createQName(prefixedName));
-                        return this.dictionaryService.getAspects(modelDefinition.getName());
-                    })
-                    .flatMap(Collection::parallelStream);
+            aspectList = query.getModelIds().parallelStream().map(this::getModelAspects).flatMap(Collection::parallelStream);
+        }
+        else if(query != null && query.getParentIds() != null)
+        {
+            aspectList = query.getParentIds().parallelStream().map(this::getChildAspects).flatMap(Collection::parallelStream);
         }
         else
         {
             aspectList = this.dictionaryService.getAllAspects().parallelStream();
         }
 
-        List<Aspect> allAspects = aspectList
-                .filter((qName) -> !qName.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
-                .filter((qName) -> {
-                    if (query != null && query.getMatchedPrefix() != null)
-                    {
-                        return Pattern.matches(query.getMatchedPrefix(), qName.getNamespaceURI());
-                    }
-
-                    if (query != null && query.getNotMatchedPrefix() != null)
-                    {
-                       return  !Pattern.matches(query.getNotMatchedPrefix(), qName.getNamespaceURI());
-                    }
-                    return  true;
-                })
+        List<Aspect> allAspects = aspectList.filter((qName) -> filterAspect(query, qName))
                 .map((qName) -> this.convertToAspect(dictionaryService.getAspect(qName)))
                 .collect(Collectors.toList());
-
         return createPagedResult(allAspects, paging);
     }
 
     @Override
-    public Aspect listAspectById(String prefixedName)
+    public Aspect listAspectById(String aspectId)
     {
-        AspectDefinition aspectDefinition = dictionaryService.getAspect(QName.createQName(prefixedName, this.namespaceService));
+        if(aspectId == null)
+            throw new InvalidArgumentException("aspectId is null");
+
+        AspectDefinition aspectDefinition = null;
+
+        try
+        {
+           aspectDefinition = dictionaryService.getAspect(QName.createQName(aspectId, this.namespaceService));
+        }
+        catch (NamespaceException exception)
+        {
+            throw new InvalidArgumentException(exception.getMessage());
+        }
+
         return this.convertToAspect(aspectDefinition);
     }
 
@@ -137,15 +142,67 @@ public class AspectsImpl implements Aspects
         return new Aspect(aspectDefinition, dictionaryService, properties);
     }
 
-    AspectsFilter getQuery(Query queryParameters)
+    public AspectsFilter getQuery(Query queryParameters)
     {
         if (queryParameters != null)
         {
             AspectQueryWalker propertyWalker = new AspectQueryWalker();
             QueryHelper.walk(queryParameters, propertyWalker);
-            return new AspectsFilter(propertyWalker.getModelIds(), propertyWalker.getMatchedPrefix(), propertyWalker.getNotMatchedPrefix());
+            return new AspectsFilter(propertyWalker.getModelIds(), propertyWalker.getParentIds(), propertyWalker.getMatchedPrefix(), propertyWalker.getNotMatchedPrefix());
         }
         return null;
+    }
+
+    private Collection<QName> getModelAspects(String modelId) {
+        ModelDefinition modelDefinition =  null;
+
+        if(modelId == null)
+            throw new InvalidArgumentException("modelId is null");
+
+        try
+        {
+            modelDefinition =  this.dictionaryService.getModel(QName.createQName(modelId, this.namespaceService));
+        }
+        catch (NamespaceException exception)
+        {
+            throw new InvalidArgumentException(exception.getMessage());
+        }
+
+        return this.dictionaryService.getAspects(modelDefinition.getName());
+    }
+
+    private Collection<QName> getChildAspects(String aspectId) {
+        Collection<QName> subAspects = null;
+        QName parentAspect = QName.createQName(aspectId, this.namespaceService);
+
+        try
+        {
+            subAspects = this.dictionaryService.getSubAspects(parentAspect, true);
+        }
+        catch (NamespaceException exception)
+        {
+            throw new InvalidArgumentException(exception.getMessage());
+        }
+
+        return subAspects;
+    }
+
+    private boolean filterAspect(AspectsFilter query, QName aspect)
+    {
+        // should not allow the system aspect
+        if (aspect.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI)) {
+            return false;
+        }
+
+        if (query != null && query.getMatchedPrefix() != null)
+        {
+            return Pattern.matches(query.getMatchedPrefix(), aspect.getNamespaceURI());
+        }
+        if (query != null && query.getNotMatchedPrefix() != null)
+        {
+            return  !Pattern.matches(query.getNotMatchedPrefix(), aspect.getNamespaceURI());
+        }
+        return  true;
     }
 
     private CollectionWithPagingInfo<Aspect> createPagedResult(List<Aspect> list, Paging paging)
@@ -178,7 +235,7 @@ public class AspectsImpl implements Aspects
 
         public AspectQueryWalker()
         {
-            super(new HashSet<>(Collections.singleton(PARAM_MODEL_IDS)), new HashSet<>(Collections.singleton(PARAM_URI_PREFIX)));
+            super(new HashSet<>(Arrays.asList(PARAM_MODEL_IDS, PARAM_PARENT_IDS)), new HashSet<>(Collections.singleton(PARAM_URI_PREFIX)));
         }
 
 
@@ -195,16 +252,25 @@ public class AspectsImpl implements Aspects
             }
         }
 
+        private Set<String> parseProperty(String property){
+            String propertyParam = getProperty(property, WhereClauseParser.EQUALS, String.class);
+            Set<String> ids = null;
+
+            if(propertyParam != null)
+            {
+                ids = new HashSet<>(Arrays.asList(propertyParam.trim().split(",")));
+            }
+            return ids;
+        }
+
         public Set<String> getModelIds()
         {
-            String paramModelId = getProperty(PARAM_MODEL_IDS, WhereClauseParser.EQUALS, String.class);
-            Set<String> modelIds = null;
+            return parseProperty(PARAM_MODEL_IDS);
+        }
 
-            if(paramModelId != null)
-            {
-                modelIds = new HashSet<>(Arrays.asList(paramModelId.split(",")));
-            }
-            return modelIds;
+        public Set<String> getParentIds()
+        {
+            return parseProperty(PARAM_PARENT_IDS);
         }
 
         public String getNotMatchedPrefix()
@@ -221,12 +287,14 @@ public class AspectsImpl implements Aspects
     public static class AspectsFilter
     {
         private Set<String> modelIds;
+        private Set<String> parentIds;
         private String matchedPrefix;
         private String notMatchedPrefix;
 
-        public AspectsFilter(Set<String> modelIds, String matchedPrefix, String notMatchedPrefix)
+        public AspectsFilter(Set<String> modelIds, Set<String> parentIds, String matchedPrefix, String notMatchedPrefix)
         {
             this.modelIds = modelIds;
+            this.parentIds = parentIds;
             this.matchedPrefix = matchedPrefix;
             this.notMatchedPrefix = notMatchedPrefix;
         }
@@ -244,6 +312,11 @@ public class AspectsImpl implements Aspects
         public String getNotMatchedPrefix()
         {
             return notMatchedPrefix;
+        }
+
+        public Set<String> getParentIds()
+        {
+            return parentIds;
         }
     }
 }

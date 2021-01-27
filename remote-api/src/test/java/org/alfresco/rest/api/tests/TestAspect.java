@@ -30,49 +30,143 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 public class TestAspect extends AbstractBaseApiTest {
 
     private PublicApiClient.Paging paging = getPaging(0, 10);
     PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Aspect> aspects = null;
+    org.alfresco.rest.api.tests.client.data.Aspect aspect, expectedModel = null;
     Map<String, String> otherParams = new HashMap<>();
 
     @Before
     public void setup() throws Exception {
         super.setup();
+        expectedModel = new org.alfresco.rest.api.tests.client.data.Aspect();
+        expectedModel.setId("mycompany:childAspect");
+        expectedModel.setTitle("Child Aspect");
+        expectedModel.setDescription("Child Aspect Description");
+        expectedModel.setParentId("smf:smartFolder");
     }
-
 
     @Test
-    public void testListAllAspects() throws PublicApiException {
+    public void testAllAspects() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertTrue(aspects.getPaging().getTotalItems() > 135);
+        assertTrue(aspects.getPaging().getHasMoreItems());
+
+        paging.setSkipCount(130);
+        paging.setMaxItems(50);
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertFalse(aspects.getPaging().getHasMoreItems());
+    }
+
+    @Test
+    public void filterAspectsByNamespace() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(uriPrefix matches('http://www.mycompany.com/model.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+        assertFalse(aspects.getPaging().getHasMoreItems());
+
+        otherParams.put("where", "(not uriPrefix matches('http://www.mycompany.com/model.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertTrue(aspects.getPaging().getTotalItems() > 130);
+        assertTrue(aspects.getPaging().getHasMoreItems());
+    }
+
+    @Test
+    public void filterAspectsByParentId() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(parentIds='smf:smartFolder')");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        aspects.getList().get(0).expected(expectedModel);
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+        assertFalse(aspects.getPaging().getHasMoreItems());
+    }
+
+    @Test
+    public void filterAspectsByModelId() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelIds='mycompany:exampleModel')"); // wrong model id
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+        assertFalse(aspects.getPaging().getHasMoreItems());
+    }
+
+    @Test
+    public void testAspectsById() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        aspect = publicApiClient.aspects().getAspect("mycompany:childAspect");
+        aspect.expected(expectedModel);
+    }
+
+    @Test
+    public void testListAspectByInvalidValue() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        testListAspectException("(modelIds='unknown:model,known:model')");
+        testListAspectException("(modelIds=' , , ')");
+        testListAspectException("(parentIds='unknown:aspect,known:aspect')");
+        testListAspectException("(parentIds=' , , ')");
+        testListAspectException("");
+        testListAspectException("(uriPrefix matches(' '))");
+        testListAspectException("(uriPrefix matches(' , , '))");
+    }
+
+    @Test
+    public void testGetAspectByInvalidValue() throws PublicApiException {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        testGetAspectExceptions("uknown:childAspect");
+        testGetAspectExceptions(" ");
+        testGetAspectExceptions(null);
+    }
+
+
+    private void testGetAspectExceptions(String aspectId) {
         try
         {
-            AuthenticationUtil.setRunAsUser(user1);
-            publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
-
-            aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-            assertTrue(aspects.getPaging().getTotalItems() > 135);
-            assertTrue(aspects.getPaging().getHasMoreItems());
-
-
-            otherParams.put("where", "()");
-            aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-            assertFalse(aspects.getPaging().getHasMoreItems());
+            publicApiClient.aspects().getAspect(aspectId);
         }
-        finally
+        catch (PublicApiException e)
         {
+            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
-
     }
+
+    private void testListAspectException(String query) {
+        try {
+            otherParams.put("where", query); // wrong model id
+            publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+        }
+    }
+
 
     @Override
     public String getScope() {

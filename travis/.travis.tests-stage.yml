@@ -40,6 +40,17 @@ jobs:
             - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
             - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
 
+    - name: "Enterprise Rest API Cluster Tests"
+      stage: Tests
+      install:
+        - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
+      before_script:
+        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-cluster.yml"
+        - bash scripts/waitForAlfrescoToStart.sh
+      script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=clusterTestSuite.xml -Dskip.automationtests=false
+      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+
     - name: "Enterprise Rest API WORM Tests"
       stage: Tests
       install:

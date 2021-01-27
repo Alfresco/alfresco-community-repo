@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import org.alfresco.rest.api.model.NodeDefinitionProperty;
+import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -89,7 +89,7 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         String title = (String) jsonObject.get("title");
         String description = (String) jsonObject.get("description");
         String parentId = (String) jsonObject.get("parentId");
-        List<NodeDefinitionProperty> properties = (List<NodeDefinitionProperty>) jsonObject.get("properties");
+        List<PropertyDefinition> properties = (List<PropertyDefinition>) jsonObject.get("properties");
 
         Aspect action = new Aspect();
         action.setId(id);

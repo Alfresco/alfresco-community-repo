@@ -25,9 +25,6 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.NodeDefinition;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 
 /**
@@ -35,9 +32,7 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
  *
  * @author gfertuso
  */
-public interface NodeDefinitionMapper
+public interface ClassDefinitionMapper
 {
-    NodeDefinition fromTypeDefinition(TypeDefinition typeDefinition, MessageLookup messageLookup);
-
-    NodeDefinition fromAspectDefinition(AspectDefinition aspectDefinition, MessageLookup messageLookup);
+    org.alfresco.rest.api.model.ClassDefinition fromDictionaryClassDefinition(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup);
 }

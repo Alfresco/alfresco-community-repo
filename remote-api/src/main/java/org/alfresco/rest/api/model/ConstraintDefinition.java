@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @author gfertuso
  */
-public class NodeDefinitionConstraint
+public class ConstraintDefinition
 {
     private String id;
     private String type;

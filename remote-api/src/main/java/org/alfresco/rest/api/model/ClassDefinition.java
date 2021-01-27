@@ -31,17 +31,17 @@ import java.util.List;
  *
  * @author gfertuso
  */
-public class NodeDefinition
+public class ClassDefinition
 {
     
-    List <NodeDefinitionProperty> properties;
+    List <PropertyDefinition> properties;
     
-    public List<NodeDefinitionProperty> getProperties() 
+    public List<PropertyDefinition> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(List<NodeDefinitionProperty> properties) 
+    public void setProperties(List<PropertyDefinition> properties)
     {
         this.properties = properties;
     }

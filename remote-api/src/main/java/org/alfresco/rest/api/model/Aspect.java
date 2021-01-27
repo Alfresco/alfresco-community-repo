@@ -37,13 +37,13 @@ import java.util.List;
 public class Aspect extends AbstractModel
 {
     String parentId;
-    List<NodeDefinitionProperty> properties = Collections.emptyList();
+    List<PropertyDefinition> properties = Collections.emptyList();
 
     public Aspect()
     {
     }
 
-    public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup, List<NodeDefinitionProperty> properties)
+    public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup, List<PropertyDefinition> properties)
     {
         this.id = aspectDefinition.getName().toPrefixString();
         this.title = aspectDefinition.getTitle(messageLookup);
@@ -52,12 +52,12 @@ public class Aspect extends AbstractModel
         this.properties = setList(properties);
     }
 
-    public List<NodeDefinitionProperty> getProperties()
+    public List<PropertyDefinition> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(List<NodeDefinitionProperty> properties)
+    public void setProperties(List<PropertyDefinition> properties)
     {
         this.properties = properties;
     }

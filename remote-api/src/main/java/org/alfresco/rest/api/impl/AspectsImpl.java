@@ -28,9 +28,9 @@ package org.alfresco.rest.api.impl;
 
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Aspects;
-import org.alfresco.rest.api.NodeDefinitionMapper;
+import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.model.Aspect;
-import org.alfresco.rest.api.model.NodeDefinitionProperty;
+import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -65,7 +65,7 @@ public class AspectsImpl implements Aspects
 
     protected DictionaryService dictionaryService;
     protected NamespacePrefixResolver namespaceService;
-    protected NodeDefinitionMapper nodeDefinitionMapper;
+    protected ClassDefinitionMapper classDefinitionMapper;
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -77,16 +77,16 @@ public class AspectsImpl implements Aspects
         this.namespaceService = namespaceService;
     }
 
-    public void setNodeDefinitionMapper(NodeDefinitionMapper nodeDefinitionMapper)
+    public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper)
     {
-        this.nodeDefinitionMapper = nodeDefinitionMapper;
+        this.classDefinitionMapper = classDefinitionMapper;
     }
 
     public void init()
     {
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
-        PropertyCheck.mandatory(this, "nodeDefinitionMapper", nodeDefinitionMapper);
+        PropertyCheck.mandatory(this, "classDefinitionMapper", classDefinitionMapper);
     }
 
 
@@ -138,7 +138,7 @@ public class AspectsImpl implements Aspects
 
     public Aspect convertToAspect(AspectDefinition aspectDefinition)
     {
-        List<NodeDefinitionProperty> properties = this.nodeDefinitionMapper.fromAspectDefinition(aspectDefinition, dictionaryService).getProperties();
+        List<PropertyDefinition> properties = this.classDefinitionMapper.fromDictionaryClassDefinition(aspectDefinition, dictionaryService).getProperties();
         return new Aspect(aspectDefinition, dictionaryService, properties);
     }
 

@@ -79,12 +79,12 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Activities;
-import org.alfresco.rest.api.NodeDefinitionMapper;
+import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.NodeDefinition;
+import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
@@ -214,7 +214,7 @@ public class NodesImpl implements Nodes
     private RetryingTransactionHelper retryingTransactionHelper;
     private LockService lockService;
     private VirtualStore smartStore; // note: remove as part of REPO-1173
-    private NodeDefinitionMapper nodeDefinitionMapper;
+    private ClassDefinitionMapper classDefinitionMapper;
 
     private enum Activity_Type
     {
@@ -328,9 +328,9 @@ public class NodesImpl implements Nodes
         this.smartStore = smartStore;
     }
     
-    public void setNodeDefinitionMapper(NodeDefinitionMapper nodeDefinitionMapper)
+    public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper)
     {
-        this.nodeDefinitionMapper = nodeDefinitionMapper;
+        this.classDefinitionMapper = classDefinitionMapper;
     }
 
     // excluded namespaces (aspects, properties, assoc types)
@@ -1041,8 +1041,8 @@ public class NodesImpl implements Nodes
 
         if (includeParam.contains(PARAM_INCLUDE_DEFINITION)) 
         {
-            NodeDefinition nodeDefinition = nodeDefinitionMapper.fromTypeDefinition(getTypeDefinition(nodeRef), dictionaryService);
-            node.setDefinition(nodeDefinition);
+            ClassDefinition classDefinition = classDefinitionMapper.fromDictionaryClassDefinition(getTypeDefinition(nodeRef), dictionaryService);
+            node.setDefinition(classDefinition);
         }
 
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,11 +26,19 @@
 
 package org.alfresco.rest.api.model;
 
-public abstract class AbstractModel implements Comparable<AbstractModel>
+import org.alfresco.service.namespace.QName;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public abstract class AbstractClass implements Comparable<AbstractClass>
 {
     String id;
     String title;
     String description;
+    String parentId;
+    List<PropertyDefinition> properties = Collections.emptyList();
 
     public String getId()
     {
@@ -62,6 +70,44 @@ public abstract class AbstractModel implements Comparable<AbstractModel>
         this.description = description;
     }
 
+    public String getParentId()
+    {
+        return parentId;
+    }
+
+    public void setParentId(String parentId)
+    {
+        this.parentId = parentId;
+    }
+
+    public List<PropertyDefinition> getProperties()
+    {
+        return properties;
+    }
+
+    public void setProperties(List<PropertyDefinition> properties)
+    {
+        this.properties = properties;
+    }
+
+    <T> List<T> setList(List<T> sourceList)
+    {
+        if (sourceList == null)
+        {
+            return Collections.<T> emptyList();
+        }
+        return new ArrayList<>(sourceList);
+    }
+
+    String getParentNameAsString(QName parentQName)
+    {
+        if (parentQName != null)
+        {
+            return parentQName.toPrefixString();
+        }
+        return null;
+    }
+
     @Override
     public int hashCode()
     {
@@ -82,7 +128,7 @@ public abstract class AbstractModel implements Comparable<AbstractModel>
     }
 
     @Override
-    public int compareTo(AbstractModel other)
+    public int compareTo(AbstractClass other)
     {
         return this.id.compareTo(other.getId());
     }

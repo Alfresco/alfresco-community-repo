@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,17 +28,11 @@ package org.alfresco.rest.api.model;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
-import org.alfresco.service.namespace.QName;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class Aspect extends AbstractModel
+public class Aspect extends AbstractClass
 {
-    String parentId;
-    List<PropertyDefinition> properties = Collections.emptyList();
-
     public Aspect()
     {
     }
@@ -50,45 +44,6 @@ public class Aspect extends AbstractModel
         this.description = aspectDefinition.getDescription(messageLookup);
         this.parentId = getParentNameAsString(aspectDefinition.getParentName());
         this.properties = setList(properties);
-    }
-
-    public List<PropertyDefinition> getProperties()
-    {
-        return properties;
-    }
-
-    public void setProperties(List<PropertyDefinition> properties)
-    {
-        this.properties = properties;
-    }
-
-    public String getParentId()
-    {
-        return parentId;
-    }
-
-
-    public void setParentId(String parentId)
-    {
-        this.parentId = parentId;
-    }
-
-    <T> List<T> setList(List<T> sourceList)
-    {
-        if (sourceList == null)
-        {
-            return Collections.<T> emptyList();
-        }
-        return new ArrayList<>(sourceList);
-    }
-
-    String getParentNameAsString(QName parentQName)
-    {
-        if (parentQName != null)
-        {
-            return parentQName.toPrefixString();
-        }
-        return null;
     }
 
     @Override

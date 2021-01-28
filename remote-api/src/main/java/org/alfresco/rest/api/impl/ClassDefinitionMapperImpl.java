@@ -50,7 +50,8 @@ public class ClassDefinitionMapperImpl implements ClassDefinitionMapper
 
 
     @Override
-    public ClassDefinition fromDictionaryClassDefinition(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup) {
+    public ClassDefinition fromDictionaryClassDefinition(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup)
+    {
         if (classDefinition == null)
         {
             throw new AlfrescoRuntimeException("Undefined ClassDefinition for the node");

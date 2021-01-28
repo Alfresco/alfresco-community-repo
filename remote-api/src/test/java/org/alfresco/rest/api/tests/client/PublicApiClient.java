@@ -1678,7 +1678,8 @@ public class PublicApiClient
         }
     }
 
-    public class Aspects extends AbstractProxy {
+    public class Aspects extends AbstractProxy
+    {
         public PublicApiClient.ListResponse<Aspect> getAspects(Map<String, String> params) throws PublicApiException
         {
             HttpResponse response = getAll("aspects", null, null, null, params, "Failed to get aspects");

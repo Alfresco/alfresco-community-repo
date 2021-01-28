@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,7 +40,8 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 
-public class TestAspect extends AbstractBaseApiTest {
+public class TestAspect extends AbstractBaseApiTest
+{
 
     private PublicApiClient.Paging paging = getPaging(0, 10);
     PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Aspect> aspects = null;
@@ -48,7 +49,8 @@ public class TestAspect extends AbstractBaseApiTest {
     Map<String, String> otherParams = new HashMap<>();
 
     @Before
-    public void setup() throws Exception {
+    public void setup() throws Exception
+    {
         super.setup();
         expectedModel = new org.alfresco.rest.api.tests.client.data.Aspect();
         expectedModel.setId("mycompany:childAspect");
@@ -58,7 +60,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void testAllAspects() throws PublicApiException {
+    public void testAllAspects() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -73,7 +76,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void filterAspectsByNamespace() throws PublicApiException {
+    public void filterAspectsByNamespace() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -89,7 +93,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void filterAspectsByParentId() throws PublicApiException {
+    public void filterAspectsByParentId() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -101,7 +106,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void filterAspectsByModelId() throws PublicApiException {
+    public void filterAspectsByModelId() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -112,7 +118,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void testAspectsById() throws PublicApiException {
+    public void testAspectsById() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -121,7 +128,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void testListAspectByInvalidValue() throws PublicApiException {
+    public void testListAspectByInvalidValue() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -135,7 +143,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
     @Test
-    public void testGetAspectByInvalidValue() throws PublicApiException {
+    public void testGetAspectByInvalidValue() throws PublicApiException
+    {
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
@@ -145,7 +154,8 @@ public class TestAspect extends AbstractBaseApiTest {
     }
 
 
-    private void testGetAspectExceptions(String aspectId) {
+    private void testGetAspectExceptions(String aspectId)
+    {
         try
         {
             publicApiClient.aspects().getAspect(aspectId);
@@ -156,7 +166,8 @@ public class TestAspect extends AbstractBaseApiTest {
         }
     }
 
-    private void testListAspectException(String query) {
+    private void testListAspectException(String query)
+    {
         try
         {
             otherParams.put("where", query); // wrong model id
@@ -170,7 +181,8 @@ public class TestAspect extends AbstractBaseApiTest {
 
 
     @Override
-    public String getScope() {
+    public String getScope()
+    {
         return "public";
     }
 }

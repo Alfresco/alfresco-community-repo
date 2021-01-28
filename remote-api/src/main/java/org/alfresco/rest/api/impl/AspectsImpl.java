@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -97,11 +97,11 @@ public class AspectsImpl implements Aspects
         AspectsFilter query = getQuery(params.getQuery());
         Stream<QName> aspectList = null;
 
-        if(query != null && query.getModelIds() != null)
+        if (query != null && query.getModelIds() != null)
         {
             aspectList = query.getModelIds().parallelStream().map(this::getModelAspects).flatMap(Collection::parallelStream);
         }
-        else if(query != null && query.getParentIds() != null)
+        else if (query != null && query.getParentIds() != null)
         {
             aspectList = query.getParentIds().parallelStream().map(this::getChildAspects).flatMap(Collection::parallelStream);
         }
@@ -119,7 +119,7 @@ public class AspectsImpl implements Aspects
     @Override
     public Aspect getAspectById(String aspectId)
     {
-        if(aspectId == null)
+        if (aspectId == null)
             throw new InvalidArgumentException("aspectId is null");
 
         AspectDefinition aspectDefinition = null;
@@ -153,10 +153,11 @@ public class AspectsImpl implements Aspects
         return null;
     }
 
-    private Collection<QName> getModelAspects(String modelId) {
+    private Collection<QName> getModelAspects(String modelId)
+    {
         ModelDefinition modelDefinition =  null;
 
-        if(modelId == null)
+        if (modelId == null)
             throw new InvalidArgumentException("modelId is null");
 
         try
@@ -171,7 +172,8 @@ public class AspectsImpl implements Aspects
         return this.dictionaryService.getAspects(modelDefinition.getName());
     }
 
-    private Collection<QName> getChildAspects(String aspectId) {
+    private Collection<QName> getChildAspects(String aspectId)
+    {
         Collection<QName> subAspects = null;
         try
         {
@@ -189,7 +191,8 @@ public class AspectsImpl implements Aspects
     private boolean filterAspect(AspectsFilter query, QName aspect)
     {
         // should not allow the system aspect
-        if (aspect.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI)) {
+        if (aspect.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
+        {
             return false;
         }
 
@@ -240,7 +243,7 @@ public class AspectsImpl implements Aspects
         @Override
         public void matches(String property, String value, boolean negated)
         {
-            if(negated && property.equals(PARAM_URI_PREFIX))
+            if (negated && property.equals(PARAM_URI_PREFIX))
             {
                 notMatchedPrefix = value;
             }
@@ -255,7 +258,7 @@ public class AspectsImpl implements Aspects
             String propertyParam = getProperty(property, WhereClauseParser.EQUALS, String.class);
             Set<String> ids = null;
 
-            if(propertyParam != null)
+            if (propertyParam != null)
             {
                 ids = new HashSet<>(Arrays.asList(propertyParam.trim().split(",")));
             }

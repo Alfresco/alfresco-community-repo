@@ -31,6 +31,7 @@ import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.model.Aspect;
 import org.alfresco.rest.api.model.PropertyDefinition;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -45,6 +46,7 @@ import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.util.PropertyCheck;
 
 import java.util.Arrays;
@@ -120,7 +122,7 @@ public class AspectsImpl implements Aspects
     public Aspect getAspectById(String aspectId)
     {
         if (aspectId == null)
-            throw new InvalidArgumentException("aspectId is null");
+            throw new InvalidArgumentException("Invalid parameter: unknown scheme specified");
 
         AspectDefinition aspectDefinition = null;
 
@@ -130,8 +132,11 @@ public class AspectsImpl implements Aspects
         }
         catch (NamespaceException exception)
         {
-            throw new InvalidArgumentException(exception.getMessage());
+            throw new EntityNotFoundException(aspectId);
         }
+
+        if (aspectDefinition == null)
+            throw new EntityNotFoundException(aspectId);
 
         return this.convertToAspect(aspectDefinition);
     }
@@ -195,7 +200,6 @@ public class AspectsImpl implements Aspects
         {
             return false;
         }
-
         if (query != null && query.getMatchedPrefix() != null)
         {
             return Pattern.matches(query.getMatchedPrefix(), aspect.getNamespaceURI());

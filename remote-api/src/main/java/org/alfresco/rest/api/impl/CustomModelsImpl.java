@@ -52,7 +52,7 @@ import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.dictionary.ValueDataTypeValidator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.CustomModels;
-import org.alfresco.rest.api.model.AbstractClassModel;
+import org.alfresco.rest.api.model.AbstractCustomClass;
 import org.alfresco.rest.api.model.AbstractCommonDetails;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.api.model.CustomModel;
@@ -331,9 +331,9 @@ public class CustomModelsImpl implements CustomModels
         }
     }
 
-    private void replacePrefix(List<? extends AbstractClassModel> existingTypesOrAspects, String modelOldNamespacePrefix, String modelNewNamespacePrefix)
+    private void replacePrefix(List<? extends AbstractCustomClass> existingTypesOrAspects, String modelOldNamespacePrefix, String modelNewNamespacePrefix)
     {
-        for(AbstractClassModel classModel : existingTypesOrAspects)
+        for(AbstractCustomClass classModel : existingTypesOrAspects)
         {
             // Type/Aspect's parent name
             String parentName = classModel.getParentName();
@@ -460,7 +460,7 @@ public class CustomModelsImpl implements CustomModels
         return updateTypeAspect(modelName, type, parameters);
     }
 
-    private <T extends AbstractClassModel> T updateTypeAspect(String modelName, T classDef, Parameters parameters)
+    private <T extends AbstractCustomClass> T updateTypeAspect(String modelName, T classDef, Parameters parameters)
     {
         // Check the current user is authorised to update the custom model
         validateCurrentUser();
@@ -476,7 +476,7 @@ public class CustomModelsImpl implements CustomModels
 
         ModelDetails existingModelDetails = new ModelDetails(getCustomModelImpl(modelName));
 
-        List<? extends AbstractClassModel> allClassDefs = isAspect ? existingModelDetails.getAspects() : existingModelDetails.getTypes();
+        List<? extends AbstractCustomClass> allClassDefs = isAspect ? existingModelDetails.getAspects() : existingModelDetails.getTypes();
 
         @SuppressWarnings("unchecked")
         T existingClassDef = (T) getObjectByName(allClassDefs, name);
@@ -1186,7 +1186,7 @@ public class CustomModelsImpl implements CustomModels
         m2Class.setParentName(parentPrefixedName);
     }
 
-    private void validateTypeAspectParent(AbstractClassModel typeAspect, CustomModel existingModel)
+    private void validateTypeAspectParent(AbstractCustomClass typeAspect, CustomModel existingModel)
     {
         String parentPrefixedName = typeAspect.getParentName();
         if (StringUtils.isBlank(parentPrefixedName))
@@ -1305,7 +1305,7 @@ public class CustomModelsImpl implements CustomModels
         }
     }
 
-    private void mergeProperties(AbstractClassModel existingDetails, AbstractClassModel newDetails, Parameters parameters, boolean isModelActive)
+    private void mergeProperties(AbstractCustomClass existingDetails, AbstractCustomClass newDetails, Parameters parameters, boolean isModelActive)
     {
         validateList(newDetails.getProperties(), "cmm.rest_api.properties_empty_null");
 
@@ -1386,7 +1386,7 @@ public class CustomModelsImpl implements CustomModels
         }
     }
 
-    private void deleteProperty(AbstractClassModel existingClassModel, String propertyName)
+    private void deleteProperty(AbstractCustomClass existingClassModel, String propertyName)
     {
         // Transform existing properties into a map
         Map<String, CustomModelProperty> existingProperties = transformToMap(existingClassModel.getProperties(), toNameFunction());
@@ -1427,9 +1427,9 @@ public class CustomModelsImpl implements CustomModels
         return result;
     }
 
-    private void validateTypeAspectDelete(Collection<? extends AbstractClassModel> list, String classPrefixedName)
+    private void validateTypeAspectDelete(Collection<? extends AbstractCustomClass> list, String classPrefixedName)
     {
-        for(AbstractClassModel acm : list)
+        for(AbstractCustomClass acm : list)
         {
             if(classPrefixedName.equals(acm.getParentName()))
             {

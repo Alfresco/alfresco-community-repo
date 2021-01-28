@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * @author Jamal Kaabi-Mofrad
  */
-public abstract class AbstractClassModel extends AbstractCommonDetails
+public abstract class AbstractCustomClass extends AbstractCommonDetails
 {
     /* package */String parentName;
     /* package */List<CustomModelProperty> properties = Collections.emptyList();

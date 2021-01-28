@@ -32,13 +32,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractClass implements Comparable<AbstractClass>
+public abstract class AbstractClass extends ClassDefinition implements Comparable<AbstractClass>
 {
     String id;
     String title;
     String description;
     String parentId;
-    List<PropertyDefinition> properties = Collections.emptyList();
 
     public String getId()
     {
@@ -78,16 +77,6 @@ public abstract class AbstractClass implements Comparable<AbstractClass>
     public void setParentId(String parentId)
     {
         this.parentId = parentId;
-    }
-
-    public List<PropertyDefinition> getProperties()
-    {
-        return properties;
-    }
-
-    public void setProperties(List<PropertyDefinition> properties)
-    {
-        this.properties = properties;
     }
 
     <T> List<T> setList(List<T> sourceList)

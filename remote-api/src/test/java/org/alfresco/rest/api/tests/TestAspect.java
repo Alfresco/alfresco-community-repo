@@ -148,13 +148,15 @@ public class TestAspect extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        testGetAspectExceptions("uknown:childAspect");
-        testGetAspectExceptions(" ");
-        testGetAspectExceptions(null);
+        testGetAspectExceptions("uknown:childAspect", HttpStatus.SC_NOT_FOUND);
+        testGetAspectExceptions("aspect:", HttpStatus.SC_NOT_FOUND);
+        testGetAspectExceptions("aspect", HttpStatus.SC_NOT_FOUND);
+        testGetAspectExceptions(" ", HttpStatus.SC_BAD_REQUEST);
+        testGetAspectExceptions(null, HttpStatus.SC_BAD_REQUEST);
     }
 
 
-    private void testGetAspectExceptions(String aspectId)
+    private void testGetAspectExceptions(String aspectId, int statusCode)
     {
         try
         {
@@ -162,7 +164,7 @@ public class TestAspect extends AbstractBaseApiTest
         }
         catch (PublicApiException e)
         {
-            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+            assertEquals(statusCode, e.getHttpResponse().getStatusCode());
         }
     }
 

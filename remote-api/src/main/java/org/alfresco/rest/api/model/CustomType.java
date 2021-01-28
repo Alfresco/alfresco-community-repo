@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 /**
  * @author Jamal Kaabi-Mofrad
  */
-public class CustomType extends AbstractClassModel
+public class CustomType extends AbstractCustomClass
 {
 
     public CustomType()

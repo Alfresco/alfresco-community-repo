@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 /**
  * @author Jamal Kaabi-Mofrad
  */
-public class CustomAspect extends AbstractClassModel
+public class CustomAspect extends AbstractCustomClass
 {
 
     public CustomAspect()

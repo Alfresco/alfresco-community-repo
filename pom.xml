@@ -542,8 +542,8 @@
       <activemq.version>5.15.8</activemq.version>
       <activemq.port1>61616</activemq.port1>
       <activemq.port2>5672</activemq.port2>
-
-      <share.client.contextPath>/share</share.client.contextPath>
+      <camel.mock.version>3.7.0</camel.mock.version>
+       <share.client.contextPath>/share</share.client.contextPath>
 
       <maven.javadoc.version>3.1.0</maven.javadoc.version>
       <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -643,6 +643,13 @@
          <groupId>javax.xml.bind</groupId>
          <artifactId>jaxb-api</artifactId>
          <version>${javax-jaxb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+     <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>camel-mock</artifactId>
+         <version>${camel.mock.version}</version>
          <scope>provided</scope>
       </dependency>
 

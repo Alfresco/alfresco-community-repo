@@ -532,8 +532,8 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>8.12</alfresco-spring-webscripts.version>
-      <api.explorer.version>7.0.0-M1</api.explorer.version>
+      <alfresco-spring-webscripts.version>8.15</alfresco-spring-webscripts.version>
+      <api.explorer.version>7.0.0-A3</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
 
@@ -542,7 +542,7 @@
       <activemq.version>5.15.8</activemq.version>
       <activemq.port1>61616</activemq.port1>
       <activemq.port2>5672</activemq.port2>
-
+      <camel.mock.version>3.7.0</camel.mock.version>
       <share.client.contextPath>/share</share.client.contextPath>
 
       <maven.javadoc.version>3.1.0</maven.javadoc.version>
@@ -645,7 +645,12 @@
          <version>${javax-jaxb.version}</version>
          <scope>provided</scope>
       </dependency>
-
+      <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>camel-mock</artifactId>
+         <version>${camel.mock.version}</version>
+         <scope>provided</scope>
+      </dependency>
       <dependency>
          <groupId>com.sun.xml.bind</groupId>
          <artifactId>jaxb-impl</artifactId>

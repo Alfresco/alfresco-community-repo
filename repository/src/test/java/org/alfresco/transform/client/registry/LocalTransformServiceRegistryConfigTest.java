@@ -28,6 +28,7 @@ package org.alfresco.transform.client.registry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractLocalTransform;
+import org.alfresco.repo.content.transform.LocalCombinedConfig;
 import org.alfresco.repo.content.transform.LocalPipelineTransform;
 import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
@@ -55,7 +56,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -69,7 +69,6 @@ import static org.junit.Assert.fail;
  */
 public class LocalTransformServiceRegistryConfigTest extends TransformServiceRegistryConfigTest
 {
-
     public static final String HARD_CODED_VALUE = "hard coded value";
 
     private class TestLocalTransformServiceRegistry extends LocalTransformServiceRegistry
@@ -260,7 +259,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
      */
     private void retrieveLocalTransformList(String path)
     {
-        CombinedConfig combinedConfig = new CombinedConfig(log);
+        CombinedConfig combinedConfig = new LocalCombinedConfig(log);
         combinedConfig.addLocalConfig(path);
         combinedConfig.register(registry);
         mapOfTransformOptions = combinedConfig.combinedTransformOptions;
@@ -643,14 +642,14 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     public void testPipelineAndFailover()
     {
         retrieveLocalTransformList("alfresco/local-transform-service-config-pipeline-and-failover-test.json");
-        registry.assertErrorLogged("Local transformer .* cannot have pipeline and failover sections.*pipeline-and-failover.*");
+        registry.assertErrorLogged("Transformer .* cannot have pipeline and failover sections.*pipeline-and-failover.*");
     }
 
     @Test
     public void testTEngineDuplicateNames()
     {
         retrieveLocalTransformList("alfresco/local-transform-service-config-dup-name-test.json");
-        registry.assertErrorLogged("Local T-Engine transformer names must be unique \\(pdfrenderer\\).*dup-name.*");
+        registry.assertErrorLogged("Local T-Engine transformer .* must be a unique name.*dup-name.*");
     }
 
     @Test

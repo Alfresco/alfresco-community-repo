@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.LocalPassThroughTransform;
-import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
 import org.alfresco.transform.client.model.config.TransformConfig;
@@ -58,8 +57,6 @@ import java.util.stream.Collectors;
 
 import static org.alfresco.repo.content.metadata.AsynchronousExtractor.isMetadataEmbedMimetype;
 import static org.alfresco.repo.content.metadata.AsynchronousExtractor.isMetadataExtractMimetype;
-import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.LOCAL_TRANSFORMER;
-import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.URL;
 
 /**
  * This class reads multiple T-Engine config and local files and registers them all with a registry as if they were all
@@ -74,13 +71,13 @@ public class CombinedConfig
 {
     private final Log log;
 
-    static class TransformAndItsOrigin
+    public static class TransformAndItsOrigin
     {
         final Transformer transformer;
         final String baseUrl;
         final String readFrom;
 
-        TransformAndItsOrigin(Transformer transformer, String baseUrl, String readFrom)
+        public TransformAndItsOrigin(Transformer transformer, String baseUrl, String readFrom)
         {
             this.transformer = transformer;
             this.baseUrl = baseUrl;
@@ -90,6 +87,16 @@ public class CombinedConfig
         public Transformer getTransformer()
         {
             return transformer;
+        }
+
+        public String getBaseUrl()
+        {
+            return baseUrl;
+        }
+
+        public String getReadFrom()
+        {
+            return readFrom;
         }
     }
 
@@ -270,7 +277,7 @@ public class CombinedConfig
         data.setTEngineCount(tEngineCount);
         data.setFileCount(configFileFinder.getFileCount());
 
-        combinedTransformers = removeOverriddenOrInvalidTransformers(combinedTransformers, registry);
+        combinedTransformers = removeInvalidTransformers(combinedTransformers, registry);
         combinedTransformers = sortTransformers(combinedTransformers);
         addWildcardSupportedSourceAndTarget(combinedTransformers);
 
@@ -280,22 +287,16 @@ public class CombinedConfig
     }
 
     /**
-     * Discards transformers that have been overridden. If the overridden transform is from a T-Engine and the
-     * overriding transform is not a pipeline or a failover we also copy the {@code baseUrl} from the overridden
-     * transform so that the original T-Engine will still be called.
+     * Discards transformers that are invalid (e.g. transformers that have both pipeline and failover sections). Also
+     * calls {@link #removeInvalidTransformer(int, List, TransformServiceRegistryImpl, TransformAndItsOrigin, Transformer, String, String, boolean, boolean)} for each
+     * transform, so that subclasses (for LocalTransforms), may also discard invalid transforms or overridden
+     * transforms.
      *
-     * <p>Checks for and logs error conditions:</p>
-     * <ul>
-     *     <li>T-Engines with the same name</li>
-     *     <li>transformers indicating they are both a pipeline and a failover</li>
-     *     <li>baseUrl has not been specified on a T-Engine transform</li>
-     * </ul>
-     *
-     * @param combinedTransformers the list of transformers in the order they were read.
-     * @param registry that provides the log for errors.
+     * @param combinedTransformers the full list of transformers in the order they were read.
+     * @param registry that wil hold the transforms.
      */
-    private static List<TransformAndItsOrigin> removeOverriddenOrInvalidTransformers(List<TransformAndItsOrigin> combinedTransformers,
-                                                                                     TransformServiceRegistryImpl registry)
+    private List<TransformAndItsOrigin> removeInvalidTransformers(List<TransformAndItsOrigin> combinedTransformers,
+                                                                  TransformServiceRegistryImpl registry)
     {
         for (int i=0; i<combinedTransformers.size(); i++)
         {
@@ -305,56 +306,30 @@ public class CombinedConfig
                 Transformer transformer = transformAndItsOrigin.transformer;
                 String readFrom = transformAndItsOrigin.readFrom;
                 String name = transformer.getTransformerName();
-
-                if (name == null || "".equals(name.trim()))
-                {
-                    throw new IllegalArgumentException("Local transformer names may not be null. Read from " + readFrom);
-                }
-
                 List<TransformStep> pipeline = transformer.getTransformerPipeline();
                 List<String> failover = transformer.getTransformerFailover();
                 boolean isPipeline = pipeline != null && !pipeline.isEmpty();
                 boolean isFailover = failover != null && !failover.isEmpty();
-                boolean isOneStepTransform = !isPipeline && !isFailover && !name.equals(LocalPassThroughTransform.NAME);
 
                 if (isPipeline && isFailover)
                 {
-                    throw new IllegalArgumentException("Local transformer " + name +
+                    throw new IllegalArgumentException("Transformer " + transformerName(name) +
                             " cannot have pipeline and failover sections. Read from " + readFrom);
                 }
 
-                // Check to see if the name has been used before.
-                int j = lastIndexOf(name, combinedTransformers, i);
-                String baseUrl = transformAndItsOrigin.baseUrl;
-                if (registry instanceof LocalTransformServiceRegistry)
-                {
-                    baseUrl = ((LocalTransformServiceRegistry)registry).getBaseUrlIfTesting(name, baseUrl);
-                    transformAndItsOrigin = new TransformAndItsOrigin(transformer, baseUrl, readFrom);
-                    combinedTransformers.set(i, transformAndItsOrigin);
-                }
-                if (j >= 0)
-                {
-                    if (baseUrl != null) // If a T-Engine, else it is an override
-                    {
-                        throw new IllegalArgumentException("Local T-Engine transformer names must be unique (" +
-                                name + "). Read from " + readFrom);
-                    }
+                // Local transforms may override each other or be invalid
+                int indexToRemove = removeInvalidTransformer(i, combinedTransformers, registry, transformAndItsOrigin,
+                        transformer, name, readFrom, isPipeline, isFailover);
 
-                    if (isOneStepTransform)
-                    {
-                        // We need to set the baseUrl of the original transform in the one overriding,
-                        // so we can talk to its T-Engine
-                        TransformAndItsOrigin overriddenTransform = combinedTransformers.get(j);
-                        TransformAndItsOrigin overridingTransform = new TransformAndItsOrigin(
-                                transformAndItsOrigin.transformer, overriddenTransform.baseUrl, readFrom);
-                        combinedTransformers.set(i--, overridingTransform);
-                    }
-                    combinedTransformers.remove(j);
-                }
-                else if (isOneStepTransform && baseUrl == null)
+                // If required remove the requested transform
+                if (indexToRemove >= 0)
                 {
-                    throw new IllegalArgumentException("Local T-Engine transformer " + name +
-                            " must have its baseUrl set in " + LOCAL_TRANSFORMER+name+URL+ " Read from "+ readFrom);
+                    combinedTransformers.remove(indexToRemove);
+                    // this may also require the current index i to be changed so we don't skip one.
+                    if (i <= indexToRemove)
+                    {
+                        i--;
+                    }
                 }
             }
             catch (IllegalArgumentException e)
@@ -367,19 +342,17 @@ public class CombinedConfig
         return combinedTransformers;
     }
 
-    private static int lastIndexOf(String name, List<TransformAndItsOrigin> combinedTransformers, int toIndex)
+    protected int removeInvalidTransformer(int i, List<TransformAndItsOrigin> combinedTransformers,
+                                           TransformServiceRegistryImpl registry,
+                                           TransformAndItsOrigin transformAndItsOrigin, Transformer transformer,
+                                           String name, String readFrom, boolean isPipeline, boolean isFailover)
     {
-        for (int j = toIndex-1; j >=0; j--)
-        {
-            TransformAndItsOrigin transformAndItsOrigin = combinedTransformers.get(j);
-            Transformer transformer = transformAndItsOrigin.transformer;
-            String transformerName = transformer.getTransformerName();
-            if (name.equals(transformerName))
-            {
-                return j;
-            }
-        }
         return -1;
+    }
+
+    protected static String transformerName(String name)
+    {
+        return name == null ? " without a name" : "\"" + name + "\"";
     }
 
     // Sort transformers so there are no forward references, if that is possible.

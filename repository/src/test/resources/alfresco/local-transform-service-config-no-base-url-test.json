@@ -1,0 +1,14 @@
+{
+  "transformOptions": {
+  },
+  "transformers": [
+    {
+      "transformerName": "pdfrenderer",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+      ],
+      "transformOptions": [
+      ]
+    }
+  ]
+}

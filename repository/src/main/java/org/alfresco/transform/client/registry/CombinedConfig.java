@@ -93,11 +93,6 @@ public class CombinedConfig
         {
             return baseUrl;
         }
-
-        public String getReadFrom()
-        {
-            return readFrom;
-        }
     }
 
     Map<String, Set<TransformOption>> combinedTransformOptions = new HashMap<>();

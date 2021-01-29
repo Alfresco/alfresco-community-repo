@@ -49,21 +49,21 @@ public class LocalCombinedConfig extends CombinedConfig
 
     /**
      * Discards a transformer that is invalid (e.g. T-Engines with the same name, baseUrl has not been specified on a
-     * T-Engine transform) or overridden (same name). If the overridden transform is from a T-Engine and the
-     * overriding transform is not a pipeline or a failover we also copy the {@code baseUrl} from the overridden
-     * transform so that the original T-Engine will still be called.
+     * T-Engine transform) or overridden an earlier transform with the same name). If the overridden transform is from
+     * a T-Engine and the overriding transform is not a pipeline or a failover, we also copy the {@code baseUrl} from
+     * the overridden transform so that the original T-Engine will still be called.
      *
      * @param i the current transform's index into combinedTransformers.
      * @param combinedTransformers the full list of transformers in the order they were read.
      * @param registry that wil hold the transforms.
-     * @param transformAndItsOrigin the current combinedTransformers element. Avoids working it out again.
-     * @param transformer the current transformer. Avoids working it out again.
-     * @param name the current transformer's name. Avoids working it out again.
-     * @param readFrom where the current transformer was read from. Avoids working it out again.
-     * @param isPipeline if the current transform is a pipeline. Avoids working it out again.
-     * @param isFailover if the current transform is a failover. Avoids working it out again.
+     * @param transformAndItsOrigin the current combinedTransformers element.
+     * @param transformer the current transformer.
+     * @param name the current transformer's name.
+     * @param readFrom where the current transformer was read from.
+     * @param isPipeline if the current transform is a pipeline.
+     * @param isFailover if the current transform is a failover.
      *
-     * @returns the index of a transform to be removed. {@code -1} is returned if there should not be one removed.
+     * @returns the index of a transform to be removed. {@code -1} is returned if there should not be a remove.
      * @throws IllegalArgumentException if the current transform has a problem and should be removed.
      */
     @Override
@@ -79,13 +79,20 @@ public class LocalCombinedConfig extends CombinedConfig
             throw new IllegalArgumentException("Local transformer names may not be null. Read from " + readFrom);
         }
 
+        // Get the baseUrl - test code might change it
+        String baseUrl = transformAndItsOrigin.getBaseUrl();
+        String testBaseUrl = ((LocalTransformServiceRegistry)registry).getBaseUrlIfTesting(name, baseUrl);
+        if ((baseUrl == null && testBaseUrl != null) || !baseUrl.equals(testBaseUrl))
+        {
+            baseUrl = testBaseUrl;
+            transformAndItsOrigin = new TransformAndItsOrigin(transformer, baseUrl, readFrom);
+            combinedTransformers.set(i, transformAndItsOrigin);
+        }
+
+        boolean isOneStepTransform = !isPipeline && !isFailover && !name.equals(LocalPassThroughTransform.NAME);
+
         // Check to see if the name has been used before.
         int j = lastIndexOf(name, combinedTransformers, i);
-        String baseUrl = transformAndItsOrigin.getBaseUrl();
-        baseUrl = ((LocalTransformServiceRegistry)registry).getBaseUrlIfTesting(name, baseUrl);
-        transformAndItsOrigin = new TransformAndItsOrigin(transformer, baseUrl, readFrom);
-        combinedTransformers.set(i, transformAndItsOrigin);
-        boolean isOneStepTransform = !isPipeline && !isFailover && !name.equals(LocalPassThroughTransform.NAME);
         if (j >= 0)
         {
             if (baseUrl != null) // If a T-Engine, else it is an override

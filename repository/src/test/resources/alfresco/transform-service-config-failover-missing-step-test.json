@@ -1,0 +1,34 @@
+{
+  "transformOptions": {
+  },
+  "transformers": [
+    {
+      "transformerName": "imagemagick",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "libreoffice",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                                                "targetMediaType": "application/pdf"}
+      ]
+    },
+    {
+      "transformerName": "missingPdfrenderer",
+      "transformerFailover" : [ "libreoffice", "pdfrenderer" ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
+        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
+      ],
+      "transformOptions": [
+      ]
+    }
+  ]
+}

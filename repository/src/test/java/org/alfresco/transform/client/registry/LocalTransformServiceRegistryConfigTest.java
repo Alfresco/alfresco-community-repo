@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,7 +28,9 @@ package org.alfresco.transform.client.registry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractLocalTransform;
+import org.alfresco.repo.content.transform.LocalCombinedConfig;
 import org.alfresco.repo.content.transform.LocalPipelineTransform;
+import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
@@ -50,11 +52,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Extends the {@link TransformServiceRegistryConfigTest} (used to test the config received from the Transform Service)
@@ -63,10 +69,15 @@ import static org.junit.Assert.assertTrue;
  */
 public class LocalTransformServiceRegistryConfigTest extends TransformServiceRegistryConfigTest
 {
+    public static final String HARD_CODED_VALUE = "hard coded value";
+
     private class TestLocalTransformServiceRegistry extends LocalTransformServiceRegistry
     {
         private boolean mockSuccessReadingConfig = true;
         LocalData dummyData = new LocalData();
+        private List<String> errorsLogged = new ArrayList<>();
+        private boolean resetBaseUrl = true;
+        private int tEngineCount = 0;
 
         public synchronized boolean getMockSuccessReadingConfig()
         {
@@ -79,11 +90,25 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             this.mockSuccessReadingConfig = mockSuccessReadingConfig;
         }
 
-        @Override
-        protected String getBaseUrlIfTesting(String name, String baseUrl)
+        public void setResetBaseUrl(boolean resetBaseUrl)
         {
-            return baseUrl == null
+            this.resetBaseUrl = resetBaseUrl;
+        }
+
+        @Override
+        // As we are mocking, baseUrl is always null, so this method sets it so we don't get errors.
+        // It looks for the alfresco global property or system property with a localTransform. prefix,
+        // just like the normal code.
+        // If setResetBaseUrl(false) is called, the baseUrl remains null
+        // If we are using transforms called "t-engine" only the first one has its baseUrl set - does not use properties.
+        public String getBaseUrlIfTesting(String name, String baseUrl)
+        {
+            boolean isTEngine = "t-engine".equals(name);
+            tEngineCount += isTEngine ? 1 : 0;
+            return baseUrl == null && resetBaseUrl && !isTEngine
                     ? getProperty(LOCAL_TRANSFORM +name+URL, null)
+                    : isTEngine && tEngineCount == 1
+                    ? HARD_CODED_VALUE
                     : baseUrl;
         }
 
@@ -103,6 +128,13 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
              return dummyData;
          }
 
+        @Override
+        protected void logError(String msg)
+        {
+            errorsLogged.add(msg);
+            super.logError(msg);
+        }
+
         public Data assertDataChanged(Data prevData, String msg)
         {
             // If the data changes, there has been a read
@@ -118,6 +150,20 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             System.out.println(getMs()+msg);
             assertEquals("The configuration data should be the same: "+msg, getData(), data);
             return getData();
+        }
+
+        public void assertErrorLogged(String pattern)
+        {
+            Pattern p = Pattern.compile(pattern);
+            for (String msg : errorsLogged)
+            {
+                Matcher matcher = p.matcher(msg);
+                if (matcher.matches())
+                {
+                    return;
+                }
+            }
+            fail("Did not find error message that matches "+pattern);
         }
     }
 
@@ -209,11 +255,12 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
 
     /**
      * Loads localTransforms from the LOCAL_TRANSFORM_SERVICE_CONFIG config file.
+     * @param path
      */
-    private void retrieveLocalTransformList()
+    private void retrieveLocalTransformList(String path)
     {
-        CombinedConfig combinedConfig = new CombinedConfig(log);
-        combinedConfig.addLocalConfig(LOCAL_TRANSFORM_SERVICE_CONFIG);
+        CombinedConfig combinedConfig = new LocalCombinedConfig(log);
+        combinedConfig.addLocalConfig(path);
         combinedConfig.register(registry);
         mapOfTransformOptions = combinedConfig.combinedTransformOptions;
         transformerList = combinedConfig.combinedTransformers;
@@ -338,15 +385,9 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     }
 
     @Test
-    public void testReadWriteJson() throws IOException
-    {
-        // Override super method so it passes, as there is nothing more to be gained for LocalTransforms.
-    }
-
-    @Test
     public void testReadJsonConfig()
     {
-        retrieveLocalTransformList();
+        retrieveLocalTransformList(LOCAL_TRANSFORM_SERVICE_CONFIG);
 
         // Assert expected size of the transformers.
         assertNotNull("Transformer list is null.", transformerList);
@@ -448,7 +489,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     @Test
     public void testReadTransformProperties()
     {
-        retrieveLocalTransformList();
+        retrieveLocalTransformList(LOCAL_TRANSFORM_SERVICE_CONFIG);
 
         assertNotNull("Transformer list is null.", transformerList);
         for (CombinedConfig.TransformAndItsOrigin t : transformerList)
@@ -477,6 +518,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     }
 
     @Test
+    // Simulates the reading of config which changes over time and sometimes T-Engines fail to reply.
     public void testAdditionAndRemovalOfTEngines() throws Exception
     {
         CronExpression origCronExpression = registry.getCronExpression();
@@ -540,9 +582,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     }
 
     @Test
+    // Checks that only options expected by individual transforms in the pipeline are actually passed to the transform.
     public void testStripExtraOptions()
     {
-        retrieveLocalTransformList();
+        retrieveLocalTransformList(LOCAL_TRANSFORM_SERVICE_CONFIG);
 
         Map<String, String> actualOptions = Map.of(
                 "autoOrient", "true",
@@ -567,9 +610,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     }
 
     @Test
+    // Checks that the correct transformer is selected based on priority
     public void testPriority()
     {
-        retrieveLocalTransformList();
+        retrieveLocalTransformList(LOCAL_TRANSFORM_SERVICE_CONFIG);
 
         assertEquals("pdfrenderer",
                 ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
@@ -582,5 +626,123 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         assertEquals("tika",
                 ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
                         "target3", Collections.emptyMap(), null)).getName());
+    }
+
+    @Test
+    public void testNoName()
+    {
+        retrieveLocalTransformList("alfresco/local-transform-service-config-no-name-test.json");
+        registry.assertErrorLogged("Local transformer names may not be null.*no-name-test.*");
+    }
+
+    @Test
+    public void testPipelineAndFailover()
+    {
+        retrieveLocalTransformList("alfresco/local-transform-service-config-pipeline-and-failover-test.json");
+        registry.assertErrorLogged("Transformer .* cannot have pipeline and failover sections.*pipeline-and-failover.*");
+    }
+
+    @Test
+    public void testTEngineDuplicateNames()
+    {
+        retrieveLocalTransformList("alfresco/local-transform-service-config-dup-name-test.json");
+        registry.assertErrorLogged("Local T-Engine transformer .* must be a unique name.*dup-name.*");
+    }
+
+    @Test
+    public void testTEngineNoBaseUrls()
+    {
+        registry.setResetBaseUrl(false);
+        retrieveLocalTransformList("alfresco/local-transform-service-config-no-base-url-test.json");
+        registry.assertErrorLogged("Local T-Engine transformer .* must have its baseUrl set .*no-base-url.*");
+    }
+
+    @Test
+    public void testPipelineMissingStepTransform()
+    {
+        retrieveLocalTransformList("alfresco/transform-service-config-pipeline-missing-step-test.json");
+        registry.assertErrorLogged("Transformer .* ignored as step transforms do not exist.*pipeline-missing-step.*");
+    }
+
+    @Test
+    public void testFailoverMissingStepTransform()
+    {
+        retrieveLocalTransformList("alfresco/transform-service-config-failover-missing-step-test.json");
+        registry.assertErrorLogged("Transformer .* ignored as step transforms do not exist.*failover-missing-step.*");
+    }
+
+    @Test
+    public void testOverrideTEngine()
+    {
+        // This json file contains two transformers with the same name.
+        // * The second one should override the first which has different supported source mimetypes, target mimetypes
+        //   and max sizes. It also has different transform options.
+        // * There is special code in getBaseUrlIfTesting mocking up the baseUrl just for the first one. It should be
+        //   copied to the second one.
+        retrieveLocalTransformList("alfresco/local-transform-service-config-override-test.json");
+
+        assertNotNull("Should still be supported",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", 1000,
+                        "text/html", Collections.emptyMap(), null)));
+
+        assertNotNull("Increased max size be supported",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", 2000,
+                        "text/html", Collections.emptyMap(), null)));
+
+        assertNull("Increased max size is now 2000",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", 3000,
+                        "text/html", Collections.emptyMap(), null)));
+
+        assertNotNull("Should have been added",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                        "application/pdf", Collections.emptyMap(), null)));
+
+        assertNull("Should have been removed",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                        "text/tab-separated-values", Collections.emptyMap(), null)));
+
+        assertNotNull("options1 should still exist, even if not used", mapOfTransformOptions.get("options1"));
+
+        assertNotNull("options2 should exist", mapOfTransformOptions.get("options2"));
+
+        Map<String, String> actualOptions = Map.of(
+                "width", "100",
+                "height", "50");
+        assertNull("width from options1 is no longer used, so should find no transformer",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                        "application/pdf", actualOptions, null)));
+
+        actualOptions = Map.of(
+                "page", "100",
+                "height", "50");
+        assertNotNull("Both options are in options2, so should we should find the transformer",
+                ((AbstractLocalTransform)registry.getLocalTransform("text/csv", -1,
+                        "application/pdf", actualOptions, null)));
+
+        LocalTransformImpl localTransform = (LocalTransformImpl)
+                registry.getLocalTransform("text/csv", -1,
+                "application/pdf", Collections.emptyMap(), null);
+        assertEquals("Should only have 2 options", 2,
+                localTransform.getTransformsTransformOptionNames().size());
+        assertTrue("The baseUrl should have been copied", localTransform.remoteTransformerClientConfigured());
+    }
+
+    @Test
+    public void testOverrideTEngineWithPipeline()
+    {
+        // This json file contains two transformers with the same name, plus two others libreoffice and pdfrenderer
+        // * The first transform which should be overridden has a baseUrl as it talks to a T-Engine and has 5
+        //   supported source to target mimetypes.
+        // * The second one should override the first with a pipeline of libreoffice and pdfrenderer but only has 1
+        //   supported source to target mimetype. It should not have a baseUrl as it will not talk to a T-Engine.
+        //   THIS IS WHAT IS BASICALLY DIFFERENT TO testOverrideTEngine, resulting in a LocalPipelineTransform rather
+        //   rather than a LocalTransformImpl.
+        // * There is special code in getBaseUrlIfTesting mocking up the baseUrl just for the first one. It should be
+        //   copied to the second one.
+        retrieveLocalTransformList("alfresco/local-transform-service-config-override-with-pipeline-test.json");
+
+        LocalPipelineTransform pipelineTransform = (LocalPipelineTransform) registry.getLocalTransform("text/csv",
+                -1,"image/png", Collections.emptyMap(), null);
+        assertNotNull("Should supported csv to png", pipelineTransform);
     }
 }

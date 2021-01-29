@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.alfresco.repo.content.metadata.AsynchronousExtractor.isMetadataEmbedMimetype;
 import static org.alfresco.repo.content.metadata.AsynchronousExtractor.isMetadataExtractMimetype;
@@ -273,7 +274,7 @@ public class CombinedConfig
         data.setFileCount(configFileFinder.getFileCount());
 
         combinedTransformers = removeInvalidTransformers(combinedTransformers, registry);
-        combinedTransformers = sortTransformers(combinedTransformers);
+        combinedTransformers = sortTransformers(combinedTransformers, registry);
         addWildcardSupportedSourceAndTarget(combinedTransformers);
 
         combinedTransformers.forEach(transformer ->
@@ -282,10 +283,10 @@ public class CombinedConfig
     }
 
     /**
-     * Discards transformers that are invalid (e.g. transformers that have both pipeline and failover sections). Also
-     * calls {@link #removeInvalidTransformer(int, List, TransformServiceRegistryImpl, TransformAndItsOrigin, Transformer, String, String, boolean, boolean)} for each
-     * transform, so that subclasses (for LocalTransforms), may also discard invalid transforms or overridden
-     * transforms.
+     * Discards transformers that are invalid (e.g. transformers that have both pipeline and failover sections). Calls
+     * {@link #removeInvalidTransformer(int, List, TransformServiceRegistryImpl, TransformAndItsOrigin, Transformer,
+     * String, String, boolean, boolean)} for each transform, so that subclasses (LocalCombinedConfig), may also
+     * discard invalid transforms or overridden transforms.
      *
      * @param combinedTransformers the full list of transformers in the order they were read.
      * @param registry that wil hold the transforms.
@@ -351,7 +352,7 @@ public class CombinedConfig
     }
 
     // Sort transformers so there are no forward references, if that is possible.
-    private static List<TransformAndItsOrigin> sortTransformers(List<TransformAndItsOrigin> original)
+    private List<TransformAndItsOrigin> sortTransformers(List<TransformAndItsOrigin> original, TransformServiceRegistryImpl registry)
     {
         List<TransformAndItsOrigin> transformers = new ArrayList<>(original.size());
         List<TransformAndItsOrigin> todo = new ArrayList<>(original.size());
@@ -407,6 +408,13 @@ public class CombinedConfig
         while (added && !original.isEmpty());
 
         transformers.addAll(todo);
+
+        for (TransformAndItsOrigin transformAndItsOrigin : original)
+        {
+            String name = transformAndItsOrigin.getTransformer().getTransformerName();
+            registry.logError("Transformer " + transformerName(name) +
+                    " ignored as step transforms do not exist. Read from " + transformAndItsOrigin.readFrom);
+        }
 
         return transformers;
     }

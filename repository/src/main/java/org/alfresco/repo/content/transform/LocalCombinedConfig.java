@@ -34,6 +34,7 @@ import java.util.List;
 
 import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.LOCAL_TRANSFORMER;
 import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.URL;
+import static org.alfresco.util.EqualsHelper.nullSafeEquals;
 
 /**
  * Extends the standard CombinedConfig to add in removal of overridden or invalid transforms.
@@ -82,7 +83,7 @@ public class LocalCombinedConfig extends CombinedConfig
         // Get the baseUrl - test code might change it
         String baseUrl = transformAndItsOrigin.getBaseUrl();
         String testBaseUrl = ((LocalTransformServiceRegistry)registry).getBaseUrlIfTesting(name, baseUrl);
-        if ((baseUrl == null && testBaseUrl != null) || !baseUrl.equals(testBaseUrl))
+        if (!nullSafeEquals(baseUrl, testBaseUrl))
         {
             baseUrl = testBaseUrl;
             transformAndItsOrigin = new TransformAndItsOrigin(transformer, baseUrl, readFrom);
@@ -123,7 +124,7 @@ public class LocalCombinedConfig extends CombinedConfig
         return indexToRemove;
     }
 
-    protected static int lastIndexOf(String name, List<TransformAndItsOrigin> combinedTransformers, int toIndex)
+    private static int lastIndexOf(String name, List<TransformAndItsOrigin> combinedTransformers, int toIndex)
     {
         // Lists are short (< 100) entries and this is not a frequent or time critical step, so walking the list
         // should be okay.

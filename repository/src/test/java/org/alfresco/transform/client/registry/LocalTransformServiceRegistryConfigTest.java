@@ -661,6 +661,20 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     }
 
     @Test
+    public void testPipelineMissingStepTransform()
+    {
+        retrieveLocalTransformList("alfresco/transform-service-config-pipeline-missing-step-test.json");
+        registry.assertErrorLogged("Transformer .* ignored as step transforms do not exist.*pipeline-missing-step.*");
+    }
+
+    @Test
+    public void testFailoverMissingStepTransform()
+    {
+        retrieveLocalTransformList("alfresco/transform-service-config-failover-missing-step-test.json");
+        registry.assertErrorLogged("Transformer .* ignored as step transforms do not exist.*failover-missing-step.*");
+    }
+
+    @Test
     public void testOverrideTEngine()
     {
         // This json file contains two transformers with the same name.

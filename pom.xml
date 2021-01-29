@@ -538,7 +538,7 @@
       <alfresco.min.version>0.0</alfresco.min.version>
 
       <skip.integrationtests>true</skip.integrationtests>
-      <postgres.version>11.7</postgres.version>
+     <postgres.version>9.4.12</postgres.version>
       <activemq.version>5.15.8</activemq.version>
       <activemq.port1>61616</activemq.port1>
       <activemq.port2>5672</activemq.port2>

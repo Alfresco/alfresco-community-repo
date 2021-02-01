@@ -18,7 +18,7 @@
       <tas.restapi.version>1.51</tas.restapi.version>
       <tas.utility.version>3.0.41</tas.utility.version>
       <fluent.json.version>2.0.0</fluent.json.version>
-      <jackson.databind.version>2.12.1</jackson.databind.version>
+      <jackson.databind.version>2.7.9.1</jackson.databind.version>
    </properties>
 
    <build>

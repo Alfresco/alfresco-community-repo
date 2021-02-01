@@ -13,6 +13,7 @@ import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.Utility;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.RepoTestModel;
@@ -158,6 +159,15 @@ public class JsonBodyGenerator
         return value.toString();
     }
     
+    public static String siteGroup(String authorityId, UserRole role)
+    {
+        Utility.checkObjectIsInitialized(authorityId, "authorityId");
+        JsonObject value = defineJSON()
+                .add("role", role.name())
+                .add("id", authorityId).build();
+        return value.toString();
+    }
+
     public static String siteMemberhipRequest(String message, SiteModel siteModel, String title)
     {
         JsonObject value = defineJSON()

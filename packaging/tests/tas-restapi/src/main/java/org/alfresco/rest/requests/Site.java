@@ -11,9 +11,12 @@ import org.alfresco.rest.model.RestSiteContainerModel;
 import org.alfresco.rest.model.RestSiteContainerModelsCollection;
 import org.alfresco.rest.model.RestSiteMemberModel;
 import org.alfresco.rest.model.RestSiteMemberModelsCollection;
+import org.alfresco.rest.model.RestSiteGroupModel;
+import org.alfresco.rest.model.RestSiteGroupModelsCollection;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.rest.model.RestSitePersonMembershipRequestModelsCollection;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpMethod;
@@ -256,5 +259,67 @@ public class Site extends ModelRequest<Site>
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "sites/{siteId}/site-membership-requests/{inviteeId}/reject", site.getId(), siteMember.getUsername());
       return restWrapper.process(request);
+  }
+
+  /**
+   * Retrieve all group membership of a site using GET call on "sites/{siteId}/group-members"
+   *
+   * @return RestSiteGroupModelsCollection
+   * @throws JsonToModelConversionException
+   */
+  public RestSiteGroupModelsCollection getSiteGroups()
+  {
+      RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/group-members?{parameters}", site.getId(), restWrapper.getParameters());
+      return restWrapper.processModels(RestSiteGroupModelsCollection.class, request);
+  }
+
+  /**
+   * Add new site group membership using POST call on "sites/{siteId}/group-members"
+   *
+   * @param authorityId The authorityId of the group
+   * @param role    role to assign
+   * @return
+   * @throws JsonToModelConversionException
+   */
+  public RestSiteGroupModel addSiteGroup(String authorityId, UserRole role)
+  {
+      String siteMemberBody = JsonBodyGenerator.siteGroup(authorityId, role);
+      RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, siteMemberBody, "sites/{siteId}/group-members?{parameters}", site.getId(), restWrapper.getParameters());
+      return restWrapper.processModel(RestSiteGroupModel.class, request);
+  }
+
+  /**
+   * Retrieve specific group membership of a site using GET call on "sites/{siteId}/group-members/{groupId}"
+   *
+   * @param groupId
+   * @return RestSiteGroupModel
+   */
+  public RestSiteGroupModel getSiteGroup(String groupId)
+  {
+      RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/group-members/{groupId}", site.getId(), groupId);
+      return restWrapper.processModel(RestSiteGroupModel.class, request);
+  }
+
+  /**
+   * Update site group membership role with PUT call on "sites/{siteId}/group-members/{groupId}"
+   * @param groupId
+   * @return RestSiteGroupModel
+   * @throws JsonToModelConversionException
+   */
+  public RestSiteGroupModel updateSiteGroup(String groupId, UserRole role)
+  {
+      String json = JsonBodyGenerator.keyValueJson("role", role.toString());
+      RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, json, "sites/{siteId}/group-members/{groupId}", site.getId(), groupId);
+      return restWrapper.processModel(RestSiteGroupModel.class, request);
+  }
+
+  /**
+   * Delete site group membership with DELETE call on "sites/{siteId}/group-members/{groupId}"
+   * @param groupId
+   */
+  public void deleteSiteGroup(String groupId)
+  {
+      RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "sites/{siteId}/group-members/{groupId}", site.getId(), groupId);
+      restWrapper.processEmptyModel(request);
   }
 }

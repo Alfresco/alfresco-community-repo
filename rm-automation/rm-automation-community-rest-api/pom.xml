@@ -15,7 +15,8 @@
       <maven.javadoc.skip>false</maven.javadoc.skip>
       <ags.share>alfresco-governance-services-community-share</ags.share>
       <ags.repo>alfresco-governance-services-community-repo</ags.repo>
-      <tas.restapi.version>1.38</tas.restapi.version>
+      <tas.restapi.version>1.50</tas.restapi.version>
+      <tas.utility.version>3.0.41</tas.utility.version>
       <fluent.json.version>2.0.0</fluent.json.version>
       <jackson.databind.version>2.7.9.1</jackson.databind.version>
    </properties>
@@ -57,11 +58,20 @@
          <artifactId>restapi</artifactId>
          <version>${tas.restapi.version}</version>
          <exclusions>
-              <exclusion>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-databind</artifactId>
-              </exclusion>
-          </exclusions>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.alfresco.tas</groupId>
+               <artifactId>utility</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>utility</artifactId>
+         <version>${tas.utility.version}</version>
       </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>

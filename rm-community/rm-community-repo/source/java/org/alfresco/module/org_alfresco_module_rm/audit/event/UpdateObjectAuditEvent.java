@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,9 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
+
+
 /**
  * Audits file plan component property updates
  *
@@ -53,7 +56,8 @@ public class UpdateObjectAuditEvent extends AuditEvent implements OnUpdateProper
     @Behaviour
     (
             kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
+            type = "rma:filePlanComponent",
+            notificationFrequency = TRANSACTION_COMMIT
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {

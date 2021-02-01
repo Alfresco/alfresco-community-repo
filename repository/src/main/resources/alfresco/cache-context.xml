@@ -501,4 +501,9 @@
    <bean name="hbClusterUsageCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.hbClusterUsageCache"/>
    </bean>
+
+    <!-- The cross-transaction shared cache for query accelerator configuration -->
+    <bean name="queryAcceleratorCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.queryAcceleratorCache"/>
+    </bean>
 </beans>

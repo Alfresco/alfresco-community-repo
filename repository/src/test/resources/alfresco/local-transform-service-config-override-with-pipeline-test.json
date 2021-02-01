@@ -1,0 +1,35 @@
+{
+  "transformOptions": {
+  },
+  "transformers": [
+    {
+      "transformerName": "t-engine",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/csv", "maxSourceSizeBytes": 1000, "targetMediaType": "text/html" },
+        {"sourceMediaType": "text/csv", "targetMediaType": "application/vnd.oasis.opendocument.spreadsheet" },
+        {"sourceMediaType": "text/csv", "targetMediaType": "application/vnd.oasis.opendocument.spreadsheet-template" },
+        {"sourceMediaType": "text/csv", "targetMediaType": "text/tab-separated-values" },
+        {"sourceMediaType": "text/csv", "priority": 45, "targetMediaType": "application/vnd.ms-excel" }
+      ]
+    },
+    {
+      "transformerName": "t-engine",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfrenderer"}
+      ]
+    },
+    {
+      "transformerName": "libreoffice",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/csv", "targetMediaType": "application/pdf" }
+      ]
+    },
+    {
+      "transformerName": "pdfrenderer",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
+      ]
+    }
+  ]
+}

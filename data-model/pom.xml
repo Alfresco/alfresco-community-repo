@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.351-SNAPSHOT</version>
+        <version>8.380-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -127,9 +127,28 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--
-            | compile dependencies
-            -->
+
+        <!-- Jakarta... -->
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
+        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+        </dependency>
+        <!-- REPO-5047 - Replaces javax.annotation:javax.annotation-api -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
+        <dependency>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
@@ -148,31 +167,9 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>5.0.3</version>
+            <version>6.2.3</version>
         </dependency>
-        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-        </dependency>
-        <!-- REPO-5047 - Replaces javax.annotation:javax.annotation-api -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>1.3.5</version>
-        </dependency>
-        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-            <version>1.2.2</version>
-        </dependency>
+
         <!-- the cxf libs were updated, see dependencyManagement section -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
@@ -265,15 +262,6 @@
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
-                </exclusion>
-                <!-- Duplicate classes from com.sun.xml.bind:jaxb-core-->
-                <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>txw2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.istack</groupId>
-                    <artifactId>istack-commons-runtime</artifactId>
                 </exclusion>
                 <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
                 <exclusion>

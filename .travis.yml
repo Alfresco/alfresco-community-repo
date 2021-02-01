@@ -44,15 +44,6 @@ install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 
 jobs:
   include:
-    - name: "WhiteSource scan"
-      stage: test
-      # only on release branches or master and if it is not a PR
-      if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
-      script:
-        # Download the latest version of WhiteSource Unified Agent
-        - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
-        # Run WhiteSource Unified Agent
-        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./packaging/war
 
 #    - name: "Source Clear Scan"
 #      # only on release branches or master and if it is not a PR
@@ -84,7 +75,7 @@ jobs:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
         - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.6
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext04TestSuite"
       before_script:
@@ -108,7 +99,7 @@ jobs:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
         - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.6
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContextExtraTestSuite"
       before_script:
@@ -122,7 +113,7 @@ jobs:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
         - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.6
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - SearchTestSuite"
       before_script:
@@ -130,33 +121,69 @@ jobs:
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
       script: travis_wait 20 mvn -B test -pl repository -Dtest=SearchTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
 
-    - name: "Repository - MySQL tests"
+    - name: "Repository - MariaDB 10.2.18 tests"
+      if: commit_message !~ /\[skip db\]/
+      before_script:
+        - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.2.18 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+
+    - name: "Repository - MariaDB 10.4 tests"
+      if: commit_message !~ /\[skip db\]/
+      before_script:
+        - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.4 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+
+    - name: "Repository - MariaDB 10.5 tests"
+      if: commit_message !~ /\[skip db\]/
+      before_script:
+        - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.5 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+
+    - name: "Repository - MySQL 5.7.23 tests"
       if: commit_message !~ /\[skip db\]/
       before_script:
         - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
-    - name: "Repository - PostgreSQL 10 tests"
+# One failing test to do with the schema reference files. ACS-1180
+#    - name: "Repository - MySQL 8 tests"
+#      if: commit_message !~ /\[skip db\]/
+#      before_script:
+#        - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:8 --transaction-isolation='READ-COMMITTED'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+
+    - name: "Repository - PostgreSQL 10.9 tests"
       if: commit_message !~ /\[skip db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:10.9 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
-    - name: "Repository - PostgreSQL 11 tests"
+    - name: "Repository - PostgreSQL 11.7 tests"
       if: commit_message !~ /\[skip db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
-    - name: "Repository - MariaDB tests"
+    - name: "Repository - PostgreSQL 12.4 tests"
       if: commit_message !~ /\[skip db\]/
       before_script:
-        - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.2.18 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:12.4 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+
+    - name: "Repository - PostgreSQL 13.1 tests"
+      if: commit_message !~ /\[skip db\]/
+      before_script:
+        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
+        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContext01TestSuite"
       before_script:
@@ -182,6 +209,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContextExtraTestSuite"

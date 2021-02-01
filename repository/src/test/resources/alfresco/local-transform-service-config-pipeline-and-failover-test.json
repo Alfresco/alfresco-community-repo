@@ -1,0 +1,19 @@
+{
+  "transformOptions": {
+  },
+  "transformers": [
+    {
+      "transformerName": "ohDearHasBothPipelineAndFailover",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfrenderer"}
+      ],
+      "transformerFailover" : [ "libreoffice", "pdfrenderer" ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+      ],
+      "transformOptions": [
+      ]
+    }
+  ]
+}

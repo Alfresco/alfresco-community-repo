@@ -29,8 +29,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
@@ -45,17 +43,12 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.TransientDataAccessResourceException;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -192,7 +185,7 @@ public class TransactionServiceImplTest extends BaseSpringTest
             @SuppressWarnings("unused")
             int i = 0;
         }
-        catch (UncategorizedSQLException e)
+        catch (Exception e)
         {
             // or this - for PostgreSQL (org.postgresql.util.PSQLException: ERROR: transaction is read-only)
             if (dialect instanceof PostgreSQLDialect)

@@ -27,6 +27,7 @@ package org.alfresco.messaging.camel;
 
 import java.util.ArrayList;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.springframework.beans.BeansException;
@@ -65,7 +66,9 @@ public class SpringContextRouteLoader implements ApplicationContextAware, Initia
     @SuppressWarnings("unchecked")
     public void addRoutesToCamelContext() throws Exception
     {
-        ModelCamelContext modelCamelContext = (ModelCamelContext) applicationContext.getBean(camelContextId);
+        ModelCamelContext modelCamelContext = applicationContext
+            .getBean(camelContextId, CamelContext.class)
+            .adapt(ModelCamelContext.class);
         ArrayList<RouteDefinition> routeDefinitions = (ArrayList<RouteDefinition>) applicationContext.getBean(routeContextId);
         modelCamelContext.addRouteDefinitions(routeDefinitions);
     }

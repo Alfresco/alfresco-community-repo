@@ -34,6 +34,12 @@
         <property name="transacted" value="${messaging.transacted}" />
         <property name="transactionManager" ref="messagingTransactionManager" />
     </bean>
+
+    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="transacted" value="${messaging.transacted}" />
+        <property name="transactionManager" ref="messagingTransactionManager" />
+    </bean>
     
     <bean id="CAMEL_PROPAGATION_MANDATORY" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
         <property name="transactionManager" ref="messagingTransactionManager" />
@@ -71,7 +77,7 @@
     <!-- Any RouteBuilder in this enterprise package will be fired up -->
     <context:component-scan base-package="org.alfresco.enterprise.repo.routes"/>
 
-    <camelContext id="alfrescoCamelContext" xmlns="http://camel.apache.org/schema/spring">
+    <camelContext id="alfrescoCamelContext" xmlns="http://camel.apache.org/schema/spring" useBreadcrumb="true">
         <contextScan/>
         <camel:jmxAgent id="agent" mbeanObjectDomainName="Alfresco.Camel" />
         <template id="camelProducerTemplate" defaultEndpoint="direct:alfresco.default" />

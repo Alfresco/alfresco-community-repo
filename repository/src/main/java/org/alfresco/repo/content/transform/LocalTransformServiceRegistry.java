@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 - 2020 Alfresco Software Limited
+ * Copyright (C) 2019 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -60,8 +60,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
 {
     private static final Log log = LogFactory.getLog(LocalTransformServiceRegistry.class);
 
-    private static final String LOCAL_TRANSFORMER = "localTransform.";
-    private static final String URL = ".url";
+    public static final String LOCAL_TRANSFORMER = "localTransform.";
+    public static final String URL = ".url";
     static final String STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES = "transformer.strict.mimetype.check.whitelist.mimetypes";
 
     public class LocalData extends TransformServiceRegistryImpl.Data
@@ -133,7 +133,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     @Override
     public boolean readConfig() throws IOException
     {
-        CombinedConfig combinedConfig = new CombinedConfig(getLog());
+        CombinedConfig combinedConfig = new LocalCombinedConfig(getLog());
         List<String> urls = getTEngineUrls();
         boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
         successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");
@@ -167,11 +167,6 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             String name = transformer.getTransformerName();
             LocalData data = getData();
             Map<String, LocalTransform> localTransforms = data.localTransforms;
-            if (name == null || localTransforms.get(name) != null)
-            {
-                throw new IllegalArgumentException("Local transformer names must exist and be unique (" + name + ")."+
-                        " Read from "+readFrom);
-            }
 
             Set<TransformOption> transformsTransformOptions = lookupTransformOptions(
                     transformer.getTransformOptions(), transformOptions, readFrom, this::logError);
@@ -187,20 +182,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
                         strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
                         transformsTransformOptions, this);
             }
-            else if (isPipeline && isFailover)
-            {
-                throw new IllegalArgumentException("Local transformer " + name +
-                        " cannot have pipeline and failover sections. Read from "+readFrom);
-            }
             else if (!isPipeline && !isFailover)
             {
-                baseUrl = getBaseUrlIfTesting(name, baseUrl);
-                if (baseUrl == null)
-                {
-                    throw new IllegalArgumentException("Local transformer " + name +
-                            " must have its baseUrl set in " + LOCAL_TRANSFORMER+name+URL+
-                            " Read from "+readFrom);
-                }
                 int startupRetryPeriodSeconds = getStartupRetryPeriodSeconds(name);
                 localTransform = new LocalTransformImpl(name, transformerDebug, mimetypeService,
                          strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
@@ -333,7 +316,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     // When testing, we need to be able to set the baseUrl when reading from a file.
-    protected String getBaseUrlIfTesting(String name, String baseUrl)
+    public String getBaseUrlIfTesting(String name, String baseUrl)
     {
         return baseUrl;
     }
@@ -484,9 +467,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             transformerDebug.debug("Local transforms "+getData()+" are " + (enabled ? "enabled" : "disabled"));
         }
 
-        return enabled
-                ? super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName)
-                : 0;
+        return super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
     }
 
     public LocalTransform getLocalTransform(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
@@ -495,9 +476,14 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         {
             return null;
         }
+        LocalTransform localTransform = null;
         String name = findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        LocalData data = getData();
-        Map<String, LocalTransform> localTransforms = data.localTransforms;
-        return localTransforms.get(name);
+        if (name != null)
+        {
+            LocalData data = getData();
+            Map<String, LocalTransform> localTransforms = data.localTransforms;
+            localTransform = localTransforms.get(name);
+        }
+        return localTransform;
     }
 }

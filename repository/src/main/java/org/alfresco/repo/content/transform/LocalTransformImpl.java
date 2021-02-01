@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -70,7 +70,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         checkAvailability();
     }
 
-    private boolean remoteTransformerClientConfigured()
+    public boolean remoteTransformerClientConfigured()
     {
         return remoteTransformerClient.getBaseUrl() != null;
     }
@@ -180,7 +180,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         }
 
         // These 3 values are commonly needed and are always supplied in the TransformRequest (message to the T-Router).
-        // The targetExtension is also supplied in the TransformRequest, but in the case of local and legacy transformers
+        // The targetExtension is also supplied in the TransformRequest, but in the case of local transforms
         // is added by the remoteTransformerClient.request call for historic reasons, so does not need to be added here.
         args[i++] = "sourceMimetype";
         args[i++] = sourceMimetype;

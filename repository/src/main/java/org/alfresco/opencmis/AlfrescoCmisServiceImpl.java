@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -165,6 +165,16 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     private Authentication authentication;
     private Map<String, CMISNodeInfo> nodeInfoMap;
     private Map<String, ObjectInfo> objectInfoMap;
+
+    private Set<String> cmisRequestRenditionsOnCreateDoc = null;
+
+    public Set<String> getCmisRequestRenditionsOnCreateDoc() {
+        return cmisRequestRenditionsOnCreateDoc;
+    }
+
+    public void setCmisRequestRenditionsOnCreateDoc(Set<String> cmisRequestRenditionsOnCreateDoc) {
+        this.cmisRequestRenditionsOnCreateDoc = cmisRequestRenditionsOnCreateDoc;
+    }
 
     public AlfrescoCmisServiceImpl(CMISConnector connector)
     {
@@ -1306,9 +1316,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             writer.putContent(contentStream.getStream());
         }
 
-        // extract metadata and generate thumbnail asynchronously
+        // extract metadata and generate thumbnail asynchronously (if configured - see a-g.p)
         connector.extractMetadata(nodeRef);
-        connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
+        connector.createThumbnails(nodeRef, getCmisRequestRenditionsOnCreateDoc());
 
         connector.applyVersioningState(nodeRef, versioningState);
 
@@ -1384,9 +1394,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             connector.applyPolicies(nodeRef, type, policies);
             connector.applyACL(nodeRef, type, addAces, removeAces);
 
-            // extract metadata and generate thumbnail asynchronously
+            // extract metadata and generate thumbnail asynchronously (if configured - see a-g.p)
             connector.extractMetadata(nodeRef);
-            connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
+            connector.createThumbnails(nodeRef, getCmisRequestRenditionsOnCreateDoc());
 
             connector.applyVersioningState(nodeRef, versioningState);
             

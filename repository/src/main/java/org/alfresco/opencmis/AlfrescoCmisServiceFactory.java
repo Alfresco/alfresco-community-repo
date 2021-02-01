@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,10 @@
  */
 package org.alfresco.opencmis;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionInterceptor;
@@ -57,6 +60,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     private AlfrescoCmisStreamInterceptor cmisStreams;
     private CMISTransactionAwareHolderInterceptor cmisHolder;
     private AuthorityService authorityService;
+
+    private String cmisCreateDocRequestRenditionsSet = null;
 
     /**
      *
@@ -139,6 +144,14 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         this.cmisHolder = cmisHolder;
     }
 
+    public String getCmisCreateDocRequestRenditionsSet() {
+        return cmisCreateDocRequestRenditionsSet;
+    }
+
+    public void setCmisCreateDocRequestRenditionsSet(String cmisCreateDocRequestRenditionsSet) {
+        this.cmisCreateDocRequestRenditionsSet = cmisCreateDocRequestRenditionsSet;
+    }
+
     @Override
     public void init(Map<String, String> parameters)
     {
@@ -217,6 +230,30 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     
     protected AlfrescoCmisService getCmisServiceTarget(CMISConnector connector)
     {
-        return new AlfrescoCmisServiceImpl(connector);
+        AlfrescoCmisServiceImpl cmisService = new AlfrescoCmisServiceImpl(connector);
+
+        Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
+        logger.info("getCmisServiceTarget: cmis.create.doc.request.renditions.set="+stringSet);
+        cmisService.setCmisRequestRenditionsOnCreateDoc(stringSet);
+
+        return cmisService;
+    }
+
+    private Set<String> parseCommaSeparatedSet(String str)
+    {
+        Set<String> stringSet = new HashSet<>();
+        if (str != null)
+        {
+            StringTokenizer st = new StringTokenizer(str, ",");
+            while (st.hasMoreTokens())
+            {
+                String entry = st.nextToken().trim();
+                if (!entry.isEmpty())
+                {
+                    stringSet.add(entry);
+                }
+            }
+        }
+        return stringSet;
     }
 }

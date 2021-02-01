@@ -86,6 +86,7 @@
         <property name="cmisStreams"            ref="CMISService_Streams" />
         <property name="cmisHolder"             ref="CMISTransactionAwareHolderInterceptor" />
         <property name="authorityService"       ref="AuthorityService" />
+        <property name="cmisCreateDocRequestRenditionsSet" value="${cmis.create.doc.request.renditions.set}" />
     </bean>
 
     <bean id="CMISTransactionAwareHolderInterceptor" class="org.alfresco.opencmis.CMISTransactionAwareHolderInterceptor" />

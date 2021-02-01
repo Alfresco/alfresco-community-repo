@@ -1318,7 +1318,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         // extract metadata and generate thumbnail asynchronously (if configured - see a-g.p)
         connector.extractMetadata(nodeRef);
-        connector.createThumbnails(nodeRef, cmisRequestRenditionsOnCreateDoc);
+        connector.createThumbnails(nodeRef, getCmisRequestRenditionsOnCreateDoc());
 
         connector.applyVersioningState(nodeRef, versioningState);
 
@@ -1396,7 +1396,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
             // extract metadata and generate thumbnail asynchronously (if configured - see a-g.p)
             connector.extractMetadata(nodeRef);
-            connector.createThumbnails(nodeRef, cmisRequestRenditionsOnCreateDoc);
+            connector.createThumbnails(nodeRef, getCmisRequestRenditionsOnCreateDoc());
 
             connector.applyVersioningState(nodeRef, versioningState);
             

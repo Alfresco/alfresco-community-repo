@@ -231,7 +231,11 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     protected AlfrescoCmisService getCmisServiceTarget(CMISConnector connector)
     {
         AlfrescoCmisServiceImpl cmisService = new AlfrescoCmisServiceImpl(connector);
-        cmisService.setCmisRequestRenditionsOnCreateDoc(parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet()));
+
+        Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
+        logger.info("getCmisServiceTarget: cmis.create.doc.request.renditions.set="+stringSet);
+        cmisService.setCmisRequestRenditionsOnCreateDoc(stringSet);
+
         return cmisService;
     }
 

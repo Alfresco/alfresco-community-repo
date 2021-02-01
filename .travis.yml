@@ -33,7 +33,7 @@ stages:
   - name: test
     if: commit_message !~ /\[skip tests\]/
   - name: release
-    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no release\]/
+    if: fork = false AND (branch = master OR branch =~ /release\/.*/ OR branch =~/fix\/.*/) AND type != pull_request AND commit_message !~ /\[no release\]/
   - name: update_downstream
     if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
   - name: trigger_downstream

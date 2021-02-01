@@ -37,6 +37,11 @@ import java.util.UUID;
  */
 public class CommonTestUtils
 {
+    /**
+     * The default pattern used for the user full name when users are created with tas utility
+     */
+    public static final String USER_FULLNAME_PATTERN = "FN-%1$s LN-%1$s";
+
     /** Private constructor to prevent instantiation. */
     private CommonTestUtils()
     {

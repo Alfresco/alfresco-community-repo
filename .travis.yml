@@ -29,7 +29,7 @@ before_install:
   - find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
   - echo "${DOCKERHUB_PASSWORD}" | docker login -u="${DOCKERHUB_USERNAME}" --password-stdin
   - echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
-install: mvn -B -q clean ${MAVEN_PHASE}
+install: travis_retry travis_wait 40 mvn -B -q clean ${MAVEN_PHASE}
 
 stages:
   - name: Build AGS

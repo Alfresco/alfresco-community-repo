@@ -229,9 +229,12 @@ public class NodesImpl implements Nodes
     private Repository repositoryHelper;
     private ServiceRegistry sr;
     private Set<String> defaultIgnoreTypesAndAspects;
+    private Set<String> defaultPersonLookupProperties;
 
     // ignore types/aspects
     private Set<QName> ignoreQNames;
+
+    private Set<QName> personLookupProperties = new HashSet<>();
 
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
@@ -276,6 +279,14 @@ public class NodesImpl implements Nodes
                 ignoreQNames.add(createQName(type));
             }
         }
+
+        if (defaultPersonLookupProperties != null)
+        {
+            for (String property : defaultPersonLookupProperties)
+            {
+                personLookupProperties.add(createQName(property));
+            }
+        }
     }
 
     public void setServiceRegistry(ServiceRegistry sr)
@@ -301,6 +312,10 @@ public class NodesImpl implements Nodes
     public void setIgnoreTypes(Set<String> ignoreTypesAndAspects)
     {
         this.defaultIgnoreTypesAndAspects = ignoreTypesAndAspects;
+    }
+
+    public void setPersonLookupProperties(Set<String> personLookupProperties) {
+      this.defaultPersonLookupProperties = personLookupProperties;
     }
 
     public void setPoster(ActivityPoster poster)
@@ -337,13 +352,6 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_INITIAL_VERSION,
             ContentModel.PROP_AUTO_VERSION_PROPS,
             ContentModel.PROP_AUTO_VERSION);
-
-    public static final List<QName> PROPS_USERLOOKUP = Arrays.asList(
-            ContentModel.PROP_CREATOR,
-            ContentModel.PROP_MODIFIER,
-            ContentModel.PROP_OWNER,
-            ContentModel.PROP_LOCK_OWNER,
-            ContentModel.PROP_WORKING_COPY_OWNER);
 
     public final static Map<String,QName> PARAM_SYNONYMS_QNAME;
     static
@@ -1222,9 +1230,9 @@ public class NodesImpl implements Nodes
                 Serializable value = nodeProps.get(qName);
                 if (value != null)
                 {
-                    if (PROPS_USERLOOKUP.contains(qName))
+                    if (personLookupProperties.contains(qName))
                     {
-                        value = Node.lookupUserInfo((String)value, mapUserInfo, sr.getPersonService());
+                        value = Node.lookupUserInfo((String) value, mapUserInfo, personService);
                     }
 
                     // Empty (zero length) string values are considered to be

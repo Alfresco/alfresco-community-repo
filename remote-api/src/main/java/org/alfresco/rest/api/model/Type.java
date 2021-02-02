@@ -50,7 +50,7 @@ public class Type extends AbstractClass
     public String toString()
     {
         StringBuilder builder = new StringBuilder(512);
-        builder.append("Aspect [id=").append(this.id)
+        builder.append("Type [id=").append(this.id)
                 .append(", title=").append(this.title)
                 .append(", description=").append(this.description)
                 .append(", parentId=").append(parentId)

@@ -188,7 +188,7 @@ public class TestAspects extends AbstractBaseApiTest
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
         testListAspectException("(modelIds='mycompany:model,unknown:model,known:model')");
-        testListAspectException("(modelIds='unknown:model,known:model')");
+        testListAspectException("(modelIds='unknown:model,mycompany:model')");
         testListAspectException("(modelIds=' , , ')");
         testListAspectException("(parentIds='smf:smartFolder,unknown:aspect')");
         testListAspectException("(parentIds='unknown:aspect,smf:smartFolder')");
@@ -202,13 +202,13 @@ public class TestAspects extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        testGetAspectExceptions("uknown:childAspect", HttpStatus.SC_NOT_FOUND);
-        testGetAspectExceptions("aspect:", HttpStatus.SC_NOT_FOUND);
-        testGetAspectExceptions("aspect", HttpStatus.SC_NOT_FOUND);
+        testGetAspectExceptions("unknown:childAspect");
+        testGetAspectExceptions("aspect:");
+        testGetAspectExceptions("aspect");
     }
 
 
-    private void testGetAspectExceptions(String aspectId, int statusCode)
+    private void testGetAspectExceptions(String aspectId)
     {
         try
         {
@@ -217,7 +217,7 @@ public class TestAspects extends AbstractBaseApiTest
         }
         catch (PublicApiException e)
         {
-            assertEquals(statusCode, e.getHttpResponse().getStatusCode());
+            assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
     }
 
@@ -225,7 +225,7 @@ public class TestAspects extends AbstractBaseApiTest
     {
         try
         {
-            otherParams.put("where", query); // wrong model id
+            otherParams.put("where", query);
             publicApiClient.aspects().getAspects(createParams(paging, otherParams));
             fail("Bad request expected");
         }

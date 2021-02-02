@@ -1695,8 +1695,8 @@ public class PublicApiClient
 
         public Aspect getAspect(String aspectId) throws PublicApiException
         {
-            HttpResponse response = getAll("aspects", aspectId, null, null, null, "Failed to get aspects");
-            return Aspect.parseAspect(response.getJsonResponse());
+            HttpResponse response = getAll("aspects", aspectId, null, null, null, "Failed to get aspect");
+            return Aspect.parseAspect((JSONObject)response.getJsonResponse().get("entry"));
         }
     }
 
@@ -1710,8 +1710,8 @@ public class PublicApiClient
 
         public Type getType(String typeId) throws PublicApiException
         {
-            HttpResponse response = getAll("types", typeId, null, null, null, "Failed to get types");
-            return Type.parseType(response.getJsonResponse());
+            HttpResponse response = getAll("types", typeId, null, null, null, "Failed to get type");
+            return Type.parseType((JSONObject)response.getJsonResponse().get("entry"));
         }
     }
 

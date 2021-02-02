@@ -104,7 +104,7 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
     @SuppressWarnings("unchecked")
     public static PublicApiClient.ListResponse<Type> parseTypes(JSONObject jsonObject)
     {
-        List<Type> aspects = new ArrayList<Type>();
+        List<Type> types = new ArrayList<Type>();
 
         JSONObject jsonList = (JSONObject)jsonObject.get("list");
         assertNotNull(jsonList);
@@ -116,12 +116,11 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
         {
             JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
             JSONObject entry = (JSONObject)jsonEntry.get("entry");
-            aspects.add(parseType(entry));
+            types.add(parseType(entry));
         }
 
         PublicApiClient.ExpectedPaging paging = PublicApiClient.ExpectedPaging.parsePagination(jsonList);
-        PublicApiClient.ListResponse<Type> response = new PublicApiClient.ListResponse<Type>(paging, aspects);
-        return response;
+        return new PublicApiClient.ListResponse<Type>(paging, types);
     }
 
 }

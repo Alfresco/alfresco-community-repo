@@ -120,8 +120,7 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         }
 
         PublicApiClient.ExpectedPaging paging = PublicApiClient.ExpectedPaging.parsePagination(jsonList);
-        PublicApiClient.ListResponse<Aspect> response = new PublicApiClient.ListResponse<Aspect>(paging, aspects);
-        return response;
+        return new PublicApiClient.ListResponse<Aspect>(paging, aspects);
     }
 
 }

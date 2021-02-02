@@ -196,22 +196,22 @@ public class TestTypes extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        testGetTypeExceptions("unknown:childType", HttpStatus.SC_NOT_FOUND);
-        testGetTypeExceptions("type:", HttpStatus.SC_NOT_FOUND);
-        testGetTypeExceptions("type", HttpStatus.SC_NOT_FOUND);
+        testGetTypeExceptions("unknown:childType");
+        testGetTypeExceptions("type:");
+        testGetTypeExceptions("type");
     }
 
 
-    private void testGetTypeExceptions(String aspectId, int statusCode)
+    private void testGetTypeExceptions(String typeId)
     {
         try
         {
-            publicApiClient.types().getType(aspectId);
+            publicApiClient.types().getType(typeId);
             fail("type not found expected");
         }
         catch (PublicApiException e)
         {
-            assertEquals(statusCode, e.getHttpResponse().getStatusCode());
+            assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
         }
     }
 
@@ -219,7 +219,7 @@ public class TestTypes extends AbstractBaseApiTest
     {
         try
         {
-            otherParams.put("where", query); // wrong model id
+            otherParams.put("where", query);
             publicApiClient.types().getTypes(createParams(paging, otherParams));
             fail("Bad request expected");
         }

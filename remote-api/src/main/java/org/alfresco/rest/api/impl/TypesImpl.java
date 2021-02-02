@@ -97,10 +97,10 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
                 typeList = this.dictionaryService.getAllTypes().parallelStream();
         }
 
-        List<Type> allAspects = typeList.filter((qName) -> filterByNamespace(query, qName))
+        List<Type> allTypes = typeList.filter((qName) -> filterByNamespace(query, qName))
                 .map((qName) -> this.convertToType(dictionaryService.getType(qName)))
                 .collect(Collectors.toList());
-        return createPagedResult(allAspects, paging);
+        return createPagedResult(allTypes, paging);
     }
 
     @Override

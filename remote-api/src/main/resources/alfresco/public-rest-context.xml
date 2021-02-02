@@ -1515,4 +1515,28 @@
             </list>
         </property>
     </bean>
+
+    <bean class="org.alfresco.rest.api.types.TypeEntityResource">
+        <property name="types" ref="Types" />
+    </bean>
+
+    <bean id="types" class="org.alfresco.rest.api.impl.TypesImpl">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="classDefinitionMapper" ref="classDefinitionMapper" />
+    </bean>
+
+    <bean id="Types" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Types</value>
+        </property>
+        <property name="target">
+            <ref bean="types" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
 </beans>

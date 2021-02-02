@@ -78,6 +78,7 @@ import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteGroup;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.api.tests.client.data.Type;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -135,7 +136,7 @@ public class PublicApiClient
     private AuditApps auditApps;
     private Actions actions;
     private Aspects aspects;
-
+    private Types types;
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -162,6 +163,7 @@ public class PublicApiClient
         auditApps = new AuditApps();
         actions = new Actions();
         aspects = new Aspects();
+        types = new Types();
     }
 
     public void setRequestContext(RequestContext rc)
@@ -241,6 +243,11 @@ public class PublicApiClient
     public Aspects aspects()
     {
         return aspects;
+    }
+
+    public Types types()
+    {
+        return types;
     }
 
     public CmisSession createPublicApiCMISSession(Binding binding, String version)
@@ -1690,6 +1697,21 @@ public class PublicApiClient
         {
             HttpResponse response = getAll("aspects", aspectId, null, null, null, "Failed to get aspects");
             return Aspect.parseAspect(response.getJsonResponse());
+        }
+    }
+
+    public class Types extends AbstractProxy
+    {
+        public PublicApiClient.ListResponse<Type> getTypes(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("types", null, null, null, params, "Failed to get types");
+            return Type.parseTypes(response.getJsonResponse());
+        }
+
+        public Type getType(String typeId) throws PublicApiException
+        {
+            HttpResponse response = getAll("types", typeId, null, null, null, "Failed to get types");
+            return Type.parseType(response.getJsonResponse());
         }
     }
 

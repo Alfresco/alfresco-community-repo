@@ -37,26 +37,41 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
-public class TestAspect extends AbstractBaseApiTest
+public class TestAspects extends AbstractBaseApiTest
 {
 
     private PublicApiClient.Paging paging = getPaging(0, 10);
     PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Aspect> aspects = null;
-    org.alfresco.rest.api.tests.client.data.Aspect aspect, expectedModel = null;
+    org.alfresco.rest.api.tests.client.data.Aspect aspect, childAspect = null, smartFilter = null, rescanAspect = null;
     Map<String, String> otherParams = new HashMap<>();
 
     @Before
     public void setup() throws Exception
     {
         super.setup();
-        expectedModel = new org.alfresco.rest.api.tests.client.data.Aspect();
-        expectedModel.setId("mycompany:childAspect");
-        expectedModel.setTitle("Child Aspect");
-        expectedModel.setDescription("Child Aspect Description");
-        expectedModel.setParentId("smf:smartFolder");
+
+        childAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
+        childAspect.setId("mycompany:childAspect");
+        childAspect.setTitle("Child Aspect");
+        childAspect.setDescription("Child Aspect Description");
+        childAspect.setParentId("smf:smartFolder");
+
+        rescanAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
+        rescanAspect.setId("test:rescan");
+        rescanAspect.setTitle("rescan");
+        rescanAspect.setDescription("Doc that required to scan ");
+
+        smartFilter = new org.alfresco.rest.api.tests.client.data.Aspect();
+        smartFilter.setId("test:smartFilter");
+        smartFilter.setTitle("Smart filter");
+        smartFilter.setDescription("Smart Filter");
+        smartFilter.setParentId("cm:auditable");
     }
 
     @Test
@@ -83,7 +98,7 @@ public class TestAspect extends AbstractBaseApiTest
 
         otherParams.put("where", "(uriPrefix matches('http://www.mycompany.com/model.*'))");
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(4));
         assertFalse(aspects.getPaging().getHasMoreItems());
 
         otherParams.put("where", "(not uriPrefix matches('http://www.mycompany.com/model.*'))");
@@ -98,11 +113,31 @@ public class TestAspect extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(parentIds='smf:smartFolder')");
+        otherParams.put("where", "(parentIds='smf:smartFolder,cm:auditable')");
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-        aspects.getList().get(0).expected(expectedModel);
-        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+        aspects.getList().get(1).expected(childAspect);
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(4));
         assertFalse(aspects.getPaging().getHasMoreItems());
+
+        otherParams.put("where", "(parentIds='smf:smartFolder,cm:auditable' AND uriPrefix matches('http://www.test.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        aspects.getList().get(0).expected(smartFilter);
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(1));
+
+        otherParams.put("where", "(parentIds='smf:smartFolder,cm:auditable' AND not uriPrefix matches('http://www.test.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        aspects.getList().get(1).expected(childAspect);
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(3));
+
+        // match everything
+        otherParams.put("where", "(parentIds='smf:smartFolder,cm:auditable' AND uriPrefix matches('.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(4));
+
+        // match nothing
+        otherParams.put("where", "(parentIds='smf:smartFolder,cm:auditable' AND not uriPrefix matches('.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(0));
     }
 
     @Test
@@ -111,10 +146,29 @@ public class TestAspect extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(modelIds='mycompany:exampleModel')"); // wrong model id
+        otherParams.put("where", "(modelIds='mycompany:model,test:scan')");
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(6));
         assertFalse(aspects.getPaging().getHasMoreItems());
+
+
+        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND uriPrefix matches('http://www.test.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        aspects.getList().get(0).expected(rescanAspect);
+        aspects.getList().get(1).expected(smartFilter);
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
+
+        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND not uriPrefix matches('http://www.test.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(4));
+
+        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND uriPrefix matches('.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(6));
+
+        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND not uriPrefix matches('.*'))");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(0));
     }
 
     @Test
@@ -124,7 +178,7 @@ public class TestAspect extends AbstractBaseApiTest
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
         aspect = publicApiClient.aspects().getAspect("mycompany:childAspect");
-        aspect.expected(expectedModel);
+        aspect.expected(childAspect);
     }
 
     @Test
@@ -133,13 +187,13 @@ public class TestAspect extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
+        testListAspectException("(modelIds='mycompany:model,unknown:model,known:model')");
         testListAspectException("(modelIds='unknown:model,known:model')");
         testListAspectException("(modelIds=' , , ')");
-        testListAspectException("(parentIds='unknown:aspect,known:aspect')");
+        testListAspectException("(parentIds='smf:smartFolder,unknown:aspect')");
+        testListAspectException("(parentIds='unknown:aspect,smf:smartFolder')");
         testListAspectException("(parentIds=' , , ')");
-        testListAspectException("");
-        testListAspectException("(uriPrefix matches(' '))");
-        testListAspectException("(uriPrefix matches(' , , '))");
+        testListAspectException("(uriPrefix matches('*'))"); // wrong pattern
     }
 
     @Test
@@ -151,8 +205,6 @@ public class TestAspect extends AbstractBaseApiTest
         testGetAspectExceptions("uknown:childAspect", HttpStatus.SC_NOT_FOUND);
         testGetAspectExceptions("aspect:", HttpStatus.SC_NOT_FOUND);
         testGetAspectExceptions("aspect", HttpStatus.SC_NOT_FOUND);
-        testGetAspectExceptions(" ", HttpStatus.SC_BAD_REQUEST);
-        testGetAspectExceptions(null, HttpStatus.SC_BAD_REQUEST);
     }
 
 
@@ -161,6 +213,7 @@ public class TestAspect extends AbstractBaseApiTest
         try
         {
             publicApiClient.aspects().getAspect(aspectId);
+            fail("Aspect not found expected");
         }
         catch (PublicApiException e)
         {
@@ -174,6 +227,7 @@ public class TestAspect extends AbstractBaseApiTest
         {
             otherParams.put("where", query); // wrong model id
             publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+            fail("Bad request expected");
         }
         catch (PublicApiException e)
         {

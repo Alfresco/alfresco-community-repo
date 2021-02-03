@@ -54,6 +54,9 @@ jobs:
           paths:
             - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
             - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
+      after_script:
+        - docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+        - docker ps -a | grep '_alfresco2_1' | awk '{print $1}' | xargs docker logs | tail -5000
       after_failure:
         - docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
         - docker ps -a | grep '_alfresco2_1' | awk '{print $1}' | xargs docker logs | tail -5000

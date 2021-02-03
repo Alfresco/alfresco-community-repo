@@ -24,11 +24,19 @@ branches:
     - /merge\/.*/
     - /hotfix\/.*/
 
+cache:
+  directories:
+    - ${HOME}/.m2/repository
+
+# the cache can grow constantly
+before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
+
 before_install:
   - mkdir -p "${HOME}/.m2" && cp -f .travis.settings.xml "${HOME}/.m2/settings.xml"
   - find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
   - echo "${DOCKERHUB_PASSWORD}" | docker login -u="${DOCKERHUB_USERNAME}" --password-stdin
   - echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
+install: skip
 
 stages:
   - name: Build AGS
@@ -44,8 +52,6 @@ jobs:
   include:
     - name: "Build AGS Community"
       stage: Build AGS
-      install:
-         - travis_retry travis_wait 80 mvn -B -q clean install $MVN_SKIP -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       before_script: source scripts/setUpMavenPhase.sh
       script:
         - travis_retry travis_wait 120 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn

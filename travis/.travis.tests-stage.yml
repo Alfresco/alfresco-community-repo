@@ -49,7 +49,14 @@ jobs:
         - bash scripts/start-compose.sh "${ENTERPRISE_REPO_PATH}/docker-compose-cluster.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=clusterTestSuite.xml -Dskip.automationtests=false
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+      addons:
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
+            - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
+      after_failure:
+        - docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+        - docker ps -a | grep '_alfresco2_1' | awk '{print $1}' | xargs docker logs | tail -5000
 
     - name: "Enterprise Rest API WORM Tests"
       stage: Tests

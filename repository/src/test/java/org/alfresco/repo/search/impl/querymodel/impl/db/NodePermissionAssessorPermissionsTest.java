@@ -57,14 +57,6 @@ public class NodePermissionAssessorPermissionsTest
         DBStats.resetStopwatches();
     }
 
-    private NodePermissionAssessor createAssessor()
-    {
-        NodeService nodeService = mock(NodeService.class);
-        Authority authority = mock(Authority.class);
-        EntityLookupCache<Long, Node, NodeRef> nodeCache = mock(EntityLookupCache.class);
-        return spy(new NodePermissionAssessor(nodeService, permissionService, authority, nodeCache));
-    }
-
     @Test
     public void shouldGrantPermissionWhenSystemIsReading()
     {
@@ -97,5 +89,13 @@ public class NodePermissionAssessorPermissionsTest
         
         // the node is included
         assertFalse(included);
+    }
+    
+    private NodePermissionAssessor createAssessor()
+    {
+        NodeService nodeService = mock(NodeService.class);
+        Authority authority = mock(Authority.class);
+        EntityLookupCache<Long, Node, NodeRef> nodeCache = mock(EntityLookupCache.class);
+        return spy(new NodePermissionAssessor(nodeService, permissionService, authority, nodeCache));
     }
 }

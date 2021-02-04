@@ -107,14 +107,7 @@ public class NodePermissionAssessor
             }
             
             String owner = getOwner(node);
-            if (EqualsHelper.nullSafeEquals(authority.getAuthority(), owner))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return EqualsHelper.nullSafeEquals(authority.getAuthority(), owner);
         }
         finally
         {

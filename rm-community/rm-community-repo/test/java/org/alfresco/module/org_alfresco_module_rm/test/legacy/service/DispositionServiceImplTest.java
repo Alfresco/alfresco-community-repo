@@ -917,7 +917,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      * Test to make sure all the search rollups are correct after schedule is updated
      * @throws Exception
      */
-    /*public void testRM386() throws Exception
+    public void testRM386() throws Exception
     {
         doTestInTransaction(new Test<Void>()
         {
@@ -1028,5 +1028,5 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         });
 
     }
-    */
+
 }

@@ -90,13 +90,13 @@ public class TestTypes extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(uriPrefix matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         types.getList().get(0).expected(docType);
         types.getList().get(1).expected(whitePaperType);
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
 
-        otherParams.put("where", "(not uriPrefix matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(not namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertTrue(types.getPaging().getTotalItems() > 130);
     }
@@ -107,27 +107,27 @@ public class TestTypes extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(parentIds='cm:content')");
+        otherParams.put("where", "(parentIds in ('cm:content'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         int total = types.getPaging().getTotalItems();
 
-        otherParams.put("where", "(parentIds='cm:content' AND uriPrefix matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(parentIds in ('cm:content') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         types.getList().get(0).expected(docType);
         types.getList().get(1).expected(whitePaperType);
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
 
-        otherParams.put("where", "(parentIds='cm:content' AND not uriPrefix matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(parentIds in ('cm:content') AND not namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(total - 2));
 
         // match everything
-        otherParams.put("where", "(parentIds='cm:content' AND uriPrefix matches('.*'))");
+        otherParams.put("where", "(parentIds in ('cm:content') AND namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(total));
 
         // match nothing
-        otherParams.put("where", "(parentIds='cm:content' AND not uriPrefix matches('.*'))");
+        otherParams.put("where", "(parentIds in ('cm:content') AND not namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(0));
     }
@@ -138,27 +138,27 @@ public class TestTypes extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(modelIds='mycompany:model,test:scan')");
+        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(3));
 
-        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND uriPrefix matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         types.getList().get(0).expected(docType);
         types.getList().get(1).expected(whitePaperType);
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
 
-        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND not uriPrefix matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND not namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(1));
 
         // match everything
-        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND uriPrefix matches('.*'))");
+        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(3));
 
         // match nothing
-        otherParams.put("where", "(modelIds='mycompany:model,test:scan' AND not uriPrefix matches('.*'))");
+        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND not namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(0));
     }
@@ -179,15 +179,15 @@ public class TestTypes extends AbstractBaseApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        testListTypeException("(modelIds='mycompany:model,unknown:model')");
-        testListTypeException("(modelIds='unknown:model,unknown1:another')");
+        testListTypeException("(modelIds in ('mycompany:model','unknown:model'))");
+        testListTypeException("(modelIds in ('unknown:model','unknown1:another'))");
         testListTypeException("(modelIds=' , , ')");
-        testListTypeException("(parentIds='cm:content,unknown:type')");
-        testListTypeException("(parentIds='unknown:type,cm:content')");
-        testListTypeException("(parentIds='unknown:type,unknown:types')");
-        testListTypeException("(parentIds=' , , ')");
+        testListTypeException("(parentIds in ('cm:content','unknown:type')");
+        testListTypeException("(parentIds in ('unknown:type','cm:content'))");
+        testListTypeException("(parentIds in ('unknown:type','unknown:types'))");
+        testListTypeException("(parentIds in (' ',' ',' '))");
         testListTypeException("");
-        testListTypeException("(uriPrefix matches('*'))"); // wrong pattern
+        testListTypeException("(namespaceUri matches('*'))"); // wrong pattern
     }
 
     @Test

@@ -26,8 +26,8 @@
 
 package org.alfresco.rest.api.impl;
 
-import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.model.AbstractClass;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
@@ -35,6 +35,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +47,7 @@ import java.util.regex.Pattern;
 public class AbstractClassImpl<T extends AbstractClass> {
     static String PARAM_MODEL_IDS = "modelIds";
     static String PARAM_PARENT_IDS = "parentIds";
-    static String PARAM_URI_PREFIX = "uriPrefix";
+    static String PARAM_NAMESPACE_URI = "namespaceUri";
 
     public CollectionWithPagingInfo<T> createPagedResult(List<T> list, Paging paging)
     {
@@ -70,20 +71,20 @@ public class AbstractClassImpl<T extends AbstractClass> {
         }
     }
 
-    public boolean filterByNamespace(ModelApiFilter query, QName type)
+    public boolean filterByNamespace(ModelApiFilter query, QName qName)
     {
         //System aspect/type is not allowed
-        if (type.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
+        if (qName.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
         {
             return false;
         }
         if (query != null && query.getMatchedPrefix() != null)
         {
-            return Pattern.matches(query.getMatchedPrefix(), type.getNamespaceURI());
+            return Pattern.matches(query.getMatchedPrefix(), qName.getNamespaceURI());
         }
         if (query != null && query.getNotMatchedPrefix() != null)
         {
-            return  !Pattern.matches(query.getNotMatchedPrefix(), type.getNamespaceURI());
+            return  !Pattern.matches(query.getNotMatchedPrefix(), qName.getNamespaceURI());
         }
         return  true;
     }
@@ -99,50 +100,73 @@ public class AbstractClassImpl<T extends AbstractClass> {
         return null;
     }
 
+    void validateListParam(Set<String> listParam, String paramName)
+    {
+        if (listParam.isEmpty())
+        {
+            throw new IllegalArgumentException(StringUtils.capitalize(paramName) + "s filter list cannot be empty.");
+        }
+
+        listParam.stream()
+                .filter(String::isEmpty)
+                .findAny()
+                .ifPresent(qName -> {
+                    throw new IllegalArgumentException(StringUtils.capitalize(paramName) + " cannot be empty (i.e. '')");
+                });
+    }
+
     public static class ClassQueryWalker extends MapBasedQueryWalker
     {
+        private Set<String> modelIds = null;
+        private Set<String> parentIds = null;
         private String notMatchedPrefix = null;
         private String matchedPrefix = null;
 
         public ClassQueryWalker()
         {
-            super(new HashSet<>(Arrays.asList(PARAM_MODEL_IDS, PARAM_PARENT_IDS)), new HashSet<>(Collections.singleton(PARAM_URI_PREFIX)));
+            super(new HashSet<>(Arrays.asList(PARAM_MODEL_IDS, PARAM_PARENT_IDS)), new HashSet<>(Collections.singleton(PARAM_NAMESPACE_URI)));
         }
 
+        @Override
+        public void in(String propertyName, boolean negated, String... propertyValues)
+        {
+            if (negated)
+            {
+                throw new InvalidArgumentException("Cannot use NOT for " + propertyName);
+            }
+
+            if (propertyName.equalsIgnoreCase(PARAM_MODEL_IDS))
+            {
+                modelIds = new HashSet<>(Arrays.asList(propertyValues));
+            }
+
+            if (propertyName.equalsIgnoreCase(PARAM_PARENT_IDS))
+            {
+                parentIds = new HashSet<>(Arrays.asList(propertyValues));
+            }
+        }
 
         @Override
         public void matches(String property, String value, boolean negated)
         {
-            if (negated && property.equals(PARAM_URI_PREFIX))
+            if (negated && property.equals(PARAM_NAMESPACE_URI))
             {
                 notMatchedPrefix = value;
             }
-            else if (property.equals(PARAM_URI_PREFIX))
+            else if (property.equals(PARAM_NAMESPACE_URI))
             {
                 matchedPrefix = value;
             }
         }
 
-        private Set<String> parseProperty(String property)
-        {
-            String propertyParam = getProperty(property, WhereClauseParser.EQUALS, String.class);
-            Set<String> ids = null;
-
-            if (propertyParam != null)
-            {
-                ids = new HashSet<>(Arrays.asList(propertyParam.trim().split(",")));
-            }
-            return ids;
-        }
-
         public Set<String> getModelIds()
         {
-            return parseProperty(PARAM_MODEL_IDS);
+            return this.modelIds;
         }
 
         public Set<String> getParentIds()
         {
-            return parseProperty(PARAM_PARENT_IDS);
+            return this.parentIds;
         }
 
         public String getNotMatchedPrefix()

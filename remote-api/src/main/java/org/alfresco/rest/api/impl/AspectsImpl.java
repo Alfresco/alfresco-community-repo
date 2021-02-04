@@ -86,10 +86,12 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
 
         if (query != null && query.getModelIds() != null)
         {
+            validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
             aspectList = query.getModelIds().parallelStream().map(this::getModelAspects).flatMap(Collection::parallelStream);
         }
         else if (query != null && query.getParentIds() != null)
         {
+            validateListParam(query.getParentIds(), PARAM_PARENT_IDS);
             aspectList = query.getParentIds().parallelStream().map(this::getChildAspects).flatMap(Collection::parallelStream);
         }
         else

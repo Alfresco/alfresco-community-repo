@@ -86,10 +86,12 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
 
         if (query != null && query.getModelIds() != null)
         {
+            validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
             typeList = query.getModelIds().parallelStream().map(this::getModelTypes).flatMap(Collection::parallelStream);
         }
         else if (query != null && query.getParentIds() != null)
         {
+            validateListParam(query.getParentIds(), PARAM_PARENT_IDS);
             typeList = query.getParentIds().parallelStream().map(this::getChildTypes).flatMap(Collection::parallelStream);
         }
         else

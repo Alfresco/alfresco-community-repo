@@ -298,8 +298,8 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
         return wrapped.getSpellCheckResult();
     }
 
-    public void setTrimmedResultSet(boolean b)
+    public void setTrimmedResultSet(boolean value)
     {
-        this.trimmedResultSet = true;
+        this.trimmedResultSet = value;
     }
 }

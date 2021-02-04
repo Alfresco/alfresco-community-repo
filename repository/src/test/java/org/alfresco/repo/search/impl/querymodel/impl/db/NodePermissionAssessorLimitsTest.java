@@ -35,14 +35,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
-import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine.NodePermissionAssessor;
+import org.alfresco.repo.domain.permissions.Authority;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.Before;
 import org.junit.Test;
 
-public class NodePermissionAssessorTest
+public class NodePermissionAssessorLimitsTest
 {
     private NodePermissionAssessor assessor;
     private Node node;
@@ -118,7 +121,10 @@ public class NodePermissionAssessorTest
         engine.setPermissionService(permissionService);
         engine.setAclCrudDAO(aclCrudDAO);
         
-        NodePermissionAssessor assessor = spy(engine.new NodePermissionAssessor());
+        NodeService nodeService = mock(NodeService.class);
+        Authority authority = mock(Authority.class);
+        EntityLookupCache<Long, Node, NodeRef> nodeCache = mock(EntityLookupCache.class);
+        NodePermissionAssessor assessor = spy(new NodePermissionAssessor(nodeService, permissionService, authority, nodeCache));
         doReturn(true).when(assessor).isReallyIncluded(any(Node.class));
         return assessor;
     }

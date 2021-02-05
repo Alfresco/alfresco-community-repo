@@ -25,68 +25,25 @@
  */
 package org.alfresco.rest.api.model;
 
-import java.util.Map;
+import java.util.List;
 /**
- * Represents a constraint of a node definition property.
+ * Represents the node definition.
  *
  * @author gfertuso
  */
-public class NodeDefinitionConstraint
+public class ClassDefinition
 {
-    private String id;
-    private String type;
-    private String title;
-    private String description;
-    private Map<String, Object> parameters;
-
-    public String getId()
+    
+    List <PropertyDefinition> properties;
+    
+    public List<PropertyDefinition> getProperties()
     {
-        return id;
+        return properties;
     }
 
-    public void setId(String id) 
+    public void setProperties(List<PropertyDefinition> properties)
     {
-        this.id = id;
-    }
-
-    public String getType() 
-    {
-        return type;
-    }
-
-    public void setType(String type) 
-    {
-        this.type = type;
-    }
-
-    public String getTitle() 
-    {
-        return title;
-    }
-
-    public void setTitle(String title) 
-    {
-        this.title = title;
-    }
-
-    public String getDescription() 
-    {
-        return description;
-    }
-
-    public void setDescription(String description) 
-    {
-        this.description = description;
-    }
-
-    public Map<String, Object> getParameters() 
-    {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, Object> parameters)
-    {
-        this.parameters = parameters;
+        this.properties = properties;
     }
     
 }

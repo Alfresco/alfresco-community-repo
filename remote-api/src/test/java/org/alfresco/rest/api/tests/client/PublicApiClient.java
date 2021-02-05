@@ -52,6 +52,7 @@ import org.alfresco.rest.api.tests.TestSites;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.data.Action;
+import org.alfresco.rest.api.tests.client.data.Aspect;
 import org.alfresco.rest.api.tests.client.data.Activities;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.AuditApp;
@@ -77,6 +78,7 @@ import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteGroup;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.api.tests.client.data.Type;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -133,7 +135,8 @@ public class PublicApiClient
     private RawProxy rawProxy;
     private AuditApps auditApps;
     private Actions actions;
-    
+    private Aspects aspects;
+    private Types types;
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -159,6 +162,8 @@ public class PublicApiClient
         rawProxy = new RawProxy();
         auditApps = new AuditApps();
         actions = new Actions();
+        aspects = new Aspects();
+        types = new Types();
     }
 
     public void setRequestContext(RequestContext rc)
@@ -234,7 +239,17 @@ public class PublicApiClient
     {
         return actions;
     }
-    
+
+    public Aspects aspects()
+    {
+        return aspects;
+    }
+
+    public Types types()
+    {
+        return types;
+    }
+
     public CmisSession createPublicApiCMISSession(Binding binding, String version)
     {
        return createPublicApiCMISSession(binding, version, null);
@@ -1667,6 +1682,36 @@ public class PublicApiClient
         public void removeNodeRating(String nodeId, NodeRating rating) throws PublicApiException
         {
             remove("nodes", nodeId, "ratings", rating.getId(), "Failed to remove node rating");
+        }
+    }
+
+    public class Aspects extends AbstractProxy
+    {
+        public PublicApiClient.ListResponse<Aspect> getAspects(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("aspects", null, null, null, params, "Failed to get aspects");
+            return Aspect.parseAspects(response.getJsonResponse());
+        }
+
+        public Aspect getAspect(String aspectId) throws PublicApiException
+        {
+            HttpResponse response = getAll("aspects", aspectId, null, null, null, "Failed to get aspect");
+            return Aspect.parseAspect((JSONObject)response.getJsonResponse().get("entry"));
+        }
+    }
+
+    public class Types extends AbstractProxy
+    {
+        public PublicApiClient.ListResponse<Type> getTypes(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("types", null, null, null, params, "Failed to get types");
+            return Type.parseTypes(response.getJsonResponse());
+        }
+
+        public Type getType(String typeId) throws PublicApiException
+        {
+            HttpResponse response = getAll("types", typeId, null, null, null, "Failed to get type");
+            return Type.parseType((JSONObject)response.getJsonResponse().get("entry"));
         }
     }
 

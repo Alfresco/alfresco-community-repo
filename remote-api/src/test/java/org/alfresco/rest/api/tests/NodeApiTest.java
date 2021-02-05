@@ -62,11 +62,11 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.LockInfo;
-import org.alfresco.rest.api.model.NodeDefinition;
-import org.alfresco.rest.api.model.NodeDefinitionConstraint;
+import org.alfresco.rest.api.model.ClassDefinition;
+import org.alfresco.rest.api.model.ConstraintDefinition;
 import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.api.model.NodeDefinitionProperty;
+import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -6173,19 +6173,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("include", "definition");
         response = getSingle(NodesEntityResource.class, nodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        NodeDefinition nodeDefinition = nodeResp.getDefinition();
-        assertNotNull(nodeDefinition);
-        checkDefinitionProperties(nodeDefinition.getProperties());
+        ClassDefinition classDefinition = nodeResp.getDefinition();
+        assertNotNull(classDefinition);
+        checkDefinitionProperties(classDefinition.getProperties());
     }
     
-    private void checkDefinitionProperties(List<NodeDefinitionProperty> properties)
+    private void checkDefinitionProperties(List<PropertyDefinition> properties)
     {
         assertNotNull(properties);
         shouldNotContainSystemProperties(properties);
         shouldContainParentProperties(properties);
         shouldContainAspectProperties(properties);
 
-        NodeDefinitionProperty testProperty = properties.stream().
+        PropertyDefinition testProperty = properties.stream().
                 filter(property ->
                         property.getId().equals("cm:name"))
                 .findFirst()
@@ -6202,7 +6202,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     }
     
-    private void shouldNotContainSystemProperties(List<NodeDefinitionProperty> properties)
+    private void shouldNotContainSystemProperties(List<PropertyDefinition> properties)
     {
         assertTrue(properties.stream()
                 .noneMatch(property -> 
@@ -6210,41 +6210,41 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
                                 property.getId().equals(ContentModel.PROP_CONTENT.toPrefixString(namespaceService))));
     }
     
-    private void shouldContainParentProperties(List<NodeDefinitionProperty> properties)
+    private void shouldContainParentProperties(List<PropertyDefinition> properties)
     {
         assertTrue(properties.stream()
                 .anyMatch(property -> 
                         property.getId().equals("cm:name")));
     }
 
-    private void shouldContainAspectProperties(List<NodeDefinitionProperty> properties)
+    private void shouldContainAspectProperties(List<PropertyDefinition> properties)
     {
-        NodeDefinitionProperty mandatoryAspectProperty = properties.stream()
+        PropertyDefinition mandatoryAspectProperty = properties.stream()
                 .filter(property -> property.getId().equals("cm:created"))
                 .findFirst()
                 .get();
         assertNotNull(mandatoryAspectProperty);
 
-        NodeDefinitionProperty nodeAspectProperty = properties.stream()
+        PropertyDefinition nodeAspectProperty = properties.stream()
                 .filter(property -> property.getId().equals("cm:title"))
                 .findFirst()
                 .get();
         assertNotNull(nodeAspectProperty);
     }
 
-    private void checkPropertyConstraints(List<NodeDefinitionConstraint> constraints)
+    private void checkPropertyConstraints(List<ConstraintDefinition> constraints)
     {
         assertNotNull(constraints);
-        NodeDefinitionConstraint  nodeDefinitionConstraint = constraints.stream()
+        ConstraintDefinition constraintDefinition = constraints.stream()
                 .filter(constraint -> constraint.getId().equals("cm:filename"))
                 .findFirst()
                 .get();
-        assertNotNull(nodeDefinitionConstraint);
-        assertEquals("REGEX", nodeDefinitionConstraint.getType());
-        Map<String, Object> constraintParameters = nodeDefinitionConstraint.getParameters();
+        assertNotNull(constraintDefinition);
+        assertEquals("REGEX", constraintDefinition.getType());
+        Map<String, Object> constraintParameters = constraintDefinition.getParameters();
         assertNotNull(constraintParameters);
-        assertNull(nodeDefinitionConstraint.getDescription());
-        assertNull(nodeDefinitionConstraint.getTitle());
+        assertNull(constraintDefinition.getDescription());
+        assertNull(constraintDefinition.getTitle());
         assertEquals(2, constraintParameters.size());
         assertEquals("(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$)", constraintParameters.get("expression"));
         assertFalse((Boolean) constraintParameters.get("requiresMatch"));

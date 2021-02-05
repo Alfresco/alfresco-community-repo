@@ -27,7 +27,7 @@ package org.alfresco.rest.api.tests.client.data;
 
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.NodeDefinition;
+import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.NodePermissions;
 
 import java.util.Date;
@@ -80,7 +80,7 @@ public class Node
 
     protected List<String> allowableOperations;
     protected NodePermissions nodePermissions;
-    protected NodeDefinition definition;
+    protected ClassDefinition definition;
 
     // please note: these are currently only used (optionally) for node create request
     protected String relativePath;
@@ -325,12 +325,12 @@ public class Node
         this.targets = targets;
     }
 
-    public NodeDefinition getDefinition() 
+    public ClassDefinition getDefinition()
     {
         return definition;
     }
 
-    public void setDefinition(NodeDefinition definition) 
+    public void setDefinition(ClassDefinition definition)
     {
         this.definition = definition;
     }

@@ -5,6 +5,16 @@
          http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
+
+   <!-- I18N -->
+   <bean id="extendedActionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.module.org_alfresco_module_rm.messages.action-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.actions</value>
+         </list>
+      </property>
+   </bean>
    <!--  Declare as Record action -->
    <!--  TODO rename -->
    <bean id="create-record" parent="action-executer"

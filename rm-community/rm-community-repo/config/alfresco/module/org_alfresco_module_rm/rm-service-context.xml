@@ -265,7 +265,8 @@
 
     <!--  Records Management Search Service -->
 
-    <bean id="recordsManagementSearchService" class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl">
+    <bean id="recordsManagementSearchService"
+          class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl" depends-on="org_alfresco_module_rm_resourceBundles">
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="namespaceService" ref="NamespaceService" />

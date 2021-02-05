@@ -7,7 +7,25 @@
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop.xsd ">
-       
+
+   <!--  Bootstrap the message property files -->
+   <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.module.org_alfresco_module_rm.messages.notification-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.admin-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.records-management-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.audit-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.rm-events</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.capability-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.dataset-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.rm-system</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.template</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.hold-service</value>
+         </list>
+      </property>
+   </bean>
+
    <!-- Module compatibility component -->
    <bean name="rm.moduleCompatibilityComponent" class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ModuleCompatibilityComponent">
       <property name="descriptorService" ref="descriptorComponent"/>
@@ -56,25 +74,6 @@
       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
    </bean>
 
-   <!--  Bootstrap the message property files -->
-   <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-      <property name="resourceBundles">
-         <list>
-            <value>alfresco.module.org_alfresco_module_rm.messages.notification-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.admin-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.records-management-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.action-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.actions</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.audit-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.rm-events</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.capability-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.dataset-service</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.rm-system</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.template</value>
-            <value>alfresco.module.org_alfresco_module_rm.messages.hold-service</value>
-         </list>
-      </property>
-   </bean>
 
    <!-- Records management permission post processor -->
    <bean id="recordsManagementPermissionPostProcessor" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordsManagementPermissionPostProcessor" parent="parentPermissionPostProcessor">

@@ -58,6 +58,8 @@ services:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
       - POSTGRES_DB=alfresco
+    ports:
+      - 5432:5432
 
   solr6:
     image: alfresco/alfresco-search-services:${SOLR6_TAG}

@@ -57,12 +57,15 @@ import org.springframework.beans.factory.InitializingBean;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.alfresco.model.RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE;
@@ -272,6 +275,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             public void throwIllegalStateExceptionIfAlreadyDone(int sourceContentHashCode)
             {
                 // Avoid doing extra transforms that have already been done.
+                // todo - get the hashcode from the property here
                 NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
                 int renditionContentHashCode = getRenditionContentHashCode(renditionNode);
                 if (logger.isDebugEnabled())
@@ -407,7 +411,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
         else
         {
-            consumeRendition(sourceNodeRef, sourceContentHashCode, transformInputStream, renditionDefinition, transformContentHashCode);
+            consumeRenditionAsProperty(sourceNodeRef, sourceContentHashCode, transformInputStream, renditionDefinition, transformContentHashCode);
         }
     }
 
@@ -481,6 +485,150 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         transformReplyProvider.produceTransformEvent(sourceNodeRef, transformInputStream,
                 transformDefinition, transformContentHashCode);
     }
+
+    // value format renditionName|contentUrl|renditionHash
+    private static final QName RENDITION_LOCATION_PROPERTY =
+            QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
+
+    // todo - consider a pojo instead of String/ move this inside the new method if not used anywhere else
+    public String getRenditionProperty(NodeRef sourceNodeRef, String renditionName)
+    {
+        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        if (props == null)
+        {
+            return null;
+        }
+        return props.stream()
+                .filter(s -> s.startsWith(renditionName))
+                .findFirst()
+                .orElse(null);
+    }
+
+    // todo - move this inside the new method if not used anywhere else
+    private void removeRenditionProperty(NodeRef sourceNodeRef, String renditionName)
+    {
+        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        if (props == null)
+        {
+            return;
+        }
+        LinkedList<String> newList = props.stream()
+                .filter(s -> !s.startsWith(renditionName))
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        if (newList.size() == 0)
+        {
+            nodeService.removeProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        }
+        else
+        {
+            nodeService.setProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY, newList);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Cleared rendition content and hashcode");
+        }
+    }
+
+    // todo - refactor so that the common code with consumeRendition is not duplicated,
+    //  make b\f cmptbl - maybe strategy p (NodeRenditionConsumer/PropertyRenditionConsumer?)
+    private void  consumeRenditionAsProperty(NodeRef sourceNodeRef, int sourceContentHashCode, InputStream transformInputStream,
+                                             RenditionDefinition2 renditionDefinition, int transformContentHashCode)
+    {
+        String renditionName = renditionDefinition.getRenditionName();
+        if (transformContentHashCode != sourceContentHashCode)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("*** Ignore transform for rendition " + renditionName + " on " + sourceNodeRef + " as it is no longer needed");
+            }
+            return;
+        }
+
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    // Ensure that the creation of a rendition does not cause updates to the modified, modifier properties on the source node
+                    String renditionNode = getRenditionProperty(sourceNodeRef, renditionName);
+                    boolean createRenditionNode = renditionNode == null;
+                    boolean sourceHasAspectRenditioned = nodeService.hasAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED);
+                    boolean sourceChanges = !sourceHasAspectRenditioned || createRenditionNode || transformInputStream == null;
+                    try
+                    {
+                        if (sourceChanges)
+                        {
+                            ruleService.disableRuleType(RuleType.UPDATE);
+                            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+                            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                        }
+
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Set rendition hashcode " + transformContentHashCode + " and ThumbnailLastModified for " + renditionName);
+                        }
+
+                        setThumbnailLastModified(sourceNodeRef, renditionName);
+
+                        if (transformInputStream != null)
+                        {
+                            try
+                            {
+                                // Set or replace rendition content
+                                // todo - should it remove old content first to prevent disk space leaks?
+                                ContentWriter nodelessWriter = contentService.getWriter(null, null, true);
+                                String targetMimetype = renditionDefinition.getTargetMimetype();
+                                nodelessWriter.setMimetype(targetMimetype);
+                                nodelessWriter.setEncoding(DEFAULT_ENCODING);
+                                nodelessWriter.putContent(transformInputStream);
+
+                                List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+                                props = props != null ? props : new LinkedList<>();
+                                // remove if existing and add new
+                                LinkedList<String> newProps = props.stream()
+                                        .filter(s -> !s.startsWith(renditionName))
+                                        .collect(Collectors.toCollection(LinkedList::new));
+                                String newRendition = renditionName+ "|"+nodelessWriter.getContentUrl()+"|"+transformContentHashCode;
+                                System.out.println("**** Added new rendition property: " + newRendition);
+                                newProps.add(newRendition);
+                                nodeService.setProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY, newProps);
+
+                            }
+                            catch (Exception e)
+                            {
+                                logger.error("Failed to copy transform InputStream into rendition " + renditionName + " on " + sourceNodeRef);
+                                throw e;
+                            }
+                        }
+                        else
+                        {
+                            removeRenditionProperty(sourceNodeRef, renditionName);
+                        }
+
+                        if (!sourceHasAspectRenditioned)
+                        {
+                            nodeService.addAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED, null);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        throw new RenditionService2Exception(TRANSFORMING_ERROR_MESSAGE + e.getMessage(), e);
+                    }
+                    finally
+                    {
+                        if (sourceChanges)
+                        {
+                            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+                            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                            ruleService.enableRuleType(RuleType.UPDATE);
+                        }
+                    }
+                    return null;
+
+                }, false, true));
+    }
+
 
     /**
      *  Takes a transformation (InputStream) and attaches it as a rendition to the source node.

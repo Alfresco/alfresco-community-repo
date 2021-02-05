@@ -52,6 +52,7 @@ import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
+import org.alfresco.rest.framework.resource.content.RawBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -89,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 /**
@@ -247,6 +249,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     {
         final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
         NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, parameters);
+        String renditionProperty = getRenditionByNameAsProperty(validatedNodeRef, renditionId, parameters);
         boolean includeNotCreated = true;
         String status = getStatus(parameters);
         if (status != null)
@@ -496,6 +499,17 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
         final String attachFileName = (attach ? renditionId : null);
 
+        String renditionProperty = getRenditionByNameAsProperty(nodeRef, renditionId, parameters);
+        System.out.println("*** RenditionsImpl.getContentImpl() retrieved property: " + renditionProperty);
+        if (renditionProperty != null)
+        {
+            String[] ts = renditionProperty.split("\\|");
+            String contentUrl = ts[1];
+
+            return new RawBinaryResource(contentUrl, null, attachFileName, null);
+        }
+
+        // todo - learn what this does
         if (renditionNodeRef == null)
         {
             boolean isPlaceholder = Boolean.valueOf(parameters.getParameter(PARAM_PLACEHOLDER));
@@ -553,6 +567,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
         Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
+        // todo - how/where is the contentData stored - we will need to have all that for rendition properties too
         ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
         Date modified = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
 
@@ -570,7 +585,17 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 .setMaxAge(Long.valueOf(31536000))// one year (in seconds)
                 .build();
 
+        // todo - another problem is we need support both Node and Raw resources for backwards compatibility
         return new NodeBinaryResource(renditionNodeRef, ContentModel.PROP_CONTENT, contentInfo, attachFileName, cacheDirective);
+    }
+
+    protected String getRenditionByNameAsProperty(NodeRef nodeRef, String renditionId, Parameters parameters)
+    {
+        if (nodeRef == null || renditionId.isBlank())
+        {
+            throw new InvalidArgumentException("*** nodeRef or renditionId can't be null or empty.");
+        }
+        return renditionService2.getRenditionProperty(nodeRef, renditionId);
     }
 
     protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)

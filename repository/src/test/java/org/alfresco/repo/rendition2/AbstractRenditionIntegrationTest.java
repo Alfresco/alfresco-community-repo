@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
@@ -64,7 +65,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
+
 
 import static java.lang.Thread.sleep;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
@@ -388,12 +390,32 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         for (int i = (int)(maxMillis / 1000); i >= 0; i--)
         {
             // Must create a new transaction in order to see changes that take place after this method started.
-            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
-            if (assoc != null)
+//            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+//                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
+
+            QName renditionLocationProperty = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
+
+            List<String> rendProps = (List<String>) transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                    nodeService.getProperty(sourceNodeRef, renditionLocationProperty), true, true);
+
+            if (rendProps != null)
             {
+                System.out.println("*** Test results are in!");
+                System.out.println("Test source NodeRef: " + sourceNodeRef);
+                rendProps.forEach(System.out::println);
+                String renditionPointer = rendProps.stream().filter(rp -> rp.startsWith(renditionName)).findFirst().orElse(null);
+                String renditionUrl = renditionPointer.split("\\|")[1];
+                System.out.println("Rendition content: " + renditionUrl);
+                File destinationFile = new File("/Users/eknizat/Desktop/testfile.jpeg");
+                contentService.getRawReader(renditionUrl).getContent(destinationFile);
+
                 break;
             }
+
+//            if (assoc != null)
+//            {
+//                break;
+//            }
             logger.debug("RenditionService2.getRenditionByName(...) sleep "+i);
             sleep(1000);
         }

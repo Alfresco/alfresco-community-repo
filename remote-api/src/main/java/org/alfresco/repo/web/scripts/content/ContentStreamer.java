@@ -150,6 +150,30 @@ public class ContentStreamer implements ResourceLoaderAware
         this.contentService = contentService;
     }
 
+    public void streamContent(WebScriptRequest req,
+                             WebScriptResponse res,
+                             String contentUrl,
+                             Long lastModified,
+                             boolean attach,
+                             String attachFileName,
+                             Map<String, Object> model) throws IOException
+    {
+
+        System.out.println("Streaming content from RarStreamer for contentUrl" + contentUrl);
+
+        // get the raw content reader
+        ContentReader reader = contentService.getRawReader(contentUrl);
+        if (reader == null || !reader.exists())
+        {
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for url: " + contentUrl);
+        }
+
+        // Stream the content
+        streamContentImpl(req, res, reader, null, null, attach, null, null, attachFileName, model);
+
+        // todo - take a look at the rest of te methods in this class and see if any of their functionality is needed here
+    }
+
 
     /**
      * Streams content back to client from a given File.
@@ -357,6 +381,8 @@ public class ContentStreamer implements ResourceLoaderAware
                                     Map<String, Object> model) throws IOException
     {
         setAttachment(req, res, attach, attachFileName);
+
+        System.out.println("** ContentStreamer.streamContentImpl()");
     
         // establish mimetype
         String mimetype = reader.getMimetype();
@@ -402,6 +428,7 @@ public class ContentStreamer implements ResourceLoaderAware
             }
             if (range != null)
             {
+                System.out.println("-_- Range is not null ");
                if (logger.isDebugEnabled())
                   logger.debug("Found content range header: " + range);
                
@@ -433,6 +460,8 @@ public class ContentStreamer implements ResourceLoaderAware
                // return the complete entity range
                res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));
                res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+
+                System.out.println("*** ContentStreamer set response mimetype: " + mimetype + " encoding: " + encoding);
                
                // set caching
                setResponseCache(res, modified, eTag, model);

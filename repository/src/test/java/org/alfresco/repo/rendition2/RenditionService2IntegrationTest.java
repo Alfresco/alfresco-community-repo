@@ -143,6 +143,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     @Test
     public void basicRendition()
     {
+        // RUN ME
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
         waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);

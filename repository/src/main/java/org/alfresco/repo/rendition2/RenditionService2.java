@@ -60,6 +60,11 @@ import java.util.List;
  */
 public interface RenditionService2
 {
+
+    String getRenditionProperty(NodeRef sourceNodeRef, String renditionName);
+
+
+
     /**
      * @return the {@link RenditionDefinitionRegistry2} being used by the service.
      */

@@ -50,6 +50,7 @@ import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
+import org.alfresco.rest.framework.resource.content.RawBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -244,6 +245,14 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             boolean attach = StringUtils.isNotEmpty(nodeResource.getAttachFileName());
             Map<String, Object> model = getModelForCacheDirective(nodeResource.getCacheDirective());
             streamer.streamContent(req, res, nodeResource.getNodeRef(), nodeResource.getPropertyQName(), attach, nodeResource.getAttachFileName(), model);
+        }
+        else if (resource instanceof RawBinaryResource)
+        {
+            RawBinaryResource rawBinaryResource = (RawBinaryResource) resource;
+            boolean attach = StringUtils.isNotEmpty(rawBinaryResource.getAttachFileName());
+            Map<String, Object> model = getModelForCacheDirective(rawBinaryResource.getCacheDirective());
+            streamer.streamContent(req, res, rawBinaryResource.getContentUrl(), null, attach, rawBinaryResource.getAttachFileName(), model);
+
         }
 
     }

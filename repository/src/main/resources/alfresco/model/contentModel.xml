@@ -1406,6 +1406,11 @@
                <title>Hash code of the source content url</title>
                <type>d:int</type>
             </property>
+            <property name="rn:renditionInformation">
+               <title>Rendition location</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
          </properties>
       </aspect>
       <!-- A hidden rendition is one which is located directly under its source node. -->

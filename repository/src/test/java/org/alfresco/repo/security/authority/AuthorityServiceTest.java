@@ -1716,6 +1716,62 @@ public class AuthorityServiceTest extends TestCase
             ; // expected
         }
     }
+    
+    public void testIfGroupIsAdminAuthority()
+    {
+        String adminGroup = "GROUP_ALFRESCO_ADMINISTRATORS";
+        String parentGroup = "parentGroup";
+        String subGroup1 = "subGroup1";
+        String subGroup2 = "subGroup2";
+        String username = "johnsnow";
+        HashMap<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, username);
+
+        personService.createPerson(properties);
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, parentGroup);
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, subGroup1);
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, subGroup2);
+
+        // Verify it can identify GROUP_ALFRESCO_ADMINISTRATORS as an admin group
+        assertTrue(pubAuthorityService.isAdminAuthority(adminGroup));
+
+        // Verify the created groups and users are not administrators
+        assertFalse(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, parentGroup)));
+        assertFalse(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup1)));
+        assertFalse(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup2)));
+        assertFalse(pubAuthorityService.isAdminAuthority(username));
+
+        // Add a subgroup to the parent group and verify if its still identified as non admin
+        pubAuthorityService.addAuthority(pubAuthorityService.getName(AuthorityType.GROUP, parentGroup),
+                pubAuthorityService.getName(AuthorityType.GROUP, subGroup1));
+        assertFalse(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, parentGroup)));
+        assertFalse(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup1)));
+
+        // Add the group to the administrators group and if both group and subgroup are identified correctly as admins
+        pubAuthorityService.addAuthority(adminGroup, pubAuthorityService.getName(AuthorityType.GROUP, parentGroup));
+        assertTrue(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, parentGroup)));
+        assertTrue(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup1)));
+
+        // Add another subgroup to the parent group - the subgroup should automatically become an admin
+        pubAuthorityService.addAuthority(pubAuthorityService.getName(AuthorityType.GROUP, parentGroup),
+                pubAuthorityService.getName(AuthorityType.GROUP, subGroup2));
+        assertTrue(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup2)));
+
+        // Add the user to a subgroup and verify if he's an admin
+        pubAuthorityService.addAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup2), username);
+        assertTrue(pubAuthorityService.isAdminAuthority(username));
+        
+        // Create a group with the same name as an admin user, group should not be identified as admin
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, username);
+        assertFalse(pubAuthorityService.isAdminAuthority(pubAuthorityService.getName(AuthorityType.GROUP, username)));
+        
+        //Cleanup created authorities
+        pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, parentGroup));
+        pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup1));
+        pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup2));
+        pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, username));
+        pubAuthorityService.deleteAuthority(username);
+    }
 
     private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)
     {

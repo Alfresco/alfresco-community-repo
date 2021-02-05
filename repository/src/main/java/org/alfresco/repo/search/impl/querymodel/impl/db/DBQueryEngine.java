@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.alfresco.repo.domain.node.AbstractNodeDAOImpl.CACHE_REGION_NODES;
-import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclOwnerStopWatch;
 import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.handlerStopWatch;
 import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.resetStopwatches;
 
@@ -70,14 +69,12 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -102,17 +99,17 @@ public class DBQueryEngine implements QueryEngine
     
     private NodeDAO nodeDAO;
 
-    private DictionaryService dictionaryService;
+    protected DictionaryService dictionaryService;
 
     protected NamespaceService namespaceService;
     
-    private NodeService nodeService;
+    protected NodeService nodeService;
 
     private TenantService tenantService;
     
     private OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
 
-    PermissionService permissionService;
+    protected PermissionService permissionService;
 
     private int maxPermissionChecks;
     
@@ -120,7 +117,7 @@ public class DBQueryEngine implements QueryEngine
 
     private SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache;
     
-    EntityLookupCache<Long, Node, NodeRef> nodesCache;
+    protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
     
     private SimpleCache<NodeVersionKey, Set<QName>> aspectsCache;
     
@@ -319,7 +316,15 @@ public class DBQueryEngine implements QueryEngine
     
     private ResultSet selectNodesWithPermissions(QueryOptions options, DBQuery dbQuery)
     {
-        NodePermissionAssessor permissionAssessor = createAssessor(options);
+        Authority authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
+        
+        NodePermissionAssessor permissionAssessor = createAssessor(authority);
+        int maxPermsChecks = options.getMaxPermissionChecks() < 0 ? maxPermissionChecks : options.getMaxPermissionChecks();
+        long maxPermCheckTimeMillis = options.getMaxPermissionCheckTimeMillis() < 0
+                ? maxPermissionCheckTimeMillis
+                : options.getMaxPermissionCheckTimeMillis();
+        permissionAssessor.setMaxPermissionChecks(maxPermsChecks);
+        permissionAssessor.setMaxPermissionCheckTimeMillis(maxPermCheckTimeMillis);
         
         FilteringResultSet resultSet = acceleratedNodeSelection(options, dbQuery, permissionAssessor);
         
@@ -328,17 +333,9 @@ public class DBQueryEngine implements QueryEngine
         return plrs;
     }
 
-    NodePermissionAssessor createAssessor(QueryOptions options)
+    protected NodePermissionAssessor createAssessor(Authority authority)
     {
-        Authority authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
-        NodePermissionAssessor permissionAssessor = new NodePermissionAssessor(nodeService, permissionService, authority, nodesCache);
-        int maxPermsChecks = options.getMaxPermissionChecks() < 0 ? maxPermissionChecks : options.getMaxPermissionChecks();
-        long maxPermCheckTimeMillis = options.getMaxPermissionCheckTimeMillis() < 0
-                ? maxPermissionCheckTimeMillis
-                : options.getMaxPermissionCheckTimeMillis();
-        permissionAssessor.setMaxPermissionChecks(maxPermsChecks);
-        permissionAssessor.setMaxPermissionCheckTimeMillis(maxPermCheckTimeMillis);
-        return permissionAssessor;
+        return new NodePermissionAssessor(nodeService, permissionService, authority, nodesCache);
     }
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
@@ -483,77 +480,6 @@ public class DBQueryEngine implements QueryEngine
     public QueryModelFactory getQueryModelFactory()
     {
         return new DBQueryModelFactory();
-    }
-
-    protected boolean canCurrentUserRead(Long aclId)
-    {
-        // cache resolved ACLs
-        Set<String> authorities = permissionService.getAuthorisations();
-
-        Set<String> aclReadersDenied = permissionService.getReadersDenied(aclId);
-        for (String auth : aclReadersDenied)
-        {
-            if (authorities.contains(auth))
-            {
-                return false; 
-            }
-        }
-
-        Set<String> aclReaders = permissionService.getReaders(aclId);
-        for (String auth : aclReaders)
-        {
-            if (authorities.contains(auth))
-            {
-                return true; 
-            }
-        }
-
-        return false;
-    }
-    
-    protected boolean isOwnerReading(Node node, Authority authority)
-    {
-        aclOwnerStopWatch().start();
-        try
-        {
-            if (authority == null)
-            {
-                return false;
-            }
-            
-            String owner = getOwner(node);
-            if (EqualsHelper.nullSafeEquals(authority.getAuthority(), owner))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        finally
-        {
-            aclOwnerStopWatch().stop();
-        }
-    }
-
-    private String getOwner(Node node)
-    {
-        nodesCache.setValue(node.getId(), node);
-        Set<QName> nodeAspects = nodeService.getAspects(node.getNodeRef());
-        
-        String userName = null;
-        if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
-        {
-            userName = node.getAuditableProperties().getAuditCreator();
-        }
-        else if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
-        {
-            Serializable owner = nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_OWNER);
-            userName = DefaultTypeConverter.INSTANCE.convert(String.class, owner);
-        }
-        
-        return userName;
     }
     
     private boolean cleanCacheRequest(QueryOptions options)

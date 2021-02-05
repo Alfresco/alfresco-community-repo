@@ -201,13 +201,6 @@ public class DBQueryEngineTest
         verify(resultContext).stop();
     }
     
-    @Test
-    public void shouldIsOwnerReadingReturnFalseWhenTheAuthorityIsNull()
-    {
-        boolean result = engine.isOwnerReading(createNode(1), null);
-        assertFalse(result);
-    }
-            
     private void prepareTemplate(DBQuery dbQuery, List<Node> nodes)
     {
         doAnswer(invocation -> {

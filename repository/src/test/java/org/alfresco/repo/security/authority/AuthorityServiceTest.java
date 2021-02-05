@@ -1770,7 +1770,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup1));
         pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup2));
         pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, username));
-        pubAuthorityService.deleteAuthority(username);
+        personService.deletePerson(username);
     }
 
     private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)

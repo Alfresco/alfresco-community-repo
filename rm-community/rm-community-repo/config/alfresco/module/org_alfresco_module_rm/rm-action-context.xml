@@ -121,7 +121,7 @@
 
    <!-- Actions -->
 
-   <bean id="rmAction" parent="action-executer" abstract="true" depends-on="org_alfresco_module_rm_resourceBundles">
+   <bean id="rmAction" parent="action-executer" abstract="true">
       <property name="namespaceService" ref="namespaceService"/>
       <property name="transactionService" ref="transactionService"/>
       <property name="nodeService" ref="nodeService"/>

@@ -90,7 +90,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 /**
@@ -619,6 +618,18 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
         return null;
+    }
+
+    protected Rendition toApiRendtionAsProperty(String renditionProperty)
+    {
+        Rendition apiRendition = new Rendition();
+        String[] ts = renditionProperty.split("\\|");
+        String renditionId = ts[0];
+
+        ContentInfo contentInfo = null;
+
+        apiRendition.setStatus(RenditionStatus.CREATED);
+        return apiRendition;
     }
 
     protected Rendition toApiRendition(NodeRef renditionNodeRef)

@@ -159,7 +159,7 @@ public class ContentStreamer implements ResourceLoaderAware
                              Map<String, Object> model) throws IOException
     {
 
-        System.out.println("Streaming content from RarStreamer for contentUrl" + contentUrl);
+        System.out.println("Streaming content from RawStreamer for contentUrl" + contentUrl);
 
         // get the raw content reader
         ContentReader reader = contentService.getRawReader(contentUrl);
@@ -428,7 +428,6 @@ public class ContentStreamer implements ResourceLoaderAware
             }
             if (range != null)
             {
-                System.out.println("-_- Range is not null ");
                if (logger.isDebugEnabled())
                   logger.debug("Found content range header: " + range);
                
@@ -469,6 +468,8 @@ public class ContentStreamer implements ResourceLoaderAware
                // get the content and stream directly to the response output stream
                // assuming the repository is capable of streaming in chunks, this should allow large files
                // to be streamed directly to the browser response stream.
+
+               System.out.println("Streaming content from contentUrl: " + reader.getContentUrl() ); ;
                reader.getContent( res.getOutputStream() );
             }
         }

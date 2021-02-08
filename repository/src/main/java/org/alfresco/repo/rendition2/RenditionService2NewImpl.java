@@ -72,8 +72,9 @@ public class RenditionService2NewImpl implements RenditionService2New
 
     private List<RenditionContentData> convertToRenditionContentDataList(List<ChildAssociationRef> childAssociationRefList)
     {
-        //TODO - Implement the logic convert ChildAssoc to RenditionCotentData
         List<RenditionContentData> renditionContentDataList=new ArrayList<>();
+        childAssociationRefList.forEach(childAssocRef-> renditionContentDataList.add(convertToRenditionContentData(childAssocRef)));
+
         return renditionContentDataList;
     }
 

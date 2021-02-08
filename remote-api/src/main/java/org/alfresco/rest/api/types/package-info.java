@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,17 +23,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.NodeDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.i18n.MessageLookup;
-/**
- * Maps representations from TypeDefinition to NodeDefinition
- *
- * @author gfertuso
- */
-public interface NodeDefinitionMapper 
-{
-    NodeDefinition fromTypeDefinition(TypeDefinition typeDefinition, MessageLookup messageLookup);
-}
+@WebApi(name="alfresco", scope= Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rest.api.types;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

@@ -27,7 +27,6 @@ package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.alfresco.repo.domain.node.AbstractNodeDAOImpl.CACHE_REGION_NODES;
 import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclOwnerStopWatch;
-import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclReadStopWatch;
 import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.handlerStopWatch;
 import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.resetStopwatches;
 
@@ -113,7 +112,7 @@ public class DBQueryEngine implements QueryEngine
     
     private OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
 
-    private PermissionService permissionService;
+    PermissionService permissionService;
 
     private int maxPermissionChecks;
     
@@ -125,7 +124,7 @@ public class DBQueryEngine implements QueryEngine
     
     private SimpleCache<NodeVersionKey, Set<QName>> aspectsCache;
     
-    private AclCrudDAO aclCrudDAO;
+    AclCrudDAO aclCrudDAO;
 
     public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
     {
@@ -331,7 +330,8 @@ public class DBQueryEngine implements QueryEngine
 
     NodePermissionAssessor createAssessor(QueryOptions options)
     {
-        NodePermissionAssessor permissionAssessor = new NodePermissionAssessor();
+        Authority authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
+        NodePermissionAssessor permissionAssessor = new NodePermissionAssessor(nodeService, permissionService, authority, nodesCache);
         int maxPermsChecks = options.getMaxPermissionChecks() < 0 ? maxPermissionChecks : options.getMaxPermissionChecks();
         long maxPermCheckTimeMillis = options.getMaxPermissionCheckTimeMillis() < 0
                 ? maxPermissionCheckTimeMillis
@@ -485,104 +485,6 @@ public class DBQueryEngine implements QueryEngine
         return new DBQueryModelFactory();
     }
 
-    public class NodePermissionAssessor
-    {
-        private final boolean isAdminReading;
-
-        private final Authority authority;
-
-        private final Map<Long, Boolean> aclReadCache = new HashMap<>();
-
-        private int checksPerformed;
-
-        private long startTime;
-
-        private int maxPermissionChecks;
-
-        private long maxPermissionCheckTimeMillis;
-
-        public NodePermissionAssessor()
-        {
-           this.checksPerformed = 0;
-           this.maxPermissionChecks = Integer.MAX_VALUE;
-           this.maxPermissionCheckTimeMillis = Long.MAX_VALUE;
-           
-           Set<String> authorisations = permissionService.getAuthorisations();
-           this.isAdminReading = authorisations.contains(AuthenticationUtil.getAdminRoleName());
-
-           authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
-        }
-
-        public boolean isIncluded(Node node)
-        { 
-            if (isFirstRecord())
-            {
-                this.startTime = System.currentTimeMillis();
-            }
-            
-            checksPerformed++;
-            return isReallyIncluded(node);
-        }
-
-        public boolean isFirstRecord()
-        {
-            return checksPerformed == 0;
-        }
-
-        boolean isReallyIncluded(Node node)
-        {
-            return  isAdminReading || 
-                    canRead(node.getAclId()) ||
-                    isOwnerReading(node, authority);
-        }
-
-        public void setMaxPermissionChecks(int maxPermissionChecks)
-        {
-            this.maxPermissionChecks = maxPermissionChecks;
-        }
-        
-        public boolean shouldQuitChecks()
-        {
-            boolean result = false;
-            
-            if (checksPerformed >= maxPermissionChecks)
-            {
-                result = true;
-            }
-            
-            if ((System.currentTimeMillis() - startTime) >= maxPermissionCheckTimeMillis)
-            {
-                result = true;
-            }
-            
-            return result;
-        }
-
-        public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
-        {
-            this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
-        }
-                
-        boolean canRead(Long aclId)
-        {
-            aclReadStopWatch().start();
-            try
-            {
-                Boolean res = aclReadCache.get(aclId);
-                if (res == null)
-                {
-                    res = canCurrentUserRead(aclId);
-                    aclReadCache.put(aclId, res);
-                }
-                return res;
-            }
-            finally
-            {
-                aclReadStopWatch().stop();
-            }
-        }
-    }
-    
     protected boolean canCurrentUserRead(Long aclId)
     {
         // cache resolved ACLs

@@ -518,7 +518,19 @@
         </property>
     </bean>
 
-    <bean id="nodeDefinitionMapper" class="org.alfresco.rest.api.impl.NodeDefinitionMapperImpl"/>
+    <bean id="nodes.personLookupProperties" class="org.springframework.beans.factory.config.SetFactoryBean">
+        <property name="sourceSet">
+            <set>
+                <value>{http://www.alfresco.org/model/content/1.0}creator</value>
+                <value>{http://www.alfresco.org/model/content/1.0}modifier</value>
+                <value>{http://www.alfresco.org/model/content/1.0}owner</value>
+                <value>{http://www.alfresco.org/model/content/1.0}lockOwner</value>
+                <value>{http://www.alfresco.org/model/content/1.0}workingCopyOwner</value>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="classDefinitionMapper" class="org.alfresco.rest.api.impl.ClassDefinitionMapperImpl"/>
 
     <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl" init-method="init">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
@@ -527,9 +539,10 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="personLookupProperties" ref="nodes.personLookupProperties"/>
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
-        <property name="nodeDefinitionMapper" ref="nodeDefinitionMapper" />
+        <property name="classDefinitionMapper" ref="classDefinitionMapper" />
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -768,7 +781,7 @@
     <bean id="siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
         <property name="configPath" value="alfresco/bootstrap/site"/>
     </bean>
-    
+
     <bean id="Sites" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Sites</value>
@@ -835,14 +848,15 @@
     <bean id="publicapi.personPropertyLookup" class="org.alfresco.rest.api.lookups.PersonPropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">
-            <list>
-                <value>cm:creator</value>
-                <value>cm:modifier</value>
-                <value>cm:owner</value>
-                <value>creator</value>
-                <value>modifier</value>
-                <value>owner</value>
-            </list>
+            <bean parent="nodes.personLookupProperties" class="org.springframework.beans.factory.config.SetFactoryBean">
+                <property name="sourceSet">
+                    <set merge="true">
+                        <value>creator</value>
+                        <value>modifier</value>
+                        <value>owner</value>
+                    </set>
+                </property>
+            </bean>
         </property>
     </bean>
 
@@ -1476,5 +1490,53 @@
 
     <bean class="org.alfresco.rest.api.groups.SiteGroupsRelation">
         <property name="sites" ref="Sites" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.aspects.AspectEntityResource">
+        <property name="aspects" ref="Aspects" />
+    </bean>
+
+    <bean id="aspects" class="org.alfresco.rest.api.impl.AspectsImpl">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="classDefinitionMapper" ref="classDefinitionMapper" />
+    </bean>
+
+    <bean id="Aspects" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Aspects</value>
+        </property>
+        <property name="target">
+            <ref bean="aspects" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.types.TypeEntityResource">
+        <property name="types" ref="Types" />
+    </bean>
+
+    <bean id="types" class="org.alfresco.rest.api.impl.TypesImpl">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="classDefinitionMapper" ref="classDefinitionMapper" />
+    </bean>
+
+    <bean id="Types" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Types</value>
+        </property>
+        <property name="target">
+            <ref bean="types" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
     </bean>
 </beans>

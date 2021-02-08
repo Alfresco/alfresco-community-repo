@@ -25,15 +25,12 @@
  */
 package org.alfresco.rest.api.lookups;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.service.ServiceRegistry;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,10 +60,9 @@ public class PersonPropertyLookup implements PropertyLookup<String>
         return supported;
     }
 
-    public void setSupported(List<String> supported)
+    public void setSupported(Set<String> supported)
     {
-        NodesImpl.PROPS_USERLOOKUP.forEach(entry -> this.supported.add(entry.toString()));
-        this.supported.addAll(supported);
+        this.supported = supported;
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)

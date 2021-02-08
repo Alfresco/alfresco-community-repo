@@ -33,7 +33,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.api.model.AbstractClassModel;
+import org.alfresco.rest.api.model.AbstractCustomClass;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.api.model.CustomModel;
 import org.alfresco.rest.api.model.CustomModel.ModelStatus;
@@ -158,10 +158,10 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         return customModel;
     }
 
-    protected <T extends AbstractClassModel> T createTypeAspect(Class<T> glazz, String modelName, String typeAspectName, String title, String desc,
-                String parent) throws Exception
+    protected <T extends AbstractCustomClass> T createTypeAspect(Class<T> glazz, String modelName, String typeAspectName, String title, String desc,
+                                                                 String parent) throws Exception
     {
-        AbstractClassModel classModel = null;
+        AbstractCustomClass classModel = null;
         String uri = "cmm/" + modelName;
         if (glazz.equals(CustomType.class))
         {
@@ -194,7 +194,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         assertTrue("Two models are not equal. Expected:<" + expectedModel.toString() + "> but was:<" + actualModel.toString() + ">", result);
     }
 
-    protected void compareCustomTypesAspects(AbstractClassModel expectedDetails, AbstractClassModel actualDetails, String... excludeFields)
+    protected void compareCustomTypesAspects(AbstractCustomClass expectedDetails, AbstractCustomClass actualDetails, String... excludeFields)
     {
         List<CustomModelProperty> expectedProps = expectedDetails.getProperties();
         List<CustomModelProperty> actualProps = actualDetails.getProperties();

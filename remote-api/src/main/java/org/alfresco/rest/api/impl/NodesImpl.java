@@ -79,12 +79,12 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Activities;
-import org.alfresco.rest.api.NodeDefinitionMapper;
+import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.NodeDefinition;
+import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
@@ -214,7 +214,7 @@ public class NodesImpl implements Nodes
     private RetryingTransactionHelper retryingTransactionHelper;
     private LockService lockService;
     private VirtualStore smartStore; // note: remove as part of REPO-1173
-    private NodeDefinitionMapper nodeDefinitionMapper;
+    private ClassDefinitionMapper classDefinitionMapper;
 
     private enum Activity_Type
     {
@@ -229,9 +229,12 @@ public class NodesImpl implements Nodes
     private Repository repositoryHelper;
     private ServiceRegistry sr;
     private Set<String> defaultIgnoreTypesAndAspects;
+    private Set<String> defaultPersonLookupProperties;
 
     // ignore types/aspects
     private Set<QName> ignoreQNames;
+
+    private Set<QName> personLookupProperties = new HashSet<>();
 
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
@@ -276,6 +279,14 @@ public class NodesImpl implements Nodes
                 ignoreQNames.add(createQName(type));
             }
         }
+
+        if (defaultPersonLookupProperties != null)
+        {
+            for (String property : defaultPersonLookupProperties)
+            {
+                personLookupProperties.add(createQName(property));
+            }
+        }
     }
 
     public void setServiceRegistry(ServiceRegistry sr)
@@ -303,6 +314,10 @@ public class NodesImpl implements Nodes
         this.defaultIgnoreTypesAndAspects = ignoreTypesAndAspects;
     }
 
+    public void setPersonLookupProperties(Set<String> personLookupProperties) {
+      this.defaultPersonLookupProperties = personLookupProperties;
+    }
+
     public void setPoster(ActivityPoster poster)
     {
         this.poster = poster;
@@ -313,9 +328,9 @@ public class NodesImpl implements Nodes
         this.smartStore = smartStore;
     }
     
-    public void setNodeDefinitionMapper(NodeDefinitionMapper nodeDefinitionMapper)
+    public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper)
     {
-        this.nodeDefinitionMapper = nodeDefinitionMapper;
+        this.classDefinitionMapper = classDefinitionMapper;
     }
 
     // excluded namespaces (aspects, properties, assoc types)
@@ -337,13 +352,6 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_INITIAL_VERSION,
             ContentModel.PROP_AUTO_VERSION_PROPS,
             ContentModel.PROP_AUTO_VERSION);
-
-    public static final List<QName> PROPS_USERLOOKUP = Arrays.asList(
-            ContentModel.PROP_CREATOR,
-            ContentModel.PROP_MODIFIER,
-            ContentModel.PROP_OWNER,
-            ContentModel.PROP_LOCK_OWNER,
-            ContentModel.PROP_WORKING_COPY_OWNER);
 
     public final static Map<String,QName> PARAM_SYNONYMS_QNAME;
     static
@@ -1033,8 +1041,8 @@ public class NodesImpl implements Nodes
 
         if (includeParam.contains(PARAM_INCLUDE_DEFINITION)) 
         {
-            NodeDefinition nodeDefinition = nodeDefinitionMapper.fromTypeDefinition(getTypeDefinition(nodeRef), dictionaryService);
-            node.setDefinition(nodeDefinition);
+            ClassDefinition classDefinition = classDefinitionMapper.fromDictionaryClassDefinition(getTypeDefinition(nodeRef), dictionaryService);
+            node.setDefinition(classDefinition);
         }
 
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
@@ -1222,9 +1230,9 @@ public class NodesImpl implements Nodes
                 Serializable value = nodeProps.get(qName);
                 if (value != null)
                 {
-                    if (PROPS_USERLOOKUP.contains(qName))
+                    if (personLookupProperties.contains(qName))
                     {
-                        value = Node.lookupUserInfo((String)value, mapUserInfo, sr.getPersonService());
+                        value = Node.lookupUserInfo((String) value, mapUserInfo, personService);
                     }
 
                     // Empty (zero length) string values are considered to be

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>8.380-SNAPSHOT</version>
+    <version>8.386-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -102,10 +102,10 @@
         <dependency.postgresql.version>42.2.18</dependency.postgresql.version>
         <dependency.mysql.version>8.0.23</dependency.mysql.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.41</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.42</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.tas-restapi.version>1.52</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.26</dependency.tas-cmis.version>
+        <dependency.tas-cmis.version>1.27</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
@@ -256,6 +256,12 @@
                 <groupId>org.alfresco.services</groupId>
                 <artifactId>alfresco-messaging-repo</artifactId>
                 <version>${dependency.alfresco-messaging-repo.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-broker</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>
@@ -725,6 +731,22 @@
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-activemq</artifactId>
+                <version>${dependency.camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-broker</artifactId>
+                    </exclusion>
+                    <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

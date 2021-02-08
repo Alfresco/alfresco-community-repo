@@ -1408,7 +1408,7 @@
             </property>
             <property name="rn:renditionInformation">
                <title>Rendition location</title>
-               <type>d:text</type>
+               <type>d:any</type> <!-- todo - determine if any downside to having d:any rather that using a specific type like d:content does?-->
                <multiple>true</multiple>
             </property>
          </properties>

@@ -56,6 +56,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -582,16 +583,21 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                 nodelessWriter.setEncoding(DEFAULT_ENCODING);
                                 nodelessWriter.putContent(transformInputStream);
 
-                                List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+                                List<RenditionContentData> props =
+                                        (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
                                 props = props != null ? props : new LinkedList<>();
                                 // remove if existing and add new
-                                LinkedList<String> newProps = props.stream()
-                                        .filter(s -> !s.startsWith(renditionName))
+                                LinkedList<RenditionContentData> updatedProps = props.stream()
+                                        .filter(s -> !s.getRenditionName().equals(renditionName))
                                         .collect(Collectors.toCollection(LinkedList::new));
-                                String newRendition = renditionName+ "|"+nodelessWriter.getContentUrl()+"|"+transformContentHashCode;
-                                System.out.println("**** Added new rendition property: " + newRendition);
-                                newProps.add(newRendition);
-                                nodeService.setProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY, newProps);
+
+                                ContentData writerContentData = nodelessWriter.getContentData();
+                                RenditionContentData renditionContentData =
+                                        new RenditionContentData(renditionName, Instant.now().toEpochMilli(), writerContentData);
+
+                                updatedProps.add(renditionContentData);
+                                nodeService.setProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY, updatedProps);
+                                System.out.println("**** Added new rendition property: " + renditionContentData);
 
                             }
                             catch (Exception e)

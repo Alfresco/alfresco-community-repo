@@ -395,7 +395,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
             QName renditionLocationProperty = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
 
-            List<String> rendProps = (List<String>) transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+            List<RenditionContentData> rendProps = (List<RenditionContentData>) transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                     nodeService.getProperty(sourceNodeRef, renditionLocationProperty), true, true);
 
             if (rendProps != null)
@@ -403,9 +403,9 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
                 System.out.println("*** Test results are in!");
                 System.out.println("Test source NodeRef: " + sourceNodeRef);
                 rendProps.forEach(System.out::println);
-                String renditionPointer = rendProps.stream().filter(rp -> rp.startsWith(renditionName)).findFirst().orElse(null);
-                String renditionUrl = renditionPointer.split("\\|")[1];
-                System.out.println("Rendition content: " + renditionUrl);
+                RenditionContentData renditionProperty = rendProps.stream().filter(rp -> rp.getRenditionName().equals(renditionName)).findFirst().orElse(null);
+                String renditionUrl = renditionProperty.getContentData().getContentUrl();
+                System.out.println("Retrieved RenditionContentData: " + renditionProperty);
                 File destinationFile = new File("/Users/eknizat/Desktop/testfile.jpeg");
                 contentService.getRawReader(renditionUrl).getContent(destinationFile);
 

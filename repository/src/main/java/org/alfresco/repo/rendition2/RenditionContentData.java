@@ -27,14 +27,25 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.service.cmr.repository.ContentData;
 
+import java.io.Serializable;
 import java.util.StringTokenizer;
 
-public class RenditionContentData
+public class RenditionContentData implements Serializable
 {
-    private static final String renditionNameIdentifier = "renditionName=";
+    private static final long serialVersionUID = 1L;
+
+    private static final String RENDITION_NAME_IDENTIFIER = "renditionName=";
+    private static final String LAST_MODIFIED_IDENTIFIER = "lastModified=";
     private String renditionName;
     private ContentData contentData;
-    private long lastModified;
+    private Long lastModified; // todo - would it be better to have something from java.time package?
+
+    public RenditionContentData(String renditionName, Long lastModified, ContentData contentData)
+    {
+        this.renditionName = renditionName;
+        this.lastModified = lastModified;
+        this.contentData = contentData;
+    }
 
     public RenditionContentData(String renditionContentStr)
     {
@@ -47,22 +58,31 @@ public class RenditionContentData
         while (tokenizer.hasMoreTokens())
         {
             String token = tokenizer.nextToken();
-            if (token.startsWith(renditionNameIdentifier))
+            if (token.startsWith(RENDITION_NAME_IDENTIFIER))
             {
-                renditionName = token.substring(renditionNameIdentifier.length());
+                renditionName = token.substring(RENDITION_NAME_IDENTIFIER.length());
+                // todo - would it be better to not allow missing renditionName?
                 if (renditionName.isBlank())
                 {
                     renditionName = null;
                 }
             }
+            if (token.startsWith(LAST_MODIFIED_IDENTIFIER))
+            {
+                String lastModifiedStr = token.substring(LAST_MODIFIED_IDENTIFIER.length());
+
+                try
+                {
+                    lastModified = Long.valueOf(lastModifiedStr);
+                }
+                catch (Exception e)
+                {
+                    // todo - would it be better to not allow missing renditionName?
+                    // failed to parse last modified
+                }
+            }
         }
         contentData = ContentData.createContentProperty(renditionContentStr);
-    }
-
-    public RenditionContentData(String renditionName, ContentData contentData)
-    {
-        this.renditionName = renditionName;
-        this.contentData = contentData;
     }
 
     public String getRenditionName()
@@ -85,15 +105,30 @@ public class RenditionContentData
         this.contentData = contentData;
     }
 
-    public long getLastModified()
+    public Long getLastModified()
     {
         return lastModified;
     }
 
-    public void setLastModified(long lastModified)
+    public void setLastModified(Long lastModified)
     {
         this.lastModified = lastModified;
     }
 
-    // todo - toString, hash, equals
+    public String getInfoUrl()
+    {
+        StringBuilder sb = new StringBuilder(80);
+        sb.append(RENDITION_NAME_IDENTIFIER).append(renditionName)
+                .append("|"+ LAST_MODIFIED_IDENTIFIER).append(getLastModified())
+                .append("|"+ contentData.getInfoUrl());
+        return sb.toString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return getInfoUrl();
+    }
+
+    // todo - hash, equals
 }

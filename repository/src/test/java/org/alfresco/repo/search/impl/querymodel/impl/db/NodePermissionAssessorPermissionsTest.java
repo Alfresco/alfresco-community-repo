@@ -90,7 +90,18 @@ public class NodePermissionAssessorPermissionsTest
         // the node is included
         assertFalse(included);
     }
-    
+
+    @Test
+    public void shouldIsOwnerReadingReturnFalseWhenTheAuthorityIsNull()
+    {
+        Node theNode = mock(Node.class);
+        NodePermissionAssessor assessor = createAssessor();
+
+        boolean result = assessor.isOwnerReading(theNode, null);
+
+        assertFalse(result);
+    }
+
     private NodePermissionAssessor createAssessor()
     {
         NodeService nodeService = mock(NodeService.class);

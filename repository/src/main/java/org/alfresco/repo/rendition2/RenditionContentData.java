@@ -36,6 +36,18 @@ public class RenditionContentData
     private ContentData contentData;
     private long lastModified;
 
+    public static RenditionContentData getRenditionContentData(String renditionName)
+    {
+        RenditionContentData renditionContentData = new RenditionContentData();
+        renditionContentData.renditionName= renditionName;
+        return renditionContentData;
+    }
+
+    private RenditionContentData()
+    {
+
+    }
+
     public RenditionContentData(String renditionContentStr)
     {
         if (renditionContentStr == null || renditionContentStr.isBlank())

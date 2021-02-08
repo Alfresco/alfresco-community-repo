@@ -23,21 +23,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RenditionService2NewImpl implements RenditionService2New
 {
 
-    private RenditionService2Impl renditionService2;
+    private static final QName RENDITION_LOCATION_PROPERTY = QName
+                .createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
 
+    private RenditionService2Impl renditionService2;
     private boolean storeRenditionAsPropertyEnabled;
+    private NodeService nodeService;
+
+    private static Log logger = LogFactory.getLog(RenditionService2New.class);
 
     @Override public RenditionDefinitionRegistry2 getRenditionDefinitionRegistry2()
     {
@@ -47,6 +59,11 @@ public class RenditionService2NewImpl implements RenditionService2New
     public void setRenditionService2(RenditionService2Impl renditionService2)
     {
         this.renditionService2 = renditionService2;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     @Override public void transform(NodeRef sourceNodeRef, TransformDefinition transformDefinition)
@@ -66,14 +83,16 @@ public class RenditionService2NewImpl implements RenditionService2New
         List<ChildAssociationRef> childAssociationRefList = renditionService2.getRenditions(sourceNodeRef);
         List<RenditionContentData> renditionContentDataList = new ArrayList<>();
         renditionContentDataList.addAll(convertToRenditionContentDataList(childAssociationRefList));
-        //TODO - retrieve RenditionCotentData the new way and add it to the list
+        renditionContentDataList.addAll(getRenditionContentDataList(sourceNodeRef));
         return renditionContentDataList;
     }
 
-    private List<RenditionContentData> convertToRenditionContentDataList(List<ChildAssociationRef> childAssociationRefList)
+    private List<RenditionContentData> convertToRenditionContentDataList(
+                List<ChildAssociationRef> childAssociationRefList)
     {
-        List<RenditionContentData> renditionContentDataList=new ArrayList<>();
-        childAssociationRefList.forEach(childAssocRef-> renditionContentDataList.add(convertToRenditionContentData(childAssocRef)));
+        List<RenditionContentData> renditionContentDataList = new ArrayList<>();
+        childAssociationRefList.forEach(childAssocRef -> renditionContentDataList
+                    .add(convertToRenditionContentData(childAssocRef)));
 
         return renditionContentDataList;
     }
@@ -81,34 +100,35 @@ public class RenditionService2NewImpl implements RenditionService2New
     private RenditionContentData convertToRenditionContentData(ChildAssociationRef childAssociationRef)
     {
         //TODO - implement the logic to extract RenditionContentData from childAssocicationRef
-        return new RenditionContentData("");
+        RenditionContentData renditionContentData = RenditionContentData.getRenditionContentData(childAssociationRef.getChildRef().getId());
+        return renditionContentData;
     }
-
 
     @Override public RenditionContentData getRenditionByName(NodeRef sourceNodeRef, String renditionName)
     {
 
         ChildAssociationRef childAssociationRef = renditionService2.getRenditionByName(sourceNodeRef, renditionName);
-        if(childAssociationRef!=null)
+
+        if (childAssociationRef != null)
             return convertToRenditionContentData(childAssociationRef);
-        //TODO - retrieve the contentData the new way from properties
-        return null;
+
+        return getRenditionContentData(sourceNodeRef, renditionName);
     }
 
-    public void consume(NodeRef sourceNodeRef, InputStream transformInputStream, RenditionDefinition2 renditionDefinition,
-                int transformContentHashCode)
+    public void consume(NodeRef sourceNodeRef, InputStream transformInputStream,
+                RenditionDefinition2 renditionDefinition, int transformContentHashCode)
     {
         if (renditionDefinition instanceof TransformDefinition || !isStoreRenditionAsPropertyEnabled())
         {
-             renditionService2.consume(sourceNodeRef, transformInputStream, renditionDefinition, transformContentHashCode);
+            renditionService2
+                        .consume(sourceNodeRef, transformInputStream, renditionDefinition, transformContentHashCode);
 
         }
-        else{
+        else
+        {
             //TODO- implement the logic to store the renditions as property
         }
     }
-
-
 
     @Override public boolean isEnabled()
     {
@@ -123,6 +143,28 @@ public class RenditionService2NewImpl implements RenditionService2New
     public void setStoreRenditionAsPropertyEnabled(boolean booleanValue)
     {
         this.storeRenditionAsPropertyEnabled = booleanValue;
+    }
+
+    private RenditionContentData getRenditionContentData(NodeRef sourceNodeRef, String renditionName)
+    {
+        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        if (props == null)
+        {
+            return null;
+        }
+        return new RenditionContentData(
+                    props.stream().filter(s -> s.startsWith(renditionName)).findFirst().orElse(null));
+    }
+
+    private List<RenditionContentData> getRenditionContentDataList(NodeRef sourceNodeRef)
+    {
+        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        if (props == null)
+        {
+            return null;
+        }
+
+         return props.stream().map(s-> new RenditionContentData(s)).collect(Collectors.toList());
     }
 
 }

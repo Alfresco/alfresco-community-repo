@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.util.StringTokenizer;
 
@@ -36,10 +37,11 @@ public class RenditionContentData
     private ContentData contentData;
     private long lastModified;
 
-    public static RenditionContentData getRenditionContentData(String renditionName)
+    public static RenditionContentData getRenditionContentData(ContentData contentData, String renditionName)
     {
         RenditionContentData renditionContentData = new RenditionContentData();
         renditionContentData.renditionName= renditionName;
+        renditionContentData.contentData= contentData;
         return renditionContentData;
     }
 
@@ -47,6 +49,7 @@ public class RenditionContentData
     {
 
     }
+
 
     public RenditionContentData(String renditionContentStr)
     {

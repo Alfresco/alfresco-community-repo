@@ -183,7 +183,8 @@
     <!-- Rendition Service 2 base bean -->
     <bean id="renditionService2New" class="org.alfresco.repo.rendition2.RenditionService2NewImpl">
         <property name="renditionService2" ref="renditionService2" />
-        <property name="storeRenditionAsPropertyEnabled" value="${rendition.service.storeasproperty}" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="storeRenditionAsPropertyEnabled" value="${rendition.service.storeRenditionAsPropertyEnabled:false}" />
     </bean>
 
 <!-- The definitions are read from json files (possibly added to a volume via k8 ConfigMaps) -->

@@ -26,7 +26,9 @@
 
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -44,12 +46,10 @@ public class RenditionService2NewImpl implements RenditionService2New
 
     private static final QName RENDITION_LOCATION_PROPERTY = QName
                 .createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
-
+    private static Log logger = LogFactory.getLog(RenditionService2New.class);
     private RenditionService2Impl renditionService2;
     private boolean storeRenditionAsPropertyEnabled;
     private NodeService nodeService;
-
-    private static Log logger = LogFactory.getLog(RenditionService2New.class);
 
     @Override public RenditionDefinitionRegistry2 getRenditionDefinitionRegistry2()
     {
@@ -99,9 +99,20 @@ public class RenditionService2NewImpl implements RenditionService2New
 
     private RenditionContentData convertToRenditionContentData(ChildAssociationRef childAssociationRef)
     {
-        //TODO - implement the logic to extract RenditionContentData from childAssocicationRef
-        RenditionContentData renditionContentData = RenditionContentData.getRenditionContentData(childAssociationRef.getChildRef().getId());
+        NodeRef renditionNodeRef = childAssociationRef.getChildRef();
+        RenditionContentData renditionContentData = RenditionContentData
+                    .getRenditionContentData(getContentData(renditionNodeRef), renditionNodeRef.getId());
         return renditionContentData;
+    }
+
+    private ContentData getContentData(NodeRef nodeRef)
+    {
+        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        if (!ContentData.hasContent(contentData))
+        {
+            throw new IllegalArgumentException("Node id '" + nodeRef.getId() + "' has no content.");
+        }
+        return contentData;
     }
 
     @Override public RenditionContentData getRenditionByName(NodeRef sourceNodeRef, String renditionName)
@@ -127,6 +138,7 @@ public class RenditionService2NewImpl implements RenditionService2New
         else
         {
             //TODO- implement the logic to store the renditions as property
+
         }
     }
 
@@ -164,7 +176,7 @@ public class RenditionService2NewImpl implements RenditionService2New
             return null;
         }
 
-         return props.stream().map(s-> new RenditionContentData(s)).collect(Collectors.toList());
+        return props.stream().map(s -> new RenditionContentData(s)).collect(Collectors.toList());
     }
 
 }

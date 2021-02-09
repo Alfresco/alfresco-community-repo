@@ -1,6 +1,6 @@
-# Fetch image based on Tomcat 8.5 and Java 11
+# Fetch image based on Tomcat 9.0, Java 11 and Centos 8
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:8.5.51-java-11-openjdk-centos-7
+FROM alfresco/alfresco-base-tomcat:9.0.41-java-11-openjdk-centos-8
 
 # Set default docker_context.
 ARG resource_path=target
@@ -65,12 +65,12 @@ RUN sed -i -e "s_log4j.appender.File.File\=alfresco.log_log4j.appender.File.File
 
 # fontconfig is required by Activiti worflow diagram generator
 # installing pinned dependencies as well
-RUN yum install -y fontconfig-2.13.0-4.3.el7 \
-                   dejavu-fonts-common-2.33-6.el7 \
-                   fontpackages-filesystem-1.44-8.el7 \
-                   freetype-2.8-12.el7 \
-                   libpng-1.5.13-7.el7_2 \
-                   dejavu-sans-fonts-2.33-6.el7 && \
+RUN yum install -y fontconfig-2.13.1-3.el8 \
+                   dejavu-fonts-common-2.35-6.el8 \
+                   fontpackages-filesystem-1.44-22.el8 \
+                   freetype-2.9.1-4.el8_3.1 \
+                   libpng-1.6.34-5.el8 \
+                   dejavu-sans-fonts-2.35-6.el8 && \
     yum clean all
 
 # The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 

@@ -117,7 +117,7 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter, Initi
 		{
 			if(apiKey == null || apiKey.length()==0)
 			{
-				logger.fatal("Missing value for solr.apiKey configuration property. If solr.secureComms is set to \"https\", a value for solr.apiKey is required. See https://docs.alfresco.com/search-enterprise/tasks/solr-install-withoutSSL.html");
+				logger.fatal("Missing value for solr.apiKey configuration property. If solr.secureComms is set to \"apikey\", a value for solr.apiKey is required. See https://docs.alfresco.com/search-enterprise/tasks/solr-install-withoutSSL.html");
 				throw new AlfrescoRuntimeException("Missing value for solr.apiKey configuration property");
 			}
 			if(apiKeyHeader == null || apiKeyHeader.length()==0)

@@ -770,8 +770,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         ChildAssociationRef childAssoc = nodeService.createNode(sourceNode, assocType, assocName, nodeType, nodeProps);
         NodeRef renditionNode = childAssoc.getChildRef();
 
-        nodeService.addAspect(renditionNode, RenditionModel.ASPECT_RENDITION2, null);
-        nodeService.addAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION, null);
+            nodeService.addAspect(renditionNode, RenditionModel.ASPECT_RENDITION2, null);
+            nodeService.addAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION, null);
 
         if (logger.isDebugEnabled())
         {

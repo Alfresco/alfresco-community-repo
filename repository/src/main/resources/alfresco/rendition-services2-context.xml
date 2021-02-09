@@ -48,6 +48,23 @@
         </property>
     </bean>
 
+    <bean id="RenditionService2New" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.rendition2.RenditionService2New</value>
+        </property>
+        <property name="target">
+            <ref bean="renditionService2New" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="RenditionService2_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref bean="RenditionService2_security" />
+            </list>
+        </property>
+    </bean>
+
     <!-- Rendition Service 2 base bean -->
     <bean id="renditionService2" class="org.alfresco.repo.rendition2.RenditionService2Impl">
         <property name="transactionService" ref="TransactionService" />
@@ -161,6 +178,13 @@
         <property name="renditionService2" ref="renditionService2" />
         <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
         <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <!-- Rendition Service 2 base bean -->
+    <bean id="renditionService2New" class="org.alfresco.repo.rendition2.RenditionService2NewImpl">
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="storeRenditionAsPropertyEnabled" value="${rendition.service.storeRenditionAsPropertyEnabled:false}" />
     </bean>
 
 <!-- The definitions are read from json files (possibly added to a volume via k8 ConfigMaps) -->

@@ -37,9 +37,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.Serializable;
+import java.util.*;
 
 public class RenditionService2NewImpl implements RenditionService2New
 {
@@ -83,7 +82,9 @@ public class RenditionService2NewImpl implements RenditionService2New
         List<ChildAssociationRef> childAssociationRefList = renditionService2.getRenditions(sourceNodeRef);
         List<RenditionContentData> renditionContentDataList = new ArrayList<>();
         renditionContentDataList.addAll(convertToRenditionContentDataList(childAssociationRefList));
-        renditionContentDataList.addAll(getRenditionContentDataList(sourceNodeRef));
+        if(getRenditionContentDataList(sourceNodeRef).isPresent())
+         renditionContentDataList.addAll(getRenditionContentDataList(sourceNodeRef).get());
+
         return renditionContentDataList;
     }
 
@@ -100,19 +101,22 @@ public class RenditionService2NewImpl implements RenditionService2New
     private RenditionContentData convertToRenditionContentData(ChildAssociationRef childAssociationRef)
     {
         NodeRef renditionNodeRef = childAssociationRef.getChildRef();
-        RenditionContentData renditionContentData = RenditionContentData
-                    .getRenditionContentData(getContentData(renditionNodeRef), renditionNodeRef.getId());
-        return renditionContentData;
+        return getRenditionContentData(renditionNodeRef);
     }
 
-    private ContentData getContentData(NodeRef nodeRef)
+    private RenditionContentData getRenditionContentData(NodeRef nodeRef)
     {
-        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
+        ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
         if (!ContentData.hasContent(contentData))
         {
             throw new IllegalArgumentException("Node id '" + nodeRef.getId() + "' has no content.");
         }
-        return contentData;
+        RenditionContentData renditionContentData = RenditionContentData
+                    .getRenditionContentData(contentData, nodeRef.getId());
+        renditionContentData.setLastModified(((Date) nodeProps.get(ContentModel.PROP_MODIFIED)).getTime());
+
+        return renditionContentData;
     }
 
     @Override public RenditionContentData getRenditionByName(NodeRef sourceNodeRef, String renditionName)
@@ -159,24 +163,22 @@ public class RenditionService2NewImpl implements RenditionService2New
 
     private RenditionContentData getRenditionContentData(NodeRef sourceNodeRef, String renditionName)
     {
-        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        List<RenditionContentData> props = (List<RenditionContentData>) nodeService
+                    .getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
         if (props == null)
         {
             return null;
         }
-        return new RenditionContentData(
-                    props.stream().filter(s -> s.startsWith(renditionName)).findFirst().orElse(null));
+        return props.stream().filter(s -> s.getRenditionName().equals(renditionName)).findFirst()
+                    .orElse(null);
     }
 
-    private List<RenditionContentData> getRenditionContentDataList(NodeRef sourceNodeRef)
+    private Optional<List<RenditionContentData>> getRenditionContentDataList(NodeRef sourceNodeRef)
     {
-        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
-        if (props == null)
-        {
-            return null;
-        }
+        List<RenditionContentData> list = (List<RenditionContentData>) nodeService
+                    .getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        return Optional.ofNullable(list);
 
-        return props.stream().map(s -> new RenditionContentData(s)).collect(Collectors.toList());
     }
 
 }

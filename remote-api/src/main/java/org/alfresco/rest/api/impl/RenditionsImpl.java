@@ -29,9 +29,7 @@ package org.alfresco.rest.api.impl;
 import org.alfresco.heartbeat.RenditionsDataCollector;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.rendition2.RenditionDefinition2;
-import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
-import org.alfresco.repo.rendition2.RenditionService2;
+import org.alfresco.repo.rendition2.*;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.version.common.VersionUtil;
@@ -108,7 +106,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     private ServiceRegistry serviceRegistry;
     private ResourceLoader resourceLoader;
     private TenantService tenantService;
-    private RenditionService2 renditionService2;
+    private RenditionService2New renditionService2;
     private RenditionsDataCollector renditionsDataCollector;
     private VersionService versionService;
 
@@ -138,7 +136,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         this.tenantService = tenantService;
     }
 
-    public void setRenditionService2(RenditionService2 renditionService2)
+    public void setRenditionService2(RenditionService2New renditionService2)
     {
         this.renditionService2 = renditionService2;
     }
@@ -198,13 +196,12 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             }
         }
 
-        List<ChildAssociationRef> nodeRefRenditions = renditionService2.getRenditions(validatedNodeRef);
-        if (!nodeRefRenditions.isEmpty())
+        List<RenditionContentData> renditionContentDataList = renditionService2.getRenditions(validatedNodeRef);
+        if (!renditionContentDataList.isEmpty())
         {
-            for (ChildAssociationRef childAssociationRef : nodeRefRenditions)
+            for ( RenditionContentData renditionContentData: renditionContentDataList)
             {
-                NodeRef renditionNodeRef = childAssociationRef.getChildRef();
-                Rendition apiRendition = toApiRendition(renditionNodeRef);
+                Rendition apiRendition = toApiRendition(renditionContentData);
                 String renditionName = apiRendition.getId();
                 if (renditionNames.contains(renditionName))
                 {
@@ -224,7 +221,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 {
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Skip unknown rendition [" + renditionName + ", " + renditionNodeRef + "]");
+                        logger.trace("Skip unknown rendition [" + renditionName + ", " + renditionContentData + "]");
                     }
                 }
             }
@@ -247,8 +244,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     public Rendition getRendition(NodeRef nodeRef, String versionLabelId, String renditionId, Parameters parameters)
     {
         final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
-        NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, parameters);
-        String renditionProperty = getRenditionByNameAsProperty(validatedNodeRef, renditionId, parameters);
+        RenditionContentData renditionContentData = getRenditionByName(validatedNodeRef, renditionId, parameters);
         boolean includeNotCreated = true;
         String status = getStatus(parameters);
         if (status != null)
@@ -257,7 +253,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
         // if there is no rendition, then try to find the available/registered rendition (yet to be created).
-        if (renditionNodeRef == null && includeNotCreated)
+        if (renditionContentData == null && includeNotCreated)
         {
             ContentData contentData = getContentData(validatedNodeRef, true);
             String sourceMimetype = contentData.getMimetype();
@@ -289,12 +285,12 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             return toApiRendition(renditionId);
         }
 
-        if (renditionNodeRef == null)
+        if (renditionContentData == null)
         {
             throw new NotFoundException("The rendition with id: " + renditionId + " was not found.");
         }
 
-        return toApiRendition(renditionNodeRef);
+        return toApiRendition(renditionContentData);
     }
 
     @Override
@@ -319,8 +315,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
         final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
-        final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
-        if (renditionNodeRef != null)
+        final RenditionContentData renditionContentData = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
+        if (renditionContentData != null)
         {
             throw new ConstraintViolatedException(rendition.getId() + " rendition already exists."); // 409
         }
@@ -406,8 +402,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 renditionNamesNotRegistered.add(renditionName);
             }
 
-            final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionName, parameters);
-            if (renditionNodeRef == null)
+            final RenditionContentData renditionContentData = getRenditionByName(sourceNodeRef, renditionName, parameters);
+            if (renditionContentData == null)
             {
                 renditionNamesToCreate.add(renditionName);
             }
@@ -487,7 +483,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
     private BinaryResource getContentImpl(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
-        NodeRef renditionNodeRef = getRenditionByName(nodeRef, renditionId, parameters);
+        RenditionContentData renditionContentData = getRenditionByName(nodeRef, renditionId, parameters);
 
         // By default set attachment header (with rendition Id) unless attachment=false
         boolean attach = true;
@@ -498,18 +494,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
         final String attachFileName = (attach ? renditionId : null);
 
-        String renditionProperty = getRenditionByNameAsProperty(nodeRef, renditionId, parameters);
-        System.out.println("*** RenditionsImpl.getContentImpl() retrieved property: " + renditionProperty);
-        if (renditionProperty != null)
-        {
-            String[] ts = renditionProperty.split("\\|");
-            String contentUrl = ts[1];
-
-            return new RawBinaryResource(contentUrl, null, attachFileName, null);
-        }
-
         // todo - learn what this does
-        if (renditionNodeRef == null)
+        if (renditionContentData == null)
         {
             boolean isPlaceholder = Boolean.valueOf(parameters.getParameter(PARAM_PLACEHOLDER));
             if (!isPlaceholder)
@@ -565,12 +551,17 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             }
         }
 
-        Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
-        // todo - how/where is the contentData stored - we will need to have all that for rendition properties too
-        ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
-        Date modified = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
+//        Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
+//        // todo - how/where is the contentData stored - we will need to have all that for rendition properties too
+//        ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
+//        Date modified = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
 
+
+        ContentData contentData = renditionContentData.getContentData();
+
+        Date modified = new Date(renditionContentData.getLastModified());
         org.alfresco.rest.framework.resource.content.ContentInfo contentInfo = null;
+
         if (contentData != null)
         {
             contentInfo = new ContentInfoImpl(contentData.getMimetype(), contentData.getEncoding(), contentData.getSize(), contentData.getLocale());
@@ -585,19 +576,11 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 .build();
 
         // todo - another problem is we need support both Node and Raw resources for backwards compatibility
-        return new NodeBinaryResource(renditionNodeRef, ContentModel.PROP_CONTENT, contentInfo, attachFileName, cacheDirective);
+        return new RawBinaryResource(contentData.getContentUrl(), contentInfo, attachFileName, cacheDirective);
     }
 
-    protected String getRenditionByNameAsProperty(NodeRef nodeRef, String renditionId, Parameters parameters)
-    {
-        if (nodeRef == null || renditionId.isBlank())
-        {
-            throw new InvalidArgumentException("*** nodeRef or renditionId can't be null or empty.");
-        }
-        return renditionService2.getRenditionProperty(nodeRef, renditionId);
-    }
 
-    protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)
+    protected RenditionContentData getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
         if (nodeRef != null)
         {
@@ -606,40 +589,32 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 throw new InvalidArgumentException("renditionId can't be null or empty.");
             }
 
-            ChildAssociationRef nodeRefRendition = renditionService2.getRenditionByName(nodeRef, renditionId);
-            if (nodeRefRendition != null)
-            {
-                ContentData contentData = getContentData(nodeRefRendition.getChildRef(), false);
-                if (contentData != null)
-                {
-                    return tenantService.getName(nodeRef, nodeRefRendition.getChildRef());
-                }
-            }
+            RenditionContentData renditionContentData = renditionService2.getRenditionByName(nodeRef, renditionId);
+            return renditionContentData;
+            //TODO - investigate if we need tenant service?
+//            if (renditionContentData != null)
+//            {
+//                ContentData contentData = renditionContentData.getContentData();
+//
+////                if (contentData != null)
+////                {
+//
+////                    return tenantService.getName(nodeRef, nodeRefRendition.getChildRef());
+////                }
+//            }
         }
 
         return null;
     }
 
-    protected Rendition toApiRendtionAsProperty(String renditionProperty)
-    {
-        Rendition apiRendition = new Rendition();
-        String[] ts = renditionProperty.split("\\|");
-        String renditionId = ts[0];
-
-        ContentInfo contentInfo = null;
-
-        apiRendition.setStatus(RenditionStatus.CREATED);
-        return apiRendition;
-    }
-
-    protected Rendition toApiRendition(NodeRef renditionNodeRef)
+    protected Rendition toApiRendition(RenditionContentData renditionContentData)
     {
         Rendition apiRendition = new Rendition();
 
-        String renditionName = (String) nodeService.getProperty(renditionNodeRef, ContentModel.PROP_NAME);
+        String renditionName = renditionContentData.getRenditionName();
         apiRendition.setId(renditionName);
 
-        ContentData contentData = getContentData(renditionNodeRef, false);
+        ContentData contentData = renditionContentData.getContentData();
         ContentInfo contentInfo = null;
         if (contentData != null)
         {

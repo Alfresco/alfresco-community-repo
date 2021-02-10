@@ -205,8 +205,19 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
             AuthenticationUtil.clearCurrentSecurityContext();
         }
 
+        Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
+
         AlfrescoCmisService service = getCmisServiceTarget(connector);
-        
+        if (service instanceof AlfrescoCmisServiceImpl)
+        {
+            logger.info("getService: cmis.create.doc.request.renditions.set=" + stringSet);
+            ((AlfrescoCmisServiceImpl)service).setCmisRequestRenditionsOnCreateDoc(stringSet);
+        }
+        else
+        {
+            logger.info("getService: ignored - cmis.create.doc.request.renditions.set=" + stringSet);
+        }
+
         // Wrap it
         ProxyFactory proxyFactory = new ProxyFactory(service);
         proxyFactory.addInterface(AlfrescoCmisService.class);
@@ -227,16 +238,10 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
 
         return wrapperService;
     }
-    
+
     protected AlfrescoCmisService getCmisServiceTarget(CMISConnector connector)
     {
-        AlfrescoCmisServiceImpl cmisService = new AlfrescoCmisServiceImpl(connector);
-
-        Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
-        logger.info("getCmisServiceTarget: cmis.create.doc.request.renditions.set="+stringSet);
-        cmisService.setCmisRequestRenditionsOnCreateDoc(stringSet);
-
-        return cmisService;
+        return new AlfrescoCmisServiceImpl(connector);
     }
 
     private Set<String> parseCommaSeparatedSet(String str)

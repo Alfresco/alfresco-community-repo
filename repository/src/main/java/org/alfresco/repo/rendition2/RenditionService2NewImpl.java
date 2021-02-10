@@ -33,14 +33,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
 
-public class RenditionService2NewImpl implements RenditionService2New
+public class RenditionService2NewImpl implements RenditionService2New, InitializingBean
 {
 
     private static final QName RENDITION_LOCATION_PROPERTY = QName
@@ -130,22 +132,6 @@ public class RenditionService2NewImpl implements RenditionService2New
         return getRenditionContentData(sourceNodeRef, renditionName);
     }
 
-    public void consume(NodeRef sourceNodeRef, InputStream transformInputStream,
-                RenditionDefinition2 renditionDefinition, int transformContentHashCode)
-    {
-        if (renditionDefinition instanceof TransformDefinition || !isStoreRenditionAsPropertyEnabled())
-        {
-            renditionService2
-                        .consume(sourceNodeRef, transformInputStream, renditionDefinition, transformContentHashCode);
-
-        }
-        else
-        {
-            //TODO- implement the logic to store the renditions as property
-
-        }
-    }
-
     @Override public boolean isEnabled()
     {
         return renditionService2.isEnabled();
@@ -180,5 +166,12 @@ public class RenditionService2NewImpl implements RenditionService2New
         return Optional.ofNullable(list);
 
     }
+    
+    @Override public void afterPropertiesSet() throws Exception
+    {
 
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "renditionService2", renditionService2);
+
+    }
 }

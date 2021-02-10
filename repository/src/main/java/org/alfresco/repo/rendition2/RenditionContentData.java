@@ -37,14 +37,20 @@ public class RenditionContentData implements Serializable
 
     private static final String RENDITION_NAME_IDENTIFIER = "renditionName=";
     private static final String LAST_MODIFIED_IDENTIFIER = "lastModified=";
+    private static final String TRANSFORM_HASH_CODE_IDENTIFIER = "transformHashCode=";
     private String renditionName;
     private ContentData contentData;
     private Long lastModified; // todo - would it be better to have something from java.time package?
+    private Integer transformContentHashCode;
 
-    public RenditionContentData(String renditionName, Long lastModified, ContentData contentData)
+    public RenditionContentData(String renditionName,
+                                Long lastModified,
+                                Integer transformContentHashCode,
+                                ContentData contentData)
     {
         this.renditionName = renditionName;
         this.lastModified = lastModified;
+        this.transformContentHashCode = transformContentHashCode;
         this.contentData = contentData;
     }
 
@@ -61,7 +67,6 @@ public class RenditionContentData implements Serializable
 
     }
 
-
     public RenditionContentData(String renditionContentStr)
     {
         if (renditionContentStr == null || renditionContentStr.isBlank())
@@ -76,23 +81,35 @@ public class RenditionContentData implements Serializable
             if (token.startsWith(RENDITION_NAME_IDENTIFIER))
             {
                 renditionName = token.substring(RENDITION_NAME_IDENTIFIER.length());
-                // todo - would it be better to not allow missing renditionName?
+                // todo - would it be better to not allow missing values?
                 if (renditionName.isBlank())
                 {
                     renditionName = null;
                 }
             }
+            if (token.startsWith(TRANSFORM_HASH_CODE_IDENTIFIER))
+            {
+                String transformContentHashCodeStr = token.substring(TRANSFORM_HASH_CODE_IDENTIFIER.length());
+                try
+                {
+                    transformContentHashCode = Integer.valueOf(transformContentHashCodeStr);
+                }
+                catch (Exception e)
+                {
+                    // todo - would it be better to not allow missing values?
+                    // failed to parse hash code
+                }
+            }
             if (token.startsWith(LAST_MODIFIED_IDENTIFIER))
             {
                 String lastModifiedStr = token.substring(LAST_MODIFIED_IDENTIFIER.length());
-
                 try
                 {
                     lastModified = Long.valueOf(lastModifiedStr);
                 }
                 catch (Exception e)
                 {
-                    // todo - would it be better to not allow missing renditionName?
+                    // todo - would it be better to not allow missing values?
                     // failed to parse last modified
                 }
             }
@@ -130,11 +147,22 @@ public class RenditionContentData implements Serializable
         this.lastModified = lastModified;
     }
 
+    public Integer getTransformContentHashCode()
+    {
+        return transformContentHashCode;
+    }
+
+    public void setTransformContentHashCode(Integer transformContentHashCode)
+    {
+        this.transformContentHashCode = transformContentHashCode;
+    }
+
     public String getInfoUrl()
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append(RENDITION_NAME_IDENTIFIER).append(renditionName)
-                .append("|"+ LAST_MODIFIED_IDENTIFIER).append(getLastModified())
+                .append("|"+ LAST_MODIFIED_IDENTIFIER).append(lastModified)
+                .append("|"+ TRANSFORM_HASH_CODE_IDENTIFIER).append(transformContentHashCode)
                 .append("|"+ contentData.getInfoUrl());
         return sb.toString();
     }

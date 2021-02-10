@@ -42,6 +42,7 @@ services:
         -DlocalTransform.core-aio.url=http://transform-core-aio:8090/
         -Dimap.server.port=1143
         -Dftp.port=1221
+        -Drendition.service.storeRenditionAsPropertyEnabled=true
         -Dcors.enabled=true
         -Dcors.allowed.origins=http://localhost:4200,http://localhost:8080
         "

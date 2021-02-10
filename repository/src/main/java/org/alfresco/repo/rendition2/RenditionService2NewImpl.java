@@ -149,6 +149,8 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
 
     private RenditionContentData getRenditionContentData(NodeRef sourceNodeRef, String renditionName)
     {
+        // todo - there might be scenarios where a single node has renditions stored in both places, maybe even for the same renditionName
+
         List<RenditionContentData> props = (List<RenditionContentData>) nodeService
                     .getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
         if (props == null)
@@ -161,6 +163,8 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
 
     private Optional<List<RenditionContentData>> getRenditionContentDataList(NodeRef sourceNodeRef)
     {
+        // todo - there might be scenarios where a single node has renditions stored in both places, maybe even for the same renditionName
+
         List<RenditionContentData> list = (List<RenditionContentData>) nodeService
                     .getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
         return Optional.ofNullable(list);

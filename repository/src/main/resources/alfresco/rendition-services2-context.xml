@@ -81,6 +81,7 @@
         <property name="transformReplyProvider" ref="transformReplyProvider" />
         <property name="enabled" value="${renditionService2.enabled}" />
         <property name="thumbnailsEnabled" value="${system.thumbnail.generate}" />
+        <property name="storeRenditionAsPropertyEnabled" value="${rendition.service.storeRenditionAsProperty.enabled}" />
     </bean>
 
     <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler">

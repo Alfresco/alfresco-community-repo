@@ -174,6 +174,11 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
 //                cmisService,
 //                connector.getTypesDefaultMaxItems(), connector.getTypesDefaultDepth(),
 //                connector.getObjectsDefaultMaxItems(), connector.getObjectsDefaultDepth());
+
+        if (logger.isInfoEnabled())
+        {
+            logger.info("init: cmis.create.doc.request.renditions.set=" + cmisCreateDocRequestRenditionsSet);
+        }
     }
 
     @Override
@@ -205,17 +210,16 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
             AuthenticationUtil.clearCurrentSecurityContext();
         }
 
-        Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
-
         AlfrescoCmisService service = getCmisServiceTarget(connector);
         if (service instanceof AlfrescoCmisServiceImpl)
         {
-            logger.info("getService: cmis.create.doc.request.renditions.set=" + stringSet);
+            Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
             ((AlfrescoCmisServiceImpl)service).setCmisRequestRenditionsOnCreateDoc(stringSet);
-        }
-        else
-        {
-            logger.info("getService: ignored - cmis.create.doc.request.renditions.set=" + stringSet);
+
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("getService: cmis.create.doc.request.renditions.set=" + stringSet);
+            }
         }
 
         // Wrap it

@@ -106,16 +106,17 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
         return getRenditionContentData(renditionNodeRef);
     }
 
-    private RenditionContentData getRenditionContentData(NodeRef nodeRef)
+    private RenditionContentData getRenditionContentData(NodeRef renditionNodeRef)
     {
-        Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
+        Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
         ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
         if (!ContentData.hasContent(contentData))
         {
-            throw new IllegalArgumentException("Node id '" + nodeRef.getId() + "' has no content.");
+            throw new IllegalArgumentException("Node id '" + renditionNodeRef.getId() + "' has no content.");
         }
+        String renditionName = (String) nodeProps.get(ContentModel.PROP_NAME);
         RenditionContentData renditionContentData = RenditionContentData
-                    .getRenditionContentData(contentData, nodeRef.getId());
+                    .getRenditionContentData(contentData, renditionName);
         renditionContentData.setLastModified(((Date) nodeProps.get(ContentModel.PROP_MODIFIED)).getTime());
 
         return renditionContentData;

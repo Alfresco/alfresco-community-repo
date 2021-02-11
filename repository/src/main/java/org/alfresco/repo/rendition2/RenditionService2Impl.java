@@ -684,9 +684,9 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     // todo - Remove method once merged with RenditionService2New
-    private RenditionContentData getRenditionProperty(NodeRef sourceNodeRef, String renditionName)
+    RenditionContentData getRenditionProperty(NodeRef sourceNodeRef, String renditionName)
     {
-        List<RenditionContentData> props = (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, RENDITION_INFO_PROPERTY);
+        List<RenditionContentData> props = getRenditionPropertyList(sourceNodeRef);
         if (props == null)
         {
             return null;
@@ -697,15 +697,21 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 .orElse(null);
     }
 
+    List<RenditionContentData> getRenditionPropertyList(NodeRef sourceNodeRef)
+    {
+        return (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, RENDITION_INFO_PROPERTY);
+    }
+
+
     private void removeRenditionProperty(NodeRef sourceNodeRef, String renditionName)
     {
-        List<String> props = (List<String>) nodeService.getProperty(sourceNodeRef, RENDITION_INFO_PROPERTY);
+        List<RenditionContentData> props = getRenditionPropertyList(sourceNodeRef);
         if (props == null)
         {
             return;
         }
-        LinkedList<String> newList = props.stream()
-                .filter(s -> !s.startsWith(renditionName))
+        LinkedList<RenditionContentData> newList = props.stream()
+                .filter(s -> !s.getRenditionName().equals(renditionName))
                 .collect(Collectors.toCollection(LinkedList::new));
 
         if (newList.size() == 0)

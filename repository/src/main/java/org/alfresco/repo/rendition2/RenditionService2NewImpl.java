@@ -31,22 +31,17 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
 
 public class RenditionService2NewImpl implements RenditionService2New, InitializingBean
 {
-
-    private static final QName RENDITION_LOCATION_PROPERTY = QName
-                .createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
     private static Log logger = LogFactory.getLog(RenditionService2New.class);
     private RenditionService2Impl renditionService2;
     private boolean storeRenditionAsPropertyEnabled;
@@ -84,8 +79,8 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
         List<ChildAssociationRef> childAssociationRefList = renditionService2.getRenditions(sourceNodeRef);
         List<RenditionContentData> renditionContentDataList = new ArrayList<>();
         renditionContentDataList.addAll(convertToRenditionContentDataList(childAssociationRefList));
-        if(getRenditionContentDataList(sourceNodeRef).isPresent())
-         renditionContentDataList.addAll(getRenditionContentDataList(sourceNodeRef).get());
+        if (getRenditionContentDataList(sourceNodeRef).isPresent())
+            renditionContentDataList.addAll(getRenditionContentDataList(sourceNodeRef).get());
 
         return renditionContentDataList;
     }
@@ -151,26 +146,18 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
     {
         // todo - there might be scenarios where a single node has renditions stored in both places, maybe even for the same renditionName
 
-        List<RenditionContentData> props = (List<RenditionContentData>) nodeService
-                    .getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
-        if (props == null)
-        {
-            return null;
-        }
-        return props.stream().filter(s -> s.getRenditionName().equals(renditionName)).findFirst()
-                    .orElse(null);
+        return renditionService2.getRenditionProperty(sourceNodeRef, renditionName);
     }
 
     private Optional<List<RenditionContentData>> getRenditionContentDataList(NodeRef sourceNodeRef)
     {
         // todo - there might be scenarios where a single node has renditions stored in both places, maybe even for the same renditionName
 
-        List<RenditionContentData> list = (List<RenditionContentData>) nodeService
-                    .getProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        List<RenditionContentData> list = renditionService2.getRenditionPropertyList(sourceNodeRef);
         return Optional.ofNullable(list);
 
     }
-    
+
     @Override public void afterPropertiesSet() throws Exception
     {
 

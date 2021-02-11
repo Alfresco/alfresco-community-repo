@@ -76,6 +76,11 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
 
     @Override public List<RenditionContentData> getRenditions(NodeRef sourceNodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("get RenditionContentData for sourceNodeRef:"+ sourceNodeRef.getId());
+        }
+
         List<ChildAssociationRef> childAssociationRefList = renditionService2.getRenditions(sourceNodeRef);
         List<RenditionContentData> renditionContentDataList = new ArrayList<>();
         renditionContentDataList.addAll(convertToRenditionContentDataList(childAssociationRefList));
@@ -119,6 +124,10 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
     @Override public RenditionContentData getRenditionByName(NodeRef sourceNodeRef, String renditionName)
     {
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("get RenditionContentData for rendition:" + renditionName);
+        }
         ChildAssociationRef childAssociationRef = renditionService2.getRenditionByName(sourceNodeRef, renditionName);
 
         if (childAssociationRef != null)

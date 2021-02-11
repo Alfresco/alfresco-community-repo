@@ -138,6 +138,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         // Use the docker images for transforms (local)
         System.setProperty("localTransform.core-aio.url", "http://localhost:8090/");
+        System.setProperty("rendition.service.storeRenditionAsProperty.enabled", "false");
     }
 
     protected static void none()
@@ -390,32 +391,12 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         for (int i = (int)(maxMillis / 1000); i >= 0; i--)
         {
             // Must create a new transaction in order to see changes that take place after this method started.
-//            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-//                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
-
-            QName renditionLocationProperty = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
-
-            List<RenditionContentData> rendProps = (List<RenditionContentData>) transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    nodeService.getProperty(sourceNodeRef, renditionLocationProperty), true, true);
-
-            if (rendProps != null)
+            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
+            if (assoc != null)
             {
-                System.out.println("*** Test results are in!");
-                System.out.println("Test source NodeRef: " + sourceNodeRef);
-                rendProps.forEach(System.out::println);
-                RenditionContentData renditionProperty = rendProps.stream().filter(rp -> rp.getRenditionName().equals(renditionName)).findFirst().orElse(null);
-                String renditionUrl = renditionProperty.getContentData().getContentUrl();
-                System.out.println("Retrieved RenditionContentData: " + renditionProperty);
-                File destinationFile = new File("/Users/eknizat/Desktop/testfile.jpeg");
-                contentService.getRawReader(renditionUrl).getContent(destinationFile);
-
                 break;
             }
-
-//            if (assoc != null)
-//            {
-//                break;
-//            }
             logger.debug("RenditionService2.getRenditionByName(...) sleep "+i);
             sleep(1000);
         }

@@ -44,6 +44,7 @@ public class Type extends AbstractClass
         this.description = typeDefinition.getDescription(messageLookup);
         this.parentId = getParentNameAsString(typeDefinition.getParentName());
         this.properties = setList(properties);
+        this.model = getModelInfo(typeDefinition, messageLookup);
     }
 
     @Override

@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
+import org.alfresco.rest.api.model.Model;
 import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.json.simple.JSONArray;
@@ -51,6 +52,14 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
         AssertUtil.assertEquals("title", getTitle(), other.getTitle());
         AssertUtil.assertEquals("description", getDescription(), other.getDescription());
         AssertUtil.assertEquals("parenId", getParentId(), other.getParentId());
+
+        if (getModel() != null && other.getModel() != null)
+        {
+            AssertUtil.assertEquals("modelId", getModel().getId(), other.getModel().getId());
+            AssertUtil.assertEquals("author", getModel().getAuthor(), other.getModel().getAuthor());
+            AssertUtil.assertEquals("namespaceUri", getModel().getNamespaceUri(), other.getModel().getNamespaceUri());
+            AssertUtil.assertEquals("namespacePrefix", getModel().getNamespacePrefix(), other.getModel().getNamespacePrefix());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -79,6 +88,11 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
             jsonObject.put("properties", getProperties());
         }
 
+        if (getModel() != null)
+        {
+            jsonObject.put("model", getModel());
+        }
+
         return jsonObject;
     }
 
@@ -91,12 +105,21 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
         String parentId = (String) jsonObject.get("parentId");
         List<PropertyDefinition> properties = (List<PropertyDefinition>) jsonObject.get("properties");
 
+        JSONObject jsonModel = (JSONObject) jsonObject.get("model");
+        Model model = new Model();
+        model.setId((String) jsonModel.get("id"));
+        model.setDescription((String) jsonModel.get("description"));
+        model.setNamespacePrefix((String) jsonModel.get("namespacePrefix"));
+        model.setNamespaceUri((String) jsonModel.get("namespaceUri"));
+        model.setAuthor((String) jsonModel.get("author"));
+
         Type action = new Type();
         action.setId(id);
         action.setTitle(title);
         action.setDescription(description);
         action.setParentId(parentId);
         action.setProperties(properties);
+        action.setModel(model);
 
         return action;
     }

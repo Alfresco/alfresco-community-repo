@@ -614,21 +614,31 @@ public class ResultMapper
                     && context.getFacets() == null);
     }
 
+    /**
+     * Tries to see if the input {@link ResultSet} or one of the wrapped {@link ResultSet}
+     * is an instance of {@link SearchEngineResultSet}.
+     * Since some concrete ResultSet implements the decorator patterns, the code
+     * assumes (in those cases) a nested structure with a maximum of 3 levels.
+     * Probably the code could be generalised better in order to scan a decorator
+     * chain with an unlimited depth, but that would require a change in the ResultSet interface.
+     */
     protected Optional<SearchEngineResultSet> toSearchEngineResultSet(ResultSet results)
     {
-        ResultSet theResultSet = results;
-
         if (results instanceof FilteringResultSet)
         {
-            theResultSet = ((FilteringResultSet) results).getUnFilteredResultSet();
+            // 1st level
+            results = ((FilteringResultSet) results).getUnFilteredResultSet();
+
+            // 2nd level
+            if (results instanceof FilteringResultSet)
+            {
+                results = ((FilteringResultSet) results).getUnFilteredResultSet();
+            }
         }
 
-        if (theResultSet instanceof SearchEngineResultSet)
-        {
-            return of(theResultSet).map(SearchEngineResultSet.class::cast);
-        }
-
-        return empty();
+        return results instanceof SearchEngineResultSet
+            ? of(results).map(SearchEngineResultSet.class::cast)
+            : empty();
     }
 
     public CollectionWithPagingInfo<TupleList> toCollectionWithPagingInfo(JSONArray docs, SearchSQLQuery searchQuery) throws JSONException

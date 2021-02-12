@@ -300,9 +300,9 @@ jobs:
       install: skip
       script: bash scripts/travis/update_downstream.sh
 
-    - name: "Trigger alfresco-enterprise-repo build"
-      stage: trigger_downstream
-      before_install: skip
-      install: skip
-      script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
+#    - name: "Trigger alfresco-enterprise-repo build"
+#      stage: trigger_downstream
+#      before_install: skip
+#      install: skip
+#      script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
 

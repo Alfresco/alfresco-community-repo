@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.repo.search.impl.JSONResult;
+import org.alfresco.repo.search.SearchEngineResultMetadata;
 import org.json.JSONObject;
 
 /**
@@ -34,7 +34,7 @@ import org.json.JSONObject;
  * @author Gethin James
  */
 @FunctionalInterface
-public interface SolrJsonProcessor<T extends JSONResult>
+public interface SolrJsonProcessor<T extends SearchEngineResultMetadata>
 {
     public T getResult(JSONObject json);
 }

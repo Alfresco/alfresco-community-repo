@@ -424,6 +424,12 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
         @Override
         public Void call()
         {
+            long threadId = Thread.currentThread().getId();
+            logger.debug("Thread # " + threadId + "-> call()");
+
+            logger.debug("Thread # " + threadId + "call()->liveLock.writeLock().lock()");    
+            liveLock.writeLock().lock();                                                                                            
+            logger.debug("Thread # " + threadId + "call()->liveLock.writeLock().locked   [");
             try
             {
                 doCall();
@@ -443,6 +449,12 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
                     runLock.writeLock().unlock();
                 }
                 return null;
+            }
+            finally
+            {
+                logger.debug("Thread # " + threadId + "call()->liveLock.writeLock().unlock()");
+                liveLock.writeLock().unlock();
+                logger.debug("Thread # " + threadId + "call()->liveLock.writeLock().unlocked]");
             }
         }
 

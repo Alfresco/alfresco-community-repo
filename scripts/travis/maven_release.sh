@@ -14,6 +14,7 @@ git config user.email "${GIT_EMAIL}"
 mvn -B \
   -PfullBuild,all-tas-tests \
   "-Darguments=-PfullBuild,all-tas-tests -DskipTests -Dbuild-number=${TRAVIS_BUILD_NUMBER}" \
+  -DreleaseVersion=repo-5439-M3 -DdevelopmentVersion=8.346-M3-SNAPSHOT \
   release:clean release:prepare release:perform \
   -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
   -Dusername="${GIT_USERNAME}" \

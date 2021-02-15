@@ -136,7 +136,6 @@
       <property name="tenantAware" value="false" />
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.immutableEntitySharedCache.tx.statsEnabled}"/>
-      <property name="allowEqualsChecks" value="true" />
    </bean>
    
    

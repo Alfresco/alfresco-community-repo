@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.alfresco.repo.content.metadata.AsynchronousExtractor.isMetadataEmbedMimetype;
 import static org.alfresco.repo.content.metadata.AsynchronousExtractor.isMetadataExtractMimetype;
@@ -71,13 +72,13 @@ public class CombinedConfig
 {
     private final Log log;
 
-    static class TransformAndItsOrigin
+    public static class TransformAndItsOrigin
     {
         final Transformer transformer;
         final String baseUrl;
         final String readFrom;
 
-        TransformAndItsOrigin(Transformer transformer, String baseUrl, String readFrom)
+        public TransformAndItsOrigin(Transformer transformer, String baseUrl, String readFrom)
         {
             this.transformer = transformer;
             this.baseUrl = baseUrl;
@@ -87,6 +88,11 @@ public class CombinedConfig
         public Transformer getTransformer()
         {
             return transformer;
+        }
+
+        public String getBaseUrl()
+        {
+            return baseUrl;
         }
     }
 
@@ -267,8 +273,8 @@ public class CombinedConfig
         data.setTEngineCount(tEngineCount);
         data.setFileCount(configFileFinder.getFileCount());
 
-        combinedTransformers = sortTransformers(combinedTransformers);
-
+        combinedTransformers = removeInvalidTransformers(combinedTransformers, registry);
+        combinedTransformers = sortTransformers(combinedTransformers, registry);
         addWildcardSupportedSourceAndTarget(combinedTransformers);
 
         combinedTransformers.forEach(transformer ->
@@ -276,8 +282,77 @@ public class CombinedConfig
                     transformer.baseUrl, transformer.readFrom));
     }
 
+    /**
+     * Discards transformers that are invalid (e.g. transformers that have both pipeline and failover sections). Calls
+     * {@link #removeInvalidTransformer(int, List, TransformServiceRegistryImpl, TransformAndItsOrigin, Transformer,
+     * String, String, boolean, boolean)} for each transform, so that subclasses (LocalCombinedConfig), may also
+     * discard invalid transforms or overridden transforms.
+     *
+     * @param combinedTransformers the full list of transformers in the order they were read.
+     * @param registry that wil hold the transforms.
+     */
+    private List<TransformAndItsOrigin> removeInvalidTransformers(List<TransformAndItsOrigin> combinedTransformers,
+                                                                  TransformServiceRegistryImpl registry)
+    {
+        for (int i=0; i<combinedTransformers.size(); i++)
+        {
+            try
+            {
+                TransformAndItsOrigin transformAndItsOrigin = combinedTransformers.get(i);
+                Transformer transformer = transformAndItsOrigin.transformer;
+                String readFrom = transformAndItsOrigin.readFrom;
+                String name = transformer.getTransformerName();
+                List<TransformStep> pipeline = transformer.getTransformerPipeline();
+                List<String> failover = transformer.getTransformerFailover();
+                boolean isPipeline = pipeline != null && !pipeline.isEmpty();
+                boolean isFailover = failover != null && !failover.isEmpty();
+
+                if (isPipeline && isFailover)
+                {
+                    throw new IllegalArgumentException("Transformer " + transformerName(name) +
+                            " cannot have pipeline and failover sections. Read from " + readFrom);
+                }
+
+                // Local transforms may override each other or be invalid
+                int indexToRemove = removeInvalidTransformer(i, combinedTransformers, registry, transformAndItsOrigin,
+                        transformer, name, readFrom, isPipeline, isFailover);
+
+                // If required remove the requested transform
+                if (indexToRemove >= 0)
+                {
+                    combinedTransformers.remove(indexToRemove);
+                    // this may also require the current index i to be changed so we don't skip one.
+                    if (i <= indexToRemove)
+                    {
+                        i--;
+                    }
+                }
+            }
+            catch (IllegalArgumentException e)
+            {
+                String msg = e.getMessage();
+                registry.logError(msg);
+                combinedTransformers.remove(i--);
+            }
+        }
+        return combinedTransformers;
+    }
+
+    protected int removeInvalidTransformer(int i, List<TransformAndItsOrigin> combinedTransformers,
+                                           TransformServiceRegistryImpl registry,
+                                           TransformAndItsOrigin transformAndItsOrigin, Transformer transformer,
+                                           String name, String readFrom, boolean isPipeline, boolean isFailover)
+    {
+        return -1;
+    }
+
+    protected static String transformerName(String name)
+    {
+        return name == null ? " without a name" : "\"" + name + "\"";
+    }
+
     // Sort transformers so there are no forward references, if that is possible.
-    private static List<TransformAndItsOrigin> sortTransformers(List<TransformAndItsOrigin> original)
+    private List<TransformAndItsOrigin> sortTransformers(List<TransformAndItsOrigin> original, TransformServiceRegistryImpl registry)
     {
         List<TransformAndItsOrigin> transformers = new ArrayList<>(original.size());
         List<TransformAndItsOrigin> todo = new ArrayList<>(original.size());
@@ -333,6 +408,13 @@ public class CombinedConfig
         while (added && !original.isEmpty());
 
         transformers.addAll(todo);
+
+        for (TransformAndItsOrigin transformAndItsOrigin : original)
+        {
+            String name = transformAndItsOrigin.getTransformer().getTransformerName();
+            registry.logError("Transformer " + transformerName(name) +
+                    " ignored as step transforms do not exist. Read from " + transformAndItsOrigin.readFrom);
+        }
 
         return transformers;
     }

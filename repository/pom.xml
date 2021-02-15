@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.379-SNAPSHOT</version>
+        <version>8.393-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -383,7 +383,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.2.3</version>
+            <version>6.2.4</version>
         </dependency>
 
         <!-- GData -->
@@ -669,6 +669,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
+            <artifactId>camel-activemq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
             <artifactId>camel-amqp</artifactId>
         </dependency>
         <dependency>
@@ -692,23 +696,6 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client</artifactId>
             <version>${dependency.activemq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-broker</artifactId>
-            <version>${dependency.activemq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-activemq</artifactId>
-            <version>${dependency.camel.version}</version>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>

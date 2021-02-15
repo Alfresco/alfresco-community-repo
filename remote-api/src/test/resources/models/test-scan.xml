@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="test:scan">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/smartfolder/1.0" prefix="smf"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.test.com/model/account/1.0" prefix="test"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+        <type name="test:scanned">
+            <parent>cm:content</parent>
+            <properties>
+                <property name="test:description">
+                    <title>Description</title>
+                    <description>Document knowledge from ai or OCR</description>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="test:percent">
+                    <title>percent</title>
+                    <description>Ocr scan percent</description>
+                    <type>d:double</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="false">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="test:doctype">
+                    <title>Document Typt</title>
+                    <description>Document type from OCR</description>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects>
+        <aspect name="test:rescan">
+            <title>rescan</title>
+            <description>Doc that required to scan </description>
+            <properties>
+                <property name="test:rescanpercent">
+                    <title>rescanpercent</title>
+                    <description>Rescan percent</description>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <default>70</default>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="test:smartFilter">
+            <title>Smart filter</title>
+            <description>Smart Filter</description>
+            <parent>cm:auditable</parent>
+            <properties/>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>

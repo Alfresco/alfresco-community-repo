@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author gfertuso
  */
-public class NodeDefinitionProperty 
+public class PropertyDefinition
 {
     private String id;
     private String title;
@@ -42,7 +42,7 @@ public class NodeDefinitionProperty
     private Boolean isMandatory;
     private Boolean isMandatoryEnforced;
     private Boolean isProtected;
-    private List<NodeDefinitionConstraint> constraints;
+    private List<ConstraintDefinition> constraints;
 
     public String getId() 
     {
@@ -104,12 +104,12 @@ public class NodeDefinitionProperty
         this.isProtected = isProtected;
     }
 
-    public List<NodeDefinitionConstraint> getConstraints() 
+    public List<ConstraintDefinition> getConstraints()
     {
         return constraints;
     }
 
-    public void setConstraints(List<NodeDefinitionConstraint> constraints) 
+    public void setConstraints(List<ConstraintDefinition> constraints)
     {
         this.constraints = constraints;
     }

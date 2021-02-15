@@ -1,0 +1,14 @@
+{
+  "transformOptions": {
+  },
+  "transformers": [
+    {
+      "transformerName": "",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+      ],
+      "transformOptions": [
+      ]
+    }
+  ]
+}

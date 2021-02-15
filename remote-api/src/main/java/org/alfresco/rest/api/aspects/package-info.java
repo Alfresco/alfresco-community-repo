@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,27 +23,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.model;
 
-import java.util.List;
-/**
- * Represents the node definition.
- *
- * @author gfertuso
- */
-public class NodeDefinition
-{
-    
-    List <NodeDefinitionProperty> properties;
-    
-    public List<NodeDefinitionProperty> getProperties() 
-    {
-        return properties;
-    }
-
-    public void setProperties(List<NodeDefinitionProperty> properties) 
-    {
-        this.properties = properties;
-    }
-    
-}
+@WebApi(name="alfresco", scope= Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rest.api.aspects;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

@@ -1,0 +1,147 @@
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="mycompany:model">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/smartfolder/1.0" prefix="smf"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.mycompany.com/model/finance/1.0" prefix="mycompany"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+        <type name="mycompany:doc">
+            <title>doc</title>
+            <description>Doc</description>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="mycompany:description">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="mycompany:title">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="mycompany:whitepaper">
+            <title>whitepaper</title>
+            <description>Whitepaper</description>
+            <parent>mycompany:doc</parent>
+            <properties/>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects>
+        <aspect name="mycompany:active">
+            <properties>
+                <property name="mycompany:active">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <default>false</default>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="mycompany:published">
+                    <type>d:date</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="mycompany:webable">
+            <parent>mycompany:active</parent>
+            <properties>
+                <property name="mycompany:count">
+                    <type>d:int</type>
+                    <mandatory>false</mandatory>
+                    <default>5</default>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                    <constraints>
+                        <constraint name="mycompany:MINMAX_b305ffc8-3488-4b4a-89bb-5d9c03da94fd" type="MINMAX">
+                            <parameter name="minValue">
+                                <value>5</value>
+                            </parameter>
+                            <parameter name="maxValue">
+                                <value>23</value>
+                            </parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="mycompany:testAspect">
+            <properties>
+                <property name="mycompany:testProperty">
+                    <title>Test Property</title>
+                    <description>Property One Description</description>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="mycompany:childAspect">
+            <title>Child Aspect</title>
+            <description>Child Aspect Description</description>
+            <parent>smf:smartFolder</parent>
+            <properties>
+                <property name="mycompany:prop1">
+                    <title>Propert One</title>
+                    <description>Propert One Description</description>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                    <constraints>
+                        <constraint name="mycompany:LENGTH_8befcbe6-52d2-438e-83f9-e255930bc664" type="LENGTH">
+                            <parameter name="maxLength">
+                                <value>256</value>
+                            </parameter>
+                            <parameter name="minLength">
+                                <value>5</value>
+                            </parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>

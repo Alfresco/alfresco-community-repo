@@ -11,7 +11,7 @@
 
     <context:component-scan base-package="org.alfresco.messaging.camel.configuration"/>
 
-    <bean id="messagingObjectMapper" class="org.gytheio.messaging.jackson.ObjectMapperFactory" 
+    <bean id="messagingObjectMapper" class="org.gytheio.messaging.jackson.ObjectMapperFactory"
         factory-method="createInstance" />
         
     <bean id="defaultDataFormat" class="org.apache.camel.component.jackson.JacksonDataFormat">
@@ -29,18 +29,24 @@
         <property name="connectionFactory" ref="pooledConnectionFactory"/>
     </bean>
 
-    <bean id="amqp" class="org.apache.camel.component.amqp.AMQPComponent">
+    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
         <property name="connectionFactory" ref="pooledConnectionFactory" />
         <property name="transacted" value="${messaging.transacted}" />
         <property name="transactionManager" ref="messagingTransactionManager" />
     </bean>
 
     <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
-        <property name="connectionFactory" ref="pooledConnectionFactory" />
-        <property name="transacted" value="${messaging.transacted}" />
-        <property name="transactionManager" ref="messagingTransactionManager" />
+        <property name="configuration" ref="jmsConfig"/>
     </bean>
-    
+
+    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig"/>
+    </bean>
+
+    <bean id="amqp" class="org.apache.camel.component.amqp.AMQPComponent">
+        <property name="configuration" ref="jmsConfig"/>
+    </bean>
+
     <bean id="CAMEL_PROPAGATION_MANDATORY" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
         <property name="transactionManager" ref="messagingTransactionManager" />
         <property name="propagationBehaviorName" value="PROPAGATION_MANDATORY" />
@@ -82,7 +88,7 @@
         <camel:jmxAgent id="agent" mbeanObjectDomainName="Alfresco.Camel" />
         <template id="camelProducerTemplate" defaultEndpoint="direct:alfresco.default" />
     </camelContext>
-    
+
     <import resource="defaultRoutes.xml" />
     <bean id="defaultRouteLoader" class="org.alfresco.messaging.camel.SpringContextRouteLoader">
         <property name="camelContextId" value="alfrescoCamelContext" />

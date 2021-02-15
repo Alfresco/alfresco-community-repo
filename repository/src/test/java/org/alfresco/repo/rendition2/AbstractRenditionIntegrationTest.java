@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
@@ -64,6 +63,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,6 +79,9 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 {
     @Autowired
     protected RenditionService2Impl renditionService2;
+
+    @Autowired
+    protected RenditionService2NewImpl renditionService2New;
 
     @Autowired
     protected RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
@@ -151,6 +154,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         System.setProperty("transform.service.enabled", "false");
         System.setProperty("local.transform.service.enabled", "true");
+        System.setProperty("rendition.service.storeRenditionAsProperty.enabled", "false");
 
         // Strict MimetypeCheck
         System.setProperty("transformer.strict.mimetype.check", "true");
@@ -301,6 +305,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
                 transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                 {
                     clearContent(sourceNodeRef);
+                    clearRendition(sourceNodeRef);
                     return null;
                 }), user);
     }
@@ -311,6 +316,12 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         nodeService.removeProperty(sourceNodeRef, PROP_CONTENT);
     }
 
+    // Clears the rendition of a source node as the current user in the current transaction.
+    private void clearRendition(NodeRef sourceNodeRef)
+    {
+        renditionService2New.deleteRendition(sourceNodeRef);
+    }
+
     // Requests a new rendition as the given user in its own transaction.
     protected void render(String user, NodeRef sourceNode, String renditionName)
     {
@@ -318,6 +329,17 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
                 transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                 {
                     render(sourceNode, renditionName);
+                    return null;
+                }), user);
+    }
+
+    // Requests a new rendition as the given user in its own transaction.
+    protected void renderUsingRenditionService2(String user, NodeRef sourceNode, String renditionName)
+    {
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    renderUsingRenditionService2(sourceNode, renditionName);
                     return null;
                 }), user);
     }
@@ -336,6 +358,12 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Requests a new rendition as the current user in the current transaction.
     private void render(NodeRef sourceNodeRef, String renditionName)
     {
+        renditionService2New.render(sourceNodeRef, renditionName);
+    }
+
+    // Requests a new rendition as the current user in the current transaction.
+    private void renderUsingRenditionService2(NodeRef sourceNodeRef, String renditionName)
+    {
         renditionService2.render(sourceNodeRef, renditionName);
     }
 
@@ -348,7 +376,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     }
 
     // As a given user waitForRendition for a rendition to appear. Creates new transactions to do this.
-    protected NodeRef waitForRendition(String user, NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws AssertionFailedError
+    protected RenditionContentData waitForRendition(String user, NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws AssertionFailedError
     {
         try
         {
@@ -384,7 +412,68 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     }
 
     // As the current user waitForRendition for a rendition to appear. Creates new transactions to do this.
-    private NodeRef waitForRendition(NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws InterruptedException
+    private RenditionContentData waitForRendition(NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws InterruptedException
+    {
+        long maxMillis = 10000;
+        RenditionContentData returnRenditionContentData = null;
+        List<RenditionContentData> result = new ArrayList<>();
+
+        for (int i = (int)(maxMillis / 1000); i >= 0; i--)
+        {
+            List<RenditionContentData> renditionContentDataList = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                    renditionService2New.getRenditions(sourceNodeRef));
+
+            if (!renditionContentDataList.isEmpty())
+            {
+                System.out.println("*** Test results are in!");
+                System.out.println("Test source NodeRef: " + sourceNodeRef);
+                for (RenditionContentData renditionContentData: renditionContentDataList)
+                {
+                    if (renditionContentData.getRenditionName().equals(renditionName))
+                    {
+                        String renditionUrl = renditionContentData.getContentData().getContentUrl();
+                        System.out.println("Retrieved RenditionContentData Url: " + renditionUrl);
+                        result.addAll(renditionContentDataList);
+                        returnRenditionContentData = renditionContentData;
+                    }
+                }
+                break;
+            }
+            logger.debug("RenditionService2New.getRenditionByName(...) sleep "+i);
+            sleep(1000);
+        }
+        if (shouldExist)
+        {
+            assertTrue("Rendition " + renditionName + " did not fail", !result.isEmpty());
+            return returnRenditionContentData;
+        }
+        else
+        {
+            assertTrue("Rendition " + renditionName + " failed", result.isEmpty());
+            return null;
+        }
+    }
+
+    // As a given user waitForRendition for a rendition to appear. Creates new transactions to do this.
+    protected NodeRef waitForRenditionUsingRenditionService2(String user, NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws AssertionFailedError
+    {
+        try
+        {
+            return AuthenticationUtil.runAs(() -> waitForRenditionUsingRenditionService2(sourceNodeRef, renditionName, shouldExist), user);
+        }
+        catch (RuntimeException e)
+        {
+            Throwable cause = e.getCause();
+            if (cause instanceof AssertionFailedError)
+            {
+                throw (AssertionFailedError)cause;
+            }
+            throw e;
+        }
+    }
+
+    // As the current user waitForRendition for a rendition to appear. Creates new transactions to do this.
+    private NodeRef waitForRenditionUsingRenditionService2(NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws InterruptedException
     {
         long maxMillis = 10000;
         ChildAssociationRef assoc = null;

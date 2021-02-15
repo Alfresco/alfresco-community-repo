@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
@@ -319,7 +320,8 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Clears the rendition of a source node as the current user in the current transaction.
     private void clearRendition(NodeRef sourceNodeRef)
     {
-        renditionService2New.deleteRendition(sourceNodeRef);
+        QName RENDITION_LOCATION_PROPERTY = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
+        nodeService.removeProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
     }
 
     // Requests a new rendition as the given user in its own transaction.

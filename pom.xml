@@ -559,8 +559,8 @@
       <maven.resources.version>3.1.0</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.11.3</jackson.version>
-      <jackson-databind.version>2.11.2</jackson-databind.version>
+      <jackson.version>2.12.1</jackson.version>
+      <jackson-databind.version>2.12.1</jackson-databind.version>
       <fabric8.docker.version>0.31.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.16</postgresql.version>
@@ -597,7 +597,7 @@
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
       <!-- 7.0.0 dependencies -->
-      <alfresco-community-repo.version>8.378</alfresco-community-repo.version>
+      <alfresco-community-repo.version>8.382</alfresco-community-repo.version>
    </properties>
 
    <dependencyManagement>
@@ -649,7 +649,6 @@
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-mock</artifactId>
          <version>${camel.mock.version}</version>
-         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.sun.xml.bind</groupId>

@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -46,6 +47,8 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
     private RenditionService2Impl renditionService2;
     private boolean storeRenditionAsPropertyEnabled;
     private NodeService nodeService;
+    private static final QName RENDITION_LOCATION_PROPERTY = QName
+            .createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
 
     @Override public RenditionDefinitionRegistry2 getRenditionDefinitionRegistry2()
     {
@@ -174,5 +177,10 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
 
+    }
+
+    public void deleteRendition(NodeRef sourceNodeRef)
+    {
+        nodeService.removeProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
     }
 }

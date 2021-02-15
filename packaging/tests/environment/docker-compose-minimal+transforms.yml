@@ -19,6 +19,7 @@ services:
         -Dmetadata-keystore.aliases=metadata
         -Dmetadata-keystore.metadata.password=oKIWzVdEdA
         -Dmetadata-keystore.metadata.algorithm=DESede
+        -Drendition.service.storeRenditionAsProperty.enabled=true
       "
       JAVA_OPTS :
         "

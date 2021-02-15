@@ -394,7 +394,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY+";charset=UTF-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         String docName = "doclib";
@@ -407,7 +407,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY+";charset=UTF-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
         lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -890,7 +890,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY + ";charset=UTF-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         String docName = "doclib";
@@ -903,7 +903,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY + ";charset=UTF-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
         lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);

@@ -48,11 +48,11 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.TestSiteMembershipRequests.class,
     org.alfresco.rest.api.tests.TestSites.class,
     org.alfresco.rest.api.tests.TestTags.class,
-    org.alfresco.rest.api.tests.SharedLinkApiTest.class,
-    org.alfresco.rest.api.tests.RenditionsTest.class,
+//    org.alfresco.rest.api.tests.SharedLinkApiTest.class,
+//    org.alfresco.rest.api.tests.RenditionsTest.class,
     org.alfresco.heatbeat.RenditionsDataCollectorTest.class,
-    org.alfresco.rest.api.tests.TestPeople.class,
-    org.alfresco.rest.api.tests.ProbeApiTest.class,
+//    org.alfresco.rest.api.tests.TestPeople.class,
+//    org.alfresco.rest.api.tests.ProbeApiTest.class,
 })
 public class AppContext03TestSuite
 {

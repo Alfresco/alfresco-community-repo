@@ -585,7 +585,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testDownloadRendition() throws Exception
     {
-        setRequestContext(user1);
+        setRequestContext(networkAdmin);
 
         // Create a folder within the site document's library
         Date now = new Date();
@@ -620,7 +620,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(contentDisposition.contains("filename=\"doclib\""));
         String contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
-        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_BINARY));
 
         // Download rendition - without Content-Disposition header
         // (attachment=false)
@@ -633,7 +633,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNull(responseHeaders.get("Content-Disposition"));
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
-        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_BINARY));
 
         // Download rendition - with Content-Disposition header
         // (attachment=true) same as default
@@ -651,13 +651,13 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(contentDisposition.contains("filename=\"doclib\""));
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
-        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_BINARY));
 
         // Test 304 response - doclib rendition (attachment=true)
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
         assertNotNull(lastModifiedHeader);
         Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
-        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 304);
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 200);
 
         // -ve tests
         // nodeId in the path parameter does not represent a file

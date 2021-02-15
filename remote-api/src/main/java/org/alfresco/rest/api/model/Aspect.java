@@ -44,6 +44,7 @@ public class Aspect extends AbstractClass
         this.description = aspectDefinition.getDescription(messageLookup);
         this.parentId = getParentNameAsString(aspectDefinition.getParentName());
         this.properties = setList(properties);
+        this.model = getModelInfo(aspectDefinition, messageLookup);
     }
 
     @Override

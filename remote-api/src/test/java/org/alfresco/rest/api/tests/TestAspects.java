@@ -27,15 +27,10 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,37 +38,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
-public class TestAspects extends AbstractBaseApiTest
+public class TestAspects extends BaseModelApiTest
 {
-
-    private PublicApiClient.Paging paging = getPaging(0, 10);
-    PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Aspect> aspects = null;
-    org.alfresco.rest.api.tests.client.data.Aspect aspect, childAspect = null, smartFilter = null, rescanAspect = null;
-    Map<String, String> otherParams = new HashMap<>();
-
-    @Before
-    public void setup() throws Exception
-    {
-        super.setup();
-
-        childAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
-        childAspect.setId("mycompany:childAspect");
-        childAspect.setTitle("Child Aspect");
-        childAspect.setDescription("Child Aspect Description");
-        childAspect.setParentId("smf:smartFolder");
-
-        rescanAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
-        rescanAspect.setId("test:rescan");
-        rescanAspect.setTitle("rescan");
-        rescanAspect.setDescription("Doc that required to scan ");
-
-        smartFilter = new org.alfresco.rest.api.tests.client.data.Aspect();
-        smartFilter.setId("test:smartFilter");
-        smartFilter.setTitle("Smart filter");
-        smartFilter.setDescription("Smart Filter");
-        smartFilter.setParentId("cm:auditable");
-    }
-
     @Test
     public void testAllAspects() throws PublicApiException
     {
@@ -233,12 +199,5 @@ public class TestAspects extends AbstractBaseApiTest
         {
             assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
-    }
-
-
-    @Override
-    public String getScope()
-    {
-        return "public";
     }
 }

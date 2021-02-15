@@ -26,6 +26,9 @@
 
 package org.alfresco.rest.api.model;
 
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
+import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
 
 import java.util.ArrayList;
@@ -38,6 +41,7 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
     String title;
     String description;
     String parentId;
+    Model model;
 
     public String getId()
     {
@@ -79,6 +83,16 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
         this.parentId = parentId;
     }
 
+    public Model getModel()
+    {
+        return model;
+    }
+
+    public void setModel(Model model)
+    {
+        this.model = model;
+    }
+
     <T> List<T> setList(List<T> sourceList)
     {
         if (sourceList == null)
@@ -95,6 +109,23 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
             return parentQName.toPrefixString();
         }
         return null;
+    }
+
+    Model getModelInfo(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup)
+    {
+        final ModelDefinition modelDefinition  = classDefinition.getModel();
+        final String prefix = classDefinition.getName().toPrefixString().split(":")[0];
+
+        final NamespaceDefinition namespaceDefinition = modelDefinition.getNamespaces().stream()
+                .filter(definition -> definition.getPrefix().equals(prefix))
+                .findFirst()
+                .get();
+
+        final String modelId = modelDefinition.getName().toPrefixString();
+        final String author = modelDefinition.getAuthor();
+        final String description = modelDefinition.getDescription(messageLookup);
+
+        return new Model(modelId, author, description, namespaceDefinition.getUri(), namespaceDefinition.getPrefix());
     }
 
     @Override

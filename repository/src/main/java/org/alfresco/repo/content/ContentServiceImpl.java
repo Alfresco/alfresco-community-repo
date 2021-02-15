@@ -410,6 +410,48 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return reader;
     }
 
+
+    @SuppressWarnings("unchecked")
+    public ContentReader getReader(ContentData contentData)
+    {
+
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            // there is no URL - the interface specifies that this is not an error condition
+            return null;
+        }
+        String contentUrl = contentData.getContentUrl();
+
+        // The context of the read is entirely described by the URL
+        ContentReader reader = store.getReader(contentUrl);
+        if (reader == null)
+        {
+            throw new AlfrescoRuntimeException("ContentStore implementations may not return null ContentReaders");
+        }
+
+        // set extra data on the reader
+        reader.setMimetype(contentData.getMimetype());
+        reader.setEncoding(contentData.getEncoding());
+        reader.setLocale(contentData.getLocale());
+
+        //TODO - Should it fire the content read policy?
+        // Fire the content read policy
+//        if (reader != null && fireContentReadPolicy == true)
+//        {
+//            // Fire the content update policy
+//            Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
+//            types.add(this.nodeService.getType(nodeRef));
+//            OnContentReadPolicy policy = this.onContentReadDelegate.get(nodeRef, types);
+//            policy.onContentRead(nodeRef);
+//        }
+
+        // we don't listen for anything
+        // result may be null - but interface contract says we may return null
+        return reader;
+    }
+
     private ContentData getContentData(NodeRef nodeRef, QName propertyQName)
     {
         ContentData contentData = null;

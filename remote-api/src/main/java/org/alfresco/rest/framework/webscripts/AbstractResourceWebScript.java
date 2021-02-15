@@ -249,9 +249,11 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         else if (resource instanceof RawBinaryResource)
         {
             RawBinaryResource rawBinaryResource = (RawBinaryResource) resource;
+            ContentInfo contentInfo = rawBinaryResource.getContentInfo();
+            setContentInfoOnResponse(res, contentInfo);
             boolean attach = StringUtils.isNotEmpty(rawBinaryResource.getAttachFileName());
             Map<String, Object> model = getModelForCacheDirective(rawBinaryResource.getCacheDirective());
-            streamer.streamContent(req, res, rawBinaryResource.getContentUrl(), null, attach, rawBinaryResource.getAttachFileName(), model);
+            streamer.streamContent(req, res, rawBinaryResource.getContentUrl(), null, attach, rawBinaryResource.getAttachFileName(), model, rawBinaryResource.getContentData());
 
         }
 

@@ -25,22 +25,36 @@
  */
 package org.alfresco.rest.framework.resource.content;
 
+import org.alfresco.service.cmr.repository.ContentData;
+
 public class RawBinaryResource extends AbstractBinaryResource
 {
     private String contentUrl;
     private ContentInfo contentInfo;
+    private ContentData contentData;
 
     // todo - should make sure we return the same data a NodeBinaryResource would return for a rendition node
 
-    public RawBinaryResource(String contentUrl, ContentInfo contentInfo, String attachFileName, CacheDirective cacheDirective)
+    public RawBinaryResource(String contentUrl, ContentInfo contentInfo, String attachFileName, CacheDirective cacheDirective, ContentData contentData)
     {
         super(attachFileName, cacheDirective);
         this.contentUrl = contentUrl;
         this.contentInfo = contentInfo;
+        this.contentData =  contentData;
     }
 
     public String getContentUrl()
     {
         return contentUrl;
+    }
+
+    public ContentInfo getContentInfo()
+    {
+        return this.contentInfo;
+    }
+
+    public ContentData getContentData()
+    {
+        return this.contentData;
     }
 }

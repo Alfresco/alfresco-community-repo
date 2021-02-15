@@ -41,15 +41,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
@@ -156,13 +151,13 @@ public class ContentStreamer implements ResourceLoaderAware
                              Long lastModified,
                              boolean attach,
                              String attachFileName,
-                             Map<String, Object> model) throws IOException
+                             Map<String, Object> model, ContentData contentData) throws IOException
     {
 
         System.out.println("Streaming content from RawStreamer for contentUrl" + contentUrl);
 
         // get the raw content reader
-        ContentReader reader = contentService.getRawReader(contentUrl);
+        ContentReader reader = contentService.getReader(contentData);
         if (reader == null || !reader.exists())
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for url: " + contentUrl);

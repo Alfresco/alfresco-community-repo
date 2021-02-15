@@ -576,7 +576,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 .build();
 
         // todo - another problem is we need support both Node and Raw resources for backwards compatibility
-        return new RawBinaryResource(contentData.getContentUrl(), contentInfo, attachFileName, cacheDirective);
+        return new RawBinaryResource(contentData.getContentUrl(), contentInfo, attachFileName, cacheDirective, contentData);
     }
 
 

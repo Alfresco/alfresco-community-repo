@@ -31,7 +31,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -61,6 +60,19 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * Storing renditions as properties option
+     *
+     * WARNING:
+     * - Experimental only (unsupported) !
+     * - Can be used for dev/test evaluation (please give us feedback)
+     * - Should not be used for live/prod env with real data !
+     */
+    public RenditionService2NewImpl()
+    {
+        logger.warn("Enabling storeRenditionAsProperty feature with Alfresco is experimental and unsupported (do not use for live/prod envs) !");
     }
 
     @Override public void transform(NodeRef sourceNodeRef, TransformDefinition transformDefinition)

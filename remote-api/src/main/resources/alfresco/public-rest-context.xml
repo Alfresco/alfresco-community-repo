@@ -1081,7 +1081,6 @@
         <property name="authorityService"       ref="AuthorityService" />
         <property name="tenantAdminService"     ref="tenantAdminService"/>
         <property name="networksService"        ref="networksService"/>
-        <property name="cmisCreateDocRequestRenditionsSet" value="${cmis.create.doc.request.renditions.set}" />
     </bean>
 
     <bean   id="cmisDispatcherRegistry" class="org.alfresco.opencmis.CMISDispatcherRegistryImpl">

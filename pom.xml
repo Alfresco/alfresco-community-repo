@@ -629,6 +629,26 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
          </dependency>
+         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${alfresco-community-repo.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+            <version>${alfresco-community-repo.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-repository</artifactId>
+            <version>${alfresco-community-repo.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-remote-api</artifactId>
+            <version>${alfresco-community-repo.version}</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 

@@ -598,13 +598,13 @@
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
       <!-- 7.0.0 dependencies -->
-      <alfresco-community-repo.version>repo-5439v2-c1</alfresco-community-repo.version>
+      <alfresco-community-repo.version>repo-5439v2-c2</alfresco-community-repo.version>
    </properties>
 
    <dependencyManagement>
       <dependencies>
-<!--         <dependency>-->
-<!--            <groupId>com.google.guava</groupId>-->
+<!--         <dependency>-->rest-context.xmlrest-context.xml
+         <!--            <groupId>com.google.guava</groupId>-->
 <!--            <artifactId>guava</artifactId>-->
 <!--            <version>18.0</version>-->
 <!--         </dependency>-->

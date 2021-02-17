@@ -89,7 +89,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
     private boolean storeRenditionAsPropertyEnabled;
 
-    private static Log logger = LogFactory.getLog(RenditionService2Impl.class);
+    private final static Log logger = LogFactory.getLog(RenditionService2Impl.class);
 
     // As Async transforms and renditions are so similar, this class provides a way to provide the code that is different.
     private abstract static class RenderOrTransformCallBack
@@ -534,12 +534,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             // OR if we already have an older version of the rendition stored as a property where the enabled flag has been later set to false
                             if (storeRenditionAsPropertyEnabled)
                             {
-                                System.out.println("Storing rendition as a property");
+                                logger.info("Storing rendition as a property");
                                 storeRenditionAsProperty(renditionName, sourceNodeRef, renditionDefinition, transformInputStream, transformContentHashCode);
                             }
                             else
                             {
-                                System.out.println("Storing rendition as a node");
+                                logger.info("Storing rendition as a node");
                                 // todo - Could have a uniform store rendition interface if renditionNode is not passed,
                                 //  but would have to retrieve it twice or cache it somehow (maybe it is already cached?)
                                 storeRenditionAsChildAssoc(renditionName, sourceNodeRef, renditionNode, renditionDefinition, transformInputStream, transformContentHashCode);
@@ -668,7 +668,10 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
                 updatedProps.add(renditionContentData);
                 nodeService.setProperty(sourceNodeRef, RENDITION_INFO_PROPERTY, updatedProps);
-                System.out.println("**** Added new rendition property: " + renditionContentData);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("**** Added new rendition property: " + renditionContentData);
+                }
 
             }
             catch (Exception e)
@@ -731,8 +734,20 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
+    /**
+     * Storing renditions as properties option
+     *
+     * WARNING:
+     * - if set to true - Experimental only (unsupported) !
+     * - Can be used for dev/test evaluation (please give us feedback)
+     * - Should not be used for live/prod env with real data !
+     */
     public void setStoreRenditionAsPropertyEnabled(boolean booleanValue)
     {
+        if(booleanValue)
+        {
+            logger.warn("Enabling storeRenditionAsProperty feature with Alfresco is experimental and unsupported (do not use for live/prod envs) !");
+        }
         this.storeRenditionAsPropertyEnabled = booleanValue;
     }
 

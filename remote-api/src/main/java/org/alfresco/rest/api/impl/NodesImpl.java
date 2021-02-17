@@ -348,6 +348,7 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_CREATOR,
             ContentModel.PROP_CREATED,
             ContentModel.PROP_CONTENT,
+            ContentModel.PROP_RENDITION_INFORMATION,
             // other - TBC
             ContentModel.PROP_INITIAL_VERSION,
             ContentModel.PROP_AUTO_VERSION_PROPS,

@@ -320,8 +320,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     // Clears the rendition of a source node as the current user in the current transaction.
     private void clearRendition(NodeRef sourceNodeRef)
     {
-        QName RENDITION_LOCATION_PROPERTY = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
-        nodeService.removeProperty(sourceNodeRef, RENDITION_LOCATION_PROPERTY);
+        nodeService.removeProperty(sourceNodeRef, ContentModel.PROP_RENDITION_INFORMATION);
     }
 
     // Requests a new rendition as the given user in its own transaction.

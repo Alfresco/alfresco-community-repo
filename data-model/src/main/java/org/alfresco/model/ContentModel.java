@@ -390,6 +390,9 @@ public interface ContentModel
     static final QName PROP_FAILED_THUMBNAIL_TIME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "failedThumbnailTime");
     static final QName PROP_FAILURE_COUNT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "failureCount");
 
+    // Redition as properties
+    static final QName PROP_RENDITION_INFORMATION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
+
     // Thumbnailed Aspect
     /**
      * This aspect type has been deprecated.

@@ -25,28 +25,15 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.SocketException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.service.cmr.repository.*;
-import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +45,14 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.util.FileCopyUtils;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.SocketException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 
 
 /**
@@ -154,17 +149,52 @@ public class ContentStreamer implements ResourceLoaderAware
                              Map<String, Object> model, ContentData contentData) throws IOException
     {
 
-        System.out.println("Streaming content from RawStreamer for contentUrl" + contentUrl);
+        logger.debug("Streaming content from RawStreamer for contentUrl" + contentUrl);
+
+        Date modified = (lastModified== null? null: new Date(lastModified));
+        if (modified != null)
+        {
+            long modifiedSince = -1;
+            String modifiedSinceStr = req.getHeader("If-Modified-Since");
+            if (modifiedSinceStr != null)
+            {
+                try
+                {
+                    modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
+                }
+                catch (Throwable e)
+                {
+                    if (logger.isInfoEnabled())
+                        logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+                }
+
+                if (modifiedSince > 0L)
+                {
+                    // round the date to the ignore millisecond value which is not supplied by header
+                    long modDate = (modified.getTime() / 1000L) * 1000L;
+                    if (modDate <= modifiedSince)
+                    {
+                        res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                        return;
+                    }
+                }
+            }
+        }
 
         // get the raw content reader
-        ContentReader reader = contentService.getReader(contentData);
+        ContentReader reader = contentService.getRawReader(contentData.getContentUrl());
+        reader.setEncoding(contentData.getEncoding());
+        reader.setMimetype(contentData.getMimetype());
+        reader.setLocale(contentData.getLocale());
+
         if (reader == null || !reader.exists())
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for url: " + contentUrl);
         }
 
         // Stream the content
-        streamContentImpl(req, res, reader, null, null, attach, null, null, attachFileName, model);
+        streamContentImpl(req, res, reader, null, null, attach, modified,
+                    modified == null ? null : Long.toString(modified.getTime()), attachFileName, model);
 
         // todo - take a look at the rest of te methods in this class and see if any of their functionality is needed here
     }
@@ -209,8 +239,9 @@ public class ContentStreamer implements ResourceLoaderAware
         
         long lastModified = modifiedTime == null ? file.lastModified() : modifiedTime;
         Date lastModifiedDate = new Date(lastModified);
-        
-        streamContentImpl(req, res, reader, null, null, attach, lastModifiedDate, String.valueOf(lastModifiedDate.getTime()), attachFileName, model);
+
+        streamContentImpl(req, res, reader, null, null, attach, lastModifiedDate,
+                    String.valueOf(lastModifiedDate.getTime()), attachFileName, model);
     }
 
     /**
@@ -377,7 +408,6 @@ public class ContentStreamer implements ResourceLoaderAware
     {
         setAttachment(req, res, attach, attachFileName);
 
-        System.out.println("** ContentStreamer.streamContentImpl()");
     
         // establish mimetype
         String mimetype = reader.getMimetype();
@@ -454,8 +484,6 @@ public class ContentStreamer implements ResourceLoaderAware
                // return the complete entity range
                res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));
                res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
-
-                System.out.println("*** ContentStreamer set response mimetype: " + mimetype + " encoding: " + encoding);
                
                // set caching
                setResponseCache(res, modified, eTag, model);
@@ -463,8 +491,6 @@ public class ContentStreamer implements ResourceLoaderAware
                // get the content and stream directly to the response output stream
                // assuming the repository is capable of streaming in chunks, this should allow large files
                // to be streamed directly to the browser response stream.
-
-               System.out.println("Streaming content from contentUrl: " + reader.getContentUrl() ); ;
                reader.getContent( res.getOutputStream() );
             }
         }

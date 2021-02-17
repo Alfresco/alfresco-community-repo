@@ -559,7 +559,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
         ContentData contentData = renditionContentData.getContentData();
 
-        Date modified = new Date(renditionContentData.getLastModified());
+        Long lastModifiedDate = renditionContentData.getLastModified();
+        Date modified = new Date(lastModifiedDate);
         org.alfresco.rest.framework.resource.content.ContentInfo contentInfo = null;
 
         if (contentData != null)
@@ -576,7 +577,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 .build();
 
         // todo - another problem is we need support both Node and Raw resources for backwards compatibility
-        return new RawBinaryResource(contentData.getContentUrl(), contentInfo, attachFileName, cacheDirective, contentData);
+        return new RawBinaryResource(contentData.getContentUrl(), contentInfo, lastModifiedDate, attachFileName, cacheDirective, contentData);
     }
 
 

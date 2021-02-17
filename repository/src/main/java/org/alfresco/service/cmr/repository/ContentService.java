@@ -114,22 +114,6 @@ public interface ContentService
             throws InvalidNodeRefException, InvalidTypeException;
 
     /**
-     * Gets a reader for the content associated with the given node ContentData.
-     * <p>
-     * If a content URL is present for the given ContentData then a reader <b>must</b>
-     * be returned.  The {@link ContentReader#exists() exists} method should then
-     * be used to detect 'missing' content.
-     *
-     * @param ContentData a reference to a ContentData
-     * @return Returns a reader for the content associated with the node ContentData,
-     *      or null if no content has been written for the property
-     *
-     * @see org.alfresco.repo.content.filestore.FileContentReader#getSafeContentReader(ContentReader, String, Object[])
-     */
-    @Auditable(parameters = {"contentData"})
-    public ContentReader getReader(ContentData contentData);
-
-    /**
      * Get a content writer for the given node property, choosing to optionally have
      * the node property updated automatically when the content stream closes.
      * <p>

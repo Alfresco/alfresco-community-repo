@@ -1034,7 +1034,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected String getNodeUrl(String nodeId)
     {
-        return URL_NODES + "/" + nodeId + "/";
+        return URL_NODES + "/" + nodeId;
     }
 
     protected String getNodeContentUrl(String nodeId)

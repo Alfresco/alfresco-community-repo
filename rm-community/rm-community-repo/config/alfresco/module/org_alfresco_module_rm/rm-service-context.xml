@@ -391,9 +391,11 @@
         </property>
     </bean>
 
-   <!-- RM Container Cache Manager -->
-   <bean id="rmContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+    <bean name="rmContainerCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.rmContainerCache" />
+    </bean>
 
+    <!-- RM Container Cache Manager -->
    <bean id="rmContainerCacheManager" class="org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager">
      <property name="nodeService" ref="nodeService" />
      <property name="cache" ref="rmContainerCache" />

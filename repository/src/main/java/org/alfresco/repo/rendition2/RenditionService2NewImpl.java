@@ -84,8 +84,7 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
         List<ChildAssociationRef> childAssociationRefList = renditionService2.getRenditions(sourceNodeRef);
         List<RenditionContentData> renditionContentDataList = new ArrayList<>();
         renditionContentDataList.addAll(convertToRenditionContentDataList(childAssociationRefList));
-        if (getRenditionContentDataList(sourceNodeRef).isPresent())
-            renditionContentDataList.addAll(getRenditionContentDataList(sourceNodeRef).get());
+        getRenditionContentDataList(sourceNodeRef).ifPresent(renditionContentDataList::addAll);
 
         return renditionContentDataList;
     }
@@ -94,32 +93,38 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
                 List<ChildAssociationRef> childAssociationRefList)
     {
         List<RenditionContentData> renditionContentDataList = new ArrayList<>();
-        childAssociationRefList.forEach(childAssocRef -> renditionContentDataList
-                    .add(convertToRenditionContentData(childAssocRef)));
+        childAssociationRefList.forEach(childAssocRef -> {
+            Optional<RenditionContentData> optionalRenditionContentData = convertToRenditionContentData(childAssocRef);
+            optionalRenditionContentData.ifPresent(r -> renditionContentDataList
+                        .add(r));
+            });
 
         return renditionContentDataList;
     }
 
-    private RenditionContentData convertToRenditionContentData(ChildAssociationRef childAssociationRef)
+    private  Optional<RenditionContentData> convertToRenditionContentData(ChildAssociationRef childAssociationRef)
     {
         NodeRef renditionNodeRef = childAssociationRef.getChildRef();
         return getRenditionContentData(renditionNodeRef);
     }
 
-    private RenditionContentData getRenditionContentData(NodeRef renditionNodeRef)
+    private Optional<RenditionContentData> getRenditionContentData(NodeRef renditionNodeRef)
     {
         Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
         ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
+        //TODO - should we ignore the Rendition node with no Content data? This happens for source node versions
         if (!ContentData.hasContent(contentData))
         {
-            throw new IllegalArgumentException("Node id '" + renditionNodeRef.getId() + "' has no content.");
+            logger.warn("Node id '" + renditionNodeRef.getId() + "' has no content.");
+            return Optional.empty();
+            //throw new IllegalArgumentException("Node id '" + renditionNodeRef.getId() + "' has no content.");
         }
         String renditionName = (String) nodeProps.get(ContentModel.PROP_NAME);
         RenditionContentData renditionContentData = RenditionContentData
                     .getRenditionContentData(contentData, renditionName);
         renditionContentData.setLastModified(((Date) nodeProps.get(ContentModel.PROP_MODIFIED)).getTime());
 
-        return renditionContentData;
+        return Optional.ofNullable(renditionContentData);
     }
 
     @Override public RenditionContentData getRenditionByName(NodeRef sourceNodeRef, String renditionName)
@@ -132,7 +137,12 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
         ChildAssociationRef childAssociationRef = renditionService2.getRenditionByName(sourceNodeRef, renditionName);
 
         if (childAssociationRef != null)
-            return convertToRenditionContentData(childAssociationRef);
+        {
+            Optional<RenditionContentData> optionalRenditionContentData = convertToRenditionContentData(childAssociationRef);
+          if(optionalRenditionContentData.isPresent())
+              return optionalRenditionContentData.get();
+        }
+
 
         return getRenditionContentData(sourceNodeRef, renditionName);
     }
@@ -156,7 +166,7 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
         this.storeRenditionAsPropertyEnabled = booleanValue;
     }
 
-    private RenditionContentData getRenditionContentData(NodeRef sourceNodeRef, String renditionName)
+    private RenditionContentData    getRenditionContentData(NodeRef sourceNodeRef, String renditionName)
     {
         // todo - there might be scenarios where a single node has renditions stored in both places, maybe even for the same renditionName
 

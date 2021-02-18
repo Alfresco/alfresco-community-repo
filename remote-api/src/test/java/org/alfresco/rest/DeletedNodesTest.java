@@ -59,6 +59,7 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.api.trashcan.TrashcanEntityResource;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -462,6 +463,12 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         // create doclib rendition and move node to trashcan
         createAndGetRendition(contentNodeId, "doclib");
+
+        // check GET /nodes/{nodeId} does not return 'rn:renditionInformation' in properties (ACS-1250)
+        HttpResponse getNodeInfo = getSingle(getNodeUrl(contentNodeId), null, null, null, 200);
+        JSONObject props = new JSONObject(getNodeInfo.getJsonResponse()).getJSONObject("entry").getJSONObject("properties");
+        assertFalse("rn:renditionInformation found in nodeRef " + contentNodeId + " properties", props.has("rn:renditionInformation"));
+
         deleteNode(contentNodeId);
 
         // List all renditions and check for results
@@ -620,7 +627,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(contentDisposition.contains("filename=\"doclib\""));
         String contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
-        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_BINARY));
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
 
         // Download rendition - without Content-Disposition header
         // (attachment=false)
@@ -633,7 +640,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNull(responseHeaders.get("Content-Disposition"));
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
-        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_BINARY));
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
 
         // Download rendition - with Content-Disposition header
         // (attachment=true) same as default
@@ -651,13 +658,13 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(contentDisposition.contains("filename=\"doclib\""));
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
-        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_BINARY));
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
 
         // Test 304 response - doclib rendition (attachment=true)
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
         assertNotNull(lastModifiedHeader);
         Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
-        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 200);
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 304);
 
         // -ve tests
         // nodeId in the path parameter does not represent a file

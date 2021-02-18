@@ -522,7 +522,10 @@ public class TempFileProvider
                         else
                         {
                             file.delete();
-                            maxFilesToDelete.decrementAndGet();
+                            if (maxFilesToDelete != null)
+                            {
+                                maxFilesToDelete.decrementAndGet();
+                            }
                         }
                         count++;
                     }

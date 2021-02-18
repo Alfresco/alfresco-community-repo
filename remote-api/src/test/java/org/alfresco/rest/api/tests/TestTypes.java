@@ -27,47 +27,18 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-
-public class TestTypes extends AbstractBaseApiTest
+public class TestTypes extends BaseModelApiTest
 {
-
-    private PublicApiClient.Paging paging = getPaging(0, 10);
-    PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Type> types = null;
-    org.alfresco.rest.api.tests.client.data.Type type = null, whitePaperType = null, docType = null;
-    Map<String, String> otherParams = new HashMap<>();
-
-    @Before
-    public void setup() throws Exception
-    {
-        super.setup();
-        whitePaperType = new org.alfresco.rest.api.tests.client.data.Type();
-        whitePaperType.setId("mycompany:whitepaper");
-        whitePaperType.setTitle("whitepaper");
-        whitePaperType.setDescription("Whitepaper");
-        whitePaperType.setParentId("mycompany:doc");
-
-        docType = new org.alfresco.rest.api.tests.client.data.Type();
-        docType.setId("mycompany:doc");
-        docType.setTitle("doc");
-        docType.setDescription("Doc");
-        docType.setParentId("cm:content");
-    }
-
     @Test
     public void testAllTypes() throws PublicApiException
     {
@@ -181,7 +152,7 @@ public class TestTypes extends AbstractBaseApiTest
 
         testListTypeException("(modelIds in ('mycompany:model','unknown:model'))");
         testListTypeException("(modelIds in ('unknown:model','unknown1:another'))");
-        testListTypeException("(modelIds=' , , ')");
+        testListTypeException("(modelIds in (' ', '')");
         testListTypeException("(parentIds in ('cm:content','unknown:type')");
         testListTypeException("(parentIds in ('unknown:type','cm:content'))");
         testListTypeException("(parentIds in ('unknown:type','unknown:types'))");
@@ -227,12 +198,5 @@ public class TestTypes extends AbstractBaseApiTest
         {
             assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
         }
-    }
-
-
-    @Override
-    public String getScope()
-    {
-        return "public";
     }
 }

@@ -403,7 +403,7 @@ public class TempFileProvider
             catch (Exception e)
             {
                 logger.warn(e);
-                throw new JobExecutionException("Invalid job data, maxFilesToDelete: " + KEY_MAX_FILES_TO_DELETE + ": " + strProtectHours);
+                throw new JobExecutionException("Invalid job data, maxFilesToDelete: " + KEY_MAX_FILES_TO_DELETE);
             }
 
             try

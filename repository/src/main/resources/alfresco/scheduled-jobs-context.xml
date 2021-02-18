@@ -40,8 +40,8 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="protectHours" value="1"/>
-                        <entry key="maxFilesToDelete" value="${i.dont.exist.yet}"/>
-                        <entry key="maxTimeToRun" value="${i.dont.exist.yet}"/>
+                        <entry key="maxFilesToDelete" value="${system.tempFileCleaner.maxFilesToDelete:#{null}}"/>
+                        <entry key="maxTimeToRun" value="${system.tempFileCleaner.maxTimeToRun:#{null}}"/>
                     </map>
                 </property>
             </bean>
@@ -57,8 +57,8 @@
                     <map>
                         <entry key="protectHours" value="1"/>
                         <entry key="directoryName" value="${webscripts.tempDirectoryName}"/>
-                        <entry key="maxFilesToDelete" value="${i.dont.exist.yet}"/>
-                        <entry key="maxTimeToRun" value="${i.dont.exist.yet}"/>
+                        <entry key="maxFilesToDelete" value="${system.tempFileCleaner.maxFilesToDelete:#{null}}"/>
+                        <entry key="maxTimeToRun" value="${system.tempFileCleaner.maxTimeToRun:#{null}}"/>
                     </map>
                 </property>
             </bean>

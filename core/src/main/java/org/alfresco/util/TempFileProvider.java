@@ -463,8 +463,9 @@ public class TempFileProvider
             }
             // list all files
             File[] files = directory.listFiles();
+            File[] filesToIterate = files != null ? files : new File[0];
             int count = 0;
-            for (File file : files)
+            for (File file : filesToIterate)
             {
                 if (file.isDirectory())
                 {

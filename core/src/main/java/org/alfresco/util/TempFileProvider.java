@@ -506,7 +506,7 @@ public class TempFileProvider
                         if (maxFilesToDelete != null && maxFilesToDelete.get() <= 0 ||
                             maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System.currentTimeMillis()))
                         {
-                            return 0;
+                            break;
                         }
                         else
                         {

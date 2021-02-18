@@ -36,11 +36,11 @@ import java.util.Map;
 public class BaseModelApiTest extends AbstractBaseApiTest
 {
     PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Aspect> aspects = null;
-    org.alfresco.rest.api.tests.client.data.Aspect aspect = null, childAspect = null, smartFilter = null, rescanAspect = null;
+    org.alfresco.rest.api.tests.client.data.Aspect aspect = null, childAspect = null, smartFilter = null, rescanAspect = null, testAspect = null;
 
 
     PublicApiClient.ListResponse<org.alfresco.rest.api.tests.client.data.Type> types = null;
-    org.alfresco.rest.api.tests.client.data.Type type = null, whitePaperType = null, docType = null;
+    org.alfresco.rest.api.tests.client.data.Type type = null, whitePaperType = null, docType = null, publishableType = null;
 
 
     PublicApiClient.Paging paging = getPaging(0, 10);
@@ -63,6 +63,11 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         scanModel.setNamespaceUri("http://www.test.com/model/account/1.0");
         scanModel.setNamespacePrefix("test");
 
+        testAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
+        testAspect.setId("mycompany:testAspect");
+        testAspect.setTitle("Test Aspect");
+        testAspect.setModel(myCompanyModel);
+
         childAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
         childAspect.setId("mycompany:childAspect");
         childAspect.setTitle("Child Aspect");
@@ -80,7 +85,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         smartFilter.setId("test:smartFilter");
         smartFilter.setTitle("Smart filter");
         smartFilter.setDescription("Smart Filter");
-        smartFilter.setParentId("cm:auditable");
+        smartFilter.setParentId("mycompany:testAspect");
         smartFilter.setModel(scanModel);
 
         whitePaperType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -96,6 +101,10 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         docType.setDescription("Doc");
         docType.setParentId("cm:content");
         docType.setModel(myCompanyModel);
+
+        publishableType = new org.alfresco.rest.api.tests.client.data.Type();
+        publishableType.setId("test:publishable");
+        publishableType.setParentId("mycompany:doc");
     }
 
     @Override

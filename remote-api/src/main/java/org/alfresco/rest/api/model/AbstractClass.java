@@ -31,17 +31,21 @@ import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class AbstractClass extends ClassDefinition implements Comparable<AbstractClass>
 {
-    String id;
-    String title;
-    String description;
-    String parentId;
-    Model model;
+    protected String id;
+    protected String title;
+    protected String description;
+    protected String parentId;
+    protected Boolean container = null;
+    protected Boolean archive = null;
+    protected Boolean includedInSupertypeQuery = null;
+    protected List<String> mandatoryAspects = null;
+    protected List<Association> associations = null;
+    protected Model model;
 
     public String getId()
     {
@@ -93,13 +97,54 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
         this.model = model;
     }
 
-    <T> List<T> setList(List<T> sourceList)
+    public Boolean getContainer()
     {
-        if (sourceList == null)
-        {
-            return Collections.<T> emptyList();
-        }
-        return new ArrayList<>(sourceList);
+        return container;
+    }
+
+    public void setContainer(Boolean container)
+    {
+        this.container = container;
+    }
+
+    public Boolean getArchive()
+    {
+        return archive;
+    }
+
+    public void setArchive(Boolean archive)
+    {
+        this.archive = archive;
+    }
+
+    public Boolean getIncludedInSupertypeQuery()
+    {
+        return includedInSupertypeQuery;
+    }
+
+    public void setIncludedInSupertypeQuery(Boolean includedInSupertypeQuery)
+    {
+        this.includedInSupertypeQuery = includedInSupertypeQuery;
+    }
+
+    public List<String> getMandatoryAspects()
+    {
+        return mandatoryAspects;
+    }
+
+    public void setMandatoryAspects(List<String> mandatoryAspects)
+    {
+        this.mandatoryAspects = mandatoryAspects;
+    }
+
+    public List<Association> getAssociations()
+    {
+        return associations;
+    }
+
+    public void setAssociations(List<Association> associations)
+    {
+        this.associations = associations;
     }
 
     String getParentNameAsString(QName parentQName)
@@ -131,10 +176,7 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
     @Override
     public int hashCode()
     {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
-        return result;
+        return Objects.hash(id, title, description, parentId, properties, container, archive, includedInSupertypeQuery, mandatoryAspects, associations, model);
     }
 
     @Override

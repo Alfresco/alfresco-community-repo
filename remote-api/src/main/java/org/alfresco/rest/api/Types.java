@@ -30,8 +30,24 @@ import org.alfresco.rest.api.model.Type;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
+/**
+ * Types API
+ */
 public interface Types
 {
+    /**
+     * Lists types
+     *
+     * @param params
+     * @return Collection of types
+     */
     CollectionWithPagingInfo<Type> listTypes(Parameters params);
-    Type getType(String aspectId);
+
+    /**
+     * Gets a type by id
+     *
+     * @param typeId
+     * @return type
+     */
+    Type getType(String typeId);
 }

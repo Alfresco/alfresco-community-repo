@@ -142,7 +142,6 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         // Use the docker images for transforms (local)
         System.setProperty("localTransform.core-aio.url", "http://localhost:8090/");
-        System.setProperty("rendition.service.storeRenditionAsProperty.enabled", "false");
     }
 
     protected static void none()
@@ -155,7 +154,6 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         System.setProperty("transform.service.enabled", "false");
         System.setProperty("local.transform.service.enabled", "true");
-        System.setProperty("rendition.service.storeRenditionAsProperty.enabled", "false");
 
         // Strict MimetypeCheck
         System.setProperty("transformer.strict.mimetype.check", "true");
@@ -200,6 +198,11 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         renditionDefinitionRegistry2.setTransformServiceRegistry(transformServiceRegistry);
         renditionDefinitionRegistry2.setTransformServiceRegistry(localTransformServiceRegistry);
         renditionDefinitionRegistry2.afterPropertiesSet();
+
+        if (renditionService2New.isStoreRenditionAsPropertyEnabled())
+        {
+            System.setProperty("rendition.service.storeRenditionAsProperty.enabled", "true");
+        }
     }
 
     @After

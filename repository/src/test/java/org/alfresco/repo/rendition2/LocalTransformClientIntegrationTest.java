@@ -197,11 +197,11 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
                 transformClient.transform(sourceNode, renditionDefinition, adminUserName, sourceContentHashCode);
                 return null;
             });
-            ChildAssociationRef childAssociationRef = null;
+            RenditionContentData renditionContentData = null;
             for (int i = 0; i < 20; i++)
             {
-                childAssociationRef = renditionService2.getRenditionByName(sourceNode, renditionDefinitionName);
-                if (childAssociationRef != null)
+                renditionContentData = renditionService2New.getRenditionByName(sourceNode, renditionDefinitionName);
+                if (renditionContentData != null)
                 {
                     break;
                 }
@@ -210,7 +210,7 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
                     Thread.sleep(500);
                 }
             }
-            assertNotNull("The " + renditionDefinitionName + " rendition failed for " + testFileName, childAssociationRef);
+            assertNotNull("The " + renditionDefinitionName + " rendition failed for " + testFileName, renditionContentData);
         }
     }
 }

@@ -392,24 +392,34 @@ public class TempFileProvider
 
             try
             {
-                final String strMaxFilesToDelete = (String) context.getJobDetail().getJobDataMap().get(KEY_MAX_FILES_TO_DELETE);
-                maxFilesToDelete = new AtomicLong(Long.parseLong(strMaxFilesToDelete));
+                final Object oMaxFilesToDelete = context.getJobDetail().getJobDataMap().get(KEY_MAX_FILES_TO_DELETE);
+                if (oMaxFilesToDelete != null)
+                {
+                    final String strMaxFilesToDelete = (String) oMaxFilesToDelete;
+                    maxFilesToDelete = new AtomicLong(Long.parseLong(strMaxFilesToDelete));
+                    logger.debug("Set the maximum number of temp files to be deleted to: " + maxFilesToDelete.get());
+                }
             }
             catch (Exception e)
             {
                 logger.warn(e);
-                throw new JobExecutionException("Invalid job data " + KEY_MAX_FILES_TO_DELETE + ": " + strProtectHours);
+                throw new JobExecutionException("Invalid job data, maxFilesToDelete: " + KEY_MAX_FILES_TO_DELETE + ": " + strProtectHours);
             }
 
             try
             {
-                final String strMaxTimeToRun = (String) context.getJobDetail().getJobDataMap().get(KEY_MAX_TIME_TO_RUN);
-                maxTimeToRun = Duration.parse(strMaxTimeToRun);
+                final Object oMaxTimeToRun = context.getJobDetail().getJobDataMap().get(KEY_MAX_TIME_TO_RUN);
+                if (oMaxTimeToRun != null)
+                {
+                    final String strMaxTimeToRun = (String) oMaxTimeToRun;
+                    maxTimeToRun = Duration.parse(strMaxTimeToRun);
+                    logger.debug("Set the maximum duration time of the temp file clean job to: " + maxTimeToRun);
+                }
             }
             catch (Exception e)
             {
                 logger.warn(e);
-                throw new JobExecutionException("Invalid job data " + KEY_MAX_TIME_TO_RUN);
+                throw new JobExecutionException("Invalid job data, maxTimeToRun: " + KEY_MAX_TIME_TO_RUN);
             }
             
             if (directoryName == null)
@@ -507,7 +517,7 @@ public class TempFileProvider
                         if (maxFilesToDelete != null && maxFilesToDelete.get() <= 0 ||
                             maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System.currentTimeMillis()))
                         {
-                            break;
+                            return count;
                         }
                         else
                         {

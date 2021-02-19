@@ -13,10 +13,10 @@ printf "POM version: %s\n" "${POM_VERSION}"
 
 TAG="${POM_VERSION%-SNAPSHOT}"
 
-#if git rev-parse "${TAG}^{tag}" &>/dev/null ; then
-#  echo "The next tag \"${TAG}\" already exists in the git project"
-#  exit 1
-#fi
+if git rev-parse "${TAG}^{tag}" &>/dev/null ; then
+  echo "The next tag \"${TAG}\" already exists in the git project"
+  exit 1
+fi
 
 popd
 set +vex

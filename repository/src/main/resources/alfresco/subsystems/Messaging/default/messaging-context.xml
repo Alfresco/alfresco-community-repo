@@ -22,6 +22,7 @@
     <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
         init-method="start" destroy-method="stop">
         <property name="maxConnections" value="${messaging.broker.connections.max}" />
+        <property name="createConnectionOnStartup" value="false"/>
         <property name="connectionFactory" ref="activeMqConnectionFactory" />
     </bean>
     
@@ -85,7 +86,7 @@
 
     <camelContext id="alfrescoCamelContext" xmlns="http://camel.apache.org/schema/spring" useBreadcrumb="true">
         <contextScan/>
-        <camel:jmxAgent id="agent" mbeanObjectDomainName="Alfresco.Camel" />
+        <jmxAgent id="agent" mbeanObjectDomainName="Alfresco.Camel" />
         <template id="camelProducerTemplate" defaultEndpoint="direct:alfresco.default" />
     </camelContext>
 

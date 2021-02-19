@@ -18,6 +18,7 @@
                 <value>models/people-api.xml</value>
                 <value>models/mycompany-model.xml</value>
                 <value>models/test-scan.xml</value>
+                <value>models/test-api-model.xml</value>
             </list>
         </property>
     </bean>

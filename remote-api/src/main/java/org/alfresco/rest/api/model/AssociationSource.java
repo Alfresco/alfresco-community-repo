@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.model;
 
+import java.util.Objects;
+
 public class AssociationSource {
   private String role = null;
   private String cls = null;
@@ -94,5 +96,22 @@ public class AssociationSource {
   public void setIsMandatoryEnforced(Boolean isMandatoryEnforced)
   {
     this.isMandatoryEnforced = isMandatoryEnforced;
+  }
+
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    AssociationSource other = (AssociationSource) obj;
+    return Objects.equals(role, other.getRole()) &&
+            Objects.equals(cls, other.getCls()) &&
+            Objects.equals(isMany, other.getIsMandatory()) &&
+            Objects.equals(isMandatory, other.getIsMandatory()) &&
+            Objects.equals(isMandatoryEnforced, other.getIsMandatoryEnforced());
   }
 }

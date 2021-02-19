@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.model;
 
+import java.util.Objects;
+
 public class Association
 {
     private String id;
@@ -119,5 +121,24 @@ public class Association
     public void setTarget(AssociationSource target)
     {
         this.target = target;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Association other = (Association) obj;
+        return Objects.equals(id, other.getId()) &&
+                Objects.equals(title, other.getTitle()) &&
+                Objects.equals(description, other.getDescription()) &&
+                Objects.equals(isChild, other.getChild()) &&
+                Objects.equals(isProtected, other.getProtected()) &&
+                Objects.equals(source, other.getSource()) &&
+                Objects.equals(target, other.getTarget());
     }
 }

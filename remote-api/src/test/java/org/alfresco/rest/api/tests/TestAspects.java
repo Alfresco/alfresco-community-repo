@@ -29,6 +29,7 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Aspect;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Test;
 
@@ -85,13 +86,13 @@ public class TestAspects extends BaseModelApiTest
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
         aspects.getList().get(0).expected(childAspect);
         aspects.getList().get(1).expected(testAspect);
-        aspects.getList().get(3).expected(smartFilter);
+        aspects.getList().get(3).expected(smartFilterAspect);
         assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(4));
         assertFalse(aspects.getPaging().getHasMoreItems());
 
         otherParams.put("where", "(parentId in ('smf:smartFolder','mycompany:testAspect') AND namespaceUri matches('http://www.test.*'))");
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-        aspects.getList().get(0).expected(smartFilter);
+        aspects.getList().get(0).expected(smartFilterAspect);
         assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(1));
 
         otherParams.put("where", "(parentId in ('smf:smartFolder', 'mycompany:testAspect') AND not namespaceUri matches('http://www.test.*'))");
@@ -125,7 +126,7 @@ public class TestAspects extends BaseModelApiTest
         otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND namespaceUri matches('http://www.test.*'))");
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
         aspects.getList().get(0).expected(rescanAspect);
-        aspects.getList().get(1).expected(smartFilter);
+        aspects.getList().get(1).expected(smartFilterAspect);
         assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(2));
 
         otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND not namespaceUri matches('http://www.test.*'))");
@@ -151,7 +152,7 @@ public class TestAspects extends BaseModelApiTest
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
         aspects.getList().get(0).expected(rescanAspect);
         assertNull(aspects.getList().get(0).getProperties());
-        aspects.getList().get(1).expected(smartFilter);
+        aspects.getList().get(1).expected(smartFilterAspect);
         assertNull(aspects.getList().get(1).getProperties());
 
         otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND namespaceUri matches('http://www.test.*'))");
@@ -159,8 +160,84 @@ public class TestAspects extends BaseModelApiTest
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
         aspects.getList().get(0).expected(rescanAspect);
         assertNotNull(aspects.getList().get(0).getProperties());
-        aspects.getList().get(1).expected(smartFilter);
+        aspects.getList().get(1).expected(smartFilterAspect);
         assertNotNull(aspects.getList().get(0).getProperties());
+    }
+
+    @Test
+    public void testIncludeAssociation() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('api:apiModel'))");
+        otherParams.put("include", "associations");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(6));
+
+        for (Aspect aspect : aspects.getList())
+        {
+            assertNotNull(aspect.getAssociations());
+            assertNull(aspect.getProperties());
+            assertNull(aspect.getMandatoryAspects());
+        }
+        assertTrue(aspects.getList().get(0).getAssociations().isEmpty());
+        assertTrue(aspects.getList().get(1).getAssociations().isEmpty());
+        assertTrue(aspects.getList().get(2).getAssociations().isEmpty());
+        assertTrue(aspects.getList().get(3).getAssociations().isEmpty());
+        assertEquals(aspects.getList().get(4).getAssociations(), testAllAspect.getAssociations());
+        assertTrue(aspects.getList().get(5).getAssociations().isEmpty());
+    }
+
+    @Test
+    public void testIncludeMandatoryAspect() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('api:apiModel'))");
+        otherParams.put("include", "mandatoryAspects");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(6));
+
+        for (Aspect aspect : aspects.getList())
+        {
+            assertNotNull(aspect.getMandatoryAspects());
+            assertNull(aspect.getProperties());
+            assertNull(aspect.getAssociations());
+        }
+        assertTrue(aspects.getList().get(0).getMandatoryAspects().isEmpty());
+        assertTrue(aspects.getList().get(1).getMandatoryAspects().isEmpty());
+        assertTrue(aspects.getList().get(2).getMandatoryAspects().isEmpty());
+        assertTrue(aspects.getList().get(3).getMandatoryAspects().isEmpty());
+        assertEquals(aspects.getList().get(4).getMandatoryAspects(), testAllAspect.getMandatoryAspects());
+        assertTrue(aspects.getList().get(5).getMandatoryAspects().isEmpty());
+    }
+
+    @Test
+    public void testIncludes() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('api:apiModel'))");
+        otherParams.put("include", "associations,mandatoryAspects");
+        aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
+        assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(6));
+
+        for (Aspect aspect : aspects.getList())
+        {
+            assertNotNull(aspect.getAssociations());
+            assertNotNull(aspect.getMandatoryAspects());
+            assertNull(aspect.getProperties());
+        }
+        assertTrue(aspects.getList().get(0).getAssociations().isEmpty());
+        assertTrue(aspects.getList().get(1).getAssociations().isEmpty());
+        assertTrue(aspects.getList().get(2).getAssociations().isEmpty());
+        assertTrue(aspects.getList().get(3).getAssociations().isEmpty());
+        assertEquals(aspects.getList().get(4).getAssociations(), testAllAspect.getAssociations());
+        assertEquals(aspects.getList().get(4).getMandatoryAspects(), testAllAspect.getMandatoryAspects());
+        assertTrue(aspects.getList().get(5).getAssociations().isEmpty());
     }
 
     @Test
@@ -179,7 +256,7 @@ public class TestAspects extends BaseModelApiTest
 
         otherParams.put("where", "(modelId in ('mycompany:model INCLUDESUBASPECTS') AND namespaceUri matches('http://www.test.*'))");
         aspects = publicApiClient.aspects().getAspects(createParams(paging, otherParams));
-        aspects.getList().get(0).expected(smartFilter);
+        aspects.getList().get(0).expected(smartFilterAspect);
         assertEquals(aspects.getPaging().getTotalItems(), Integer.valueOf(1));
     }
 
@@ -191,6 +268,11 @@ public class TestAspects extends BaseModelApiTest
 
         aspect = publicApiClient.aspects().getAspect("mycompany:childAspect");
         aspect.expected(childAspect);
+
+        aspect = publicApiClient.aspects().getAspect("test2:aspect-all");
+        assertEquals("mandatoryAspects not matched", aspect.getMandatoryAspects(), testAllAspect.getMandatoryAspects());
+        assertEquals("association not matched", aspect.getAssociations(), testAllAspect.getAssociations());
+        aspect.expected(testAllAspect);
     }
 
     @Test

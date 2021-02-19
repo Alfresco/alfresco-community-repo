@@ -63,9 +63,9 @@ public class AbstractClassImpl<T extends AbstractClass> {
     static String PARAM_NAMESPACE_URI = "namespaceUri";
     static String PARAM_INCLUDE_SUBASPECTS = "INCLUDESUBASPECTS";
     static String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
-    static String PARAM_INCLUDE_ASSOCIATIONS = "associations";
     static String PARAM_INCLUDE_PROPERTIES = "properties";
     static String PARAM_INCLUDE_MANDATORY_ASPECTS = "mandatoryAspects";
+    static String PARAM_INCLUDE_ASSOCIATIONS = "associations";
     static List<String> ALL_PROPERTIES = ImmutableList.of(PARAM_INCLUDE_PROPERTIES, PARAM_INCLUDE_MANDATORY_ASPECTS, PARAM_INCLUDE_ASSOCIATIONS);
 
     private DictionaryService dictionaryService;
@@ -191,8 +191,12 @@ public class AbstractClassImpl<T extends AbstractClass> {
 
         if (includes != null && includes.contains(PARAM_INCLUDE_PROPERTIES))
         {
+            List<PropertyDefinition> properties = Collections.emptyList();
             ClassDefinition _classDefinition = this.classDefinitionMapper.fromDictionaryClassDefinition(classDefinition, dictionaryService);
-            List<PropertyDefinition> properties = _classDefinition.getProperties() != null ? _classDefinition.getProperties() : Collections.emptyList();
+            if (_classDefinition.getProperties() != null)
+            {
+                properties = _classDefinition.getProperties();
+            }
             abstractClass.setProperties(properties);
         }
 
@@ -212,6 +216,7 @@ public class AbstractClassImpl<T extends AbstractClass> {
         }
 
         abstractClass.setContainer(classDefinition.isContainer());
+        abstractClass.setArchive(classDefinition.getArchive());
         abstractClass.setIncludedInSupertypeQuery(classDefinition.getIncludedInSuperTypeQuery());
         return  abstractClass;
     }
@@ -240,17 +245,17 @@ public class AbstractClassImpl<T extends AbstractClass> {
             String sourceRole = definition.getSourceRoleName() != null ? definition.getSourceRoleName().toPrefixString() : null;
             source.setRole(sourceRole);
 
-            String sourceClass = definition.getSourceClass() != null ? definition.getSourceClass() .getName().toPrefixString() : null;
+            String sourceClass = definition.getSourceClass() != null ? definition.getSourceClass().getName().toPrefixString() : null;
             source.setCls(sourceClass);
 
             source.setIsMany(definition.isSourceMany());
             source.setIsMandatory(definition.isSourceMandatory());
 
             AssociationSource target = new AssociationSource();
-            String targetRole = definition.getTargetRoleName() != null    ? definition.getTargetRoleName().toPrefixString() : null;
+            String targetRole = definition.getTargetRoleName() != null ? definition.getTargetRoleName().toPrefixString() : null;
             target.setRole(targetRole);
 
-            String targetClass = definition.getTargetClass() != null ? definition.getTargetClass() .getName().toPrefixString() : null;
+            String targetClass = definition.getTargetClass() != null ? definition.getTargetClass().getName().toPrefixString() : null;
             target.setCls(targetClass);
 
             target.setIsMany(definition.isTargetMany());

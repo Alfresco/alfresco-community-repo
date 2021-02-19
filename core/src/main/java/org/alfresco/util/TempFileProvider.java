@@ -399,6 +399,10 @@ public class TempFileProvider
                     maxFilesToDelete = new AtomicLong(Long.parseLong(strMaxFilesToDelete));
                     logger.debug("Set the maximum number of temp files to be deleted to: " + maxFilesToDelete.get());
                 }
+                else
+                {
+                    logger.debug("No maximum number of files was configured for the temp file clean job.");
+                }
             }
             catch (Exception e)
             {
@@ -414,6 +418,10 @@ public class TempFileProvider
                     final String strMaxTimeToRun = (String) oMaxTimeToRun;
                     maxTimeToRun = Duration.parse(strMaxTimeToRun);
                     logger.debug("Set the maximum duration time of the temp file clean job to: " + maxTimeToRun);
+                }
+                else
+                {
+                    logger.debug("No maximum duration was configured for the temp file clean job.");
                 }
             }
             catch (Exception e)
@@ -525,6 +533,18 @@ public class TempFileProvider
                             if (maxFilesToDelete != null)
                             {
                                 maxFilesToDelete.decrementAndGet();
+                            }
+
+                            if (logger.isDebugEnabled())
+                            {
+                                if (maxFilesToDelete != null)
+                                {
+                                    logger.debug(maxFilesToDelete.get() + " files left to delete.");
+                                }
+                                if (maxTimeToRun != null)
+                                {
+                                    logger.debug((jobStartTime + maxTimeToRun.toMillis() - System.currentTimeMillis()) + " millis left to delete.");
+                                }
                             }
                         }
                         count++;

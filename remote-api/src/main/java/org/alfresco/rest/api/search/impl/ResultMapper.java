@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.search.impl;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
 import static org.alfresco.rest.api.search.impl.StoreMapper.HISTORY;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
@@ -42,9 +44,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
+import org.alfresco.repo.search.SearchEngineResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
@@ -153,12 +156,10 @@ public class ResultMapper
      */
     public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, SearchRequestContext searchRequestContext, SearchQuery searchQuery, ResultSet results)
     {
-        SearchContext context = null;
-        Integer total = null;
-        List<Node> noderesults = new ArrayList<Node>();
+        List<Node> noderesults = new ArrayList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-        Map<NodeRef, List<Pair<String, List<String>>>> hightLighting = results.getHighlighting();
-        int notFound = 0;
+        Map<NodeRef, List<Pair<String, List<String>>>> highLighting = results.getHighlighting();
+        final AtomicInteger unknownNodeRefsCount = new AtomicInteger();
         boolean isHistory = searchRequestContext.getStores().contains(StoreMapper.HISTORY);
 
         for (ResultSetRow row:results)
@@ -169,7 +170,7 @@ public class ResultMapper
             {
                 float f = row.getScore();
                 List<HighlightEntry> highlightEntries = null;
-                List<Pair<String, List<String>>> high = hightLighting.get(row.getNodeRef());
+                List<Pair<String, List<String>>> high = highLighting.get(row.getNodeRef());
 
                 if (high != null && !high.isEmpty())
                 {
@@ -185,26 +186,21 @@ public class ResultMapper
             else
             {
                 logger.debug("Unknown noderef returned from search results "+row.getNodeRef());
-                notFound++;
+                unknownNodeRefsCount.incrementAndGet();
             }
         }
 
-        SolrJSONResultSet solrResultSet = findSolrResultSet(results);
+        SearchContext context =
+                toSearchEngineResultSet(results)
+                    .map(resultSet -> toSearchContext(resultSet, searchRequestContext, searchQuery))
+                    .orElse(null);
 
-        if (solrResultSet != null)
-        {
-            //We used Solr for this query
-            context = toSearchContext(solrResultSet, searchRequestContext, searchQuery, notFound);
-        }
-
-        total = setTotal(results);
-
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), total, null, context);
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), setTotal(results), null, context);
     }
 
     /**
      * Builds a node representation based on a ResultSetRow;
-     * @param searchRequestContext
+     *
      * @param aRow
      * @param params
      * @param mapUserInfo
@@ -285,14 +281,14 @@ public class ResultMapper
 
     /**
      * Uses the results from Solr to set the Search Context
-     * @param SolrJSONResultSet
+     *
      * @param searchQuery
      * @return SearchContext
      */
-    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet, SearchRequestContext searchRequestContext, SearchQuery searchQuery, int notFound)
+    public SearchContext toSearchContext(SearchEngineResultSet resultSet, SearchRequestContext searchRequestContext, SearchQuery searchQuery)
     {
         SearchContext context = null;
-        Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
+        Map<String, Integer> facetQueries = resultSet.getFacetQueries();
         List<GenericFacetResponse> facets = new ArrayList<>();
         List<FacetQueryContext> facetResults = null;
         SpellCheckContext spellCheckContext = null;
@@ -330,7 +326,7 @@ public class ResultMapper
         }
 
         //Field Facets
-        Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
+        Map<String, List<Pair<String, Integer>>> facetFields = resultSet.getFieldFacets();
         if(FacetFormat.V2 == searchQuery.getFacetFormat())
         {
             facets.addAll(getFacetBucketsForFacetFieldsAsFacets(facetFields, searchQuery));
@@ -340,28 +336,29 @@ public class ResultMapper
             ffcs.addAll(getFacetBucketsForFacetFields(facetFields, searchQuery));
         }
 
-        Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
+        Map<String, List<Pair<String, Integer>>> facetInterval = resultSet.getFacetIntervals();
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
         
-        Map<String,List<Map<String,String>>> facetRanges = solrResultSet.getFacetRanges();
+        Map<String,List<Map<String,String>>> facetRanges = resultSet.getFacetRanges();
         facets.addAll(RangeResultMapper.getGenericFacetsForRanges(facetRanges, searchQuery.getFacetRanges()));
 
-        List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, solrResultSet.getStats());
-        List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets(), stats);
+        List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, resultSet.getStats());
+        List<GenericFacetResponse> pimped = getPivots(searchRequestContext, resultSet.getPivotFacets(), stats);
         facets.addAll(pimped);
         facets.addAll(stats);
 
         //Spelling
-        SpellCheckResult spell = solrResultSet.getSpellCheckResult();
+        SpellCheckResult spell = resultSet.getSpellCheckResult();
         if (spell != null && spell.getResultName() != null && !spell.getResults().isEmpty())
         {
             spellCheckContext = new SpellCheckContext(spell.getResultName(),spell.getResults());
         }
 
         //Put it all together
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
+        context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
+
     public static boolean hasGroup(SearchQuery searchQuery)
     {
         if(searchQuery != null && searchQuery.getFacetQueries() != null)
@@ -618,26 +615,32 @@ public class ResultMapper
     }
 
     /**
-     * Gets SolrJSONResultSet class if there is one.
-     * @param results
-     * @return
+     * Tries to see if the input {@link ResultSet} or one of the wrapped {@link ResultSet}
+     * is an instance of {@link SearchEngineResultSet}.
+     * Since some concrete ResultSet implements the decorator patterns, the code
+     * assumes (in those cases) a nested structure with a maximum of 3 levels.
+     * Probably the code could be generalised better in order to scan a decorator
+     * chain with an unlimited depth, but that would require a change in the ResultSet interface.
      */
-    protected SolrJSONResultSet findSolrResultSet(ResultSet results)
+    protected Optional<SearchEngineResultSet> toSearchEngineResultSet(ResultSet results)
     {
-        ResultSet theResultSet = results;
-
         if (results instanceof FilteringResultSet)
         {
-            theResultSet = ((FilteringResultSet) results).getUnFilteredResultSet();
+            // 1st level
+            results = ((FilteringResultSet) results).getUnFilteredResultSet();
+
+            // 2nd level
+            if (results instanceof FilteringResultSet)
+            {
+                results = ((FilteringResultSet) results).getUnFilteredResultSet();
+            }
         }
 
-        if (theResultSet instanceof SolrJSONResultSet)
-        {
-            return (SolrJSONResultSet) theResultSet;
-        }
-
-        return null;
+        return results instanceof SearchEngineResultSet
+            ? of(results).map(SearchEngineResultSet.class::cast)
+            : empty();
     }
+
     public CollectionWithPagingInfo<TupleList> toCollectionWithPagingInfo(JSONArray docs, SearchSQLQuery searchQuery) throws JSONException
     {
         if(docs == null )

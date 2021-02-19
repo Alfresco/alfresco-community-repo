@@ -28,7 +28,7 @@ package org.alfresco.repo.search.impl.solr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.repo.search.impl.JSONResult;
+import org.alfresco.repo.search.SearchEngineResultMetadata;
 import org.alfresco.service.cmr.search.StatsResultSet;
 import org.alfresco.service.cmr.search.StatsResultStat;
 import org.apache.commons.logging.Log;
@@ -44,7 +44,7 @@ import org.springframework.util.StringUtils;
  * @author Gethin James
  * @since 5.0
  */
-public class SolrStatsResult implements JSONResult, StatsResultSet
+public class SolrStatsResult implements SearchEngineResultMetadata, StatsResultSet
 {
     private static final Log logger = LogFactory.getLog(SolrStatsResult.class);
     

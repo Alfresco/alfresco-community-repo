@@ -37,7 +37,7 @@ import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.index.shard.Floc;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.QueryParserException;
-import org.alfresco.repo.search.impl.JSONResult;
+import org.alfresco.repo.search.SearchEngineResultMetadata;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -222,7 +222,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
                 SolrJsonProcessor<?> jsonProcessor) throws IOException, JSONException
     {
         JSONObject json = postQuery(httpClient, url, body);
-        JSONResult results = jsonProcessor.getResult(json);
+        SearchEngineResultMetadata results = jsonProcessor.getResult(json);
         LOGGER.debug("Sent : {}", url);
         LOGGER.debug("with: {}", body);
         LOGGER.debug("Got: {} in {} ms", results.getNumberFound(), results.getQueryTime());

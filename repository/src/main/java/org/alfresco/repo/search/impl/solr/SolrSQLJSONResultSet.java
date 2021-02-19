@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
-import org.alfresco.repo.search.impl.JSONResult;
+import org.alfresco.repo.search.SearchEngineResultMetadata;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.LimitBy;
@@ -51,7 +51,7 @@ import org.json.JSONObject;
  * Pojo that parses and stores solr stream response.
  * @author Michael Suzuki
  */
-public class SolrSQLJSONResultSet implements ResultSet, JSONResult
+public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetadata
 {
     private static final String SOLR_STREAM_EXCEPTION = "EXCEPTION";
     private static Log logger = LogFactory.getLog(SolrSQLJSONResultSet.class);

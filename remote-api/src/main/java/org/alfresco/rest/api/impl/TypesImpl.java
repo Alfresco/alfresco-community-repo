@@ -46,7 +46,6 @@ import org.alfresco.util.PropertyCheck;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -109,7 +108,6 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
 
         List<Type> allTypes = typeList.filter((qName) -> filterByNamespace(query, qName))
                 .map((qName) -> this.convertToType(dictionaryService.getType(qName), params.getInclude()))
-                .filter(Objects::nonNull)
                 .filter(distinctByKey(Type::getId))
                 .collect(Collectors.toList());
         return createPagedResult(allTypes, paging);

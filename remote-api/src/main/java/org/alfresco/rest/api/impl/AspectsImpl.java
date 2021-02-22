@@ -46,7 +46,6 @@ import org.alfresco.util.PropertyCheck;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -109,7 +108,6 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
 
         List<Aspect> allAspects = aspectList.filter((qName) -> filterByNamespace(query, qName))
                 .map((qName) -> this.convertToAspect(dictionaryService.getAspect(qName), params.getInclude()))
-                .filter(Objects::nonNull)
                 .filter(distinctByKey(Aspect::getId))
                 .collect(Collectors.toList());
         return createPagedResult(allAspects, paging);

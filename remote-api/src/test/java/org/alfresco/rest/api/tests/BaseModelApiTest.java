@@ -150,7 +150,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
 
         AssociationSource testAllAspectSource =  new AssociationSource(null, "test2:aspect-all", true, true, null);
         AssociationSource testAllAspectTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association testAllAspectAssociation = new Association("api:assoc-all", null, null, null, null, testAllAspectSource, testAllAspectTarget);
+        Association testAllAspectAssociation = new Association("api:assoc-all", null, null, null, false, testAllAspectSource, testAllAspectTarget);
         testAllAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
         testAllAspect.setId("test2:aspect-all");
         testAllAspect.setTitle("Aspect derived from other namespace");

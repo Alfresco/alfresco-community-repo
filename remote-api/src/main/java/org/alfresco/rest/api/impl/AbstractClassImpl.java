@@ -28,7 +28,11 @@ package org.alfresco.rest.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import org.alfresco.rest.api.ClassDefinitionMapper;
-import org.alfresco.rest.api.model.*;
+import org.alfresco.rest.api.model.AssociationSource;
+import org.alfresco.rest.api.model.Association;
+import org.alfresco.rest.api.model.AbstractClass;
+import org.alfresco.rest.api.model.PropertyDefinition;
+import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;

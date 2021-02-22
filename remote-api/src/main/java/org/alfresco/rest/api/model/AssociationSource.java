@@ -110,7 +110,7 @@ public class AssociationSource {
         AssociationSource other = (AssociationSource) obj;
         return Objects.equals(role, other.getRole()) &&
                         Objects.equals(cls, other.getCls()) &&
-                        Objects.equals(isMany, other.getIsMandatory()) &&
+                        Objects.equals(isMany, other.getIsMany()) &&
                         Objects.equals(isMandatory, other.getIsMandatory()) &&
                         Objects.equals(isMandatoryEnforced, other.getIsMandatoryEnforced());
     }

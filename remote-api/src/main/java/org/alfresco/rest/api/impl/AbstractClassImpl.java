@@ -215,8 +215,8 @@ public class AbstractClassImpl<T extends AbstractClass> {
             }
         }
 
-        abstractClass.setContainer(classDefinition.isContainer());
-        abstractClass.setArchive(classDefinition.getArchive());
+        abstractClass.setIsContainer(classDefinition.isContainer());
+        abstractClass.setIsArchive(classDefinition.getArchive());
         abstractClass.setIncludedInSupertypeQuery(classDefinition.getIncludedInSuperTypeQuery());
         return  abstractClass;
     }
@@ -237,8 +237,8 @@ public class AbstractClassImpl<T extends AbstractClass> {
             association.setId(definition.getName().toPrefixString());
             association.setTitle(definition.getTitle());
             association.setDescription(definition.getDescription());
-            association.setChild(definition.isChild());
-            association.setProtected(definition.isProtected());
+            association.setIsChild(definition.isChild());
+            association.setIsProtected(definition.isProtected());
 
             AssociationSource source = new AssociationSource();
 

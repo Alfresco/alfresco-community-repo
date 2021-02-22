@@ -148,7 +148,7 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         }
         catch (Exception ex)
         {
-            throw new AlfrescoRuntimeException("Failed to parse Aspect" + aspectDefinition.getName());
+            throw new AlfrescoRuntimeException("Failed to parse Aspect: " + aspectDefinition.getName() + " . " + ex.getMessage());
         }
     }
 

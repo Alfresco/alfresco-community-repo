@@ -54,8 +54,8 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         AssertUtil.assertEquals("title", getTitle(), other.getTitle());
         AssertUtil.assertEquals("description", getDescription(), other.getDescription());
         AssertUtil.assertEquals("parenId", getParentId(), other.getParentId());
-        AssertUtil.assertEquals("archive", getArchive(), other.getArchive());
-        AssertUtil.assertEquals("container", getContainer(), other.getContainer());
+        AssertUtil.assertEquals("isArchive", getIsArchive(), other.getIsArchive());
+        AssertUtil.assertEquals("isContainer", getIsContainer(), other.getIsContainer());
         AssertUtil.assertEquals("includedInSupertypeQuery", getIncludedInSupertypeQuery(), other.getIncludedInSupertypeQuery());
 
         if (getModel() != null && other.getModel() != null)
@@ -103,14 +103,14 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
             jsonObject.put("mandatoryAspects", getMandatoryAspects());
         }
 
-        if (getContainer() != null)
+        if (getIsContainer() != null)
         {
-            jsonObject.put("container", getContainer());
+            jsonObject.put("isContainer", getIsContainer());
         }
 
-        if (getArchive() != null)
+        if (getIsArchive() != null)
         {
-            jsonObject.put("archive", getArchive());
+            jsonObject.put("isArchive", getIsArchive());
         }
 
         if (getIncludedInSupertypeQuery() != null)
@@ -135,8 +135,8 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         String parentId = (String) jsonObject.get("parentId");
         List<PropertyDefinition> properties = (List<PropertyDefinition>) jsonObject.get("properties");
         List<String> mandatoryAspects = jsonObject.get("mandatoryAspects") != null ? new ArrayList((List<String>)jsonObject.get("mandatoryAspects")) : null;
-        Boolean container = (Boolean) jsonObject.get("container");
-        Boolean archive = (Boolean) jsonObject.get("archive");
+        Boolean isContainer = (Boolean) jsonObject.get("isContainer");
+        Boolean isArchive = (Boolean) jsonObject.get("isArchive");
         Boolean includedInSupertypeQuery = (Boolean) jsonObject.get("includedInSupertypeQuery");
 
         List<Association> associations = null;
@@ -152,8 +152,8 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
                 association.setId((String) object.get("id"));
                 association.setTitle((String) object.get("title"));
                 association.setDescription((String) object.get("description"));
-                association.setChild((Boolean) object.get("child"));
-                association.setProtected((Boolean) object.get("isProtected"));
+                association.setIsChild((Boolean) object.get("child"));
+                association.setIsProtected((Boolean) object.get("isProtected"));
 
                 JSONObject sourceModel = (JSONObject) object.get("source");
                 if (sourceModel != null)
@@ -196,8 +196,8 @@ public class Aspect extends org.alfresco.rest.api.model.Aspect implements Serial
         aspect.setParentId(parentId);
         aspect.setProperties(properties);
         aspect.setMandatoryAspects(mandatoryAspects);
-        aspect.setContainer(container);
-        aspect.setArchive(archive);
+        aspect.setIsContainer(isContainer);
+        aspect.setIsArchive(isArchive);
         aspect.setIncludedInSupertypeQuery(includedInSupertypeQuery);
         aspect.setAssociations(associations);
         aspect.setModel(model);

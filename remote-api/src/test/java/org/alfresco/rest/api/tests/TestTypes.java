@@ -27,19 +27,18 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.model.Association;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.data.ExpectedComparison;
 import org.alfresco.rest.api.tests.client.data.Type;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.Test;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
-import java.util.Arrays;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class TestTypes extends BaseModelApiTest
 {
@@ -181,12 +180,7 @@ public class TestTypes extends BaseModelApiTest
             assertNull(type.getMandatoryAspects());
 
             type.expected(allTypes.get(i));
-
-            for (int j = 0; j < type.getAssociations().size(); j++)
-            {
-                ExpectedComparison association = (ExpectedComparison) type.getAssociations().get(j);
-                association.expected(allTypes.get(i).getAssociations().get(j));
-            }
+            assertEquals(type.getAssociations(), allTypes.get(i).getAssociations());
         }
     }
 
@@ -230,16 +224,11 @@ public class TestTypes extends BaseModelApiTest
 
             assertNotNull(type.getAssociations());
             assertNull(type.getProperties());
-            assertNull(type.getMandatoryAspects());
+            assertNotNull(type.getMandatoryAspects());
 
             type.expected(allTypes.get(i));
             assertEquals(type.getMandatoryAspects(), allTypes.get(i).getMandatoryAspects());
-
-            for (int j = 0; j < type.getAssociations().size(); j++)
-            {
-                ExpectedComparison association = (ExpectedComparison) type.getAssociations().get(j);
-                association.expected(allTypes.get(i).getAssociations().get(j));
-            }
+            assertEquals(type.getAssociations(), allTypes.get(i).getAssociations());
         }
     }
 
@@ -282,9 +271,9 @@ public class TestTypes extends BaseModelApiTest
         type = publicApiClient.types().getType("mycompany:whitepaper");
         type.expected(whitePaperType);
 
-        type = publicApiClient.types().getType("api:base");
+        type = publicApiClient.types().getType(apiBaseType.getId());
         type.expected(apiBaseType);
-        assertNull(type.getProperties());
+        assertNotNull(type.getProperties());
         assertEquals(type.getMandatoryAspects(), apiBaseType.getMandatoryAspects());
         assertEquals(type.getAssociations(), apiBaseType.getAssociations());
     }

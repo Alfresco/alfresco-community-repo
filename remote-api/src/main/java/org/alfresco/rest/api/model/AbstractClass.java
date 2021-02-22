@@ -40,8 +40,8 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
     protected String title;
     protected String description;
     protected String parentId;
-    protected Boolean container = null;
-    protected Boolean archive = null;
+    protected Boolean isContainer = null;
+    protected Boolean isArchive = null;
     protected Boolean includedInSupertypeQuery = null;
     protected List<String> mandatoryAspects = null;
     protected List<Association> associations = null;
@@ -97,24 +97,24 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
         this.model = model;
     }
 
-    public Boolean getContainer()
+    public Boolean getIsContainer()
     {
-        return container;
+        return isContainer;
     }
 
-    public void setContainer(Boolean container)
+    public void setIsContainer(Boolean isContainer)
     {
-        this.container = container;
+        this.isContainer = isContainer;
     }
 
-    public Boolean getArchive()
+    public Boolean getIsArchive()
     {
-        return archive;
+        return isArchive;
     }
 
-    public void setArchive(Boolean archive)
+    public void setIsArchive(Boolean isArchive)
     {
-        this.archive = archive;
+        this.isArchive = isArchive;
     }
 
     public Boolean getIncludedInSupertypeQuery()
@@ -176,7 +176,7 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, title, description, parentId, properties, container, archive, includedInSupertypeQuery, mandatoryAspects, associations, model);
+        return Objects.hash(id, title, description, parentId, properties, isContainer, isArchive, includedInSupertypeQuery, mandatoryAspects, associations, model);
     }
 
     @Override

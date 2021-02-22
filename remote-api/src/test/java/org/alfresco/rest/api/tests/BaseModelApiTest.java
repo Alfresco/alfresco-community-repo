@@ -78,9 +78,9 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         testAspect.setId("mycompany:testAspect");
         testAspect.setTitle("Test Aspect");
         testAspect.setModel(myCompanyModel);
-        testAspect.setContainer(false);
+        testAspect.setIsContainer(false);
         testAspect.setIncludedInSupertypeQuery(true);
-        testAspect.setArchive(true);
+        testAspect.setIsArchive(true);
 
         childAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
         childAspect.setId("mycompany:childAspect");
@@ -88,7 +88,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         childAspect.setDescription("Child Aspect Description");
         childAspect.setParentId("smf:smartFolder");
         childAspect.setModel(myCompanyModel);
-        childAspect.setContainer(false);
+        childAspect.setIsContainer(false);
         childAspect.setIncludedInSupertypeQuery(true);
 
         rescanAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
@@ -96,7 +96,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         rescanAspect.setTitle("rescan");
         rescanAspect.setDescription("Doc that required to scan ");
         rescanAspect.setModel(scanModel);
-        rescanAspect.setContainer(false);
+        rescanAspect.setIsContainer(false);
         rescanAspect.setIncludedInSupertypeQuery(true);
 
         smartFilterAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
@@ -105,8 +105,8 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         smartFilterAspect.setDescription("Smart Filter");
         smartFilterAspect.setParentId("mycompany:testAspect");
         smartFilterAspect.setModel(scanModel);
-        smartFilterAspect.setContainer(false);
-        smartFilterAspect.setArchive(true);
+        smartFilterAspect.setIsContainer(false);
+        smartFilterAspect.setIsArchive(true);
         smartFilterAspect.setIncludedInSupertypeQuery(true);
 
         whitePaperType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -115,8 +115,8 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         whitePaperType.setDescription("Whitepaper");
         whitePaperType.setParentId("mycompany:doc");
         whitePaperType.setModel(myCompanyModel);
-        whitePaperType.setContainer(false);
-        whitePaperType.setArchive(true);
+        whitePaperType.setIsContainer(false);
+        whitePaperType.setIsArchive(true);
         whitePaperType.setIncludedInSupertypeQuery(true);
 
         docType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -125,15 +125,15 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         docType.setDescription("Doc");
         docType.setParentId("cm:content");
         docType.setModel(myCompanyModel);
-        docType.setContainer(false);
-        docType.setArchive(true);
+        docType.setIsContainer(false);
+        docType.setIsArchive(true);
         docType.setIncludedInSupertypeQuery(true);
 
         publishableType = new org.alfresco.rest.api.tests.client.data.Type();
         publishableType.setId("test:publishable");
         publishableType.setParentId("mycompany:doc");
-        publishableType.setContainer(false);
-        publishableType.setArchive(true);
+        publishableType.setIsContainer(false);
+        publishableType.setIsArchive(true);
         publishableType.setIncludedInSupertypeQuery(true);
 
         Model testModel = new Model();
@@ -150,39 +150,39 @@ public class BaseModelApiTest extends AbstractBaseApiTest
 
         AssociationSource testAllAspectSource =  new AssociationSource(null, "test2:aspect-all", true, true, null);
         AssociationSource testAllAspectTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association testAllAspectAssociation = new Association("api:assoc-all", null, null, false, null, testAllAspectSource, testAllAspectTarget);
+        Association testAllAspectAssociation = new Association("api:assoc-all", null, null, null, null, testAllAspectSource, testAllAspectTarget);
         testAllAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
         testAllAspect.setId("test2:aspect-all");
         testAllAspect.setTitle("Aspect derived from other namespace");
-        testAllAspect.setArchive(false);
+        testAllAspect.setIsArchive(false);
         testAllAspect.setIncludedInSupertypeQuery(false);
-        testAllAspect.setContainer(false);
+        testAllAspect.setIsContainer(false);
         testAllAspect.setModel(testModel);
         testAllAspect.setAssociations(Collections.singletonList(testAllAspectAssociation));
         testAllAspect.setMandatoryAspects(Arrays.asList("test2:aspect-three", "api:aspect-one", "api:aspect-two"));
 
         AssociationSource apiBaseSource =  new AssociationSource(null, "api:base", false, true, null);
         AssociationSource apiBaseTarget =  new AssociationSource(null, "api:base", true, false, false);
-        Association apiBaseAssociation = new Association("api:assoc1", null, null, false, null, apiBaseSource, apiBaseTarget);
+        Association apiBaseAssociation = new Association("api:assoc1", null, null, false, false, apiBaseSource, apiBaseTarget);
 
         AssociationSource apiChildSource =  new AssociationSource(null, "api:base", true, true, null);
         AssociationSource apiChildTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association apiChildAssociation = new Association("api:childassoc1", null, null, true, null, apiChildSource, apiChildTarget);
+        Association apiChildAssociation = new Association("api:childassoc1", null, null, true, false, apiChildSource, apiChildTarget);
 
         AssociationSource apiBaseSource2 =  new AssociationSource(null, "api:base", true, true, null);
         AssociationSource apiBaseTarget2 =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association apiBaseAssociation2 = new Association("api:assoc2", null, null, false, null, apiBaseSource2, apiBaseTarget2);
+        Association apiBaseAssociation2 = new Association("api:assoc2", null, null, false, false, apiBaseSource2, apiBaseTarget2);
 
         AssociationSource apiChildPropagateSource =  new AssociationSource(null, "api:base", true, true, null);
         AssociationSource apiChildPropagateTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association apiChildPropagateAssociation = new Association("api:childassocPropagate", null, null, true, null, apiChildPropagateSource, apiChildPropagateTarget);
+        Association apiChildPropagateAssociation = new Association("api:childassocPropagate", null, null, true, false, apiChildPropagateSource, apiChildPropagateTarget);
 
         apiBaseType = new org.alfresco.rest.api.tests.client.data.Type();
         apiBaseType.setId("api:base");
         apiBaseType.setTitle("Base");
         apiBaseType.setDescription("The Base Type");
         apiBaseType.setIncludedInSupertypeQuery(true);
-        apiBaseType.setContainer(true);
+        apiBaseType.setIsContainer(true);
         apiBaseType.setModel(apiModel);
         apiBaseType.setAssociations(Arrays.asList(apiBaseAssociation, apiChildAssociation, apiBaseAssociation2, apiChildPropagateAssociation));
         apiBaseType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
@@ -191,20 +191,20 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiForcedType.setId("api:enforced");
         apiForcedType.setParentId("api:base");
         apiForcedType.setIncludedInSupertypeQuery(true);
-        apiForcedType.setContainer(true);
+        apiForcedType.setIsContainer(true);
         apiForcedType.setModel(apiModel);
         apiForcedType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
         apiForcedType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
         AssociationSource apiChildSource2 =  new AssociationSource(null, "api:file", false, true, null);
         AssociationSource apiChildTarget2 =  new AssociationSource(null, "api:referenceable", true, false, false);
-        Association apiChildAssociation2 = new Association("api:childassoc2", null, null, true, null, apiChildSource2, apiChildTarget2);
+        Association apiChildAssociation2 = new Association("api:childassoc2", null, null, true, false, apiChildSource2, apiChildTarget2);
         apiFileType = new org.alfresco.rest.api.tests.client.data.Type();
         apiFileType.setId("api:file");
         apiFileType.setParentId("api:base");
-        apiFileType.setArchive(true);
+        apiFileType.setIsArchive(true);
         apiFileType.setIncludedInSupertypeQuery(true);
-        apiFileType.setContainer(true);
+        apiFileType.setIsContainer(true);
         apiFileType.setModel(apiModel);
         apiFileType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
         apiFileType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
@@ -212,9 +212,9 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFileDerivedType = new org.alfresco.rest.api.tests.client.data.Type();
         apiFileDerivedType.setId("api:file-derived");
         apiFileDerivedType.setParentId("api:file");
-        apiFileDerivedType.setArchive(true);
+        apiFileDerivedType.setIsArchive(true);
         apiFileDerivedType.setIncludedInSupertypeQuery(true);
-        apiFileDerivedType.setContainer(true);
+        apiFileDerivedType.setIsContainer(true);
         apiFileDerivedType.setModel(apiModel);
         apiFileDerivedType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
         apiFileDerivedType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
@@ -222,9 +222,9 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFileDerivedNoArchiveType = new org.alfresco.rest.api.tests.client.data.Type();
         apiFileDerivedNoArchiveType.setId("api:file-derived-no-archive");
         apiFileDerivedNoArchiveType.setParentId("api:file");
-        apiFileDerivedNoArchiveType.setArchive(false);
+        apiFileDerivedNoArchiveType.setIsArchive(false);
         apiFileDerivedNoArchiveType.setIncludedInSupertypeQuery(true);
-        apiFileDerivedNoArchiveType.setContainer(true);
+        apiFileDerivedNoArchiveType.setIsContainer(true);
         apiFileDerivedNoArchiveType.setModel(apiModel);
         apiFileDerivedNoArchiveType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
         apiFileDerivedNoArchiveType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
@@ -233,7 +233,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFolderType.setId("api:folder");
         apiFolderType.setParentId("api:base");
         apiFolderType.setIncludedInSupertypeQuery(true);
-        apiFolderType.setContainer(true);
+        apiFolderType.setIsContainer(true);
         apiFolderType.setModel(apiModel);
         apiFolderType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
         apiFolderType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
@@ -242,7 +242,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiOverrideType.setId("api:overridetype1");
         apiOverrideType.setParentId("api:base");
         apiOverrideType.setIncludedInSupertypeQuery(true);
-        apiOverrideType.setContainer(false);
+        apiOverrideType.setIsContainer(false);
         apiOverrideType.setModel(apiModel);
         apiOverrideType.setAssociations(Collections.emptyList());
         apiOverrideType.setMandatoryAspects(Collections.emptyList());
@@ -251,7 +251,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiOverride2Type.setId("api:overridetype2");
         apiOverride2Type.setParentId("api:overridetype1");
         apiOverride2Type.setIncludedInSupertypeQuery(true);
-        apiOverride2Type.setContainer(false);
+        apiOverride2Type.setIsContainer(false);
         apiOverride2Type.setModel(apiModel);
         apiOverride2Type.setAssociations(Collections.emptyList());
         apiOverride2Type.setMandatoryAspects(Collections.emptyList());
@@ -260,7 +260,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiOverride3Type.setId("api:overridetype3");
         apiOverride3Type.setParentId("api:overridetype2");
         apiOverride3Type.setIncludedInSupertypeQuery(true);
-        apiOverride3Type.setContainer(false);
+        apiOverride3Type.setIsContainer(false);
         apiOverride3Type.setModel(apiModel);
         apiOverride3Type.setAssociations(Collections.emptyList());
         apiOverride3Type.setMandatoryAspects(Collections.emptyList());
@@ -271,7 +271,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiNamedPropConstraintType.setDescription("A type with a named constraint defined within one of its properties.");
         apiNamedPropConstraintType.setParentId("api:overridetype2");
         apiNamedPropConstraintType.setIncludedInSupertypeQuery(true);
-        apiNamedPropConstraintType.setContainer(false);
+        apiNamedPropConstraintType.setIsContainer(false);
         apiNamedPropConstraintType.setModel(apiModel);
         apiNamedPropConstraintType.setAssociations(Collections.emptyList());
         apiNamedPropConstraintType.setMandatoryAspects(Collections.emptyList());

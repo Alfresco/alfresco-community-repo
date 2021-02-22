@@ -83,24 +83,24 @@ public class Association
         this.description = description;
     }
 
-    public Boolean getChild()
+    public Boolean getIsChild()
     {
         return isChild;
     }
 
-    public void setChild(Boolean child)
+    public void setIsChild(Boolean isChild)
     {
-        isChild = child;
+        this.isChild = isChild;
     }
 
-    public Boolean getProtected()
+    public Boolean getIsProtected()
     {
         return isProtected;
     }
 
-    public void setProtected(Boolean isProtected)
+    public void setIsProtected(Boolean isProtected)
     {
-        isProtected = isProtected;
+        this.isProtected = isProtected;
     }
 
     public AssociationSource getSource()
@@ -136,8 +136,8 @@ public class Association
         return Objects.equals(id, other.getId()) &&
                 Objects.equals(title, other.getTitle()) &&
                 Objects.equals(description, other.getDescription()) &&
-                Objects.equals(isChild, other.getChild()) &&
-                Objects.equals(isProtected, other.getProtected()) &&
+                Objects.equals(isChild, other.getIsChild()) &&
+                Objects.equals(isProtected, other.getIsProtected()) &&
                 Objects.equals(source, other.getSource()) &&
                 Objects.equals(target, other.getTarget());
     }

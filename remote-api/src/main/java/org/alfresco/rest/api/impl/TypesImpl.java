@@ -146,9 +146,9 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
             constructFromFilters(type, typeDefinition, includes);
             return type;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            throw new AlfrescoRuntimeException("Failed to parse Type" + typeDefinition.getName());
+            throw new AlfrescoRuntimeException("Failed to parse Type: " + typeDefinition.getName() + " . " + ex.getMessage());
         }
     }
 

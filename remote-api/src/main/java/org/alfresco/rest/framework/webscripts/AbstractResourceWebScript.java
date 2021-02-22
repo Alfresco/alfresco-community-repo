@@ -253,7 +253,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             setContentInfoOnResponse(res, contentInfo);
             boolean attach = StringUtils.isNotEmpty(rawBinaryResource.getAttachFileName());
             Map<String, Object> model = getModelForCacheDirective(rawBinaryResource.getCacheDirective());
-            streamer.streamContent(req, res, rawBinaryResource.getContentUrl(), rawBinaryResource.getLastModifiedDate(), attach, rawBinaryResource.getAttachFileName(), model, rawBinaryResource.getContentData());
+            streamer.streamContent(req, res, rawBinaryResource.getLastModifiedDate(), attach, rawBinaryResource.getAttachFileName(), model, rawBinaryResource.getContentData());
 
         }
 

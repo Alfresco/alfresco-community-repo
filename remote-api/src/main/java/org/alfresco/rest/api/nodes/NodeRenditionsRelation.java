@@ -73,7 +73,6 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     @Override
     public CollectionWithPagingInfo<Rendition> readAll(String nodeId, Parameters parameters)
     {
-        System.out.println("*** NodeRenditionsRelation.readById() - get all renditions");
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         return renditions.getRenditions(nodeRef, parameters);
     }
@@ -81,7 +80,6 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     @Override
     public Rendition readById(String nodeId, String renditionId, Parameters parameters)
     {
-        System.out.println("*** NodeRenditionsRelation.readById() - get single rendition");
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         return renditions.getRendition(nodeRef, renditionId, parameters);
     }
@@ -100,7 +98,6 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     @Override
     public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters)
     {
-        System.out.println("*** NodeRenditionsRelation.readProperty() - Get binary content");
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         return renditions.getContent(nodeRef, renditionId, parameters);
     }

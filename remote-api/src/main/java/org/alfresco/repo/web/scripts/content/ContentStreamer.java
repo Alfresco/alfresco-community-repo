@@ -142,15 +142,17 @@ public class ContentStreamer implements ResourceLoaderAware
 
     public void streamContent(WebScriptRequest req,
                              WebScriptResponse res,
-                             String contentUrl,
                              Long lastModified,
                              boolean attach,
                              String attachFileName,
-                             Map<String, Object> model, ContentData contentData) throws IOException
+                             Map<String, Object> model,
+                             ContentData contentData) throws IOException
     {
 
-        logger.debug("Streaming content from RawStreamer for contentUrl" + contentUrl);
-
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Streaming content from RawBinaryResource for contentUrl" + contentData.getContentUrl());
+        }
         Date modified = (lastModified== null? null: new Date(lastModified));
         if (modified != null)
         {
@@ -189,7 +191,7 @@ public class ContentStreamer implements ResourceLoaderAware
 
         if (reader == null || !reader.exists())
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for url: " + contentUrl);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for url: " + contentData.getContentUrl());
         }
 
         // Stream the content

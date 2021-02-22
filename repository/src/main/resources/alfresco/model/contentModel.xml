@@ -1406,8 +1406,14 @@
                <title>Hash code of the source content url</title>
                <type>d:int</type>
             </property>
+         </properties>
+      </aspect>
+      <!-- This aspect marks a node with some or all renditions stored as properties -->
+      <aspect name="rn:rendition3">
+         <title>Rendition3</title>
+         <properties>
             <property name="rn:renditionInformation">
-               <title>Rendition location</title>
+               <title>Rendition Information</title>
                <type>d:any</type> <!-- todo - determine if any downside to having d:any rather that using a specific type like d:content does?-->
                <multiple>true</multiple>
             </property>

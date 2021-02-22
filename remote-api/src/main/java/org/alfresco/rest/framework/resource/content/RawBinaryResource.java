@@ -29,26 +29,19 @@ import org.alfresco.service.cmr.repository.ContentData;
 
 public class RawBinaryResource extends AbstractBinaryResource
 {
-    private String contentUrl;
     private ContentInfo contentInfo;
     private ContentData contentData;
     private Long lastModifiedDate;
 
     // todo - should make sure we return the same data a NodeBinaryResource would return for a rendition node
 
-    public RawBinaryResource(String contentUrl, ContentInfo contentInfo, Long lastModifiedDate, String attachFileName,
+    public RawBinaryResource(ContentInfo contentInfo, Long lastModifiedDate, String attachFileName,
                 CacheDirective cacheDirective, ContentData contentData)
     {
         super(attachFileName, cacheDirective);
-        this.contentUrl = contentUrl;
         this.contentInfo = contentInfo;
         this.contentData = contentData;
         this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public String getContentUrl()
-    {
-        return contentUrl;
     }
 
     public ContentInfo getContentInfo()

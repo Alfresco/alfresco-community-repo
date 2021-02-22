@@ -633,9 +633,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-    private static final QName RENDITION_INFO_PROPERTY =
-            QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditionInformation");
-
     private void storeRenditionAsProperty(String renditionName,
                                             NodeRef sourceNodeRef,
                                             RenditionDefinition2 renditionDefinition,
@@ -655,7 +652,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 nodelessWriter.putContent(transformInputStream);
 
                 List<RenditionContentData> props =
-                        (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, RENDITION_INFO_PROPERTY);
+                        (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_RENDITION_INFORMATION);
                 props = props != null ? props : new LinkedList<>();
                 // remove if existing and add new
                 LinkedList<RenditionContentData> updatedProps = props.stream()
@@ -667,10 +664,10 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                         new RenditionContentData(renditionName, Instant.now().toEpochMilli(), transformContentHashCode, writerContentData);
 
                 updatedProps.add(renditionContentData);
-                nodeService.setProperty(sourceNodeRef, RENDITION_INFO_PROPERTY, updatedProps);
+                nodeService.setProperty(sourceNodeRef, ContentModel.PROP_RENDITION_INFORMATION, updatedProps);
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("**** Added new rendition property: " + renditionContentData);
+                    logger.debug("Added new rendition property: " + renditionContentData);
                 }
 
             }
@@ -702,7 +699,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
     List<RenditionContentData> getRenditionPropertyList(NodeRef sourceNodeRef)
     {
-        return (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, RENDITION_INFO_PROPERTY);
+        return (List<RenditionContentData>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_RENDITION_INFORMATION);
     }
 
 
@@ -719,11 +716,11 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
         if (newList.size() == 0)
         {
-            nodeService.removeProperty(sourceNodeRef, RENDITION_INFO_PROPERTY);
+            nodeService.removeProperty(sourceNodeRef, ContentModel.PROP_RENDITION_INFORMATION);
         }
         else
         {
-            nodeService.setProperty(sourceNodeRef, RENDITION_INFO_PROPERTY, newList);
+            nodeService.setProperty(sourceNodeRef, ContentModel.PROP_RENDITION_INFORMATION, newList);
         }
 
         // todo - Check how the orphaned content for a node rendition is removed and make sure the same happens for a property rendition

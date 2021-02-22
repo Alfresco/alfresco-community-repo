@@ -494,7 +494,6 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
         final String attachFileName = (attach ? renditionId : null);
 
-        // todo - learn what this does
         if (renditionContentData == null)
         {
             boolean isPlaceholder = Boolean.valueOf(parameters.getParameter(PARAM_PLACEHOLDER));
@@ -552,7 +551,6 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
 //        Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
-//        // todo - how/where is the contentData stored - we will need to have all that for rendition properties too
 //        ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
 //        Date modified = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
 
@@ -576,8 +574,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 .setMaxAge(Long.valueOf(31536000))// one year (in seconds)
                 .build();
 
-        // todo - another problem is we need support both Node and Raw resources for backwards compatibility
-        return new RawBinaryResource(contentData.getContentUrl(), contentInfo, lastModifiedDate, attachFileName, cacheDirective, contentData);
+        return new RawBinaryResource(contentInfo, lastModifiedDate, attachFileName, cacheDirective, contentData);
     }
 
 

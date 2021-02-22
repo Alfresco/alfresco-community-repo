@@ -55,7 +55,9 @@ public class Type extends AbstractClass
                 .append(", properties=").append(properties)
                 .append(", mandatoryAspects=").append(mandatoryAspects)
                 .append(", container=").append(container)
+                .append(", archive=").append(archive)
                 .append(", associations=").append(associations)
+                .append(", model=").append(model)
                 .append(", includedInSupertypeQuery=").append(includedInSupertypeQuery)
                 .append(']');
         return builder.toString();

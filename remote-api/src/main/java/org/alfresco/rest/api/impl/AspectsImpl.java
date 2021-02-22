@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.model.Aspect;
@@ -42,11 +43,9 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,8 +53,6 @@ import java.util.stream.Stream;
 
 public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
 {
-    private static final Log logger = LogFactory.getLog(AspectsImpl.class);
-
     private DictionaryService dictionaryService;
     private NamespacePrefixResolver namespaceService;
     private ClassDefinitionMapper classDefinitionMapper;
@@ -151,9 +148,8 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         }
         catch (Exception ex)
         {
-            logger.warn("Failed to parse Aspect " + aspectDefinition.getName().toPrefixString());
+            throw new AlfrescoRuntimeException("Failed to parse Aspect" + aspectDefinition.getName());
         }
-        return  null;
     }
 
     private Collection<QName> getModelAspects(Pair<QName,Boolean> model)

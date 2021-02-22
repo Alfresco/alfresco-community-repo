@@ -141,4 +141,18 @@ public class Association
                 Objects.equals(source, other.getSource()) &&
                 Objects.equals(target, other.getTarget());
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(512);
+        builder.append("Association [id=").append(this.id)
+                .append(", title=").append(this.title)
+                .append(", description=").append(this.description)
+                .append(", isChild=").append(isChild)
+                .append(", isProtected=").append(isProtected)
+                .append(", source=").append(source)
+                .append(", target=").append(target)
+                .append(']');
+        return builder.toString();
+    }
 }

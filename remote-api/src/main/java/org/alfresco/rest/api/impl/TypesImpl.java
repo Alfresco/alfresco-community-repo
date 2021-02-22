@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.Types;
 import org.alfresco.rest.api.model.Type;
@@ -42,8 +43,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,8 +53,6 @@ import java.util.stream.Stream;
 
 public class TypesImpl extends AbstractClassImpl<Type> implements Types
 {
-    private static final Log logger = LogFactory.getLog(TypesImpl.class);
-
     private DictionaryService dictionaryService;
     private NamespacePrefixResolver namespaceService;
     private ClassDefinitionMapper classDefinitionMapper;
@@ -151,9 +148,8 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
         }
         catch (Exception e)
         {
-            logger.warn("Failed to parse Type" + typeDefinition.getName());
+            throw new AlfrescoRuntimeException("Failed to parse Type" + typeDefinition.getName());
         }
-        return null;
     }
 
     private Collection<QName> getModelTypes(Pair<QName,Boolean> model)

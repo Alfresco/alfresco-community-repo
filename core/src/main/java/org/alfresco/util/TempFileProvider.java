@@ -527,24 +527,21 @@ public class TempFileProvider
                         {
                             return count;
                         }
-                        else
+                        file.delete();
+                        if (maxFilesToDelete != null)
                         {
-                            file.delete();
+                            maxFilesToDelete.decrementAndGet();
+                        }
+
+                        if (logger.isDebugEnabled())
+                        {
                             if (maxFilesToDelete != null)
                             {
-                                maxFilesToDelete.decrementAndGet();
+                                logger.debug(maxFilesToDelete.get() + " files left to delete.");
                             }
-
-                            if (logger.isDebugEnabled())
+                            if (maxTimeToRun != null)
                             {
-                                if (maxFilesToDelete != null)
-                                {
-                                    logger.debug(maxFilesToDelete.get() + " files left to delete.");
-                                }
-                                if (maxTimeToRun != null)
-                                {
-                                    logger.debug((jobStartTime + maxTimeToRun.toMillis() - System.currentTimeMillis()) + " millis left to delete.");
-                                }
+                                logger.debug((jobStartTime + maxTimeToRun.toMillis() - System.currentTimeMillis()) + " millis left to delete.");
                             }
                         }
                         count++;

@@ -48,6 +48,7 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -194,6 +195,7 @@ public class BaseRMRestTest extends RestTest
         if (rmSiteAPI.existsRMSite())
         {
             rmSiteAPI.deleteRMSite();
+            assertStatusCode(NO_CONTENT);
         }
 
         rmSiteAPI.createRMSite(rmSiteModel);

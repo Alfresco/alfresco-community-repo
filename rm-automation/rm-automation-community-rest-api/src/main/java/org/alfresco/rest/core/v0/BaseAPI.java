@@ -77,6 +77,7 @@ public abstract class BaseAPI
 
     /** exception key in JSON response body */
     private static final String EXCEPTION_KEY = "exception";
+    private static final String MESSAGE_KEY = "message";
     public static final String NODE_PREFIX = "workspace/SpacesStore/";
     protected static final String UPDATE_METADATA_API = "{0}node/{1}/formprocessor";
     protected static final String ACTIONS_API = "{0}actionQueue";
@@ -582,6 +583,12 @@ public abstract class BaseAPI
                     break;
 
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+					if (responseBody != null  && responseBody.has(EXCEPTION_KEY))
+                    {
+                        LOGGER.error("Request failed with error message: {}", responseBody.getString(MESSAGE_KEY));
+                        returnValues = responseBody;
+                    }
+                    break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_UNPROCESSABLE_ENTITY:
                     if (responseBody != null  && responseBody.has(EXCEPTION_KEY))

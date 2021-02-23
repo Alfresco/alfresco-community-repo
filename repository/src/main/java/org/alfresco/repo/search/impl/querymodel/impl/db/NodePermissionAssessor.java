@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
-import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclOwnerStopWatch;
-import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.aclReadStopWatch;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,21 +95,13 @@ public class NodePermissionAssessor
 
     protected boolean isOwnerReading(Node node, Authority authority)
     {
-        aclOwnerStopWatch().start();
-        try
+        if (authority == null)
         {
-            if (authority == null)
-            {
-                return false;
-            }
-            
-            String owner = getOwner(node);
-            return EqualsHelper.nullSafeEquals(authority.getAuthority(), owner);
+            return false;
         }
-        finally
-        {
-            aclOwnerStopWatch().stop();
-        }
+
+        String owner = getOwner(node);
+        return EqualsHelper.nullSafeEquals(authority.getAuthority(), owner);
     }
     
     private String getOwner(Node node)
@@ -176,21 +165,13 @@ public class NodePermissionAssessor
             
     protected boolean canRead(Long aclId)
     {
-        aclReadStopWatch().start();
-        try
+        Boolean res = aclReadCache.get(aclId);
+        if (res == null)
         {
-            Boolean res = aclReadCache.get(aclId);
-            if (res == null)
-            {
-                res = canCurrentUserRead(aclId);
-                aclReadCache.put(aclId, res);
-            }
-            return res;
+            res = canCurrentUserRead(aclId);
+            aclReadCache.put(aclId, res);
         }
-        finally
-        {
-            aclReadStopWatch().stop();
-        }
+        return res;
     }
     
     protected boolean canCurrentUserRead(Long aclId)

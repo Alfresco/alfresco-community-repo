@@ -85,11 +85,8 @@ public class DBQueryEngineTest
         engine.setSqlSessionTemplate(template);
 
         propertiesCache = mock(SimpleCache.class);
-        engine.setPropertiesCache(propertiesCache);
-        
+
         engine.nodesCache = mock(EntityLookupCache.class);
-        
-        DBStats.resetStopwatches();
     }
     
     @Test

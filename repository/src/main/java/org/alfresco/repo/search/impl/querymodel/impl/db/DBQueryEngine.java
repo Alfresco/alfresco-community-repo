@@ -26,8 +26,6 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import static org.alfresco.repo.domain.node.AbstractNodeDAOImpl.CACHE_REGION_NODES;
-import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.handlerStopWatch;
-import static org.alfresco.repo.search.impl.querymodel.impl.db.DBStats.resetStopwatches;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,7 +47,6 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -81,7 +78,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.util.StopWatch;
+
+import javax.annotation.concurrent.NotThreadSafe;
+import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * @author Andy
@@ -115,11 +115,7 @@ public class DBQueryEngine implements QueryEngine
     
     private long maxPermissionCheckTimeMillis;
 
-    private SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache;
-    
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
-    
-    private SimpleCache<NodeVersionKey, Set<QName>> aspectsCache;
     
     AclCrudDAO aclCrudDAO;
 
@@ -217,8 +213,7 @@ public class DBQueryEngine implements QueryEngine
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
         logger.debug("Query request received");
-        resetStopwatches();
-        
+
         Set<String> selectorGroup = null;
         if (query.getSource() != null)
         {
@@ -277,12 +272,10 @@ public class DBQueryEngine implements QueryEngine
                 null, functionContext, metadataIndexCheck2.getPatchApplied());
         
         ResultSet resultSet;
-        // TEMPORARY - this first branch of the if statement simply allows us to easily clear the caches for now; it will be removed afterwards
+        // TEMPORARY  - this first branch of the if statement simply allows us to easily clear the caches for now; it will be removed afterwards
         if (cleanCacheRequest(options)) 
         {
             nodesCache.clear();
-            propertiesCache.clear();
-            aspectsCache.clear();
             logger.info("Nodes cache cleared");
             resultSet = new DBResultSet(options.getAsSearchParmeters(), Collections.emptyList(), nodeDAO, nodeService,
                     tenantService, Integer.MAX_VALUE);
@@ -340,37 +333,21 @@ public class DBQueryEngine implements QueryEngine
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
     {
-        StopWatch sw = DBStats.queryStopWatch();
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
         
         logger.debug("- query sent to the database");
-        sw.start("ttfr");
         template.select(pickQueryTemplate(options, dbQuery), dbQuery, new ResultHandler<Node>()
         {
             @Override
             public void handleResult(ResultContext<? extends Node> context)
             {
-                handlerStopWatch().start();
-                try
-                {
-                    doHandleResult(permissionAssessor, sw, nodes, requiredNodes, context);
-                }
-                finally
-                {
-                    handlerStopWatch().stop();
-                }
+                doHandleResult(permissionAssessor, nodes, requiredNodes, context);
             }
             
-            private void doHandleResult(NodePermissionAssessor permissionAssessor, StopWatch sw, List<Node> nodes,
-                    int requiredNodes, ResultContext<? extends Node> context)
+            private void doHandleResult(NodePermissionAssessor permissionAssessor, List<Node> nodes,
+                                        int requiredNodes, ResultContext<? extends Node> context)
             {
-                if (permissionAssessor.isFirstRecord())
-                {
-                    sw.stop();
-                    sw.start("ttlr");
-                }
-                
                 if (nodes.size() >= requiredNodes)
                 {
                     context.stop();
@@ -403,7 +380,6 @@ public class DBQueryEngine implements QueryEngine
                 
             }
         });
-        sw.stop();
 
         int numberFound = nodes.size();
         nodes.removeAll(Collections.singleton(null));
@@ -539,21 +515,5 @@ public class DBQueryEngine implements QueryEngine
         {
             return value.getNodeRef();
         }
-    }
-
-    /* 
-     * TEMPORARY - Injection of nodes cache for clean-up when required
-     */
-    public void setPropertiesCache(SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache)
-    {
-        this.propertiesCache = propertiesCache;
-    }
-    
-    /*
-     * TEMPORARY - Injection of nodes cache for clean-up when required
-     */
-    public void setAspectsCache(SimpleCache<NodeVersionKey, Set<QName>> aspectsCache)
-    {
-        this.aspectsCache = aspectsCache;
     }
 }

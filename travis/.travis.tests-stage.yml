@@ -2,6 +2,13 @@ jobs:
   include:
     - name: "Community Rest API Tests"
       stage: Tests
+      addons:
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log
+            - alfresco.log
+            - solr.log
+          target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
         - |
           if [[ ${TRAVIS_BRANCH} == *community* ]]; then
@@ -19,10 +26,17 @@ jobs:
           fi
         - bash scripts/waitForAlfrescoToStart.sh
       script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+      after_script: bash scripts/getLogs.sh
 
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      addons:
+        artifacts:
+          paths:
+            - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
+            - alfresco.log
+            - solr.log
+          target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
@@ -33,13 +47,17 @@ jobs:
         - sudo free -m -t
       script:
         - travis_wait 90 mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -Dskip.automationtests=false
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+      after_script: bash scripts/getLogs.sh
+
+    - name: "Enterprise Rest API WORM Tests"
+      stage: Tests
       addons:
         artifacts:
           paths:
             - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
-            - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
-
+            - alfresco.log
+            - solr.log
+          target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
     - name: "Enterprise Rest API Cluster Tests"
       stage: Tests
       install:
@@ -68,8 +86,10 @@ jobs:
         - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-rest.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
-      after_script: bash scripts/cleanup.sh
-      after_failure: docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
+      after_script:
+        - bash scripts/getLogs.sh
+        - bash scripts/cleanup.sh
+
 
     - &community_shared_UI_configuration
       name: "Community Smoke UI Tests for Records"
@@ -101,7 +121,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=communitySmokeRecords.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-      after_failure: bash scripts/getLogs.sh
+      after_script: bash scripts/getLogs.sh
 
     - <<: *community_shared_UI_configuration
       name: "Community Smoke UI Tests for actions in RM site"
@@ -142,7 +162,7 @@ jobs:
         - sudo free -m -t
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -Dskip.automationtests=false -DsuiteXmlFile=enterpriseLevel2Tests.xml -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-      after_failure: bash scripts/getLogs.sh
+      after_script: bash scripts/getLogs.sh
 
     - <<: *enterprise_shared_UI_configuration
       name: "Enterprise Classification Level 2 UI Tests"
@@ -185,4 +205,6 @@ jobs:
         - bash scripts/waitForAlfrescoToStart.sh
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
-      after_script: bash scripts/cleanup.sh
+      after_script:
+        - bash scripts/getLogs.sh
+        - bash scripts/cleanup.sh

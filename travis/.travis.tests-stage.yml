@@ -72,6 +72,7 @@ jobs:
           paths:
             - ./rm-automation/rm-automation-enterprise-rest-api/target/reports/rm-automation-enterprise-rest-api.log
             - ./rm-automation/rm-automation-enterprise-rest-api/target/surefire-reports
+          target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       after_failure:
         - docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
         - docker ps -a | grep '_alfresco2_1' | awk '{print $1}' | xargs docker logs | tail -5000

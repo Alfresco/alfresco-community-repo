@@ -58,6 +58,18 @@ jobs:
             - alfresco.log
             - solr.log
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
+      install:
+        - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
+      before_script:
+        - bash scripts/create-worm-bucket.sh
+        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-rest.yml"
+        - bash scripts/waitForAlfrescoToStart.sh
+      script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
+      after_script:
+        - bash scripts/getLogs.sh
+        - bash scripts/cleanup.sh
+
     - name: "Enterprise Rest API Cluster Tests"
       stage: Tests
       install:
@@ -76,21 +88,6 @@ jobs:
       after_failure:
         - docker ps -a | grep '_alfresco_1' | awk '{print $1}' | xargs docker logs | tail -5000
         - docker ps -a | grep '_alfresco2_1' | awk '{print $1}' | xargs docker logs | tail -5000
-
-    - name: "Enterprise Rest API WORM Tests"
-      stage: Tests
-      install:
-        - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
-        - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
-      before_script:
-        - bash scripts/create-worm-bucket.sh
-        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-rest.yml"
-        - bash scripts/waitForAlfrescoToStart.sh
-      script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
-      after_script:
-        - bash scripts/getLogs.sh
-        - bash scripts/cleanup.sh
-
 
     - &community_shared_UI_configuration
       name: "Community Smoke UI Tests for Records"

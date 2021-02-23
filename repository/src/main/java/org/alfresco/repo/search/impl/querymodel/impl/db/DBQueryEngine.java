@@ -33,7 +33,6 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,10 +77,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.mybatis.spring.SqlSessionTemplate;
-
-import javax.annotation.concurrent.NotThreadSafe;
-import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * @author Andy
@@ -270,27 +265,11 @@ public class DBQueryEngine implements QueryEngine
         logger.debug("- query is being prepared");
         dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup,
                 null, functionContext, metadataIndexCheck2.getPatchApplied());
-        
+
         ResultSet resultSet;
-        // TEMPORARY  - this first branch of the if statement simply allows us to easily clear the caches for now; it will be removed afterwards
-        if (cleanCacheRequest(options)) 
-        {
-            nodesCache.clear();
-            logger.info("Nodes cache cleared");
-            resultSet = new DBResultSet(options.getAsSearchParmeters(), Collections.emptyList(), nodeDAO, nodeService,
-                    tenantService, Integer.MAX_VALUE);
-        }
-        else if (forceOldPermissionResolution(options))
-        {
-            resultSet = selectNodesStandard(options, dbQuery);
-            logger.debug("Selected " +resultSet.length()+ " nodes with standard permission resolution");
-        }
-        else
-        {
-            resultSet = selectNodesWithPermissions(options, dbQuery);
-            logger.debug("Selected " +resultSet.length()+ " nodes with accelerated permission resolution");
-        }
-        
+        resultSet = selectNodesWithPermissions(options, dbQuery);
+        logger.debug("Selected " + resultSet.length() + " nodes with accelerated permission resolution");
+
         return asQueryEngineResults(resultSet);
     }
     
@@ -299,14 +278,7 @@ public class DBQueryEngine implements QueryEngine
         logger.debug("- using standard table for the query");
         return SELECT_BY_DYNAMIC_QUERY;
     }
-    
-    private ResultSet selectNodesStandard(QueryOptions options, DBQuery dbQuery)
-    {
-        List<Node> nodes = removeDuplicates(template.selectList(pickQueryTemplate(options, dbQuery), dbQuery));
-        DBResultSet rs = new DBResultSet(options.getAsSearchParmeters(), nodes, nodeDAO, nodeService, tenantService, Integer.MAX_VALUE);
-        return new PagingLuceneResultSet(rs, options.getAsSearchParmeters(), nodeService);
-    }
-    
+
     private ResultSet selectNodesWithPermissions(QueryOptions options, DBQuery dbQuery)
     {
         Authority authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
@@ -431,23 +403,6 @@ public class DBQueryEngine implements QueryEngine
         return new QueryEngineResults(answer);
     }
     
-    private List<Node> removeDuplicates(List<Node> nodes)
-    {
-        LinkedHashSet<Node> uniqueNodes = new LinkedHashSet<>(nodes.size());
-        List<Long> checkedNodeIds = new ArrayList<>(nodes.size());
-
-        for (Node node : nodes)
-        {
-            if (!checkedNodeIds.contains(node.getId()))
-            {
-                checkedNodeIds.add(node.getId());
-                uniqueNodes.add(node);
-            }
-        }
-
-        return new ArrayList<Node>(uniqueNodes);
-    }
-
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.QueryEngine#getQueryModelFactory()
@@ -457,28 +412,7 @@ public class DBQueryEngine implements QueryEngine
     {
         return new DBQueryModelFactory();
     }
-    
-    private boolean cleanCacheRequest(QueryOptions options)
-    {
-        return "xxx".equals(getLocaleLanguage(options));
-    }
-    
-    char getMagicCharFromLocale(QueryOptions options, int index)
-    {
-        String lang = getLocaleLanguage(options);
-        return lang.length() > index ? lang.charAt(index) : ' ';
-    }
-    
-    private boolean forceOldPermissionResolution(QueryOptions options)
-    {
-        return getMagicCharFromLocale(options, 2) == 's';
-    }
-    
-    private String getLocaleLanguage(QueryOptions options)
-    {
-        return options.getLocales().size() == 1 ? options.getLocales().get(0).getLanguage() : "";
-    }
-    
+
     /**
      * Injection of nodes cache for clean-up and warm up when required
      * @param cache The node cache to set

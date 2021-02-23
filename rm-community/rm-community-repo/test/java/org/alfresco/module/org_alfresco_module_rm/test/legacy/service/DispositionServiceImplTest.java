@@ -969,7 +969,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             public DispositionActionDefinition run() throws Exception
             {
                 DispositionActionDefinition actionDefinition = testRM386DispositionSchedule.getDispositionActionDefinitionByName("cutoff");
-                assertNotNull(actionDefinition);
+                assertNotNull( "Expected an action definition", actionDefinition);
 
                 Map<QName, Serializable> adParams = new HashMap<>(3);
 

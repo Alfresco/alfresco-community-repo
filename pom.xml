@@ -646,7 +646,7 @@
          <scope>provided</scope>
       </dependency>
 
-     <dependency>
+      <dependency>
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-mock</artifactId>
          <version>${camel.mock.version}</version>

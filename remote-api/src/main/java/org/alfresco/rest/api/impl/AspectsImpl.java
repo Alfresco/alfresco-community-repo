@@ -26,10 +26,10 @@
 
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.Aspects;
 import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.model.Aspect;
-import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -41,10 +41,12 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,6 +78,10 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         PropertyCheck.mandatory(this, "classDefinitionMapper", classDefinitionMapper);
     }
 
+    AspectsImpl(DictionaryService dictionaryService, NamespacePrefixResolver namespaceService, ClassDefinitionMapper classDefinitionMapper)
+    {
+        super(dictionaryService, namespaceService, classDefinitionMapper);
+    }
 
     @Override
     public CollectionWithPagingInfo<Aspect> listAspects(Parameters params)
@@ -87,7 +93,8 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         if (query != null && query.getModelIds() != null)
         {
             validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
-            aspectList = query.getModelIds().parallelStream().map(this::getModelAspects).flatMap(Collection::parallelStream);
+            Set<Pair<QName, Boolean>> modelsFilter = parseModelIds(query.getModelIds(), PARAM_INCLUDE_SUBASPECTS);
+            aspectList = modelsFilter.parallelStream().map(this::getModelAspects).flatMap(Collection::parallelStream);
         }
         else if (query != null && query.getParentIds() != null)
         {
@@ -100,13 +107,14 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         }
 
         List<Aspect> allAspects = aspectList.filter((qName) -> filterByNamespace(query, qName))
-                .map((qName) -> this.convertToAspect(dictionaryService.getAspect(qName)))
+                .map((qName) -> this.convertToAspect(dictionaryService.getAspect(qName), params.getInclude()))
+                .filter(distinctByKey(Aspect::getId))
                 .collect(Collectors.toList());
         return createPagedResult(allAspects, paging);
     }
 
     @Override
-    public Aspect getAspectById(String aspectId)
+    public Aspect getAspect(String aspectId)
     {
         if (aspectId == null)
             throw new InvalidArgumentException("Invalid parameter: unknown scheme specified");
@@ -125,32 +133,49 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
         if (aspectDefinition == null)
             throw new EntityNotFoundException(aspectId);
 
-        return this.convertToAspect(aspectDefinition);
+        return this.convertToAspect(aspectDefinition, ALL_PROPERTIES);
     }
 
-    public Aspect convertToAspect(AspectDefinition aspectDefinition)
+    public Aspect convertToAspect(AspectDefinition aspectDefinition, List<String> includes)
     {
-        List<PropertyDefinition> properties = this.classDefinitionMapper.fromDictionaryClassDefinition(aspectDefinition, dictionaryService).getProperties();
-        return new Aspect(aspectDefinition, dictionaryService, properties);
+        try
+        {
+            Aspect aspect = new Aspect(aspectDefinition, dictionaryService);
+            constructFromFilters(aspect, aspectDefinition, includes);
+            return aspect;
+        }
+        catch (Exception ex)
+        {
+            throw new AlfrescoRuntimeException("Failed to parse Aspect: " + aspectDefinition.getName() + " . " + ex.getMessage());
+        }
     }
 
-    private Collection<QName> getModelAspects(String modelId)
+    private Collection<QName> getModelAspects(Pair<QName,Boolean> model)
     {
         ModelDefinition modelDefinition =  null;
 
-        if (modelId == null)
-            throw new InvalidArgumentException("modelId is null");
-
         try
         {
-            modelDefinition =  this.dictionaryService.getModel(QName.createQName(modelId, this.namespaceService));
+            modelDefinition =  this.dictionaryService.getModel(model.getFirst());
         }
-        catch (NamespaceException exception)
+        catch (Exception exception)
         {
             throw new InvalidArgumentException(exception.getMessage());
         }
 
-        return this.dictionaryService.getAspects(modelDefinition.getName());
+        if (modelDefinition == null)
+            throw new EntityNotFoundException("model");
+
+        Collection<QName> aspects = this.dictionaryService.getAspects(modelDefinition.getName());
+
+        if (!model.getSecond())
+            return aspects;
+
+        Stream<QName> children = aspects.stream()
+                .map(aspect -> this.dictionaryService.getSubAspects(aspect, false))
+                .flatMap(Collection::parallelStream);
+
+        return Stream.concat(aspects.parallelStream(), children).collect(Collectors.toList());
     }
 
     private Collection<QName> getChildAspects(String aspectId)

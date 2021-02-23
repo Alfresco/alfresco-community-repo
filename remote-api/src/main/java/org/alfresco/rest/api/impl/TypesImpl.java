@@ -26,10 +26,10 @@
 
 package org.alfresco.rest.api.impl;
 
-import org.alfresco.rest.api.Types;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.ClassDefinitionMapper;
+import org.alfresco.rest.api.Types;
 import org.alfresco.rest.api.model.Type;
-import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -41,10 +41,12 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,6 +78,10 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
         PropertyCheck.mandatory(this, "classDefinitionMapper", classDefinitionMapper);
     }
 
+    TypesImpl(DictionaryService dictionaryService, NamespacePrefixResolver namespaceService, ClassDefinitionMapper classDefinitionMapper)
+    {
+        super(dictionaryService, namespaceService, classDefinitionMapper);
+    }
 
     @Override
     public CollectionWithPagingInfo<Type> listTypes(Parameters params)
@@ -87,7 +93,8 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
         if (query != null && query.getModelIds() != null)
         {
             validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
-            typeList = query.getModelIds().parallelStream().map(this::getModelTypes).flatMap(Collection::parallelStream);
+            Set<Pair<QName, Boolean>> modelsFilter = parseModelIds(query.getModelIds(), PARAM_INCLUDE_SUBTYPES);
+            typeList = modelsFilter.parallelStream().map(this::getModelTypes).flatMap(Collection::parallelStream);
         }
         else if (query != null && query.getParentIds() != null)
         {
@@ -100,7 +107,8 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
         }
 
         List<Type> allTypes = typeList.filter((qName) -> filterByNamespace(query, qName))
-                .map((qName) -> this.convertToType(dictionaryService.getType(qName)))
+                .map((qName) -> this.convertToType(dictionaryService.getType(qName), params.getInclude()))
+                .filter(distinctByKey(Type::getId))
                 .collect(Collectors.toList());
         return createPagedResult(allTypes, paging);
     }
@@ -125,32 +133,49 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
         if (typeDefinition == null)
             throw new EntityNotFoundException(typeId);
 
-        return this.convertToType(typeDefinition);
+        return this.convertToType(typeDefinition, ALL_PROPERTIES);
     }
 
-    public Type convertToType(TypeDefinition typeDefinition)
+    public Type convertToType(TypeDefinition typeDefinition, List<String> includes)
     {
-        List<PropertyDefinition> properties = this.classDefinitionMapper.fromDictionaryClassDefinition(typeDefinition, dictionaryService).getProperties();
-        return new Type(typeDefinition, dictionaryService, properties);
+        try
+        {
+            Type type = new Type(typeDefinition, dictionaryService);
+            constructFromFilters(type, typeDefinition, includes);
+            return type;
+        }
+        catch (Exception ex)
+        {
+            throw new AlfrescoRuntimeException("Failed to parse Type: " + typeDefinition.getName() + " . " + ex.getMessage());
+        }
     }
 
-    private Collection<QName> getModelTypes(String modelId)
+    private Collection<QName> getModelTypes(Pair<QName,Boolean> model)
     {
         ModelDefinition modelDefinition =  null;
 
-        if (modelId == null)
-            throw new InvalidArgumentException("modelId is null");
-
         try
         {
-            modelDefinition =  this.dictionaryService.getModel(QName.createQName(modelId, this.namespaceService));
+            modelDefinition =  this.dictionaryService.getModel(model.getFirst());
         }
-        catch (NamespaceException exception)
+        catch (Exception exception)
         {
             throw new InvalidArgumentException(exception.getMessage());
         }
 
-        return this.dictionaryService.getTypes(modelDefinition.getName());
+        if (modelDefinition == null)
+            throw new EntityNotFoundException("model");
+
+        Collection<QName> aspects = this.dictionaryService.getTypes(modelDefinition.getName());
+
+        if (!model.getSecond())
+            return aspects;
+
+        Stream<QName> children = aspects.parallelStream()
+                .map(aspect -> this.dictionaryService.getSubTypes(aspect, false))
+                .flatMap(Collection::parallelStream);
+
+        return Stream.concat(aspects.parallelStream(), children).collect(Collectors.toList());
     }
 
     private Collection<QName> getChildTypes(String typeId)

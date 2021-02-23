@@ -29,12 +29,15 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Type;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class TestTypes extends BaseModelApiTest
@@ -78,27 +81,27 @@ public class TestTypes extends BaseModelApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(parentIds in ('cm:content'))");
+        otherParams.put("where", "(parentId in ('cm:content'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         int total = types.getPaging().getTotalItems();
 
-        otherParams.put("where", "(parentIds in ('cm:content') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(parentId in ('cm:content') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         types.getList().get(0).expected(docType);
         types.getList().get(1).expected(whitePaperType);
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
 
-        otherParams.put("where", "(parentIds in ('cm:content') AND not namespaceUri matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(parentId in ('cm:content') AND not namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(total - 2));
 
         // match everything
-        otherParams.put("where", "(parentIds in ('cm:content') AND namespaceUri matches('.*'))");
+        otherParams.put("where", "(parentId in ('cm:content') AND namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(total));
 
         // match nothing
-        otherParams.put("where", "(parentIds in ('cm:content') AND not namespaceUri matches('.*'))");
+        otherParams.put("where", "(parentId in ('cm:content') AND not namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(0));
     }
@@ -109,29 +112,154 @@ public class TestTypes extends BaseModelApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan'))");
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
-        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(3));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(4));
 
-        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         types.getList().get(0).expected(docType);
         types.getList().get(1).expected(whitePaperType);
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
 
-        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND not namespaceUri matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND not namespaceUri matches('http://www.mycompany.com/model.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
-        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(1));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
 
         // match everything
-        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND namespaceUri matches('.*'))");
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
-        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(3));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(4));
 
         // match nothing
-        otherParams.put("where", "(modelIds in ('mycompany:model','test:scan') AND not namespaceUri matches('.*'))");
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND not namespaceUri matches('.*'))");
         types = publicApiClient.types().getTypes(createParams(paging, otherParams));
         assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(0));
+    }
+
+    @Test
+    public void testIncludeProperty() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan'))");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(4));
+        assertNull(types.getList().get(0).getProperties());
+        assertNull(types.getList().get(1).getProperties());
+        assertNull(types.getList().get(2).getProperties());
+
+        otherParams.put("where", "(modelId in ('mycompany:model','test:scan') AND namespaceUri matches('http://www.mycompany.com/model.*'))");
+        otherParams.put("include", "properties");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        types.getList().get(0).expected(docType);
+        types.getList().get(1).expected(whitePaperType);
+        assertNotNull(types.getList().get(0).getProperties());
+        assertNotNull(types.getList().get(1).getProperties());
+    }
+
+    @Test
+    public void testIncludeAssociation() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('api:apiModel'))");
+        otherParams.put("include", "associations");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(10));
+
+
+        for (int i = 0; i < types.getList().size(); i++)
+        {
+            Type type = types.getList().get(i);
+
+            assertNotNull(type.getAssociations());
+            assertNull(type.getProperties());
+            assertNull(type.getMandatoryAspects());
+
+            type.expected(allTypes.get(i));
+            assertEquals(type.getAssociations(), allTypes.get(i).getAssociations());
+        }
+    }
+
+    @Test
+    public void testIncludeMandatoryAspect() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('api:apiModel'))");
+        otherParams.put("include", "mandatoryAspects");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+
+        for (int i = 0; i < types.getList().size(); i++)
+        {
+            Type type = types.getList().get(i);
+
+            assertNotNull(type.getMandatoryAspects());
+            assertNull(type.getProperties());
+            assertNull(type.getAssociations());
+
+            type.expected(allTypes.get(i));
+            assertEquals(type.getMandatoryAspects(), allTypes.get(i).getMandatoryAspects());
+        }
+    }
+
+    @Test
+    public void testIncludes() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('api:apiModel'))");
+        otherParams.put("include", "associations,mandatoryAspects");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(10));
+
+        for (int i = 0; i < types.getList().size(); i++)
+        {
+            Type type = types.getList().get(i);
+
+            assertNotNull(type.getAssociations());
+            assertNull(type.getProperties());
+            assertNotNull(type.getMandatoryAspects());
+
+            type.expected(allTypes.get(i));
+            assertEquals(type.getMandatoryAspects(), allTypes.get(i).getMandatoryAspects());
+            assertEquals(type.getAssociations(), allTypes.get(i).getAssociations());
+        }
+    }
+
+    @Test
+    public void testSubTypes() throws PublicApiException
+    {
+        AuthenticationUtil.setRunAsUser(user1);
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
+
+        otherParams.put("where", "(modelId in ('mycompany:model'))");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(2));
+        types.getList().get(0).expected(docType);
+        types.getList().get(1).expected(whitePaperType);
+
+        otherParams.put("where", "(modelId in ('mycompany:model INCLUDESUBTYPES'))");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(3));
+        types.getList().get(0).expected(docType);
+        types.getList().get(1).expected(whitePaperType);
+        types.getList().get(2).expected(publishableType);
+
+        otherParams.put("where", "(modelId in ('mycompany:model INCLUDESUBTYPES') AND namespaceUri matches('http://www.test.*'))");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        assertEquals(types.getPaging().getTotalItems(), Integer.valueOf(1));
+        types.getList().get(0).expected(publishableType);
+
+        otherParams.put("where", "(modelId in ('mycompany:model INCLUDESUBTYPES') AND not namespaceUri matches('http://www.test.*'))");
+        types = publicApiClient.types().getTypes(createParams(paging, otherParams));
+        types.getList().get(0).expected(docType);
+        types.getList().get(1).expected(whitePaperType);
     }
 
     @Test
@@ -142,6 +270,12 @@ public class TestTypes extends BaseModelApiTest
 
         type = publicApiClient.types().getType("mycompany:whitepaper");
         type.expected(whitePaperType);
+
+        type = publicApiClient.types().getType(apiBaseType.getId());
+        type.expected(apiBaseType);
+        assertNotNull(type.getProperties());
+        assertEquals(type.getMandatoryAspects(), apiBaseType.getMandatoryAspects());
+        assertEquals(type.getAssociations(), apiBaseType.getAssociations());
     }
 
     @Test
@@ -150,13 +284,13 @@ public class TestTypes extends BaseModelApiTest
         AuthenticationUtil.setRunAsUser(user1);
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user1));
 
-        testListTypeException("(modelIds in ('mycompany:model','unknown:model'))");
-        testListTypeException("(modelIds in ('unknown:model','unknown1:another'))");
-        testListTypeException("(modelIds in (' ', '')");
-        testListTypeException("(parentIds in ('cm:content','unknown:type')");
-        testListTypeException("(parentIds in ('unknown:type','cm:content'))");
-        testListTypeException("(parentIds in ('unknown:type','unknown:types'))");
-        testListTypeException("(parentIds in (' ',' ',' '))");
+        testListTypeException("(modelId in ('mycompany:model','unknown:model'))");
+        testListTypeException("(modelId in ('unknown:model','unknown1:another'))");
+        testListTypeException("(modelId in (' ', '')");
+        testListTypeException("(parentId in ('cm:content','unknown:type')");
+        testListTypeException("(parentId in ('unknown:type','cm:content'))");
+        testListTypeException("(parentId in ('unknown:type','unknown:types'))");
+        testListTypeException("(parentId in (' ',' ',' '))");
         testListTypeException("");
         testListTypeException("(namespaceUri matches('*'))"); // wrong pattern
     }

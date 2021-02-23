@@ -29,21 +29,18 @@ package org.alfresco.rest.api.model;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 
-import java.util.List;
-
 public class Aspect extends AbstractClass
 {
     public Aspect()
     {
     }
 
-    public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup, List<PropertyDefinition> properties)
+    public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup)
     {
         this.id = aspectDefinition.getName().toPrefixString();
         this.title = aspectDefinition.getTitle(messageLookup);
         this.description = aspectDefinition.getDescription(messageLookup);
         this.parentId = getParentNameAsString(aspectDefinition.getParentName());
-        this.properties = setList(properties);
         this.model = getModelInfo(aspectDefinition, messageLookup);
     }
 
@@ -56,6 +53,12 @@ public class Aspect extends AbstractClass
                 .append(", description=").append(this.description)
                 .append(", parentId=").append(parentId)
                 .append(", properties=").append(properties)
+                .append(", mandatoryAspects=").append(mandatoryAspects)
+                .append(", isContainer=").append(isContainer)
+                .append(", isArchive=").append(isArchive)
+                .append(", associations=").append(associations)
+                .append(", model=").append(model)
+                .append(", includedInSupertypeQuery=").append(includedInSupertypeQuery)
                 .append(']');
         return builder.toString();
     }

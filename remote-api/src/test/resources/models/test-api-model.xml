@@ -1,0 +1,358 @@
+<model name="api:apiModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+    <author>Administrator</author>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.api.t1/model/1.0" prefix="api"/>
+        <namespace uri="http://www.api.t2/model/1.0" prefix="test2"/>
+    </namespaces>
+
+    <constraints>
+        <constraint name="api:regex1" type="REGEX">
+            <title>Regex1 title</title>
+            <description>Regex1 description</description>
+            <parameter name="expression"><value>[A-Z]*</value></parameter>
+            <parameter name="requiresMatch"><value>false</value></parameter>
+        </constraint>
+        <constraint name="api:regex2" type="REGEX">
+            <parameter name="expression"><value>[a-z]*</value></parameter>
+            <parameter name="requiresMatch"><value>false</value></parameter>
+        </constraint>
+        <constraint name="api:stringLength1" type="LENGTH">
+            <parameter name="minLength"><value>0</value></parameter>
+            <parameter name="maxLength"><value>256</value></parameter>
+        </constraint>
+        <constraint name="api:stringLength2" type="LENGTH">
+            <parameter name="minLength"><value>0</value></parameter>
+            <parameter name="maxLength"><value>128</value></parameter>
+        </constraint>
+        <constraint name="api:minMax1" type="MINMAX">
+            <parameter name="minValue"><value>0</value></parameter>
+            <parameter name="maxValue"><value>256</value></parameter>
+        </constraint>
+        <constraint name="api:list1" type="LIST">
+            <title>List1 title</title>
+            <description>List1 description</description>
+            <parameter name="allowedValues">
+                <list>
+                    <value>ABC</value>
+                    <value>DEF</value>
+                    <value>VALUE WITH SPACES</value>
+                    <value>VALUE WITH TRAILING SPACE </value>
+                </list>
+            </parameter>
+            <parameter name="caseSensitive"><value>true</value></parameter>
+        </constraint>
+        <constraint name="api:list2" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value>HIJ</value>
+                </list>
+            </parameter>
+            <parameter name="caseSensitive"><value>true</value></parameter>
+        </constraint>
+        <constraint name="test2:list3" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value>XYZ</value>
+                </list>
+            </parameter>
+            <parameter name="caseSensitive"><value>true</value></parameter>
+        </constraint>
+    </constraints>
+
+    <types>
+        <type name="api:base">
+            <title>Base</title>
+            <description>The Base Type</description>
+            <properties>
+                <property name="api:prop1">
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <default/>
+                    <constraints>
+                        <constraint ref="api:regex1"/>
+                        <constraint ref="api:stringLength1">
+                            <title>Prop1 Strlen1 title</title>
+                            <description>Prop1 Strlen1 description</description>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+            <associations>
+                <association name="api:assoc1">
+                    <source>
+                        <mandatory>true</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>api:base</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+                <association name="api:assoc2">
+                    <source>
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>api:referenceable</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+                <child-association name="api:childassoc1">
+                    <source>
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>api:referenceable</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                    <child-name>fred</child-name>
+                    <duplicate>true</duplicate>
+                </child-association>
+                <child-association name="api:childassocPropagate">
+                    <source>
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>api:referenceable</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                    <child-name>fred</child-name>
+                    <duplicate>true</duplicate>
+                    <propagateTimestamps>true</propagateTimestamps>
+                </child-association>
+            </associations>
+
+            <mandatory-aspects>
+                <aspect>api:referenceable</aspect>
+            </mandatory-aspects>
+        </type>
+
+        <type name="api:file">
+            <parent>api:base</parent>
+            <archive>true</archive>
+
+            <properties>
+                <property name="api:fileprop">
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <default></default>
+                </property>
+
+            </properties>
+
+            <associations>
+                <child-association name="api:childassoc2">
+                    <target>
+                        <class>api:referenceable</class>
+                    </target>
+                    <child-name>fred</child-name>
+                    <duplicate>true</duplicate>
+                </child-association>
+            </associations>
+
+            <overrides>
+                <property name="api:prop1">
+                    <default>an overriden default value</default>
+                    <constraints>
+                        <constraint ref="api:stringLength2"/>
+                        <constraint ref="api:regex2"/>
+                    </constraints>
+                </property>
+            </overrides>
+        </type>
+
+        <type name="api:file-derived">
+            <parent>api:file</parent>
+        </type>
+
+        <type name="api:file-derived-no-archive">
+            <parent>api:file</parent>
+            <archive>false</archive>
+        </type>
+
+        <type name="api:folder">
+            <parent>api:base</parent>
+            <properties>
+                <property name="api:folderprop">
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <default></default>
+                </property>
+            </properties>
+        </type>
+
+        <type name="api:enforced">
+            <parent>api:base</parent>
+            <properties>
+                <property name="api:mandatory-enforced">
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                </property>
+                <property name="api:mandatory-not-enforced">
+                    <type>d:text</type>
+                    <mandatory enforced="false">true</mandatory>
+                </property>
+                <property name="api:mandatory-default-enforced">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+            </properties>
+        </type>
+
+        <type name="api:overridetype1">
+            <properties>
+                <property name="api:propoverride">
+                    <type>d:text</type>
+                    <default>one</default>
+                </property>
+            </properties>
+        </type>
+
+        <type name="api:overridetype2">
+            <parent>api:overridetype1</parent>
+            <overrides>
+                <property name="api:propoverride">
+                    <default>two</default>
+                </property>
+            </overrides>
+        </type>
+
+        <type name="api:overridetype3">
+            <parent>api:overridetype2</parent>
+            <overrides>
+                <property name="api:propoverride">
+                    <default>three</default>
+                </property>
+            </overrides>
+        </type>
+
+        <type name="api:typeWithNamedPropConstraint">
+            <title>Type with named property-defined constraint.</title>
+            <description>A type with a named constraint defined within one of its properties.</description>
+            <parent></parent>
+
+            <properties>
+                <property name="api:constrainedProp">
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <default></default>
+                    <constraints>
+                        <constraint name="api:inlineConstraint" type="LIST">
+                            <title>Inline constraint</title>
+                            <description>An inline constraint</description>
+                            <parameter name="allowedValues">
+                                <list>
+                                    <value>ALPHA</value>
+                                    <value>BETA</value>
+                                    <value>GAMMA, DELTA</value>
+                                    <value>OMEGA</value>
+                                </list>
+                            </parameter>
+                            <parameter name="caseSensitive"><value>true</value></parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+        </type>
+    </types>
+
+    <aspects>
+        <aspect name="api:referenceable">
+            <title>Referenceable</title>
+            <description>The referenceable aspect</description>
+            <parent></parent>
+
+            <properties>
+                <property name="api:id">
+                    <type>d:int</type>
+                    <protected>true</protected>
+                    <mandatory>true</mandatory>
+                    <constraints>
+                        <constraint ref="api:minMax1"/>
+                    </constraints>
+                </property>
+            </properties>
+        </aspect>
+        <aspect name="api:aspect-base">
+            <title>Aspect Base</title>
+            <parent></parent>
+            <properties>
+                <property name="api:aspect-base-p1">
+                    <type>d:text</type>
+                    <constraints>
+                        <constraint ref="api:list1"/>
+                    </constraints>
+                </property>
+            </properties>
+        </aspect>
+        <aspect name="api:aspect-one">
+            <title>Aspect One</title>
+            <parent>api:aspect-base</parent>
+            <overrides>
+                <property name="api:aspect-base-p1">
+                    <constraints>
+                        <constraint ref="api:list2"/>
+                    </constraints>
+                </property>
+            </overrides>
+        </aspect>
+        <aspect name="api:aspect-two">
+            <title>Aspect Two</title>
+            <parent>api:aspect-base</parent>
+            <overrides>
+                <property name="api:aspect-base-p1">
+                    <constraints>
+                        <constraint ref="api:list1"/>
+                        <constraint ref="api:list2"/>
+                    </constraints>
+                </property>
+            </overrides>
+        </aspect>
+        <aspect name="test2:aspect-three">
+            <title>Aspect derived from other namespace</title>
+            <parent>api:aspect-base</parent>
+            <overrides>
+                <property name="api:aspect-base-p1">
+                    <constraints>
+                        <constraint ref="test2:list3"/>
+                    </constraints>
+                </property>
+            </overrides>
+        </aspect>
+        <aspect name="test2:aspect-all">
+            <title>Aspect derived from other namespace</title>
+            <archive>false</archive>
+            <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
+            <associations>
+                <association name="api:assoc-all">
+                    <source>
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>api:referenceable</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+            <mandatory-aspects>
+                <aspect>test2:aspect-three</aspect>
+                <aspect>api:aspect-two</aspect>
+                <aspect>api:aspect-one</aspect>
+            </mandatory-aspects>
+        </aspect>
+    </aspects>
+</model>

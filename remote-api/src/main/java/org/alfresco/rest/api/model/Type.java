@@ -29,21 +29,18 @@ package org.alfresco.rest.api.model;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 
-import java.util.List;
-
 public class Type extends AbstractClass
 {
     public Type()
     {
     }
 
-    public Type(TypeDefinition typeDefinition, MessageLookup messageLookup, List<PropertyDefinition> properties)
+    public Type(TypeDefinition typeDefinition, MessageLookup messageLookup)
     {
         this.id = typeDefinition.getName().toPrefixString();
         this.title = typeDefinition.getTitle(messageLookup);
         this.description = typeDefinition.getDescription(messageLookup);
         this.parentId = getParentNameAsString(typeDefinition.getParentName());
-        this.properties = setList(properties);
         this.model = getModelInfo(typeDefinition, messageLookup);
     }
 
@@ -56,6 +53,12 @@ public class Type extends AbstractClass
                 .append(", description=").append(this.description)
                 .append(", parentId=").append(parentId)
                 .append(", properties=").append(properties)
+                .append(", mandatoryAspects=").append(mandatoryAspects)
+                .append(", isContainer=").append(isContainer)
+                .append(", isArchive=").append(isArchive)
+                .append(", associations=").append(associations)
+                .append(", model=").append(model)
+                .append(", includedInSupertypeQuery=").append(includedInSupertypeQuery)
                 .append(']');
         return builder.toString();
     }

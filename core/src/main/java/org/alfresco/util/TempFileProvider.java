@@ -24,8 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -348,6 +350,17 @@ public class TempFileProvider
     {
         public static final String KEY_PROTECT_HOURS = "protectHours";
         public static final String KEY_DIRECTORY_NAME = "directoryName";
+        public static final String KEY_MAX_FILES_TO_DELETE = "maxFilesToDelete";
+        public static final String KEY_MAX_TIME_TO_RUN = "maxTimeToRun";
+
+        /** The time when the job has actually started */
+        private static long jobStartTime;
+
+        /** The maximum number of files that can be deleted when the cleaning jobs runs */
+        private static AtomicLong maxFilesToDelete;
+
+        /** The maximum time allowed for the cleaning job to run */
+        private static Duration maxTimeToRun;
 
         /**
          * Gets a list of all files in the {@link TempFileProvider#ALFRESCO_TEMP_FILE_DIR temp directory}
@@ -376,16 +389,55 @@ public class TempFileProvider
             }
 
             String directoryName = (String) context.getJobDetail().getJobDataMap().get(KEY_DIRECTORY_NAME);
+
+            try
+            {
+                final Object oMaxFilesToDelete = context.getJobDetail().getJobDataMap().get(KEY_MAX_FILES_TO_DELETE);
+                if (oMaxFilesToDelete != null)
+                {
+                    final String strMaxFilesToDelete = (String) oMaxFilesToDelete;
+                    maxFilesToDelete = new AtomicLong(Long.parseLong(strMaxFilesToDelete));
+                    logger.debug("Set the maximum number of temp files to be deleted to: " + maxFilesToDelete.get());
+                }
+                else
+                {
+                    logger.debug("No maximum number of files was configured for the temp file clean job.");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.warn(e);
+                throw new JobExecutionException("Invalid job data, maxFilesToDelete");
+            }
+
+            try
+            {
+                final Object oMaxTimeToRun = context.getJobDetail().getJobDataMap().get(KEY_MAX_TIME_TO_RUN);
+                if (oMaxTimeToRun != null)
+                {
+                    final String strMaxTimeToRun = (String) oMaxTimeToRun;
+                    maxTimeToRun = Duration.parse(strMaxTimeToRun);
+                    logger.debug("Set the maximum duration time of the temp file clean job to: " + maxTimeToRun);
+                }
+                else
+                {
+                    logger.debug("No maximum duration was configured for the temp file clean job.");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.warn(e);
+                throw new JobExecutionException("Invalid job data, maxTimeToRun");
+            }
             
             if (directoryName == null)
             {
                 directoryName = ALFRESCO_TEMP_FILE_DIR;
             }
 
-            long now = System.currentTimeMillis();
-            long aFewHoursBack = now - (3600L * 1000L * protectHours);
-            
-            long aLongTimeBack = now - (24 * 3600L * 1000L);
+            jobStartTime = System.currentTimeMillis();
+            long aFewHoursBack = jobStartTime - (3600L * 1000L * protectHours);
+            long aLongTimeBack = jobStartTime - (24 * 3600L * 1000L);
             
             File tempDir = TempFileProvider.getTempDir(directoryName);
             int count = removeFiles(tempDir, aFewHoursBack, aLongTimeBack, false);  // don't delete this directory
@@ -429,8 +481,9 @@ public class TempFileProvider
             }
             // list all files
             File[] files = directory.listFiles();
+            File[] filesToIterate = files != null ? files : new File[0];
             int count = 0;
-            for (File file : files)
+            for (File file : filesToIterate)
             {
                 if (file.isDirectory())
                 {
@@ -468,7 +521,29 @@ public class TempFileProvider
                         {
                             logger.debug("Deleting temp file: " + file);
                         }
+                        // only delete if the limits allow
+                        if (maxFilesToDelete != null && maxFilesToDelete.get() <= 0 ||
+                            maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System.currentTimeMillis()))
+                        {
+                            return count;
+                        }
                         file.delete();
+                        if (maxFilesToDelete != null)
+                        {
+                            maxFilesToDelete.decrementAndGet();
+                        }
+
+                        if (logger.isDebugEnabled())
+                        {
+                            if (maxFilesToDelete != null)
+                            {
+                                logger.debug(maxFilesToDelete.get() + " files left to delete.");
+                            }
+                            if (maxTimeToRun != null)
+                            {
+                                logger.debug((jobStartTime + maxTimeToRun.toMillis() - System.currentTimeMillis()) + " millis left to delete.");
+                            }
+                        }
                         count++;
                     }
                     catch (Throwable e)
@@ -491,6 +566,7 @@ public class TempFileProvider
                         {
                             logger.debug("Deleting empty directory: " + directory);
                         }
+                        // ignore the limits for empty directories that just need cleanup
                         directory.delete();
                     }
                 }

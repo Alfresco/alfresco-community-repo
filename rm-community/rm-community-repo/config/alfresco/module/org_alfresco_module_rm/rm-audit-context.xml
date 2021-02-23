@@ -106,6 +106,7 @@
    </bean>
 
    <bean id="audit-event.linkTo" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.LinkToAuditEvent">
+      <property name="nodeService" ref="nodeService" />
       <property name="name" value="linkTo"/>
       <property name="label" value="rm.audit.linkTo"/>
    </bean>

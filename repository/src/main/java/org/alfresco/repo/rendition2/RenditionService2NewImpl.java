@@ -161,7 +161,7 @@ public class RenditionService2NewImpl implements RenditionService2New, Initializ
     {
         if(booleanValue)
         {
-            logger.warn("Enabling storeRenditionAsProperty feature with Alfresco is experimental and unsupported (do not use for live/prod envs) !");
+            logger.error("Enabling storeRenditionAsProperty feature with Alfresco is experimental and unsupported (do not use for live/prod envs) !");
         }
         this.storeRenditionAsPropertyEnabled = booleanValue;
     }

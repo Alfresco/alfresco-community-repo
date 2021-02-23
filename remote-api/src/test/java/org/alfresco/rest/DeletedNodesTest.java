@@ -592,6 +592,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testDownloadRendition() throws Exception
     {
+//        setRequestContext(user1); //TODO: ACS-1261
         setRequestContext(networkAdmin);
 
         // Create a folder within the site document's library

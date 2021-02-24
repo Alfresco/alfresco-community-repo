@@ -491,7 +491,7 @@ public class TempFileProvider
                     {
                         // long life for this folder and its children
                         int countRemoved = removeFiles(file, longLifeBefore, longLifeBefore, true);  
-                        if (logger.isDebugEnabled())
+                        if (logger.isDebugEnabled() && countRemoved > 0)
                         {
                             logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
                         }
@@ -500,7 +500,7 @@ public class TempFileProvider
                     {
                         // enter subdirectory and clean it out and remove itsynetics
                         int countRemoved = removeFiles(file, removeBefore, longLifeBefore, true);
-                        if (logger.isDebugEnabled())
+                        if (logger.isDebugEnabled() && countRemoved > 0)
                         {
                             logger.debug("Removed " + countRemoved + " files from directory: " + file);
                         }

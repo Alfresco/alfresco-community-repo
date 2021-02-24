@@ -517,15 +517,15 @@ public class TempFileProvider
                     // it is a file - attempt a delete
                     try
                     {
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("Deleting temp file: " + file);
-                        }
                         // only delete if the limits allow
                         if (maxFilesToDelete != null && maxFilesToDelete.get() <= 0 ||
                             maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System.currentTimeMillis()))
                         {
                             return count;
+                        }
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("Deleting temp file: " + file);
                         }
                         file.delete();
                         if (maxFilesToDelete != null)

@@ -493,7 +493,7 @@ public class TempFileProvider
                     int countRemoved = removeFiles(file,
                         isLongLifeTempDir(file) ? longLifeBefore : removeBefore, longLifeBefore,
                         true);
-                    logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
+                    logger.debug("Removed " + countRemoved + " files from " + (isLongLifeTempDir(file) ? "temp " : "") + "directory: " + file);
                 }
                 else
                 {

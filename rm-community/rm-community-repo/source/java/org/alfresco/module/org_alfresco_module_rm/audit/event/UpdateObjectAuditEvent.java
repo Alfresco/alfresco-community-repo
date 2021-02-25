@@ -61,7 +61,7 @@ public class UpdateObjectAuditEvent extends AuditEvent implements OnUpdateProper
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        recordsManagementAuditService.auditEvent(nodeRef, getName(), before, after, true, true);
+        recordsManagementAuditService.auditEvent(nodeRef, getName(), before, after, false, true);
     }
 
 }

@@ -481,18 +481,19 @@ public class TempFileProvider
             int count = 0;
             for (File file : filesToIterate)
             {
+                if (shouldTheDeletionStop())
+                {
+                    break;
+                }
                 if (file.isDirectory())
                 {
                     // long life for this folder and its children
                     // OR
                     // enter subdirectory and clean it out and remove itsynetics
-                    if (!shouldTheDeletionStop())
-                    {
-                        int countRemoved = removeFiles(file,
-                            isLongLifeTempDir(file) ? longLifeBefore : removeBefore, longLifeBefore,
-                            true);
-                        logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
-                    }
+                    int countRemoved = removeFiles(file,
+                        isLongLifeTempDir(file) ? longLifeBefore : removeBefore, longLifeBefore,
+                        true);
+                    logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
                 }
                 else
                 {
@@ -505,12 +506,6 @@ public class TempFileProvider
                     // it is a file - attempt a delete
                     try
                     {
-                        // only delete if the limits allow
-                        if (shouldTheDeletionStop())
-                        {
-                            return count;
-                        }
-
                         logger.debug("Deleting temp file: " + file);
                         file.delete();
 

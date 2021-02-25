@@ -416,11 +416,13 @@ public class EventConsolidator implements EventSupportedPolicies
         }
         // Get before values that changed
         Map<K, V> beforeDelta = new HashMap<>(before);
+        Map<K, V> afterDelta = new HashMap<>(after);
+
         beforeDelta.entrySet().removeAll(after.entrySet());
 
         // Add nulls for before properties
         Set<K> beforeKeys = before.keySet();
-        Set<K> newKeys = after.keySet();
+        Set<K> newKeys = afterDelta.keySet();
         newKeys.removeAll(beforeKeys);
 
         for (K key : newKeys)

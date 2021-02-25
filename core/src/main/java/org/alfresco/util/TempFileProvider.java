@@ -441,11 +441,7 @@ public class TempFileProvider
             
             File tempDir = TempFileProvider.getTempDir(directoryName);
             int count = removeFiles(tempDir, aFewHoursBack, aLongTimeBack, false);  // don't delete this directory
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Removed " + count + " files from temp directory: " + tempDir);
-            }
+            logger.debug("Removed " + count + " files from temp directory: " + tempDir);
         }
         
         /**
@@ -485,26 +481,20 @@ public class TempFileProvider
             int count = 0;
             for (File file : filesToIterate)
             {
+                if (shouldTheDeletionStop())
+                {
+                    logger.debug("Stopping, limit has been reached.");
+                    break;
+                }
                 if (file.isDirectory())
                 {
-                    if(isLongLifeTempDir(file))
-                    {
-                        // long life for this folder and its children
-                        int countRemoved = removeFiles(file, longLifeBefore, longLifeBefore, true);  
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
-                        }
-                    }
-                    else
-                    {
-                        // enter subdirectory and clean it out and remove itsynetics
-                        int countRemoved = removeFiles(file, removeBefore, longLifeBefore, true);
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Removed " + countRemoved + " files from directory: " + file);
-                        }
-                    }
+                    // long life for this folder and its children
+                    // OR
+                    // enter subdirectory and clean it out and remove itsynetics
+                    int countRemoved = removeFiles(file,
+                        isLongLifeTempDir(file) ? longLifeBefore : removeBefore, longLifeBefore,
+                        true);
+                    logger.debug("Removed " + countRemoved + " files from " + (isLongLifeTempDir(file) ? "temp " : " ") + "directory: " + file);
                 }
                 else
                 {
@@ -517,33 +507,19 @@ public class TempFileProvider
                     // it is a file - attempt a delete
                     try
                     {
-                        // only delete if the limits allow
-                        if (maxFilesToDelete != null && maxFilesToDelete.get() <= 0 ||
-                            maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System.currentTimeMillis()))
-                        {
-                            return count;
-                        }
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("Deleting temp file: " + file);
-                        }
+                        logger.debug("Deleting temp file: " + file);
                         file.delete();
+
                         if (maxFilesToDelete != null)
                         {
                             maxFilesToDelete.decrementAndGet();
+                            logger.debug(maxFilesToDelete.get() + " files left to delete.");
+                        }
+                        if (maxTimeToRun != null)
+                        {
+                            logger.debug((jobStartTime + maxTimeToRun.toMillis() - System.currentTimeMillis()) + " millis left to delete.");
                         }
 
-                        if (logger.isDebugEnabled())
-                        {
-                            if (maxFilesToDelete != null)
-                            {
-                                logger.debug(maxFilesToDelete.get() + " files left to delete.");
-                            }
-                            if (maxTimeToRun != null)
-                            {
-                                logger.debug((jobStartTime + maxTimeToRun.toMillis() - System.currentTimeMillis()) + " millis left to delete.");
-                            }
-                        }
                         count++;
                     }
                     catch (Throwable e)
@@ -562,10 +538,7 @@ public class TempFileProvider
                     if(listing != null && listing.length == 0)
                     {
                         // directory is empty
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("Deleting empty directory: " + directory);
-                        }
+                        logger.debug("Deleting empty directory: " + directory);
                         // ignore the limits for empty directories that just need cleanup
                         directory.delete();
                     }
@@ -575,8 +548,21 @@ public class TempFileProvider
                     logger.info("Failed to remove temp directory: " + directory, e);
                 }
             }
-            // done
             return count;
+        }
+
+        /**
+         * Decides whether or not the job should continue iterating through the temp files and delete.
+         * It achieves the result by checking the number of files deleted against the limit and whether
+         * or not it is within the time limit
+         *
+         * @return true or false
+         */
+        private static boolean shouldTheDeletionStop()
+        {
+            return maxFilesToDelete != null && maxFilesToDelete.get() <= 0
+                || maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System
+                .currentTimeMillis());
         }
     }
 }

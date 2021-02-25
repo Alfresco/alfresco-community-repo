@@ -486,12 +486,13 @@ public class TempFileProvider
                     // long life for this folder and its children
                     // OR
                     // enter subdirectory and clean it out and remove itsynetics
-                    int countRemoved = removeFiles(
-                        file,
-                        isLongLifeTempDir(file) ? longLifeBefore : removeBefore,
-                        longLifeBefore,
-                        true);
-                    logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
+                    if (!shouldTheDeletionStop())
+                    {
+                        int countRemoved = removeFiles(file,
+                            isLongLifeTempDir(file) ? longLifeBefore : removeBefore, longLifeBefore,
+                            true);
+                        logger.debug("Removed " + countRemoved + " files from temp directory: " + file);
+                    }
                 }
                 else
                 {
@@ -505,7 +506,7 @@ public class TempFileProvider
                     try
                     {
                         // only delete if the limits allow
-                        if (shouldTheDeletionContinue())
+                        if (shouldTheDeletionStop())
                         {
                             return count;
                         }
@@ -561,7 +562,7 @@ public class TempFileProvider
          *
          * @return true or false
          */
-        private static boolean shouldTheDeletionContinue()
+        private static boolean shouldTheDeletionStop()
         {
             return maxFilesToDelete != null && maxFilesToDelete.get() <= 0
                 || maxTimeToRun != null && ((jobStartTime + maxTimeToRun.toMillis()) < System

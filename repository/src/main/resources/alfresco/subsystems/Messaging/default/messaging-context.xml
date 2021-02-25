@@ -86,7 +86,7 @@
 
     <camelContext id="alfrescoCamelContext" xmlns="http://camel.apache.org/schema/spring" useBreadcrumb="true">
         <contextScan/>
-        <jmxAgent id="agent" mbeanObjectDomainName="Alfresco.Camel" />
+        <jmxAgent id="agent" />
         <template id="camelProducerTemplate" defaultEndpoint="direct:alfresco.default" />
     </camelContext>
 

@@ -88,28 +88,29 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
     {
         Paging paging = params.getPaging();
         ModelApiFilter query = getQuery(params.getQuery());
-        Stream<QName> aspectList = null;
+        Stream<QName> aspectStream = null;
 
         if (query != null && query.getModelIds() != null)
         {
             validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
             Set<Pair<QName, Boolean>> modelsFilter = parseModelIds(query.getModelIds(), PARAM_INCLUDE_SUBASPECTS);
-            aspectList = modelsFilter.parallelStream().map(this::getModelAspects).flatMap(Collection::parallelStream);
+            aspectStream = modelsFilter.stream().map(this::getModelAspects).flatMap(Collection::stream);
         }
         else if (query != null && query.getParentIds() != null)
         {
             validateListParam(query.getParentIds(), PARAM_PARENT_IDS);
-            aspectList = query.getParentIds().parallelStream().map(this::getChildAspects).flatMap(Collection::parallelStream);
+            aspectStream = query.getParentIds().stream().map(this::getChildAspects).flatMap(Collection::stream);
         }
         else
         {
-            aspectList = this.dictionaryService.getAllAspects().parallelStream();
+            aspectStream = this.dictionaryService.getAllAspects().stream();
         }
 
-        List<Aspect> allAspects = aspectList.filter((qName) -> filterByNamespace(query, qName))
+        List<Aspect> allAspects = aspectStream.filter((qName) -> filterByNamespace(query, qName))
+                .filter(distinctByKey(QName::getPrefixString))
                 .map((qName) -> this.convertToAspect(dictionaryService.getAspect(qName), params.getInclude()))
-                .filter(distinctByKey(Aspect::getId))
                 .collect(Collectors.toList());
+
         return createPagedResult(allAspects, paging);
     }
 
@@ -168,14 +169,15 @@ public class AspectsImpl extends AbstractClassImpl<Aspect> implements Aspects
 
         Collection<QName> aspects = this.dictionaryService.getAspects(modelDefinition.getName());
 
-        if (!model.getSecond())
+        if (!model.getSecond()) // look for model aspects alone
             return aspects;
 
-        Stream<QName> children = aspects.stream()
+        Stream<QName> aspectStream = aspects.stream();
+        Stream<QName> childrenStream = aspects.stream()
                 .map(aspect -> this.dictionaryService.getSubAspects(aspect, false))
-                .flatMap(Collection::parallelStream);
+                .flatMap(Collection::stream);
 
-        return Stream.concat(aspects.parallelStream(), children).collect(Collectors.toList());
+        return Stream.concat(aspectStream, childrenStream).collect(Collectors.toList());
     }
 
     private Collection<QName> getChildAspects(String aspectId)

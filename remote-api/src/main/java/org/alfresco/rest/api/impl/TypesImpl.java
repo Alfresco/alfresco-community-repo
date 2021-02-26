@@ -88,28 +88,30 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
     {
         Paging paging = params.getPaging();
         ModelApiFilter query = getQuery(params.getQuery());
-        Stream<QName> typeList = null;
+        Stream<QName> typeStream = null;
 
         if (query != null && query.getModelIds() != null)
         {
             validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
             Set<Pair<QName, Boolean>> modelsFilter = parseModelIds(query.getModelIds(), PARAM_INCLUDE_SUBTYPES);
-            typeList = modelsFilter.parallelStream().map(this::getModelTypes).flatMap(Collection::parallelStream);
+            typeStream = modelsFilter.stream().map(this::getModelTypes).flatMap(Collection::stream);
         }
         else if (query != null && query.getParentIds() != null)
         {
             validateListParam(query.getParentIds(), PARAM_PARENT_IDS);
-            typeList = query.getParentIds().parallelStream().map(this::getChildTypes).flatMap(Collection::parallelStream);
+            typeStream = query.getParentIds().stream().map(this::getChildTypes).flatMap(Collection::stream);
         }
         else
         {
-                typeList = this.dictionaryService.getAllTypes().parallelStream();
+            typeStream = this.dictionaryService.getAllTypes().stream();
         }
 
-        List<Type> allTypes = typeList.filter((qName) -> filterByNamespace(query, qName))
+        List<Type> allTypes = typeStream
+                .filter((qName) -> filterByNamespace(query, qName))
+                .filter(distinctByKey(QName::getPrefixString))
                 .map((qName) -> this.convertToType(dictionaryService.getType(qName), params.getInclude()))
-                .filter(distinctByKey(Type::getId))
                 .collect(Collectors.toList());
+
         return createPagedResult(allTypes, paging);
     }
 
@@ -168,14 +170,15 @@ public class TypesImpl extends AbstractClassImpl<Type> implements Types
 
         Collection<QName> aspects = this.dictionaryService.getTypes(modelDefinition.getName());
 
-        if (!model.getSecond())
+        if (!model.getSecond()) //look for model types alone
             return aspects;
 
-        Stream<QName> children = aspects.parallelStream()
+        Stream<QName> aspectStream = aspects.stream();
+        Stream<QName> childrenStream = aspects.stream()
                 .map(aspect -> this.dictionaryService.getSubTypes(aspect, false))
-                .flatMap(Collection::parallelStream);
+                .flatMap(Collection::stream);
 
-        return Stream.concat(aspects.parallelStream(), children).collect(Collectors.toList());
+        return Stream.concat(aspectStream, childrenStream).collect(Collectors.toList());
     }
 
     private Collection<QName> getChildTypes(String typeId)

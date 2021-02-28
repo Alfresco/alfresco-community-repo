@@ -26,6 +26,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
+
+import java.util.List;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -34,12 +39,12 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Patch to create new hold child association to link the record to the hold
- *
+ * <p>
  * See: https://alfresco.atlassian.net/browse/APPS-659
- *
  *
  * @since 3.5
  */
@@ -64,6 +69,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for fileplanservice
+     *
      * @param filePlanService File plan service interface
      */
     public void setFilePlanService(FilePlanService filePlanService)
@@ -73,6 +79,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for hold service
+     *
      * @param holdService Hold service interface.
      */
     public void setHoldService(HoldService holdService)
@@ -82,6 +89,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for node service
+     *
      * @param nodeService Interface for public and internal node and store operations.
      */
     public void setNodeService(NodeService nodeService)
@@ -110,15 +118,21 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
             {
                 for (NodeRef hold : holdService.getHolds(filePlan))
                 {
-                    for (ChildAssociationRef ref : nodeService.getChildAssocs(hold))
+                    List<ChildAssociationRef> frozenAssoc = nodeService.getChildAssocs(hold,
+                            ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
+                    for (ChildAssociationRef ref : frozenAssoc)
                     {
-                        holdService.removeFromHold(hold, ref.getChildRef());
-                        holdService.addToHold(hold, ref.getChildRef());
+                        //search the second parent
+                        List<ChildAssociationRef> parentAssoc = nodeService.getParentAssocs(ref.getChildRef(), ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                        if (parentAssoc.isEmpty())
+                        {
+                            ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(hold);
+                            nodeService.addChild(hold, hold, ASSOC_CONTAINS, primaryParentAssoc.getQName());
+                        }
                     }
                 }
             }
-        }
-        finally
+        } finally
         {
             behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
             behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);

@@ -122,12 +122,13 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
                             ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
                     for (ChildAssociationRef ref : frozenAssoc)
                     {
+                        NodeRef nodeRef = ref.getChildRef();
                         //search the second parent
-                        List<ChildAssociationRef> parentAssoc = nodeService.getParentAssocs(ref.getChildRef(), ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                        List<ChildAssociationRef> parentAssoc = nodeService.getParentAssocs(nodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                         if (parentAssoc.isEmpty())
                         {
-                            ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(hold);
-                            nodeService.addChild(hold, hold, ASSOC_CONTAINS, primaryParentAssoc.getQName());
+                            ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(nodeRef);
+                            nodeService.addChild(hold, nodeRef, ASSOC_CONTAINS, primaryParentAssoc.getQName());
                         }
                     }
                 }

@@ -3,6 +3,7 @@ package org.alfresco.rest.models.types;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestAbstractClassModel;
 import org.alfresco.rest.model.RestAbstractClassModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -118,6 +119,52 @@ public class GetTypesTests extends RestTest
                     .field("properties").isNotNull().and()
                     .field("mandatoryAspects").isNotNull();
         }
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+            description = "Should verify the query errors with possible options")
+    public void verifyTypesQueryError() throws Exception
+    {
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(modelId in (' ')")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(modelId in ('cm:contentmodel INCLUDESUBTYPES',))")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(modelId in ('cm:contentmodel INCLUDESUBASPECTS'))")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(parentId in (' ')")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(parentId in ('cm:titled',))")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(parentId in ('cm:titled',))&include=properties")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(namespaceUri matches('*'))")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+
+        restClient.authenticateUser(regularUser).withModelAPI()
+                .usingParams("where=(parentId in ('cm:titled'))&include=properties")
+                .getTypes();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })

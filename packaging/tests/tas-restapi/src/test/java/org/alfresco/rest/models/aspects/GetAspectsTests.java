@@ -19,8 +19,8 @@ public class GetAspectsTests extends RestTest
         restClient.authenticateUser(dataUser.createRandomTestUser());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Verify inexistent aspect and status code is Not Found (404)")
     public void getInexistentAspect() throws Exception
     {
@@ -30,8 +30,8 @@ public class GetAspectsTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, unknownAspect));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Verify Aspect Info and status code is OK (200)")
     public void getAspect() throws Exception
     {

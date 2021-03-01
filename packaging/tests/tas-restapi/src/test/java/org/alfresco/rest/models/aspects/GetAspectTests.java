@@ -22,8 +22,8 @@ public class GetAspectTests  extends RestTest
         regularUser = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Verify user get aspects and gets status code OK (200)")
     public void getAspects() throws Exception
     {
@@ -37,8 +37,8 @@ public class GetAspectTests  extends RestTest
             .and().entriesListContains("id", "cm:checkedOut");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Should filter aspects using namespace uri and gets status code OK (200)")
     public void getAspectByNamespaceUri() throws Exception
     {
@@ -55,8 +55,8 @@ public class GetAspectTests  extends RestTest
         aspects.assertThat().entriesListCountIs(0);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Should filter aspects using modelId and gets status code OK (200)")
     public void getAspectByModelsIds() throws Exception
     {
@@ -71,8 +71,8 @@ public class GetAspectTests  extends RestTest
                 .field("hasMoreItems").is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Should filter aspects using modelId with subaspects and gets status code OK (200)")
     public void getAspectByModelsIdsWithIncludeSubAspects() throws Exception
     {
@@ -87,8 +87,8 @@ public class GetAspectTests  extends RestTest
                 .field("hasMoreItems").is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Should filter aspects using parentId and gets status code OK (200)")
     public void getAspectByParentId() throws Exception
     {
@@ -101,8 +101,8 @@ public class GetAspectTests  extends RestTest
                 .field("hasMoreItems").is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
             description = "Should Aspects association, properties and mandatory aspects and gets status code OK (200)")
     public void getAspectIncludeParams() throws Exception
     {
@@ -120,8 +120,8 @@ public class GetAspectTests  extends RestTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section={TestGroup.REST_API, TestGroup.MODEL}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets aspects with high skipCount and maxItems parameter applied")
     public void getPaginationParameter() throws Exception
     {
@@ -136,8 +136,8 @@ public class GetAspectTests  extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
+    @TestRail(section={TestGroup.REST_API, TestGroup.MODEL}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets aspects with hasMoreItems applied bases on skip count and maxItems")
     public void getHighPaginationQuery() throws Exception
     {

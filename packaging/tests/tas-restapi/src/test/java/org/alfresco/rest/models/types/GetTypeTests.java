@@ -1,8 +1,8 @@
 package org.alfresco.rest.models.types;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestAbstractClassModel;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestTypeModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -35,7 +35,7 @@ public class GetTypeTests extends RestTest
             description = "Verify Type Info and status code is OK (200)")
     public void getType() throws Exception
     {
-        RestAbstractClassModel type = restClient.withModelAPI().getType("cm:content");
+        RestTypeModel type = restClient.withModelAPI().getType("cm:content");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         type.assertThat().field("associations").isEmpty().and()
                 .field("mandatoryAspects").isNotEmpty().and()

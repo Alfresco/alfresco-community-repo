@@ -1,7 +1,7 @@
 package org.alfresco.rest.models.aspects;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestAbstractClassModel;
+import org.alfresco.rest.model.RestAspectModel;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -35,7 +35,7 @@ public class GetAspectTests extends RestTest
             description = "Verify Aspect Info and status code is OK (200)")
     public void getAspect() throws Exception
     {
-        RestAbstractClassModel aspect = restClient.withModelAPI().getAspect("cm:titled");
+        RestAspectModel aspect = restClient.withModelAPI().getAspect("cm:titled");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         aspect.assertThat().field("associations").isEmpty().and()
                 .field("mandatoryAspects").isEmpty().and()

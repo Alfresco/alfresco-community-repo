@@ -2,7 +2,7 @@ package org.alfresco.rest.models.aspects;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestAbstractClassModel;
-import org.alfresco.rest.model.RestAbstractClassModelsCollection;
+import org.alfresco.rest.model.RestAspectsCollection;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -27,7 +27,7 @@ public class GetAspectsTests  extends RestTest
             description = "Verify user get aspects and gets status code OK (200)")
     public void getAspects() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .getAspects();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         aspects.assertThat()
@@ -42,7 +42,7 @@ public class GetAspectsTests  extends RestTest
             description = "Should filter aspects using namespace uri and gets status code OK (200)")
     public void getAspectByNamespaceUri() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .usingParams("where=(namespaceUri matches('http://www.alfresco.org/model.*'))")
                 .getAspects();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -60,7 +60,7 @@ public class GetAspectsTests  extends RestTest
             description = "Should filter aspects using modelId and gets status code OK (200)")
     public void getAspectByModelsIds() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .usingParams("where=(modelId in ('cm:contentmodel', 'smf:smartFolder'))")
                 .getAspects();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -76,7 +76,7 @@ public class GetAspectsTests  extends RestTest
             description = "Should filter aspects using modelId with subaspects and gets status code OK (200)")
     public void getAspectByModelsIdsWithIncludeSubAspects() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .usingParams("where=(modelId in ('cm:contentmodel INCLUDESUBASPECTS', 'smf:smartFolder INCLUDESUBASPECTS'))")
                 .getAspects();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -92,7 +92,7 @@ public class GetAspectsTests  extends RestTest
             description = "Should filter aspects using parentId and gets status code OK (200)")
     public void getAspectByParentId() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .usingParams("where=(parentId in ('cm:titled'))")
                 .getAspects();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -106,7 +106,7 @@ public class GetAspectsTests  extends RestTest
             description = "Should Aspects association, properties and mandatory aspects and gets status code OK (200)")
     public void getAspectIncludeParams() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .usingParams("include=properties,mandatoryAspects,associations")
                 .getAspects();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -171,7 +171,7 @@ public class GetAspectsTests  extends RestTest
             description= "Verify if any user gets aspects with high skipCount and maxItems parameter applied")
     public void getPaginationParameter() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser)
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser)
                 .withModelAPI()
                 .usingParams("maxItems=10&skipCount=10")
                 .getAspects();
@@ -187,7 +187,7 @@ public class GetAspectsTests  extends RestTest
             description= "Verify if any user gets aspects with hasMoreItems applied bases on skip count and maxItems")
     public void getHighPaginationQuery() throws Exception
     {
-        RestAbstractClassModelsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
+        RestAspectsCollection aspects = restClient.authenticateUser(regularUser).withModelAPI()
                 .usingParams("maxItems=10&skipCount=150")
                 .getAspects();
         aspects.assertThat().entriesListCountIs(0);

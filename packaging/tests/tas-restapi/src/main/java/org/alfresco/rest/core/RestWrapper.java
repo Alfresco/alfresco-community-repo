@@ -36,6 +36,7 @@ import org.alfresco.rest.requests.authAPI.RestAuthAPI;
 import org.alfresco.rest.requests.cmisAPI.RestCmisAPI;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.requests.discoveryAPI.RestDiscoveryAPI;
+import org.alfresco.rest.requests.modelAPI.RestModelAPI;
 import org.alfresco.rest.requests.privateAPI.RestPrivateAPI;
 import org.alfresco.rest.requests.search.SearchAPI;
 import org.alfresco.rest.requests.search.SearchSQLAPI;
@@ -930,6 +931,11 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     public RestAuthAPI withAuthAPI()
     {
         return new RestAuthAPI(this);
+    }
+
+    public RestModelAPI withModelAPI()
+    {
+        return new RestModelAPI(this);
     }
 
     public SearchAPI withSearchAPI()

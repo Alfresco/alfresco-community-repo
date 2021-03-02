@@ -483,7 +483,6 @@ public class TempFileProvider
             {
                 if (shouldTheDeletionStop())
                 {
-                    logger.debug("Stopping, limit has been reached.");
                     break;
                 }
                 if (file.isDirectory())

@@ -125,7 +125,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
                         NodeRef nodeRef = ref.getChildRef();
                         //search the second parent
                         List<ChildAssociationRef> parentAssoc = nodeService.getParentAssocs(nodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                        if (parentAssoc.isEmpty())
+                        if (parentAssoc.size() <= 1)
                         {
                             ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(nodeRef);
                             nodeService.addChild(hold, nodeRef, ASSOC_CONTAINS, primaryParentAssoc.getQName());

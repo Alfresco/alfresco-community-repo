@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.doReturn;
@@ -48,6 +50,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -77,11 +80,14 @@ public class RMv35HoldNewChildAssocPatchUnitTest
     private RMv35HoldNewChildAssocPatch patch;
 
     private NodeRef filePlanRef, holdRef, heldItemRef;
+
     private Set<NodeRef> fileplans;
     private List<NodeRef> holds;
 
     @Mock
     private ChildAssociationRef childAssociationRef;
+    @Mock
+    private ChildAssociationRef primaryParentAssoc;
 
     private List<ChildAssociationRef> childAssocs;
 
@@ -104,15 +110,15 @@ public class RMv35HoldNewChildAssocPatchUnitTest
      * Test held items are removed from a hold and re-add to make sure the association is correct
      */
     @Test
-    public void testAHoldIsRemovedAndReplacedDuringUpgrade()
+    public void testAddChildDuringUpgrade()
     {
         when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
         when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
+        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(childAssocs);
         when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
-        when(mockNodeService.getChildAssocs(holdRef)).thenReturn(childAssocs);
+        when(mockNodeService.getPrimaryParent(heldItemRef)).thenReturn(primaryParentAssoc);
         patch.applyInternal();
-        verify(mockHoldService, times(1)).removeFromHold(holdRef, heldItemRef);
-        verify(mockHoldService, times(1)).addToHold(holdRef, heldItemRef);
+        verify(mockNodeService, times(1)).addChild(holdRef, heldItemRef, ASSOC_CONTAINS, primaryParentAssoc.getQName());
     }
 
     @Test

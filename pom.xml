@@ -104,7 +104,7 @@
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.43</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.54</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.55</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.27</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>

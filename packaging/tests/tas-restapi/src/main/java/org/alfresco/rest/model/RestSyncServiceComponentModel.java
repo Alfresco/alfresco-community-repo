@@ -39,6 +39,9 @@ public class RestSyncServiceComponentModel extends TestModel
     @JsonProperty
     private int duration;
 
+    @JsonProperty
+    private String timestamp;
+
     public Boolean getHealthy()
     {
         return healthy;
@@ -52,6 +55,11 @@ public class RestSyncServiceComponentModel extends TestModel
     public int getDuration()
     {
         return duration;
+    }
+
+    public String getTimestamp()
+    {
+        return timestamp;
     }
 
 }

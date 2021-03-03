@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -53,6 +54,9 @@ import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Constraint;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -71,6 +75,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -112,12 +117,16 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     private static final String PARAM_ALLOWED_VALUES = "allowedValues";
     private static final String PARAM_CASE_SENSITIVE = "caseSensitive";
     private static final String PARAM_MATCH_LOGIC = "matchLogic";
+    private static final long DEFAULT_TIME = 30000L;
 
     /** Relationship service */
     private RelationshipService relationshipService;
     
     /** Transaction service */
     private TransactionService transactionService;
+
+    /** Job Lock service */
+    private JobLockService jobLockService;
 
     /** List of types that can be customisable */
     private List<QName> pendingCustomisableTypes;
@@ -152,7 +161,15 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         return this.relationshipService;
     }
 
-	/**
+    /**
+     * @param  jobLockService The Job Lock service
+     */
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+
+    /**
 	 * Indicate that this application content listener must be executed with the lowest 
 	 * precedence. (ie last)
 	 * 
@@ -172,30 +189,98 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event)
     {
-        if(!isCustomMapInit && getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL)) 
-        {
-		// run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute()
-                    {
-                      // initialise custom properties
-                      initCustomMap();
-                        return null;
-                    }
-                };
-                transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        final LockCallback lockCallback = new LockCallback();
 
-                return null;
+        // try and get the lock
+        String lockToken = getLock();
+        if (lockToken != null)
+        {
+            try
+            {
+                jobLockService.refreshLock(lockToken, getLockQName(), DEFAULT_TIME, lockCallback);
+
+                if (!isCustomMapInit && getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL))
+                {
+                    // run as System on bootstrap
+                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    {
+                        public Object doWork()
+                        {
+                            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+                            {
+                                public Void execute()
+                                {
+                                    // initialise custom properties
+                                    initCustomMap();
+                                    return null;
+                                }
+                            };
+                            transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+
+                            return null;
+                        }
+                    }, AuthenticationUtil.getSystemUserName());
+                }
             }
-        }, AuthenticationUtil.getSystemUserName());
-		}           
+            finally
+            {
+                try
+                {
+                    lockCallback.running.set(false);
+                    jobLockService.releaseLock(lockToken, getLockQName());
+                }
+                catch (LockAcquisitionException e)
+                {
+                    // Ignore
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "("
+                                + e.getMessage() + ")");
+                    }
+                }
+            }
+        }
     }
-    
+
+    private QName getLockQName()
+    {
+        return QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, this.getClass().getName());
+    }
+
+    /**
+     * Attempts to get the lock. If the lock couldn't be taken, then <tt>null</tt> is returned.
+     *
+     * @return Returns the lock token or <tt>null</tt>
+     */
+    private String getLock()
+    {
+        try
+        {
+            return jobLockService.getLock(getLockQName(), DEFAULT_TIME);
+        }
+        catch (LockAcquisitionException e)
+        {
+            return null;
+        }
+    }
+
+    private class LockCallback implements JobLockRefreshCallback
+    {
+        final AtomicBoolean running = new AtomicBoolean(true);
+
+        @Override
+        public boolean isActive()
+        {
+            return running.get();
+        }
+
+        @Override
+        public void lockReleased()
+        {
+            running.set(false);
+        }
+    }
+
     /**
      * Helper method to indicate whether the custom map is initialised or not.
      * 

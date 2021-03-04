@@ -39,6 +39,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
@@ -122,13 +123,14 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
                             ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
                     for (ChildAssociationRef ref : frozenAssoc)
                     {
-                        NodeRef nodeRef = ref.getChildRef();
-                        //search the second parent
-                        List<ChildAssociationRef> parentAssoc = nodeService.getParentAssocs(nodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                        if (parentAssoc.size() <= 1)
+                        NodeRef childNodeRef = ref.getChildRef();
+                        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(childNodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                        ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(childNodeRef);
+                        boolean parentExists =
+                                parentAssocs.stream().anyMatch(entry -> entry.getParentRef().equals(hold) && entry.getQName().equals(primaryParentAssoc.getQName()));
+                        if (parentAssocs.isEmpty() || !parentExists)
                         {
-                            ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(nodeRef);
-                            nodeService.addChild(hold, nodeRef, ASSOC_CONTAINS, primaryParentAssoc.getQName());
+                            nodeService.addChild(hold, childNodeRef, ASSOC_CONTAINS, primaryParentAssoc.getQName());
                         }
                     }
                 }

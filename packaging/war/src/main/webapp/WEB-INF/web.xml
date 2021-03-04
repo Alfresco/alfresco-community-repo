@@ -104,6 +104,12 @@
       <filter-class>org.springframework.extensions.webscripts.servlet.CSRFFilter</filter-class>
    </filter>
 
+   <filter>
+      <description>Security Headers filter. Adds security response headers based on config.</description>
+      <filter-name>Security Headers Filter</filter-name>
+      <filter-class>org.springframework.extensions.webscripts.servlet.SecurityHeadersFilter</filter-class>
+   </filter>
+
    <!-- Enterprise filter placeholder -->
    <filter-mapping>
       <filter-name>Clear security context filter</filter-name>
@@ -223,6 +229,11 @@
    <filter-mapping>
       <filter-name>CSRF Token Filter</filter-name>
       <url-pattern>/wcs/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Security Headers Filter</filter-name>
+      <url-pattern>/*</url-pattern>
    </filter-mapping>
 
    <!-- Enterprise filter-mapping placeholder -->

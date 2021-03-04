@@ -39,6 +39,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest.class,
     org.alfresco.repo.web.scripts.solr.StatsGetTest.class,
     org.alfresco.repo.web.scripts.solr.SOLRSerializerTest.class,
+    org.alfresco.repo.web.scripts.solr.SOLRAuthenticationFilterTest.class,
     org.alfresco.repo.web.util.PagingCursorTest.class,
     org.alfresco.repo.web.util.paging.PagingTest.class,
     org.alfresco.repo.webdav.GetMethodTest.class,

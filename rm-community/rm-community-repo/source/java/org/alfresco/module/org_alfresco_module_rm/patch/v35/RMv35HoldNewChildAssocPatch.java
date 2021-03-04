@@ -53,7 +53,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 {
     /** A name for the associations created by this patch. */
-    protected static final QName PATCH_ASSOC_NAME = QName.createQName(RM_CUSTOM_URI,RMv35HoldNewChildAssocPatch .class.getSimpleName());
+    protected static final QName PATCH_ASSOC_NAME = QName.createQName(RM_CUSTOM_URI, RMv35HoldNewChildAssocPatch.class.getSimpleName());
 
     /**
      * File plan service interface

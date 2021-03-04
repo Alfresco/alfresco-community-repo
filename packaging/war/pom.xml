@@ -12,7 +12,7 @@
 
     <properties>
         <scm-path>${project.parent.parent.scm.url}</scm-path>
-        <scm-revision>${build-number}</scm-revision>
+        <scm-revision>${buildNumber}</scm-revision>
     </properties>
 
     <dependencies>
@@ -140,6 +140,23 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Gets the scm revision and stores it in the ${buildNumber} variable -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <shortRevisionLength>8</shortRevisionLength>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>

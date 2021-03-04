@@ -121,7 +121,7 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter, Initi
 		{
 			if(sharedSecret == null || sharedSecret.length()==0)
 			{
-				logger.fatal("Missing value for solr.sharedSecret configuration property. If solr.secureComms is set to \"secret\", a value for solr.sharedSecret is required. See https://docs.alfresco.com/search-enterprise/tasks/solr-install-withoutSSL.html");
+				logger.fatal("Missing value for solr.sharedSecret configuration property. If solr.secureComms is set to \"secret\", a value for solr.sharedSecret is required. See https://docs.alfresco.com/search-services/latest/install/options/");
 				throw new AlfrescoRuntimeException("Missing value for solr.sharedSecret configuration property");
 			}
 			if(sharedSecretHeader == null || sharedSecretHeader.length()==0)

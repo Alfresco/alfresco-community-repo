@@ -32,6 +32,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -41,10 +44,10 @@ import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.TypeNames;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.DBScriptUtil;
 import org.alfresco.util.DatabaseMetaDataHelper;
 import org.alfresco.util.DialectUtil;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.DBScriptUtil;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
@@ -257,6 +260,7 @@ public class ExportDb
             tableTypes = new String[] { "TABLE", "VIEW", "SEQUENCE" };
         }
         
+        // No tables are returned when using MySQL8 - maybe this issue can be solved if we update the MySQL JDBC driver that we use (the new driver class is `com.mysql.cj.jdbc.Driver').
         final ResultSet tables = dbmd.getTables(null, schemaName, prefixFilter, tableTypes);
 
         processTables(dbmd, tables);
@@ -331,10 +335,11 @@ public class ExportDb
             columns.close();
             
             
-            // Primary key
+            // Primary key - beware that getPrimaryKeys gets primary keys ordered by their column name
             final ResultSet primarykeycols = dbmd.getPrimaryKeys(null, tables.getString("TABLE_SCHEM"), tableName);
-            
+
             PrimaryKey pk = null;
+            Map<Integer, String> keySeqsAndColumnNames = new LinkedHashMap<>();
             
             while (primarykeycols.next())
             {
@@ -343,12 +348,23 @@ public class ExportDb
                     String pkName = primarykeycols.getString("PK_NAME");
                     pk = new PrimaryKey(pkName);
                 }
-                String columnName = primarykeycols.getString("COLUMN_NAME");
-                pk.getColumnNames().add(columnName);
-                
+
                 int columnOrder = primarykeycols.getInt("KEY_SEQ");
                 pk.getColumnOrders().add(columnOrder);
+
+                // We should add columns ordered by the KEY_SEQ rather than by the column name
+                // Populating map with key sequences and column names for a proper sorting later.
+                String columnName = primarykeycols.getString("COLUMN_NAME");
+                keySeqsAndColumnNames.put(columnOrder, columnName);
             }
+
+            List<String> keyseqSortedColumnNames = new LinkedList<>();
+            for (int keySeq: keySeqsAndColumnNames.keySet())
+            {
+                keyseqSortedColumnNames.add(keySeqsAndColumnNames.get(keySeq));
+            }
+            pk.setColumnNames(keyseqSortedColumnNames);
+
             primarykeycols.close();
             
             // If this table has a primary key, add it. 

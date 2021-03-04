@@ -27,11 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
+import static org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35HoldNewChildAssocPatch.PATCH_ASSOC_NAME;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -86,8 +91,6 @@ public class RMv35HoldNewChildAssocPatchUnitTest
 
     @Mock
     private ChildAssociationRef childAssociationRef;
-    @Mock
-    private ChildAssociationRef primaryParentAssoc;
 
     private List<ChildAssociationRef> childAssocs;
 
@@ -107,7 +110,7 @@ public class RMv35HoldNewChildAssocPatchUnitTest
     }
 
     /**
-     * Test held items are removed from a hold and re-add to make sure the association is correct
+     * Test secondary associations are created for held items so that they are "contained" in the hold.
      */
     @Test
     public void testAddChildDuringUpgrade()
@@ -116,36 +119,35 @@ public class RMv35HoldNewChildAssocPatchUnitTest
         when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
         when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(childAssocs);
         when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
-        when(mockNodeService.getPrimaryParent(heldItemRef)).thenReturn(primaryParentAssoc);
+
         patch.applyInternal();
-        verify(mockNodeService, times(1)).addChild(holdRef, heldItemRef, ASSOC_CONTAINS, primaryParentAssoc.getQName());
+
+        verify(mockNodeService, times(1)).addChild(holdRef, heldItemRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
     }
 
     @Test
-    public void patchRunWithSuccessWhenNoHoldChilds()
+    public void patchRunWithSuccessWhenNoHeldChildren()
     {
-        List<NodeRef> holdList = new ArrayList<>();
-        holdList.add(holdRef);
-        when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
-        when(mockNodeService.getChildAssocs(holdRef)).thenReturn(new ArrayList<>());
+        when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
+        when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
+        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(emptyList());
+
         patch.applyInternal();
 
-        verify(mockHoldService, times(0)).removeFromHold(holdRef, heldItemRef);
-        verify(mockHoldService, times(0)).addToHold(holdRef, heldItemRef);
-
+        verify(mockNodeService, never()).addChild(any(NodeRef.class), any(NodeRef.class), any(QName.class), any(QName.class));
     }
 
     @Test
     public void patchRunWithSuccessWhenNoHolds()
     {
         //no holds
-        List<NodeRef> holdList = new ArrayList<>();
+        List<NodeRef> holdList = emptyList();
         when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
         when(mockHoldService.getHolds(filePlanRef)).thenReturn(holdList);
+
         patch.applyInternal();
 
-        verify(mockHoldService, times(0)).removeFromHold(holdRef, heldItemRef);
-        verify(mockHoldService, times(0)).addToHold(holdRef, heldItemRef);
+        verify(mockNodeService, never()).addChild(any(NodeRef.class), any(NodeRef.class), any(QName.class), any(QName.class));
     }
 
     @Test
@@ -158,7 +160,6 @@ public class RMv35HoldNewChildAssocPatchUnitTest
         patch.applyInternal();
 
         // then
-        verifyZeroInteractions(mockHoldService);
-        verify(mockNodeService, times(0)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
+        verify(mockNodeService, never()).addChild(any(NodeRef.class), any(NodeRef.class), any(QName.class), any(QName.class));
     }
 }

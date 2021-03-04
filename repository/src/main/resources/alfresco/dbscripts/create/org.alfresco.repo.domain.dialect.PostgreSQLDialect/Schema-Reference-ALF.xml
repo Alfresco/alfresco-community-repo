@@ -44,6 +44,7 @@
     <sequence name="alf_prop_unique_ctx_seq"/>
     <sequence name="alf_prop_value_seq"/>
     <sequence name="alf_qname_seq"/>
+    <sequence name="alf_server_seq"/>
     <sequence name="alf_store_seq"/>
     <sequence name="alf_transaction_seq"/>
     <sequence name="alf_usage_delta_seq"/>
@@ -912,45 +913,45 @@
         </index>
       </indexes>
     </table>
-  <table name="alf_auth_status">
-    <columns>
-      <column name="id" order="1">
-        <type>int8</type>
-        <nullable>false</nullable>
-        <autoincrement>false</autoincrement>
-      </column>
-      <column name="username" order="2">
-        <type>varchar(100)</type>
-        <nullable>false</nullable>
-        <autoincrement>false</autoincrement>
-      </column>
-      <column name="deleted" order="3">
-        <type>bool</type>
-        <nullable>false</nullable>
-        <autoincrement>false</autoincrement>
-      </column>
-      <column name="authorized" order="4">
-        <type>bool</type>
-        <nullable>false</nullable>
-        <autoincrement>false</autoincrement>
-      </column>
-      <column name="checksum" order="5">
-        <type>bytea</type>
-        <nullable>false</nullable>
-        <autoincrement>false</autoincrement>
-      </column>
-      <column name="authaction" order="6">
-        <type>varchar(10)</type>
-        <nullable>false</nullable>
-        <autoincrement>false</autoincrement>
-      </column>
-    </columns>
-    <primarykey name="alf_auth_status_pkey">
-      <columnnames>
-        <columnname order="1">id</columnname>
-      </columnnames>
-    </primarykey>
-    <indexes>
+    <table name="alf_auth_status">
+      <columns>
+        <column name="id" order="1">
+          <type>int8</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="username" order="2">
+          <type>varchar(100)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="deleted" order="3">
+          <type>bool</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="authorized" order="4">
+          <type>bool</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="checksum" order="5">
+          <type>bytea</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="authaction" order="6">
+          <type>varchar(10)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="alf_auth_status_pkey">
+        <columnnames>
+          <columnname order="1">id</columnname>
+        </columnnames>
+      </primarykey>
+      <indexes>
         <index name="idx_alf_auth_usr_stat" unique="true">
           <columnnames>
             <columnname>username</columnname>
@@ -959,7 +960,7 @@
         </index>
         <index name="idx_alf_auth_deleted" unique="false">
           <columnnames>
-             <columnname>deleted</columnname>
+            <columnname>deleted</columnname>
           </columnnames>
         </index>
         <index name="idx_alf_auth_action" unique="false">
@@ -967,9 +968,9 @@
             <columnname>authaction</columnname>
           </columnnames>
         </index>
-    </indexes>
-    <foreignkeys/>
-  </table>
+      </indexes>
+      <foreignkeys/>
+    </table>
     <table name="alf_child_assoc">
       <columns>
         <column name="id" order="1">
@@ -1628,11 +1629,11 @@
       </columns>
       <primarykey name="alf_node_pkey">
         <validators>
-            <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
-              <properties>
-                <property name="pattern">alf_node_pkey1?</property>
-              </properties>
-            </validator>
+          <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
+            <properties>
+              <property name="pattern">alf_node_pkey1?</property>
+            </properties>
+          </validator>
         </validators>
         <columnnames>
           <columnname order="1">id</columnname>
@@ -1739,16 +1740,6 @@
             <columnname>id</columnname>
           </columnnames>
         </index>
-        <index name="idx_alf_node_ver" unique="false">
-          <columnnames>
-            <columnname>version</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_node_txn" unique="false">
-          <columnnames>
-            <columnname>transaction_id</columnname>
-          </columnnames>
-        </index>
       </indexes>
     </table>
     <table name="alf_node_aspects">
@@ -1830,11 +1821,11 @@
       </columns>
       <primarykey name="alf_node_assoc_pkey">
         <validators>
-            <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
-              <properties>
-                <property name="pattern">alf_node_assoc_pkey1?</property>
-              </properties>
-            </validator>
+          <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
+            <properties>
+              <property name="pattern">alf_node_assoc_pkey1?</property>
+            </properties>
+          </validator>
         </validators>
         <columnnames>
           <columnname order="1">id</columnname>
@@ -2004,27 +1995,27 @@
           </columnnames>
         </index>
       </indexes>
-        <index name="idx_alf_nprop_b" unique="false">
-          <columnnames>
-            <columnname>qname_id</columnname>
-            <columnname>boolean_value</columnname>
-            <columnname>node_id</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_nprop_d" unique="false">
-          <columnnames>
-            <columnname>qname_id</columnname>
-            <columnname>double_value</columnname>
-            <columnname>node_id</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_nprop_f" unique="false">
-          <columnnames>
-            <columnname>qname_id</columnname>
-            <columnname>float_value</columnname>
-            <columnname>node_id</columnname>
-          </columnnames>
-        </index>
+      <index name="idx_alf_nprop_b" unique="false">
+        <columnnames>
+          <columnname>qname_id</columnname>
+          <columnname>boolean_value</columnname>
+          <columnname>node_id</columnname>
+        </columnnames>
+      </index>
+      <index name="idx_alf_nprop_d" unique="false">
+        <columnnames>
+          <columnname>qname_id</columnname>
+          <columnname>double_value</columnname>
+          <columnname>node_id</columnname>
+        </columnnames>
+      </index>
+      <index name="idx_alf_nprop_f" unique="false">
+        <columnnames>
+          <columnname>qname_id</columnname>
+          <columnname>float_value</columnname>
+          <columnname>node_id</columnname>
+        </columnnames>
+      </index>
     </table>
     <table name="alf_permission">
       <columns>
@@ -2542,7 +2533,39 @@
             <columnname>local_name</columnname>
           </columnnames>
         </index>
-        </indexes>
+      </indexes>
+    </table>
+    <table name="alf_server">
+      <columns>
+        <column name="id" order="1">
+          <type>int8</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="version" order="2">
+          <type>int8</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="ip_address" order="3">
+          <type>varchar(39)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="alf_server_pkey">
+        <columnnames>
+          <columnname order="1">id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="ip_address" unique="true">
+          <columnnames>
+            <columnname>ip_address</columnname>
+          </columnnames>
+        </index>
+      </indexes>
     </table>
     <table name="alf_store">
       <columns>
@@ -2690,12 +2713,17 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="change_txn_id" order="3">
+        <column name="server_id" order="3">
+          <type>int8</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="change_txn_id" order="4">
           <type>varchar(56)</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="commit_time_ms" order="4">
+        <column name="commit_time_ms" order="5">
           <type>int8</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
@@ -2706,22 +2734,23 @@
           <columnname order="1">id</columnname>
         </columnnames>
       </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_txn_svr">
+          <localcolumn>server_id</localcolumn>
+          <targettable>alf_server</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
       <indexes>
+        <index name="fk_alf_txn_svr" unique="false">
+          <columnnames>
+            <columnname>server_id</columnname>
+          </columnnames>
+        </index>
         <index name="idx_alf_txn_ctms" unique="false">
           <columnnames>
             <columnname>commit_time_ms</columnname>
             <columnname>id</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_txn_ctms_sc" unique="false">
-          <columnnames>
-            <columnname>commit_time_ms</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_txn_id_ctms" unique="false">
-          <columnnames>
-            <columnname>id</columnname>
-            <columnname>commit_time_ms</columnname>
           </columnnames>
         </index>
       </indexes>

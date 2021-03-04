@@ -162,16 +162,26 @@ CREATE TABLE alf_authority_alias
     CONSTRAINT fk_alf_autha_ali FOREIGN KEY (alias_id) REFERENCES alf_authority (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE alf_server
+(
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    version BIGINT NOT NULL,
+    ip_address VARCHAR(39) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY ip_address (ip_address)
+) ENGINE=InnoDB;
+
 CREATE TABLE alf_transaction
 (
     id BIGINT NOT NULL AUTO_INCREMENT,
     version BIGINT NOT NULL,
+    server_id BIGINT,
     change_txn_id VARCHAR(56) NOT NULL,
     commit_time_ms BIGINT,
     PRIMARY KEY (id),
-    KEY idx_alf_txn_ctms (commit_time_ms, id),
-    KEY idx_alf_txn_ctms_sc (commit_time_ms),
-    key idx_alf_txn_id_ctms (id, commit_time_ms)
+    KEY idx_alf_txn_ctms (commit_time_ms),
+    KEY fk_alf_txn_svr (server_id),
+    CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_store
@@ -212,8 +222,6 @@ CREATE TABLE alf_node
     KEY idx_alf_node_crd (audit_created, store_id, type_qname_id),
     KEY idx_alf_node_mor (audit_modifier, store_id, type_qname_id),
     KEY idx_alf_node_mod (audit_modified, store_id, type_qname_id),
-    KEY idx_alf_node_ver (version),
-    KEY idx_alf_node_txn (transaction_id),
     CONSTRAINT fk_alf_node_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
     CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES alf_store (id),
     CONSTRAINT fk_alf_node_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),

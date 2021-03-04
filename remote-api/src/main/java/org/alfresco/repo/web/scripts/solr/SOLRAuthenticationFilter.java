@@ -43,26 +43,32 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
- * This filter protects the solr callback urls by verifying MACs on requests and encrypting responses
- * and generating MACs on responses, if the secureComms property is set to "md5". If it is set to "https"
- * or "none", the filter does nothing to the request and response.
- * 
+ * This filter protects the solr callback urls by verifying a shared secret on the request header if
+ * the secureComms property is set to "secret". If it is set to "https", this will will just verify
+ * that the request came in through a "secure" tomcat connector. (but it will not validate the certificate
+ * on the request; this done in a different filter).
+ *
  * @since 4.0
  *
  */
-public class SOLRAuthenticationFilter implements DependencyInjectedFilter
+public class SOLRAuthenticationFilter implements DependencyInjectedFilter, InitializingBean
 {
 	public static enum SecureCommsType
 	{
-		HTTPS, NONE;
+		HTTPS, SECRET, NONE;
 		
 		public static SecureCommsType getType(String type)
 		{
 			if(type.equalsIgnoreCase("https"))
 			{
 				return HTTPS;
+			}
+			else if(type.equalsIgnoreCase("secret"))
+			{
+				return SECRET;
 			}
 			else if(type.equalsIgnoreCase("none"))
 			{
@@ -79,7 +85,13 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
     private static Log logger = LogFactory.getLog(SOLRAuthenticationFilter.class);
 
     private SecureCommsType secureComms = SecureCommsType.HTTPS;
-	
+
+	private String sharedSecret;
+
+	private String sharedSecretHeader = DEFAULT_SHAREDSECRET_HEADER;
+
+	private static final String DEFAULT_SHAREDSECRET_HEADER = "X-Alfresco-Search-Secret";
+
 	public void setSecureComms(String type)
 	{
 		try
@@ -92,6 +104,33 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 		}
 	}
 
+	public void setSharedSecret(String sharedSecret)
+	{
+		this.sharedSecret = sharedSecret;
+	}
+
+	public void setSharedSecretHeader(String sharedSecretHeader)
+	{
+		this.sharedSecretHeader = sharedSecretHeader;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception
+	{
+		if(secureComms == SecureCommsType.SECRET)
+		{
+			if(sharedSecret == null || sharedSecret.length()==0)
+			{
+				logger.fatal("Missing value for solr.sharedSecret configuration property. If solr.secureComms is set to \"secret\", a value for solr.sharedSecret is required. See https://docs.alfresco.com/search-services/latest/install/options/");
+				throw new AlfrescoRuntimeException("Missing value for solr.sharedSecret configuration property");
+			}
+			if(sharedSecretHeader == null || sharedSecretHeader.length()==0)
+			{
+				throw new AlfrescoRuntimeException("Missing value for sharedSecretHeader");
+			}
+		}
+	}
+
 	public void doFilter(ServletContext context, ServletRequest request,
 			ServletResponse response, FilterChain chain) throws IOException,
 			ServletException
@@ -99,52 +138,22 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 		HttpServletRequest httpRequest = (HttpServletRequest)request;
 		HttpServletResponse httpResponse = (HttpServletResponse)response;
 
-/*		if(secureComms == SecureCommsType.ALFRESCO)
+		if(secureComms == SecureCommsType.SECRET)
 		{
-			// Need to get as a byte array because we need to read the request twice, once for authentication
-			// and again by the web service.
-			SOLRHttpServletRequestWrapper requestWrapper = new SOLRHttpServletRequestWrapper(httpRequest, encryptionUtils);
-	
-			if(logger.isDebugEnabled())
+			if(sharedSecret.equals(httpRequest.getHeader(sharedSecretHeader)))
 			{
-				logger.debug("Authenticating " + httpRequest.getRequestURI());
-			}
-	
-			if(encryptionUtils.authenticate(httpRequest, requestWrapper.getDecryptedBody()))
-			{
-				try
-				{
-					OutputStream out = response.getOutputStream();
-	
-					GenericResponseWrapper responseWrapper = new GenericResponseWrapper(httpResponse);
-	
-					// TODO - do I need to chain to other authenticating filters - probably not?
-					// Could also remove sending of credentials with http request
-					chain.doFilter(requestWrapper, responseWrapper);
-	
-					Pair<byte[], AlgorithmParameters> pair = encryptor.encrypt(KeyProvider.ALIAS_SOLR, null, responseWrapper.getData());
-	
-					encryptionUtils.setResponseAuthentication(httpRequest, httpResponse, responseWrapper.getData(), pair.getSecond());
-
-					httpResponse.setHeader("Content-Length", Long.toString(pair.getFirst().length));
-					out.write(pair.getFirst());
-					out.close();
-				}
-				catch(Exception e)
-				{
-					throw new AlfrescoRuntimeException("", e);
-				}
+				chain.doFilter(request, response);
 			}
 			else
 			{
-				httpResponse.setStatus(401);
+				httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication failure");
 			}
 		}
-		else */if(secureComms == SecureCommsType.HTTPS)
+		else if(secureComms == SecureCommsType.HTTPS)
 		{
 			if(httpRequest.isSecure())
 			{
-				// https authentication
+				// https authentication; cert got verified in X509 filter
 				chain.doFilter(request, response);
 			}
 			else
@@ -158,128 +167,4 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 		}
 	}
 
-    protected boolean validateTimestamp(String timestampStr)
-    {
-    	if(timestampStr == null || timestampStr.equals(""))
-    	{
-    		throw new AlfrescoRuntimeException("Missing timestamp on request");
-    	}
-    	long timestamp = -1;
-    	try
-    	{
-    		timestamp = Long.valueOf(timestampStr);
-    	}
-    	catch(NumberFormatException e)
-    	{
-    		throw new AlfrescoRuntimeException("Invalid timestamp on request");
-    	}
-    	if(timestamp == -1)
-    	{
-    		throw new AlfrescoRuntimeException("Invalid timestamp on request");
-    	}
-    	long currentTime = System.currentTimeMillis();
-    	return((currentTime - timestamp) < 30 * 1000); // 5s
-    }
-    
-/*    private static class SOLRHttpServletRequestWrapper extends HttpServletRequestWrapper
-    {
-    	private byte[] body;
-
-    	SOLRHttpServletRequestWrapper(HttpServletRequest req, EncryptionUtils encryptionUtils) throws IOException
-    	{
-    		super(req);
-    		this.body = encryptionUtils.decryptBody(req);
-    	}
-
-    	byte[] getDecryptedBody()
-    	{
-    		return body;
-    	}
-
-    	public ServletInputStream getInputStream()
-    	{
-    		final InputStream in = (body != null ? new ByteArrayInputStream(body) : null);
-    		return new ServletInputStream()
-    		{
-				public int read() throws IOException
-				{
-					if(in == null)
-					{
-						return -1;
-					}
-					else
-					{
-						int i = in.read();
-						if(i == -1)
-						{
-							in.close();
-						}
-						return i;
-					}
-				}
-    		};
-    	}
-    }*/
-    
-    private static class ByteArrayServletOutputStream extends ServletOutputStream
-    {
-    	private ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-    	ByteArrayServletOutputStream()
-    	{
-    	}
-
-    	public byte[] getData()
-    	{
-    		return out.toByteArray();
-    	}
-    	
-		@Override
-		public void write(int b) throws IOException
-		{
-			out.write(b);
-		}
-    }
-    
-    public static class GenericResponseWrapper extends HttpServletResponseWrapper { 
-    	private ByteArrayServletOutputStream output;
-    	private int contentLength;
-    	private String contentType;
-
-    	public GenericResponseWrapper(HttpServletResponse response) { 
-    		super(response);
-    		output = new ByteArrayServletOutputStream();
-    	} 
-
-    	public byte[] getData() { 
-    		return output.getData(); 
-    	} 
-
-    	public ServletOutputStream getOutputStream() { 
-    		return output; 
-    	} 
-
-    	public PrintWriter getWriter() { 
-    		return new PrintWriter(getOutputStream(),true); 
-    	} 
-
-    	public void setContentLength(int length) { 
-    		this.contentLength = length;
-    		super.setContentLength(length); 
-    	} 
-
-    	public int getContentLength() { 
-    		return contentLength; 
-    	} 
-
-    	public void setContentType(String type) { 
-    		this.contentType = type;
-    		super.setContentType(type); 
-    	} 
-
-
-    	public String getContentType() { 
-    		return contentType; 
-    	} 
-    } 
 }

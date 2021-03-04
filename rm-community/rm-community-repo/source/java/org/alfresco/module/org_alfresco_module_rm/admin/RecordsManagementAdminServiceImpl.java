@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -55,7 +54,6 @@ import org.alfresco.repo.dictionary.M2Constraint;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -80,6 +78,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.LockCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
@@ -101,6 +102,9 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 														  ApplicationListener<ContextRefreshedEvent>, 
 														  Ordered
 {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecordsManagementAdminServiceImpl.class);
+
     /** I18N messages*/
     private static final String MSG_SERVICE_NOT_INIT = "rm.admin.service-not-init";
     private static final String MSG_PROP_EXIST = "rm.admin.prop-exist";
@@ -113,10 +117,12 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
     /** Constants */
     private static final String CUSTOM_CONSTRAINT_TYPE = org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.class.getName();
-    private static final String CAPATIBILITY_CUSTOM_CONTRAINT_TYPE = org.alfresco.module.org_alfresco_module_dod5015.caveat.RMListOfValuesConstraint.class.getName();
+    private static final String CAPABILITY_CUSTOM_CONSTRAINT_TYPE = org.alfresco.module.org_alfresco_module_dod5015.caveat.RMListOfValuesConstraint.class.getName();
     private static final String PARAM_ALLOWED_VALUES = "allowedValues";
     private static final String PARAM_CASE_SENSITIVE = "caseSensitive";
     private static final String PARAM_MATCH_LOGIC = "matchLogic";
+
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "RecordsManagementAdminServiceImpl");
     private static final long DEFAULT_TIME = 30000L;
 
     /** Relationship service */
@@ -197,7 +203,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         {
             try
             {
-                jobLockService.refreshLock(lockToken, getLockQName(), DEFAULT_TIME, lockCallback);
+                jobLockService.refreshLock(lockToken, LOCK_QNAME, DEFAULT_TIME, lockCallback);
 
                 if (!isCustomMapInit && getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL))
                 {
@@ -226,25 +232,19 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
             {
                 try
                 {
-                    lockCallback.running.set(false);
-                    jobLockService.releaseLock(lockToken, getLockQName());
+                    lockCallback.setIsRunning(false);
+                    jobLockService.releaseLock(lockToken, LOCK_QNAME);
                 }
                 catch (LockAcquisitionException e)
                 {
-                    // Ignore
-                    if (logger.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
-                        logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "("
-                                + e.getMessage() + ")");
+                        LOGGER.debug("Lock release failed: {}: {}", LOCK_QNAME, lockToken, e);
+
                     }
                 }
             }
         }
-    }
-
-    private QName getLockQName()
-    {
-        return QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, this.getClass().getName());
     }
 
     /**
@@ -256,7 +256,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     {
         try
         {
-            return jobLockService.getLock(getLockQName(), DEFAULT_TIME);
+            return jobLockService.getLock(LOCK_QNAME, DEFAULT_TIME);
         }
         catch (LockAcquisitionException e)
         {
@@ -264,22 +264,6 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         }
     }
 
-    private class LockCallback implements JobLockRefreshCallback
-    {
-        final AtomicBoolean running = new AtomicBoolean(true);
-
-        @Override
-        public boolean isActive()
-        {
-            return running.get();
-        }
-
-        @Override
-        public void lockReleased()
-        {
-            running.set(false);
-        }
-    }
 
     /**
      * Helper method to indicate whether the custom map is initialised or not.
@@ -1283,7 +1267,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         String type = customConstraint.getType();
         if (type == null ||
             (!type.equals(CUSTOM_CONSTRAINT_TYPE) &&
-             !type.equals(CAPATIBILITY_CUSTOM_CONTRAINT_TYPE)))
+             !type.equals(CAPABILITY_CUSTOM_CONSTRAINT_TYPE)))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNEXPECTED_TYPE_CONSTRAINT, type, constraintNameAsPrefixString, CUSTOM_CONSTRAINT_TYPE));
         }

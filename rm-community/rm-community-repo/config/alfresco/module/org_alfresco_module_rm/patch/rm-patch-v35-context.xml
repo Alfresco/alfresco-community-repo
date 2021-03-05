@@ -5,7 +5,7 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <!-- RM v3.5 Patches -->
-
+   <!-- fixesFromSchema must be 3201 because we apply this patch over RMv32HoldChildAssocPatch  -->
    <bean id="rm.holdChildAssocPatch"
          parent="rm.parentModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35HoldNewChildAssocPatch">

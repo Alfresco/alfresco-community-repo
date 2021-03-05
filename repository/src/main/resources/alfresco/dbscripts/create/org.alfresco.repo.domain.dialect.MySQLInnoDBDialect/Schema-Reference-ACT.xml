@@ -898,8 +898,8 @@
       </columns>
       <primarykey name="PRIMARY">
         <columnnames>
-          <columnname order="2">GROUP_ID_</columnname>
           <columnname order="1">USER_ID_</columnname>
+          <columnname order="2">GROUP_ID_</columnname>
         </columnnames>
       </primarykey>
       <foreignkeys>

@@ -228,11 +228,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                 }
                 catch (LockAcquisitionException e)
                 {
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("Lock release failed: {}: {}", LOCK_QNAME, lockToken, e);
-
-                    }
+                    LOGGER.debug("Lock release failed: {}: {}", LOCK_QNAME, lockToken, e);
                 }
             }
         }

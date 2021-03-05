@@ -196,6 +196,8 @@ CREATE TABLE alf_transaction
     CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id)
 );
 CREATE INDEX idx_alf_txn_ctms ON alf_transaction (commit_time_ms, id);
+CREATE INDEX idx_alf_txn_ctms_sc ON alf_transaction (commit_time_ms);
+CREATE INDEX idx_alf_txn_id_ctms ON alf_transaction (id, commit_time_ms);
 CREATE INDEX fk_alf_txn_svr ON alf_transaction (server_id);
 
 CREATE SEQUENCE alf_store_seq START WITH 1 INCREMENT BY 1;
@@ -244,6 +246,8 @@ CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
 CREATE INDEX idx_alf_node_tqn ON alf_node (type_qname_id, store_id, id);
 CREATE INDEX fk_alf_node_loc ON alf_node (locale_id);
+CREATE INDEX idx_alf_node_ver ON alf_node (version);
+CREATE INDEX idx_alf_node_txn ON alf_node (transaction_id);
 
 CREATE INDEX fk_alf_store_root ON alf_store (root_node_id);
 ALTER TABLE alf_store ADD CONSTRAINT fk_alf_store_root FOREIGN KEY (root_node_id) REFERENCES alf_node (id);

@@ -26,6 +26,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.RM_CUSTOM_URI;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
+
+import java.util.List;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -34,17 +40,21 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Patch to create new hold child association to link the record to the hold
- *
+ * <p>
  * See: https://alfresco.atlassian.net/browse/APPS-659
- *
  *
  * @since 3.5
  */
 public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 {
+    /** A name for the associations created by this patch. */
+    protected static final QName PATCH_ASSOC_NAME = QName.createQName(RM_CUSTOM_URI, RMv35HoldNewChildAssocPatch.class.getSimpleName());
+
     /**
      * File plan service interface
      */
@@ -64,6 +74,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for fileplanservice
+     *
      * @param filePlanService File plan service interface
      */
     public void setFilePlanService(FilePlanService filePlanService)
@@ -73,6 +84,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for hold service
+     *
      * @param holdService Hold service interface.
      */
     public void setHoldService(HoldService holdService)
@@ -82,6 +94,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for node service
+     *
      * @param nodeService Interface for public and internal node and store operations.
      */
     public void setNodeService(NodeService nodeService)
@@ -110,10 +123,19 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
             {
                 for (NodeRef hold : holdService.getHolds(filePlan))
                 {
-                    for (ChildAssociationRef ref : nodeService.getChildAssocs(hold))
+                    List<ChildAssociationRef> frozenAssoc = nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
+                    for (ChildAssociationRef ref : frozenAssoc)
                     {
-                        holdService.removeFromHold(hold, ref.getChildRef());
-                        holdService.addToHold(hold, ref.getChildRef());
+                        NodeRef childNodeRef = ref.getChildRef();
+                        // In testing we found that this was returning more than just "contains" associations.
+                        // Possibly this is due to the code in Node2ServiceImpl.getParentAssocs not using the second parameter.
+                        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(childNodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                        boolean childContainedByHold =
+                                parentAssocs.stream().anyMatch(entry -> entry.getParentRef().equals(hold) && entry.getTypeQName().equals(ASSOC_CONTAINS));
+                        if (!childContainedByHold)
+                        {
+                            nodeService.addChild(hold, childNodeRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
+                        }
                     }
                 }
             }

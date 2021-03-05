@@ -208,24 +208,15 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                 if (!isCustomMapInit && getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL))
                 {
                     // run as System on bootstrap
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
-                        public Object doWork()
-                        {
-                            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                            {
-                                public Void execute()
-                                {
-                                    // initialise custom properties
-                                    initCustomMap();
-                                    return null;
-                                }
-                            };
-                            transactionService.getRetryingTransactionHelper().doInTransaction(callback);
-
+                    AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                        transactionService.getRetryingTransactionHelper()
+                                          .doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                            // initialise custom properties
+                            initCustomMap();
                             return null;
-                        }
-                    }, AuthenticationUtil.getSystemUserName());
+                        });
+                        return null;
+                    });
                 }
             }
             finally

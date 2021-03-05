@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -634,9 +634,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         {
             try
             {
-                // if the name property changes the rename method of the file folder
-                // service should be called rather than updating the property directly
-                this.fileFolderService.rename(nodeRef, (String) fieldData.getValue());
+                if (!fileInfo.getName().equals(fieldData.getValue()))
+                {
+                    // if the name property changes, the rename method of the file folder
+                    // service should be called rather than updating the property directly
+                    this.fileFolderService.rename(nodeRef, (String) fieldData.getValue());
+                }
             }
             catch (FileExistsException fee)
             {

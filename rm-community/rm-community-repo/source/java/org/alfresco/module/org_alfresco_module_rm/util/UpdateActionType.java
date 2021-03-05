@@ -38,5 +38,20 @@ import org.alfresco.api.AlfrescoPublicApi;
 public enum UpdateActionType
 {
     ADD,
-    REMOVE
+    REMOVE;
+
+    public static UpdateActionType valueOfIgnoreCase(String name)
+    {
+        UpdateActionType actionType;
+        try
+        {
+            actionType = UpdateActionType.valueOf(name.toUpperCase());
+        }
+        catch (Exception e)
+        {
+            throw new IllegalArgumentException("Could not find enum with name '" + name + "'. Not one of the values accepted for Enum class: [ADD, REMOVE]");
+        }
+
+        return actionType;
+    }
 }

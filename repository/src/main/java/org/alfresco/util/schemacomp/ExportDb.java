@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -349,20 +350,20 @@ public class ExportDb
                     pk = new PrimaryKey(pkName);
                 }
 
-                int columnOrder = primarykeycols.getInt("KEY_SEQ");
-                pk.getColumnOrders().add(columnOrder);
-
                 // We should add columns ordered by the KEY_SEQ rather than by the column name
                 // Populating map with key sequences and column names for a proper sorting later.
+                int columnOrder = primarykeycols.getInt("KEY_SEQ");
                 String columnName = primarykeycols.getString("COLUMN_NAME");
                 keySeqsAndColumnNames.put(columnOrder, columnName);
             }
 
             List<String> keyseqSortedColumnNames = new LinkedList<>();
-            for (int keySeq: keySeqsAndColumnNames.keySet())
+            List<Integer> keySeqSortedColumnOrders = keySeqsAndColumnNames.keySet().stream().sorted().collect(Collectors.toList());
+            for (int keySeq: keySeqSortedColumnOrders)
             {
                 keyseqSortedColumnNames.add(keySeqsAndColumnNames.get(keySeq));
             }
+            pk.setColumnOrders(keySeqSortedColumnOrders);
             pk.setColumnNames(keyseqSortedColumnNames);
 
             primarykeycols.close();

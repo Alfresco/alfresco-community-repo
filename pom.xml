@@ -96,8 +96,8 @@
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.2.1-A2</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.4.0-A2</alfresco.aos-module.version>
+        <alfresco.googledrive.version>3.2.1</alfresco.googledrive.version>
+        <alfresco.aos-module.version>1.4.0</alfresco.aos-module.version>
 
         <dependency.postgresql.version>42.2.19</dependency.postgresql.version>
         <dependency.mysql.version>8.0.23</dependency.mysql.version>

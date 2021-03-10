@@ -23,7 +23,7 @@
     <properties>
         <acs.version.major>7</acs.version.major>
         <acs.version.minor>0</acs.version.minor>
-        <acs.version.revision>0</acs.version.revision>
+        <acs.version.revision>1</acs.version.revision>
         <acs.version.label />
 
         <version.edition>Community</version.edition>

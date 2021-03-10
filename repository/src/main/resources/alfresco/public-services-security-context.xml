@@ -117,6 +117,7 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="maxItemBatchSize" value="${system.fixedACLsUpdater.maxItemBatchSize}"/>
         <property name="numThreads" value="${system.fixedACLsUpdater.numThreads}"/>
+        <property name="forceSharedACL" value="${system.fixedACLsUpdater.forceSharedACL}"/>
         <property name="lockTimeToLive" value="${system.fixedACLsUpdater.lockTTL}"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="policyIgnoreUtil" ref="policyIgnoreUtil"/>

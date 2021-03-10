@@ -1483,7 +1483,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             // Update ACLs for moved tree
             Long newParentAclId = newParentNode.getAclId();
-            accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId);
+
+            // Verify if parent has aspect applied and ACL's are pending
+            if (hasNodeAspect(oldParentNodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                Long oldParentSharedAclId = (Long) this.getNodeProperty(oldParentNodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+                accessControlListDAO.updateInheritance(newChildNodeId, oldParentSharedAclId, newParentAclId);
+            }
+            else
+            {
+                accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId);
+            }
         }
         
         // Done

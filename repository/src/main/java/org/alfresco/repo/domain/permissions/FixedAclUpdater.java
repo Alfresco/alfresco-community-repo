@@ -311,7 +311,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                     }
                     catch (Exception e)
                     {
-                        log.error(e);
+                        log.error("Job could not process pending ACL node " + nodeRef + ": " + e);
+                        e.printStackTrace();
                     }
 
                     if (log.isDebugEnabled())

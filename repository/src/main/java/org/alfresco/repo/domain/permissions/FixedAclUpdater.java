@@ -92,6 +92,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     private int maxItemBatchSize = 100;
     private int numThreads = 4;
+    private boolean forceSharedACL = false;
 
     private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
     private PolicyComponent policyComponent;
@@ -131,6 +132,11 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     public void setMaxItemBatchSize(int maxItemBatchSize)
     {
         this.maxItemBatchSize = maxItemBatchSize;
+    }
+
+    public void setForceSharedACL(boolean forceSharedACL)
+    {
+        this.forceSharedACL = forceSharedACL;
     }
 
     public void setLockTimeToLive(long lockTimeToLive)
@@ -280,20 +286,27 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                     Long inheritFrom = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_INHERIT_FROM_ACL);
                     Long sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
 
-                    // set inheritance using retrieved prop
-                    accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace, true, true);
-
-                    // Remove aspect
-                    accessControlListDAO.removePendingAclAspect(nodeId);
-
-                    if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+                    try
                     {
-                        boolean transformedToAsyncOperation = toBoolean(
-                                (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
+                        // set inheritance using retrieved prop
+                        accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace, true, forceSharedACL);
 
-                        OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate
-                                .get(ContentModel.TYPE_BASE);
-                        onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
+                        // Remove aspect
+                        accessControlListDAO.removePendingAclAspect(nodeId);
+
+                        if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+                        {
+                            boolean transformedToAsyncOperation = toBoolean(
+                                    (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
+
+                            OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate
+                                    .get(ContentModel.TYPE_BASE);
+                            onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
+                        }
+                    }
+                    catch (ConcurrencyFailureException e)
+                    {
+                        log.error(e);
                     }
 
                     if (log.isDebugEnabled())

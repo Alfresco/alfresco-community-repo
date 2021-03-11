@@ -120,8 +120,6 @@ public class FixedAclUpdaterTest extends TestCase
         homeFolderNodeRef = repository.getCompanyHome();
         maxTransactionTime = MAX_TRANSACTION_TIME_DEFAULT;
         setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
-        
-        txnHelper.setMaxRetries(1);
     }
 
     @Override
@@ -767,8 +765,12 @@ public class FixedAclUpdaterTest extends TestCase
 
             ACLComparator aclComparator = new ACLComparator(originFolderWithPendingAclChild);
 
+            // Trigger job without forcing the shared ACL, 1 error is expected
+            triggerFixedACLJob(false);
+            assertEquals("Unexpected number of errors", 1, getNodesCountWithPendingFixedAclAspect());
+
             // Trigger job forcing the shared ACL
-            triggerFixedACLJob();
+            triggerFixedACLJob(true);
 
             assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
             assertTrue("Child of node with conflict does not have correct permissions",
@@ -1551,12 +1553,18 @@ public class FixedAclUpdaterTest extends TestCase
 
     private void triggerFixedACLJob()
     {
+        triggerFixedACLJob(false);
+    }
+
+    private void triggerFixedACLJob(boolean forceSharedACL)
+    {
         // run the fixedAclUpdater until there is nothing more to fix (running the updater may create more to fix up) or
         // the count doesn't change for 3 cycles, meaning we have a problem.
         txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
             int count = 0;
             int previousCount = 0;
             int rounds = 0;
+            fixedAclUpdater.setForceSharedACL(forceSharedACL);
             do
             {
                 previousCount = count;

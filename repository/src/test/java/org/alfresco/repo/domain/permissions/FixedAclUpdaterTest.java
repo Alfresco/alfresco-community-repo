@@ -90,8 +90,8 @@ public class FixedAclUpdaterTest extends TestCase
     private CheckOutCheckInService checkOutCheckInService;
     private ContentService contentService;
     private AuthorityService authorityService;
-    private static final long MAX_TRANSACTION_TIME_DEFAULT = 50;
-    private static final int[] filesPerLevelMoreFolders = { 5, 5, 5, 5, 1, 1, 1 };
+    private static final long MAX_TRANSACTION_TIME_DEFAULT = 10;
+    private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1 };
     private static final int[] filesPerLevelMoreFiles = { 5, 100 };
     private long maxTransactionTime;
     private static HashMap<Integer, Class<?>> errors;
@@ -765,7 +765,7 @@ public class FixedAclUpdaterTest extends TestCase
 
             ACLComparator aclComparator = new ACLComparator(originFolderWithPendingAclChild);
 
-            // Trigger job without forcing the shared ACL, 1 error is expected
+            // Trigger job without forcing the shared ACL, only 1 error is expected
             triggerFixedACLJob(false);
             assertEquals("Unexpected number of errors", 1, getNodesCountWithPendingFixedAclAspect());
 

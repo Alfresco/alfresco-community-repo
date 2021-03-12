@@ -1596,8 +1596,13 @@ public class FixedAclUpdaterTest extends TestCase
                         isDescendent = true;
                     }
                 }
+
                 if (isDescendent && nodeDAO.getNodeType(nodeDAO.getNodePair(nodeRef).getFirst()).equals(nodeType))
                 {
+                    // If folder, the tests will need a child and a grandchild to verify permissions
+                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef)) {
+                        continue;
+                    }
                     return nodeRef;
                 }
             }
@@ -1617,12 +1622,28 @@ public class FixedAclUpdaterTest extends TestCase
                 NodeRef nodeRef = nodesWithAclPendingAspect.get(i);
                 if (nodeDAO.getNodeType(nodeDAO.getNodePair(nodeRef).getFirst()).equals(nodeType))
                 {
+                    // If folder, the tests will need a child and a grandchild to verify permissions
+                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef)) {
+                        continue;
+                    }
                     return nodeRef;
                 }
             }
             return null;
         }, false, true);
 
+    }
+
+    private boolean hasGrandChilden(NodeRef nodeRef)
+    {
+        Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
+        Long childId = getChild(nodeId);
+        Long grandChild = null;
+        if (childId != null)
+        {
+            grandChild = getChild(childId);
+        }
+        return (grandChild != null);
     }
 
     private void deleteNodes(NodeRef folder)

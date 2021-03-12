@@ -806,6 +806,7 @@
    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" parent="recordsManagementAdminBase">
       <property name="relationshipService" ref="RelationshipService" />
       <property name="transactionService" ref="transactionService"/>
+      <property name="jobLockService" ref="jobLockService"/>
       <property name="customisableTypes">
          <list>
             <value>rma:recordCategory</value>

@@ -338,6 +338,13 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         return changes;
     }
 
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall, boolean forceSharedACL)
+    {
+        List<AclChange> changes = new ArrayList<AclChange>();
+        setFixedAcls(getNodeIdNotNull(parent), inheritFrom, null, sharedAclToReplace, changes, false, asyncCall, true, forceSharedACL);
+        return changes;
+    }
+
     public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes)
     {
         // Nothing to do: no nodes change as a result of ACL changes
@@ -380,7 +387,32 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
      *            recursion is stopped using propagateOnChildren parameter(set on false) and those nodes for which the method execution was not finished 
      *            in the classical way, will have ASPECT_PENDING_FIX_ACL, which will be used in {@link FixedAclUpdater} for later processing
      */
-    public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set, boolean asyncCall, boolean propagateOnChildren) 
+    public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set, boolean asyncCall, boolean propagateOnChildren)
+    {
+        setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, false, true, false);
+    }
+
+    /**
+     * Support to set a shared ACL on a node and all of its children
+     * 
+     * @param nodeId
+     *            the parent node
+     * @param inheritFrom
+     *            the parent node's ACL
+     * @param mergeFrom
+     *            the shared ACL, if already known. If <code>null</code>, will be retrieved / created lazily
+     * @param changes
+     *            the list in which to record changes
+     * @param set
+     *            set the shared ACL on the parent ?
+     * @param asyncCall
+     *            function may require asynchronous call depending the execution time; if time exceeds configured <code>fixedAclMaxTransactionTime</code> value,
+     *            recursion is stopped using propagateOnChildren parameter(set on false) and those nodes for which the method execution was not finished 
+     *            in the classical way, will have ASPECT_PENDING_FIX_ACL, which will be used in {@link FixedAclUpdater} for later processing
+     * @param forceSharedACL
+     *            When a child node has an unexpected ACL, force it to assume the new shared ACL instead of throwing a concurrency exception.
+     */
+    public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set, boolean asyncCall, boolean propagateOnChildren, boolean forceSharedACL)
     {
         if (log.isDebugEnabled())
         {
@@ -431,14 +463,14 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                
                 if (acl == null)
                 {
-                    propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
+                    propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren, forceSharedACL);
                 }
                 else
                 {
                     // Still has old shared ACL or already replaced
                     if(acl.equals(sharedAclToReplace) || acl.equals(mergeFrom) || acl.equals(currentAcl))
                     {
-                        propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
+                        propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren, forceSharedACL);
                     }
                     else
                     {
@@ -457,7 +489,20 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                         }
                         else if (dbAcl.getAclType() == ACLType.SHARED)
                         {
-                            throw new ConcurrencyFailureException("setFixedAcls: unexpected shared acl: "+dbAcl);
+                            if (forceSharedACL)
+                            {
+                                log.warn("Forcing shared ACL on node: " + child.getId() + " ( "
+                                        + nodeDAO.getNodePair(child.getId()).getSecond() + ") - " + dbAcl);
+                                sharedAclToReplace = acl;
+                                propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace,
+                                        changes, false, asyncCall, propagateOnChildren, forceSharedACL);
+                            }
+                            else
+                            {
+                                throw new ConcurrencyFailureException(
+                                        "setFixedAcls: unexpected shared acl: " + dbAcl + " on node " + child.getId() + " ( "
+                                                + nodeDAO.getNodePair(child.getId()).getSecond() + ")");
+                            }
                         }
                     }
                 }
@@ -506,7 +551,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
      * 
      */
     private boolean setFixAclPending(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace,
-            List<AclChange> changes, boolean set, boolean asyncCall, boolean propagateOnChildren)
+            List<AclChange> changes, boolean set, boolean asyncCall, boolean propagateOnChildren, boolean forceSharedACL)
     {
         // check transaction time
         long transactionStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
@@ -514,7 +559,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         if (transactionTime < fixedAclMaxTransactionTime)
         {
             // make regular method call if time is under max transaction configured time
-            setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, asyncCall, propagateOnChildren);
+            setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, asyncCall, propagateOnChildren, forceSharedACL);
             return true;
         }
 

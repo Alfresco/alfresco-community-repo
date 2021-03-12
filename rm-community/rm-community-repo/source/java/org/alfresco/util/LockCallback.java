@@ -24,34 +24,31 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.util;
 
-import org.alfresco.api.AlfrescoPublicApi;
+package org.alfresco.util;
 
-/**
- * An enumeration for the methods of updating a collection of immutable objects.
- *
- * @author Tom Page
- * @since 2.5
- */
-@AlfrescoPublicApi
-public enum UpdateActionType
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+
+public class LockCallback implements JobLockRefreshCallback
 {
-    ADD,
-    REMOVE;
+    private final AtomicBoolean running = new AtomicBoolean(true);
 
-    public static UpdateActionType valueOfIgnoreCase(String name)
+    @Override
+    public boolean isActive()
     {
-        UpdateActionType actionType;
-        try
-        {
-            actionType = UpdateActionType.valueOf(name.toUpperCase());
-        }
-        catch (Exception e)
-        {
-            throw new IllegalArgumentException("Could not find enum with name '" + name + "'. Not one of the values accepted for Enum class: [ADD, REMOVE]");
-        }
+        return running.get();
+    }
 
-        return actionType;
+    @Override
+    public void lockReleased()
+    {
+        running.set(false);
+    }
+
+    public void setIsRunning(boolean isRunning)
+    {
+        this.running.set(isRunning);
     }
 }

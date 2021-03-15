@@ -32,6 +32,11 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
@@ -389,8 +394,44 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         //NOOP
     }
 
+    private static ThreadFactory newThreadFactory(String prefix)
+    {
+        AtomicInteger count = new AtomicInteger();
+
+        return new ThreadFactory()
+        {
+            @Override
+            public Thread newThread(Runnable r)
+            {
+                Thread t = new Thread(r);
+                t.setName(prefix+count.incrementAndGet());
+                return t;
+            }
+        };
+    }
+
+    private static ThreadPoolExecutor newThreadPool(int size)
+    {
+        ThreadFactory threadFactory = newThreadFactory("alfresco-events");
+
+        ThreadPoolExecutor pool;
+        int maxSize = size;
+        int coreSize = size;
+        pool = new ThreadPoolExecutor(
+            coreSize, maxSize,
+            60L, TimeUnit.SECONDS,
+            new SynchronousQueue<Runnable>(),
+            threadFactory,
+            new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+
+        return pool;
+    }
+
     protected class EventTransactionListener extends TransactionListenerAdapter
     {
+        private ThreadPoolExecutor pool = newThreadPool(10);
+
         @Override
         public void afterCommit()
         {
@@ -427,6 +468,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         }
 
         protected void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
+        {
+            pool.execute(()-> sendEventNow(nodeRef, consolidator));
+        }
+
+        private void sendEventNow(NodeRef nodeRef, EventConsolidator consolidator)
         {
             if (consolidator.isTemporaryNode())
             {
@@ -469,6 +515,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
+            pool.execute(()-> sendEventNow(childAssociationRef, consolidator));
+        }
+
+        private void sendEventNow(ChildAssociationRef childAssociationRef,
+                ChildAssociationEventConsolidator consolidator)
+        {
             if (consolidator.isTemporaryChildAssociation())
             {
                 if (LOGGER.isTraceEnabled())
@@ -509,6 +561,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
+            pool.execute(()-> sendEventNow(peerAssociationRef, consolidator));
+        }
+
+        private void sendEventNow(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
+        {
             if (consolidator.isTemporaryPeerAssociation())
             {
                 if (LOGGER.isTraceEnabled())
@@ -533,6 +590,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 LOGGER.trace("List of Events:" + listOfEvents);
                 LOGGER.trace("Sending event:" + event);
             }
+
             // Need to execute this in another read txn because Camel expects it
             transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 event2MessageProducer.send(event);

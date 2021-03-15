@@ -11,7 +11,7 @@ jobs:
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
         - |
-          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
           else
             travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
@@ -19,7 +19,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-community-rest-api -am
       before_script:
         - |
-          if [[ ${TRAVIS_BRANCH} == *community* ]]; then
+          if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
             bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH false
           else
             bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH false
@@ -30,6 +30,7 @@ jobs:
 
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      if: commit_message !~ /\[tests on community\]/
       addons:
         artifacts:
           paths:
@@ -51,6 +52,7 @@ jobs:
 
     - name: "Enterprise Rest API WORM Tests"
       stage: Tests
+      if: commit_message !~ /\[tests on community\]/
       addons:
         artifacts:
           paths:
@@ -72,6 +74,7 @@ jobs:
 
     - name: "Enterprise Rest API Cluster Tests"
       stage: Tests
+      if: commit_message !~ /\[tests on community\]/
       addons:
         artifacts:
           paths:

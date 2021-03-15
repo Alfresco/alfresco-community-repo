@@ -26,6 +26,7 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
+import static org.alfresco.rest.rm.community.model.audit.AuditEvents.LOGIN_SUCCESSFUL;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.LOGIN_UNSUCCESSFUL;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.AssertJUnit.assertTrue;
@@ -71,5 +72,25 @@ public class AuditLoginEventsTests extends BaseRMRestTest
         STEP("Check the audit log contains only the entries for the login unsuccessful event.");
         assertTrue("The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_UNSUCCESSFUL.eventDisplayName)));
+    }
+    /**
+     * Given I have tried to login using valid credentials
+     * When I view the RM audit filtered by Login successful event
+     * Then the audit log contains only the entries for the Login successful event
+     */
+    @Test
+    public void filterByLoginSuccessful() throws Exception
+    {
+        rmAuditService.clearAuditLog();
+        restClient.authenticateUser(getAdminUser());
+        restClient.withCoreAPI().getSites();
+
+        STEP("Get the list of audit entries for the login unsuccessful event.");
+        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(),
+                LOGIN_SUCCESSFUL);
+
+        STEP("Check the audit log contains only the entries for the login unsuccessful event.");
+        assertTrue("The list of events is not filtered by " + LOGIN_SUCCESSFUL.event,
+                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_SUCCESSFUL.eventDisplayName)));
     }
 }

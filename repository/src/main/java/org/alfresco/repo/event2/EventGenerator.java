@@ -32,7 +32,7 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Executor;
 
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
@@ -96,7 +96,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
 
-    private ThreadPoolExecutor threadPoolExecutor;
+    private Executor threadPoolExecutor;
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
@@ -201,7 +201,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.nodeResourceHelper = nodeResourceHelper;
     }
 
-    public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
+    public void setThreadPoolExecutor(Executor threadPoolExecutor)
     {
         this.threadPoolExecutor = threadPoolExecutor;
     }

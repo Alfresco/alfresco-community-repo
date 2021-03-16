@@ -31,6 +31,7 @@ import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import javax.jms.ConnectionFactory;
 
@@ -104,6 +105,10 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Autowired
     protected ObjectMapper event2ObjectMapper;
 
+    @Autowired
+    protected EventGenerator eventGenerator;
+
+
     protected NodeRef rootNodeRef;
 
     @BeforeClass
@@ -140,6 +145,15 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
                     storeRef.getIdentifier());
             }
             return nodeService.getRootNode(storeRef);
+        });
+        
+        eventGenerator.setThreadPoolExecutor(new Executor()
+        {
+            @Override
+            public void execute(Runnable command)
+            {
+                command.run();
+            }
         });
     }
 

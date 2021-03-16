@@ -91,6 +91,11 @@ public interface AccessControlListDAO
      */
     public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall);
 
+    /**
+     * Set the inheritance on a given node and it's children. If an unexpected ACL occurs in a child, it can be overriden by setting forceSharedACL
+     */
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall, boolean forceSharedACL);
+
     public Long getIndirectAcl(NodeRef nodeRef);
 
     public Long getInheritedAcl(NodeRef nodeRef);

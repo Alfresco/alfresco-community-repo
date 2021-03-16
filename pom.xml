@@ -34,42 +34,6 @@
       <maven>3.3.9</maven>
    </prerequisites>
 
-   <repositories>
-      <repository>
-         <id>alfresco-internal</id>
-         <name>Alfresco Internal Repository</name>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/internal/</url>
-      </repository>
-      <repository>
-         <id>alfresco-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-      </repository>
-      <repository>
-         <id>alfresco-public-snapshots</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-      </repository>
-   </repositories>
-
-   <pluginRepositories>
-      <pluginRepository>
-         <id>alfresco-private</id>
-         <name>Alfresco Internal Repository</name>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-plugin-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-plugin-public-snapshots</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-      </pluginRepository>
-   </pluginRepositories>
-
    <distributionManagement>
       <repository>
          <id>alfresco-internal</id>
@@ -98,18 +62,6 @@
             <module>rm-automation</module>
             <module>rm-benchmark</module>
          </modules>
-         <repositories>
-            <repository>
-               <id>alfresco-internal</id>
-               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-            </repository>
-         </repositories>
-         <pluginRepositories>
-            <pluginRepository>
-               <id>alfresco-private</id>
-               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-            </pluginRepository>
-         </pluginRepositories>
       </profile>
       <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
       <profile>

@@ -81,7 +81,7 @@ public class AuditLoginEventsTests extends BaseRMRestTest
     @Test
     public void filterByLoginSuccessful() throws Exception
     {
-        rmAuditService.clearAuditLog();
+        //rmAuditService.clearAuditLog();
         restClient.authenticateUser(getAdminUser());
         restClient.withCoreAPI().getSites();
 

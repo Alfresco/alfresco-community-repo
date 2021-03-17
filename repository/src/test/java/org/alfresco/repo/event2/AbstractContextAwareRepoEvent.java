@@ -105,7 +105,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Autowired
     protected ObjectMapper event2ObjectMapper;
 
-    @Autowired
+    @Autowired @Qualifier("eventGeneratorV2")
     protected EventGenerator eventGenerator;
 
 
@@ -146,7 +146,10 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             }
             return nodeService.getRootNode(storeRef);
         });
-        
+    }
+
+    @Before
+    public void forceEventGeneratorToBeSynchronous() {
         eventGenerator.setThreadPoolExecutor(new Executor()
         {
             @Override

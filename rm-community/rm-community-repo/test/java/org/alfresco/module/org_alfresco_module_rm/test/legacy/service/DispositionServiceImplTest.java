@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -969,7 +969,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             public DispositionActionDefinition run() throws Exception
             {
                 DispositionActionDefinition actionDefinition = testRM386DispositionSchedule.getDispositionActionDefinitionByName("cutoff");
-                assertNotNull(actionDefinition);
+                assertNotNull( "Expected an action definition", actionDefinition);
 
                 Map<QName, Serializable> adParams = new HashMap<>(3);
 

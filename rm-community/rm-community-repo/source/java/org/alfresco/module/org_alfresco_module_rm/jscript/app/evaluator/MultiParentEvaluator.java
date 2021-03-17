@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -55,14 +55,13 @@ public class MultiParentEvaluator extends BaseEvaluator
         {
             public Boolean doWork()
             {
-               
                 // get parent associations
                 List<ChildAssociationRef> parents = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                 int count = 0;
                 for (ChildAssociationRef parent : parents)
                 {
                     // count file plan component parents
-                    if (nodeService.hasAspect(parent.getParentRef(), ASPECT_FILE_PLAN_COMPONENT))
+                    if (nodeService.hasAspect(parent.getParentRef(), ASPECT_FILE_PLAN_COMPONENT) && !nodeService.getType(parent.getParentRef()).equals(TYPE_HOLD))
                     {
                         count++;
                     }

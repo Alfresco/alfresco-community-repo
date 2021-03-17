@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -xe
 WAIT_INTERVAL=1
 COUNTER=0
 TIMEOUT=300

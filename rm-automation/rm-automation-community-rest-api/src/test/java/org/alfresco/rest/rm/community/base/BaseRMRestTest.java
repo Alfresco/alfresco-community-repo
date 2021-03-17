@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,6 +48,7 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -75,7 +76,6 @@ import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
-import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
@@ -85,7 +85,7 @@ import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -111,7 +111,7 @@ public class BaseRMRestTest extends RestTest
 
     @Autowired
     @Getter (value = PROTECTED)
-    private DataUser dataUser;
+    protected DataUserAIS dataUser;
 
     @Autowired
     @Getter(value = PROTECTED)
@@ -195,6 +195,7 @@ public class BaseRMRestTest extends RestTest
         if (rmSiteAPI.existsRMSite())
         {
             rmSiteAPI.deleteRMSite();
+            assertStatusCode(NO_CONTENT);
         }
 
         rmSiteAPI.createRMSite(rmSiteModel);

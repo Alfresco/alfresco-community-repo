@@ -4,7 +4,9 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
          http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-   <bean id="jsonConversionComponentCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+   <bean name="jsonConversionComponentCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.jsonConversionComponentCache" />
+   </bean>
 
    <!-- extending bean definition -->
    <bean id="rm.jsonConversionComponent"

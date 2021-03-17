@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -38,5 +38,20 @@ import org.alfresco.api.AlfrescoPublicApi;
 public enum UpdateActionType
 {
     ADD,
-    REMOVE
+    REMOVE;
+
+    public static UpdateActionType valueOfIgnoreCase(String name)
+    {
+        UpdateActionType actionType;
+        try
+        {
+            actionType = UpdateActionType.valueOf(name.toUpperCase());
+        }
+        catch (Exception e)
+        {
+            throw new IllegalArgumentException("Could not find enum with name '" + name + "'. Not one of the values accepted for Enum class: [ADD, REMOVE]");
+        }
+
+        return actionType;
+    }
 }

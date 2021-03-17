@@ -4,7 +4,7 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-governance-services</artifactId>
    <packaging>pom</packaging>
-   <version>3.5.0-SNAPSHOT</version>
+   <version>3.5.1-SNAPSHOT</version>
    <name>Alfresco Governance Services</name>
 
    <url>http://www.alfresco.org/</url>
@@ -34,63 +34,6 @@
       <maven>3.3.9</maven>
    </prerequisites>
 
-   <repositories>
-      <repository>
-         <id>central</id>
-         <name>Central Repository</name>
-         <url>https://repo.maven.apache.org/maven2</url>
-         <layout>default</layout>
-         <snapshots>
-            <enabled>false</enabled>
-         </snapshots>
-      </repository>
-      <repository>
-         <id>alfresco-internal</id>
-         <name>Alfresco Internal Repository</name>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/internal/</url>
-      </repository>
-      <repository>
-         <id>alfresco-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-      </repository>
-      <repository>
-         <id>alfresco-public-snapshots</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-      </repository>
-   </repositories>
-
-   <pluginRepositories>
-      <pluginRepository>
-         <id>central</id>
-         <name>Central Repository</name>
-         <url>https://repo.maven.apache.org/maven2</url>
-         <layout>default</layout>
-         <snapshots>
-            <enabled>false</enabled>
-         </snapshots>
-         <releases>
-            <updatePolicy>never</updatePolicy>
-         </releases>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-private</id>
-         <name>Alfresco Internal Repository</name>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-plugin-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-      </pluginRepository>
-      <pluginRepository>
-         <id>alfresco-plugin-public-snapshots</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-      </pluginRepository>
-   </pluginRepositories>
-
    <distributionManagement>
       <repository>
          <id>alfresco-internal</id>
@@ -119,39 +62,6 @@
             <module>rm-automation</module>
             <module>rm-benchmark</module>
          </modules>
-         <repositories>
-            <repository>
-               <id>central</id>
-               <name>Central Repository</name>
-               <url>https://repo.maven.apache.org/maven2</url>
-               <layout>default</layout>
-               <snapshots>
-                  <enabled>false</enabled>
-               </snapshots>
-            </repository>
-            <repository>
-               <id>alfresco-internal</id>
-               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-            </repository>
-         </repositories>
-         <pluginRepositories>
-            <pluginRepository>
-               <id>central</id>
-               <name>Central Repository</name>
-               <url>https://repo.maven.apache.org/maven2</url>
-               <layout>default</layout>
-               <snapshots>
-                  <enabled>false</enabled>
-               </snapshots>
-               <releases>
-                  <updatePolicy>never</updatePolicy>
-               </releases>
-            </pluginRepository>
-            <pluginRepository>
-               <id>alfresco-private</id>
-               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-            </pluginRepository>
-         </pluginRepositories>
       </profile>
       <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
       <profile>
@@ -574,8 +484,8 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>8.12</alfresco-spring-webscripts.version>
-      <api.explorer.version>7.0.0-M1</api.explorer.version>
+      <alfresco-spring-webscripts.version>8.15</alfresco-spring-webscripts.version>
+      <api.explorer.version>7.0.0-A4</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
 
@@ -584,7 +494,7 @@
       <activemq.version>5.15.8</activemq.version>
       <activemq.port1>61616</activemq.port1>
       <activemq.port2>5672</activemq.port2>
-
+      <camel.mock.version>3.7.0</camel.mock.version>
       <share.client.contextPath>/share</share.client.contextPath>
 
       <maven.javadoc.version>3.1.0</maven.javadoc.version>
@@ -601,8 +511,8 @@
       <maven.resources.version>3.1.0</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.11.3</jackson.version>
-      <jackson-databind.version>2.11.2</jackson-databind.version>
+      <jackson.version>2.12.1</jackson.version>
+      <jackson-databind.version>2.12.1</jackson-databind.version>
       <fabric8.docker.version>0.31.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.16</postgresql.version>
@@ -639,16 +549,11 @@
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
       <!-- 7.0.0 dependencies -->
-      <alfresco-community-repo.version>8.344</alfresco-community-repo.version>
+      <alfresco-community-repo.version>8.408</alfresco-community-repo.version>
    </properties>
 
    <dependencyManagement>
       <dependencies>
-         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-         </dependency>
          <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -677,7 +582,7 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <version>4.12</version>
+         <version>4.13.2</version>
          <scope>test</scope>
       </dependency>
       <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
@@ -686,6 +591,12 @@
          <artifactId>jaxb-api</artifactId>
          <version>${javax-jaxb.version}</version>
          <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>camel-mock</artifactId>
+         <version>${camel.mock.version}</version>
       </dependency>
 
       <dependency>
@@ -744,13 +655,6 @@
                            <value>${alfresco.min.version}</value>
                            <regex>(\d+)\.(\d+).*</regex>
                            <replacement>$1.$2</replacement>
-                           <failIfNoMatch>false</failIfNoMatch>
-                        </regexPropertySetting>
-                        <regexPropertySetting>
-                           <name>ags.module.version</name>
-                           <value>${project.version}</value>
-                           <regex>([0-9\.]*[0-9]).*</regex>
-                           <replacement>$1</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </regexPropertySetting>
                      </regexPropertySettings>

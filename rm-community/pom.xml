@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services</artifactId>
-      <version>3.5.0-SNAPSHOT</version>
+      <version>3.5.1-SNAPSHOT</version>
    </parent>
 
    <licenses>
@@ -73,9 +73,9 @@
    </dependencyManagement>
 
    <properties>
-      <spring.version>5.2.9.RELEASE</spring.version>
+      <spring.version>5.3.3</spring.version>
       <alfresco.min.version>7.0.0</alfresco.min.version>
-      <share.version>7.0.0-A13</share.version>
+      <share.version>7.0.0-A18</share.version>
       <!-- The properties app.amp.* need to be set for share to work. -->
       <app.filtering.enabled>true</app.filtering.enabled>
    </properties>

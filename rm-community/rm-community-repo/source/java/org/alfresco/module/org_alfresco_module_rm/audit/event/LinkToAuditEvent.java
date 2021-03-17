@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,8 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Link to audit event.
@@ -42,6 +44,19 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 @BehaviourBean
 public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy
 {
+    /** Node Service */
+    private NodeService nodeService;
+
+    /**
+     * Sets the node service
+     *
+     * @param nodeService nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
@@ -53,8 +68,9 @@ public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssocia
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
+        final NodeRef parentRef = childAssocRef.getParentRef();
         // only care about linking child associations
-        if (!childAssocRef.isPrimary())
+        if (!childAssocRef.isPrimary() && !nodeService.getType(parentRef).equals(TYPE_HOLD))
         {
             // TODO
             // add some dummy properties to indicate the details of the link?

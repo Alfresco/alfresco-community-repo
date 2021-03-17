@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -205,13 +205,13 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
                 return decide(authentication, object, config, (AssociationRef) returnedObject);
             }
-            else if (ResultSet.class.isAssignableFrom(returnedObject.getClass()))
-            {
-                return decide(authentication, object, config, (ResultSet) returnedObject);
-            }
             else if (PagingLuceneResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
                 return decide(authentication, object, config, (PagingLuceneResultSet) returnedObject);
+            }
+            else if (ResultSet.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                return decide(authentication, object, config, (ResultSet) returnedObject);
             }
             else if (QueryEngineResults.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -422,9 +422,11 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PagingLuceneResultSet returnedObject)
     {
-        ResultSet raw = returnedObject.getWrapped();
+        ResultSet raw = ((FilteringResultSet) returnedObject.getWrapped()).getUnFilteredResultSet();
         ResultSet filteredForPermissions = decide(authentication, object, config, raw);
-        return new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
+        PagingLuceneResultSet plrs = new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
+        plrs.setTrimmedResultSet(true);
+        return plrs;
     }
 
     private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject)

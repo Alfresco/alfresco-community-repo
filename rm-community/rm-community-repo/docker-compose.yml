@@ -10,6 +10,15 @@ services:
             CATALINA_OPTS : "
                 -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
                 "
+            JAVA_TOOL_OPTIONS: "
+               -Dencryption.keystore.type=JCEKS
+               -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding
+               -Dencryption.keyAlgorithm=DESede
+               -Dencryption.keystore.location=/usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore
+               -Dmetadata-keystore.password=mp6yc0UD9e
+               -Dmetadata-keystore.aliases=metadata
+               -Dmetadata-keystore.metadata.password=oKIWzVdEdA
+               -Dmetadata-keystore.metadata.algorithm=DESede"
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -30,14 +39,12 @@ services:
                 -Dshare.host=localhost
                 -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
                 -Dmessaging.broker.url=\"failover:(tcp://activemq:61616)?timeout=3000&jms.useCompression=true\"
-
                 -Dlocal.transform.service.enabled=${LOCAL_TRANSFORM_SERVICE_ENABLED}
                 -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
                 -DlocalTransform.imagemagick.url=http://imagemagick:8090/
                 -DlocalTransform.libreoffice.url=http://libreoffice:8090/
                 -DlocalTransform.tika.url=http://tika:8090/
                 -DlocalTransform.misc.url=http://transform-misc:8090/
-
                 -Dlegacy.transform.service.enabled=${LEGACY_TRANSFORM_SERVICE_ENABLED}
                 -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
                 -Djodconverter.url=http://libreoffice:8090/

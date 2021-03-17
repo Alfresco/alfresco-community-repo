@@ -43,17 +43,7 @@
             <pluginRepository>
                <id>alfresco-internal</id>
                <name>Alfresco Internal Repository</name>
-               <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
-            </pluginRepository>
-            <pluginRepository>
-               <id>alfresco-public</id>
-               <name>Alfresco Public Repository</name>
                <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-            </pluginRepository>
-            <pluginRepository>
-               <id>alfresco-private</id>
-               <name>Alfresco Private Repository</name>
-               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
             </pluginRepository>
          </pluginRepositories>
       </profile>
@@ -76,7 +66,7 @@
          <password>${env.MAVEN_PASSWORD}</password>
       </server>
       <server>
-         <id>alfresco-private</id>
+         <id>alfresco-public</id>
          <username>${env.MAVEN_USERNAME}</username>
          <password>${env.MAVEN_PASSWORD}</password>
       </server>

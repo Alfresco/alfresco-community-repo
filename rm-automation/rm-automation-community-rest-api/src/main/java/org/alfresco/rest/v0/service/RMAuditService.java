@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,7 +35,7 @@ import java.util.List;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.audit.AuditEvents;
 import org.alfresco.rest.v0.RMAuditAPI;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.UserModel;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class RMAuditService
     private RMAuditAPI rmAuditAPI;
 
     @Autowired
-    private DataUser dataUser;
+    private DataUserAIS dataUser;
 
     /**
      * Clear the list of audit entries as admin user.

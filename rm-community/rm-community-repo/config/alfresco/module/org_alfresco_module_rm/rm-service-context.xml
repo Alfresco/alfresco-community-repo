@@ -265,7 +265,8 @@
 
     <!--  Records Management Search Service -->
 
-    <bean id="recordsManagementSearchService" class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl">
+    <bean id="recordsManagementSearchService"
+          class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl" depends-on="org_alfresco_module_rm_resourceBundles">
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="namespaceService" ref="NamespaceService" />
@@ -390,9 +391,11 @@
         </property>
     </bean>
 
-   <!-- RM Container Cache Manager -->
-   <bean id="rmContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+    <bean name="rmContainerCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.rmContainerCache" />
+    </bean>
 
+    <!-- RM Container Cache Manager -->
    <bean id="rmContainerCacheManager" class="org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager">
      <property name="nodeService" ref="nodeService" />
      <property name="cache" ref="rmContainerCache" />
@@ -678,7 +681,9 @@
 
     <!-- Records Management Action Service -->
 
-    <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">
+    <bean id="recordsManagementActionService"
+          class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl"
+          init-method="init" depends-on="org_alfresco_module_rm_resourceBundles">
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeService" ref="nodeService"/>
     </bean>
@@ -801,6 +806,7 @@
    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" parent="recordsManagementAdminBase">
       <property name="relationshipService" ref="RelationshipService" />
       <property name="transactionService" ref="transactionService"/>
+      <property name="jobLockService" ref="jobLockService"/>
       <property name="customisableTypes">
          <list>
             <value>rma:recordCategory</value>

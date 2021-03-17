@@ -1,0 +1,8 @@
+jobs:
+  include:
+    - name: "Deploy Maven & Docker"
+      stage: Deploy
+      install: travis_retry travis_wait 60 mvn -B -V -q clean install ${MVN_SKIP}
+      before_script: test "${TRAVIS_BRANCH}" = "master" && export IMAGE_TAG="latest" || export IMAGE_TAG="${TRAVIS_BRANCH:8}-latest"
+      script: travis_retry travis_wait 120 mvn -B -q deploy -DskipTests -Ppublish-docker-latest -Dimage.tag=${IMAGE_TAG} ${LOG_WARN}
+

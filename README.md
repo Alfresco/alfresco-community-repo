@@ -3,6 +3,22 @@
 ## Contributing
 Please refer to our [How to contribute](/CONTRIBUTING.md) guide and our [Contributor Covenant Code of Conduct](/CODE_OF_CONDUCT.md).
 
+## Configuring the ~/.m2/settings.xml file for local development
+In order to be able to pull all the necessary project dependencies, the alfresco Maven
+repositories should be configured in your local `~/.m2/settings.xml` file on your workstation.
+
+The necessary `<repository/>` and `<pluginRepository/>` configuration is available in the
+[.travis.settings.xml](.travis.settings.xml) file (_alfresco-internal_ profile),
+which is used by the project 's CI pipeline.
+Just copy the **alfresco-internal** profile into your own `~/m2/repository.xml`.
+You will also need to define an `alfresco-internal` server, but with your own Alfresco Nexus
+credentials.
+
+For additional instructions you can check the official Maven documentation:
+* [setting up repositories](https://maven.apache.org/guides/mini/guide-multiple-repositories.html)
+* [setting up servers](https://maven.apache.org/settings.html#servers)
+* [password encryption](https://maven.apache.org/guides/mini/guide-encryption.html)
+
 ## Configuring and starting Alfresco/Share
 * Clone the project (e.g. `git clone git@github.com:Alfresco/governance-services.git`)
 * Import the project as a maven project

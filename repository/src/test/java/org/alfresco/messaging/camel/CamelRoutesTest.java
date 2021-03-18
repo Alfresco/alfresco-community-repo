@@ -31,6 +31,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.amqp.AMQPEndpoint;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,7 +71,13 @@ public class CamelRoutesTest
     
     @Produce("direct-vm:alfresco.test.transacted")
     protected ProducerTemplate template4;
-    
+
+/*    @EndpointInject("amqp:queue:alfresco.test")
+    protected AMQPEndpoint amqpEndpoint;
+
+    @Produce("direct-vm:alfresco.test.to.amqp")
+    protected ProducerTemplate template5;*/
+
     @Autowired
     protected MockExceptionProcessor messagingExceptionProcessor;
     
@@ -132,6 +139,18 @@ public class CamelRoutesTest
         assertNull(mockExceptionThrowingConsumer.getLastMessage());
         
         // Check that the message was re-delivered to a second consumer
+        assertEquals(expectedBody, mockConsumer.getLastMessage());
+    }
+
+    //@Test
+    public void testAMQPRoute() throws Exception {
+        String expectedBody = "Sent from <direct-vm:alfresco.test.to.amqp>";
+
+        template4.sendBody(expectedBody);
+
+        // Wait for Camel and ActiveMQ to process
+        Thread.sleep(2000);
+
         assertEquals(expectedBody, mockConsumer.getLastMessage());
     }
 }

@@ -36,6 +36,15 @@
                 <to uri="bean:mockConsumer"/>
             </loadBalance>
         </route>
+
+        <route>
+            <from uri="direct-vm:alfresco.test.to.amqp" />
+            <to uri="amqp:queue:alfresco.test" />
+        </route>
+        <route>
+            <from uri="amqp:queue:alfresco.test" />
+            <to uri="bean:mockConsumer"/>
+        </route>
     </routeContext>
 
 </beans>

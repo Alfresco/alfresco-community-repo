@@ -424,6 +424,7 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
         @Override
         public Void call()
         {
+            liveLock.writeLock().lock();
             try
             {
                 doCall();
@@ -443,6 +444,10 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
                     runLock.writeLock().unlock();
                 }
                 return null;
+            }
+            finally
+            {
+                liveLock.writeLock().unlock();
             }
         }
 

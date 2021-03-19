@@ -153,7 +153,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
         AbstractMap.SimpleImmutableEntry<K, V> kvp = new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
         AbstractMap.SimpleImmutableEntry<K, V> priorKVP = cache.asMap().put(key, kvp);
-        return priorKVP != null && (! priorKVP.equals(kvp));
+        return (priorKVP != null && (!priorKVP.equals(kvp)));
     }
     
     @Override

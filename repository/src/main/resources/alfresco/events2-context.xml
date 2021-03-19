@@ -56,5 +56,23 @@
 
     <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2">
         <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
+        <property name="threadPoolExecutor">
+             <ref bean="eventAsyncThreadPool"/>
+        </property>
+    </bean>
+    
+    <bean id="eventAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>eventAsyncThreadPool</value>
+        </property>
+        <property name="corePoolSize">
+            <value>${repo.event2.threadPool.coreSize}</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>${repo.event2.threadPool.maximumSize}</value>
+        </property>        
+        <property name="threadPriority">
+            <value>${repo.event2.threadPool.priority}</value>
+        </property>
     </bean>
 </beans>

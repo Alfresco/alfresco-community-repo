@@ -72,7 +72,13 @@ public class CamelRoutesTest
     protected ProducerTemplate template4;
 
     @Produce("direct-vm:alfresco.test.to.activemq")
-    protected ProducerTemplate template5;
+    protected ProducerTemplate activemqTemplate;
+
+    @Produce("direct-vm:alfresco.test.to.amqp")
+    protected ProducerTemplate amqpTemplate;
+
+    @Produce("direct-vm:alfresco.test.to.jms")
+    protected ProducerTemplate jmsTemplate;
 
     @Autowired
     protected RequestProcessor requestProcessor;
@@ -142,30 +148,39 @@ public class CamelRoutesTest
     }
 
     @Test
-    public void testActivemqRoute() {
+    public void testActivemqRoute() throws InterruptedException {
         String expectedRequest = "Sent from <direct-vm:alfresco.test.to.activemq>";
 
-        Object response = template5.requestBody(expectedRequest);
+        Object response = activemqTemplate.requestBody(expectedRequest);
+
+        // Wait for Camel and ActiveMQ to process
+        Thread.sleep(1000);
 
         assertEquals(expectedRequest, requestProcessor.getLastMessage());
         assertEquals("Here is the reply to the following request: " + expectedRequest, response);
     }
 
     @Test
-    public void testAmqpRoute() {
+    public void testAmqpRoute() throws InterruptedException {
         String expectedRequest = "Sent from <direct-vm:alfresco.test.to.amqp>";
 
-        Object response = template5.requestBody(expectedRequest);
+        Object response = amqpTemplate.requestBody(expectedRequest);
+
+        // Wait for Camel and ActiveMQ to process
+        Thread.sleep(1000);
 
         assertEquals(expectedRequest, requestProcessor.getLastMessage());
         assertEquals("Here is the reply to the following request: " + expectedRequest, response);
     }
 
     @Test
-    public void testJmsRoute() {
+    public void testJmsRoute() throws InterruptedException {
         String expectedRequest = "Sent from <direct-vm:alfresco.test.to.jms>";
 
-        Object response = template5.requestBody(expectedRequest);
+        Object response = jmsTemplate.requestBody(expectedRequest);
+
+        // Wait for Camel and ActiveMQ to process
+        Thread.sleep(1000);
 
         assertEquals(expectedRequest, requestProcessor.getLastMessage());
         assertEquals("Here is the reply to the following request: " + expectedRequest, response);

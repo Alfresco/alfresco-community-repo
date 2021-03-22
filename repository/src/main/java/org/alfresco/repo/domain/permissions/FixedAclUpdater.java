@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.collect.Sets;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -79,6 +81,9 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     public static final String FIXED_ACL_ASYNC_REQUIRED_KEY = "FIXED_ACL_ASYNC_REQUIRED";
     public static final String FIXED_ACL_ASYNC_CALL_KEY = "FIXED_ACL_ASYNC_CALL";
+
+    /** A set of listeners to receive callback events whenever permissions are updated by this class. */
+    private static Set<FixedAclUpdaterListener> listeners = Sets.newConcurrentHashSet();
 
     private ApplicationContext applicationContext;
     private JobLockService jobLockService;
@@ -146,6 +151,12 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     public void setPolicyIgnoreUtil(PolicyIgnoreUtil policyIgnoreUtil)
     {
         this.policyIgnoreUtil = policyIgnoreUtil;
+    }
+
+    /** Register a {@link FixedAclUpdaterListener} to be notified when a node is updated by an instance of this class. */
+    public static void registerListener(FixedAclUpdaterListener listener)
+    {
+        listeners.add(listener);
     }
 
     public void init()
@@ -294,6 +305,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                                 .get(ContentModel.TYPE_BASE);
                         onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
                     }
+
+                    listeners.forEach(listener -> listener.permissionsUpdated(nodeRef));
 
                     if (log.isDebugEnabled())
                     {

@@ -209,3 +209,8 @@ jobs:
       after_script:
         - bash scripts/getLogs.sh
         - bash scripts/cleanup.sh
+
+    - name: "Source Clear Scan (SCA)"
+      stage: Tests
+      if: branch = master OR branch =~ /release\/V3.\d+.*/
+      script: travis_wait 30 bash scripts/source_clear.sh

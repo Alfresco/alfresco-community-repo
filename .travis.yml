@@ -42,7 +42,6 @@ stages:
   - name: Build AGS
   - name: Tests
     if: commit_message !~ /\[skip tests\]/
-  - name: Security Scans
   - name: Release
     if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message =~ /\[(community|enterprise) release .*\]/
   - name: Publish
@@ -72,11 +71,3 @@ jobs:
       before_script: source scripts/setUpMavenPhase.sh
       script:
         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - name: "Source Clear Scan (SCA)"
-      stage: Security Scans
-      script: travis_wait 30 bash scripts/source_clear.sh
-    - name: "Static Analysis (SAST)"
-      stage: Security Scans
-      script:
-       - echo "Static Analysis (SAST)"

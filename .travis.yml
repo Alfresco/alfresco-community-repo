@@ -210,6 +210,11 @@ jobs:
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
+    - name: "Messaging tests"
+      before_script:
+        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=CamelRoutesTest
+
     - name: "REST API TAS tests part1"
       if: branch = master OR commit_message =~ /\[tas\]/
       before_script:

@@ -73,6 +73,7 @@ public class AuditLoginEventsTests extends BaseRMRestTest
         assertTrue("The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_UNSUCCESSFUL.eventDisplayName)));
     }
+    
     /**
      * Given I have tried to login using valid credentials
      * When I view the RM audit filtered by Login successful event
@@ -81,15 +82,14 @@ public class AuditLoginEventsTests extends BaseRMRestTest
     @Test
     public void filterByLoginSuccessful() throws Exception
     {
-        //rmAuditService.clearAuditLog();
         restClient.authenticateUser(getAdminUser());
         restClient.withCoreAPI().getSites();
 
-        STEP("Get the list of audit entries for the login unsuccessful event.");
+        STEP("Get the list of audit entries for the login successful event.");
         List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(),
                 LOGIN_SUCCESSFUL);
 
-        STEP("Check the audit log contains only the entries for the login unsuccessful event.");
+        STEP("Check the audit log contains only the entries for the login successful event.");
         assertTrue("The list of events is not filtered by " + LOGIN_SUCCESSFUL.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_SUCCESSFUL.eventDisplayName)));
     }

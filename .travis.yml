@@ -213,7 +213,7 @@ jobs:
     - name: "Messaging tests"
       before_script:
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=CamelRoutesTest
+      script: travis_wait 20 mvn -B test -pl repository -Dtest=CamelRoutesTest,CamelComponentsTest
 
     - name: "REST API TAS tests part1"
       if: branch = master OR commit_message =~ /\[tas\]/

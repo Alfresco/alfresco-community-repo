@@ -36,33 +36,6 @@
                 <to uri="bean:mockConsumer"/>
             </loadBalance>
         </route>
-
-        <route>
-            <from uri="direct-vm:alfresco.test.to.activemq"/>
-            <to uri="activemq:queue:alfresco.test"/>
-        </route>
-        <route>
-            <from uri="activemq:queue:alfresco.test"/>
-            <to uri="bean:requestProcessor"/>
-        </route>
-
-        <route>
-            <from uri="direct-vm:alfresco.test.to.amqp"/>
-            <to uri="amqp:queue:alfresco.test"/>
-        </route>
-        <route>
-            <from uri="amqp:queue:alfresco.test"/>
-            <to uri="bean:requestProcessor"/>
-        </route>
-
-        <route>
-            <from uri="direct-vm:alfresco.test.to.jms"/>
-            <to uri="jms:queue:alfresco.test"/>
-        </route>
-        <route>
-            <from uri="jms:queue:alfresco.test"/>
-            <to uri="bean:requestProcessor"/>
-        </route>
     </routeContext>
 
 </beans>

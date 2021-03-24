@@ -16,9 +16,6 @@
     <bean id="mockConsumer" 
         class="org.alfresco.messaging.camel.MockConsumer" />
 
-    <bean id="requestProcessor"
-          class="org.alfresco.messaging.camel.RequestProcessor" />
-
     <bean id="mockExceptionThrowingConsumer" 
         class="org.alfresco.messaging.camel.MockExceptionThrowingConsumer" />
     

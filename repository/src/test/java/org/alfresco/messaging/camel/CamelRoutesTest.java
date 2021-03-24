@@ -71,18 +71,6 @@ public class CamelRoutesTest
     @Produce("direct-vm:alfresco.test.transacted")
     protected ProducerTemplate template4;
 
-    @Produce("direct-vm:alfresco.test.to.activemq")
-    protected ProducerTemplate activemqTemplate;
-
-    @Produce("direct-vm:alfresco.test.to.amqp")
-    protected ProducerTemplate amqpTemplate;
-
-    @Produce("direct-vm:alfresco.test.to.jms")
-    protected ProducerTemplate jmsTemplate;
-
-    @Autowired
-    protected RequestProcessor requestProcessor;
-
     @Autowired
     protected MockExceptionProcessor messagingExceptionProcessor;
 
@@ -145,44 +133,5 @@ public class CamelRoutesTest
 
         // Check that the message was re-delivered to a second consumer
         assertEquals(expectedBody, mockConsumer.getLastMessage());
-    }
-
-    @Test
-    public void testActivemqRoute() throws InterruptedException {
-        String expectedRequest = "Sent from <direct-vm:alfresco.test.to.activemq>";
-
-        Object response = activemqTemplate.requestBody(expectedRequest);
-
-        // Wait for Camel and ActiveMQ to process
-        Thread.sleep(1000);
-
-        assertEquals(expectedRequest, requestProcessor.getLastMessage());
-        assertEquals("Here is the reply to the following request: " + expectedRequest, response);
-    }
-
-    @Test
-    public void testAmqpRoute() throws InterruptedException {
-        String expectedRequest = "Sent from <direct-vm:alfresco.test.to.amqp>";
-
-        Object response = amqpTemplate.requestBody(expectedRequest);
-
-        // Wait for Camel and ActiveMQ to process
-        Thread.sleep(1000);
-
-        assertEquals(expectedRequest, requestProcessor.getLastMessage());
-        assertEquals("Here is the reply to the following request: " + expectedRequest, response);
-    }
-
-    @Test
-    public void testJmsRoute() throws InterruptedException {
-        String expectedRequest = "Sent from <direct-vm:alfresco.test.to.jms>";
-
-        Object response = jmsTemplate.requestBody(expectedRequest);
-
-        // Wait for Camel and ActiveMQ to process
-        Thread.sleep(1000);
-
-        assertEquals(expectedRequest, requestProcessor.getLastMessage());
-        assertEquals("Here is the reply to the following request: " + expectedRequest, response);
     }
 }

@@ -80,9 +80,6 @@ public class CompleteRecordTests extends BaseRMRestTest
     @DataProvider (name = "IncompleteRecordsMandatoryMetadataPresent")
     public Object[][] getIncompleteRecordsMandatoryMetadataPresent() throws Exception
     {
-        //create RM site
-        createRMSite(createStandardRMSiteModel());
-
         // create electronic and non-electronic records
         return createAndVerifyRecordsInFolder();
     }
@@ -93,7 +90,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     @DataProvider (name = "Supplied node is not a record")
     public Object[][] getNodesWhichAreNotRecords() throws Exception
     {
-        createRMSiteIfNotExists();
+        createRMSite(createStandardRMSiteModel());
         return new String[][]
             {
                 { createCategoryFolderInFilePlan().getId() },
@@ -113,7 +110,8 @@ public class CompleteRecordTests extends BaseRMRestTest
     @Test
         (
             dataProvider = "IncompleteRecordsMandatoryMetadataMissing",
-            description = "Cannot complete electronic and non-electronic records with mandatory metadata missing"
+            description = "Cannot complete electronic and non-electronic records with mandatory metadata missing",
+            priority = 1
         )
     @AlfrescoTest (jira = "RM-4431")
     public void completeRecordWithMandatoryMetadataMissing(String electronicRecordId, String nonElectronicRecordId)
@@ -174,7 +172,8 @@ public class CompleteRecordTests extends BaseRMRestTest
     @Test
         (
             dataProvider = "Supplied node is not a record",
-            description = "Cannot complete a document that is not a record"
+            description = "Cannot complete a document that is not a record",
+            priority = 2
         )
     @AlfrescoTest (jira = "RM-4431")
     public void completeNonRecord(String nonRecordId) throws Exception

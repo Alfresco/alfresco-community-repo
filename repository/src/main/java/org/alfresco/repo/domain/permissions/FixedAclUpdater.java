@@ -81,6 +81,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     public static final String FIXED_ACL_ASYNC_REQUIRED_KEY = "FIXED_ACL_ASYNC_REQUIRED";
     public static final String FIXED_ACL_ASYNC_CALL_KEY = "FIXED_ACL_ASYNC_CALL";
+    protected static final QName LOCK_Q_NAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FixedAclUpdater");
 
     /** A set of listeners to receive callback events whenever permissions are updated by this class. */
     private static Set<FixedAclUpdaterListener> listeners = Sets.newConcurrentHashSet();
@@ -90,7 +91,6 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     private TransactionService transactionService;
     private AccessControlListDAO accessControlListDAO;
     private NodeDAO nodeDAO;
-    private QName lockQName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FixedAclUpdater");
     private long lockTimeToLive = 10000;
     private long lockRefreshTime = lockTimeToLive / 2;
 
@@ -242,7 +242,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         }
     }
 
-    private class AclWorker implements BatchProcessor.BatchProcessWorker<NodeRef>
+    protected class AclWorker implements BatchProcessor.BatchProcessWorker<NodeRef>
     {
         private Set<QName> aspects = new HashSet<>(1);
 
@@ -322,7 +322,13 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         }
     };
 
-    private class GetNodesWithAspectCallback implements NodeRefQueryCallback
+    /** Create a new AclWorker. */
+    protected AclWorker createAclWorker()
+    {
+        return new AclWorker();
+    }
+
+    class GetNodesWithAspectCallback implements NodeRefQueryCallback
     {
         private List<NodeRef> nodes = new ArrayList<>();
         private long minNodeId;
@@ -413,11 +419,11 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
         try
         {
-            lockToken = jobLockService.getLock(lockQName, lockTimeToLive, 0, 1);
-            jobLockService.refreshLock(lockToken, lockQName, lockRefreshTime, jobLockRefreshCallback);
+            lockToken = jobLockService.getLock(LOCK_Q_NAME, lockTimeToLive, 0, 1);
+            jobLockService.refreshLock(lockToken, LOCK_Q_NAME, lockRefreshTime, jobLockRefreshCallback);
 
             AclWorkProvider provider = new AclWorkProvider();
-            AclWorker worker = new AclWorker();
+            AclWorker worker = createAclWorker();
             BatchProcessor<NodeRef> bp = new BatchProcessor<>("FixedAclUpdater",
                     transactionService.getRetryingTransactionHelper(), provider, numThreads, maxItemBatchSize, applicationContext,
                     log, 100);
@@ -434,7 +440,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
             jobLockRefreshCallback.isActive.set(false);
             if (lockToken != null)
             {
-                jobLockService.releaseLock(lockToken, lockQName);
+                jobLockService.releaseLock(lockToken, LOCK_Q_NAME);
             }
         }
     }

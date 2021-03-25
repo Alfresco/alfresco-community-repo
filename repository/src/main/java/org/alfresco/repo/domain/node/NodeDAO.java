@@ -937,5 +937,4 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public Long getNextTxCommitTime(Long fromCommitTime);
 
-
 }

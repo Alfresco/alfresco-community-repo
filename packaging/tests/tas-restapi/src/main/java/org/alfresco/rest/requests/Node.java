@@ -372,6 +372,23 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
+     * Create node version rendition using POST call on '/nodes/{nodeId}/versions/{versionId}/renditions'
+     *
+     * @param renditionId id of rendition to be created
+     * @param versionId version id of node
+     * @return
+     * @throws Exception
+     */
+    public void createNodeVersionRendition(String renditionId, String versionId) throws Exception
+    {
+        String postBody = JsonBodyGenerator.keyValueJson("id", renditionId);
+        RestRequest request = RestRequest
+                    .requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/versions/{versionId}/renditions",
+                                repoModel.getNodeRef(), versionId);
+        restWrapper.processEmptyModel(request);
+    }
+
+    /**
      * Check if specified rendition exists and if not
      * create node rendition using POST call on '/nodes/{nodeId}/renditions'
      *
@@ -404,6 +421,22 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
+     * Get node version rendition using GET call on '/nodes/{nodeId}/versions/{versionId}renditions/{renditionId}
+     *
+     * @param renditionId id of rendition to be retrieved
+     * @param versionId versionId of the node
+     * @return
+     * @throws Exception
+     */
+    public RestRenditionInfoModel getNodeVersionRendition(String renditionId, String versionId) throws Exception
+    {
+        RestRequest request = RestRequest
+                    .simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}",
+                                repoModel.getNodeRef(), versionId, renditionId);
+        return restWrapper.processModel(RestRenditionInfoModel.class, request);
+    }
+
+    /**
      * Get node rendition using GET call on 'nodes/{nodeId}/renditions/{renditionId} Please note that it retries to get
      * the renditions response several times because on the alfresco server the rendition can take a while to be created.
      * 
@@ -413,6 +446,30 @@ public class Node extends ModelRequest<Node>
     public RestRenditionInfoModel getNodeRenditionUntilIsCreated(String renditionId) throws Exception
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/renditions/{renditionId}",repoModel.getNodeRef(), renditionId);
+        RestRenditionInfoModel renditions = restWrapper.processModel(RestRenditionInfoModel.class, request);
+        int retry = 0;
+        if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
+        {
+            while (renditions.getStatus().equals("NOT_CREATED") && retry < Utility.retryCountSeconds - 8)
+            {
+                Utility.waitToLoopTime(1);
+                renditions = restWrapper.processModel(RestRenditionInfoModel.class, request);
+                retry++;
+            }
+        }
+        return renditions;
+    }
+
+    /**
+     * Get node version rendition using GET call on 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId} Please note that it retries to get
+     * the renditions response several times because on the alfresco server the rendition can take a while to be created.
+     *
+     * @return
+     * @throws Exception
+     */
+    public RestRenditionInfoModel getNodeVersionRenditionUntilIsCreated(String renditionId, String versionId) throws Exception
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}",repoModel.getNodeRef(), versionId, renditionId);
         RestRenditionInfoModel renditions = restWrapper.processModel(RestRenditionInfoModel.class, request);
         int retry = 0;
         if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
@@ -453,6 +510,31 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
+     * Get node version rendition content using GET call on
+     * 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content Please note that it
+     * retries to get the renditions response several times because on the
+     * alfresco server the rendition can take a while to be created.
+     *
+     * @return
+     * @throws Exception
+     */
+    public RestResponse getNodeVersionRenditionContentUntilIsCreated(String renditionId, String versionId) throws Exception
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content", repoModel.getNodeRef(),
+                    versionId, renditionId);
+        RestResponse response = restWrapper.process(request);
+        int retry = 0;
+        while (Integer.valueOf(response.getStatusCode()).equals(HttpStatus.NOT_FOUND.value()) && retry < Utility.retryCountSeconds)
+        {
+            Utility.waitToLoopTime(1);
+            response = restWrapper.process(request);
+            retry++;
+        }
+
+        return response;
+    }
+
+    /**
      * Get node rendition content using GET call on
      * 'nodes/{nodeId}/renditions/{renditionId}/content
      *
@@ -463,6 +545,20 @@ public class Node extends ModelRequest<Node>
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/renditions/{renditionId}/content", repoModel.getNodeRef(),
                 renditionId);
+        return restWrapper.process(request);
+    }
+
+    /**
+     * Get node version rendition content using GET call on
+     * 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
+     *
+     * @return
+     * @throws Exception
+     */
+    public RestResponse getNodeVersionRenditionContent(String renditionId, String versionId) throws Exception
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content", repoModel.getNodeRef(),
+                    versionId, renditionId);
         return restWrapper.process(request);
     }
 
@@ -478,6 +574,20 @@ public class Node extends ModelRequest<Node>
                 restWrapper.getParameters());
         return restWrapper.processModels(RestRenditionInfoModelCollection.class, request);
     }
+
+    /**
+     * Get rendition information for available renditions for the node version using GET call on
+     * 'nodes/{nodeId}/versions/{versionId}/renditions'
+     * @return
+     * @throws Exception
+     */
+    public RestRenditionInfoModelCollection getNodeVersionRenditionsInfo(String versionId) throws Exception
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions?{parameters}", repoModel.getNodeRef(),
+                    versionId, restWrapper.getParameters());
+        return restWrapper.processModels(RestRenditionInfoModelCollection.class, request);
+    }
+
 
     /**
      * Get a node's children using GET call 'nodes/{nodeId}/children

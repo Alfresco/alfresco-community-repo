@@ -1,3 +1,28 @@
+/*
+ * #%L
+ * Alfresco Repository
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 package org.alfresco.repo.event2;
 
 import java.util.ArrayList;
@@ -78,19 +103,6 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                     return null;
                 }
             }
-
-            private String getText(Message message)
-            {
-                try
-                {
-                    ActiveMQTextMessage am = (ActiveMQTextMessage) message;
-                    return am.getText();
-                }
-                catch (JMSException e)
-                {
-                    return null;
-                }
-            }
         });
 
         if (DEBUG) System.err.println("Now actively listening on topic " + EVENT2_TOPIC_NAME);
@@ -124,6 +136,19 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         assertEquals("Events are different!", sent, received);
     }
 
+    private static String getText(Message message)
+    {
+        try
+        {
+            ActiveMQTextMessage am = (ActiveMQTextMessage) message;
+            return am.getText();
+        }
+        catch (JMSException e)
+        {
+            return null;
+        }
+    }
+
     // a simple main to investigate he contents of the local broker
     public static void main(String[] args) throws Exception
     {
@@ -131,7 +156,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         System.exit(0);
     }
 
-    private static void dumpBroker(String url) throws JMSException
+    private static void dumpBroker(String url) throws Exception
     {
         System.out.println("Broker at url: '" + url + "'");
 
@@ -170,6 +195,23 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                     e.printStackTrace();
                 }
             }
+            
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Destination destination = session.createTopic(EVENT2_TOPIC_NAME);
+            MessageConsumer consumer = session.createConsumer(destination);
+
+            System.out.println("\nListening to topic "+EVENT2_TOPIC_NAME+"...");
+            consumer.setMessageListener(new MessageListener()
+            {
+                @Override
+                public void onMessage(Message message)
+                {
+                    String text = getText(message);
+                    System.out.println("Received message " + message + "\n" + text+"\n");
+                }
+            });
+            
+            Thread.sleep(50000000l);
         }
         finally
         {

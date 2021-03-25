@@ -60,7 +60,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
     private ActiveMQConnection connection;
     private ObjectMapper objectMapper;
-    private List<RepoEvent<?>> receivedEvents;
+    protected List<RepoEvent<?>> receivedEvents;
 
     @Before
     public void startupTopicListener() throws Exception

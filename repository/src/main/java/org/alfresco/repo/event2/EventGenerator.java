@@ -32,6 +32,7 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
@@ -54,7 +55,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -95,6 +95,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
 
+    private Executor threadPoolExecutor;
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
@@ -113,6 +114,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
+<<<<<<< HEAD
+=======
+        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
+        PropertyCheck.mandatory(this, "threadPoolExecutor", threadPoolExecutor);
+>>>>>>> Now the user name is collected in the calling thread, so that the sendEvent does not silently fails
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
         this.childAssociationTypeFilter = eventFilterRegistry.getChildAssociationTypeFilter();
@@ -196,6 +202,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void setNodeResourceHelper(NodeResourceHelper nodeResourceHelper)
     {
         this.nodeResourceHelper = nodeResourceHelper;
+    }
+
+    public void setThreadPoolExecutor(Executor threadPoolExecutor)
+    {
+        this.threadPoolExecutor = threadPoolExecutor;
     }
 
     @Override
@@ -428,6 +439,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
         {
+            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+            threadPoolExecutor.execute(()-> sendEventNow(user, nodeRef, consolidator));
+        }
+
+        private void sendEventNow(String user, NodeRef nodeRef, EventConsolidator consolidator)
+        {
             if (consolidator.isTemporaryNode())
             {
                 if (LOGGER.isTraceEnabled())
@@ -437,7 +454,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 return;
             }
 
-            final String user = AuthenticationUtil.getFullyAuthenticatedUser();
             // Get the repo event before the filtering,
             // so we can take the latest node info into account
             final RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
@@ -469,6 +485,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
+            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+            threadPoolExecutor.execute(()-> sendEventNow(user, childAssociationRef, consolidator));
+        }
+
+        private void sendEventNow(String user, ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
+        {
             if (consolidator.isTemporaryChildAssociation())
             {
                 if (LOGGER.isTraceEnabled())
@@ -478,7 +500,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 return;
             }
 
-            final String user = AuthenticationUtil.getFullyAuthenticatedUser();
             // Get the repo event before the filtering,
             // so we can take the latest association info into account
             final RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
@@ -509,6 +530,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
+            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+            threadPoolExecutor.execute(()-> sendEventNow(user, peerAssociationRef, consolidator));
+        }
+
+        private void sendEventNow(String user, AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
+        {
             if (consolidator.isTemporaryPeerAssociation())
             {
                 if (LOGGER.isTraceEnabled())
@@ -518,11 +545,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 return;
             }
 
-            final String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            // Get the repo event before the filtering,
-            // so we can take the latest association info into account
-            final RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
-
+            RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
             logAndSendEvent(event, consolidator.getEventTypes());
         }
 
@@ -533,12 +556,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 LOGGER.trace("List of Events:" + listOfEvents);
                 LOGGER.trace("Sending event:" + event);
             }
-            // Need to execute this in another read txn because Camel expects it
-            transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                event2MessageProducer.send(event);
 
-                return null;
-            }, true, false);
+           event2MessageProducer.send(event);
         }
     }
 

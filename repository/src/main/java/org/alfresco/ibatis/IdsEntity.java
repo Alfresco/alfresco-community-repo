@@ -40,6 +40,7 @@ public class IdsEntity
     private Long idThree;
     private Long idFour;
     private List<Long> ids;
+    private boolean ordered;
     public Long getIdOne()
     {
         return idOne;
@@ -79,5 +80,13 @@ public class IdsEntity
     public void setIds(List<Long> ids)
     {
         this.ids = ids;
+    }
+    public boolean isOrdered()
+    {
+        return ordered;
+    }
+    public void setOrdered(boolean ordered)
+    {
+        this.ordered = ordered;
     }
 }

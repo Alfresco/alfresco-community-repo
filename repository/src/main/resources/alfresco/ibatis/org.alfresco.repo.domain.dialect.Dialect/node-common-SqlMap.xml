@@ -779,6 +779,7 @@
             <if test="idTwo != null"><![CDATA[and na.node_id < #{idTwo}]]></if>
             and na.qname_id in
                 <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+        <if test="ordered == true">order by node.id ASC</if>
     </select>
 
     <!-- Common results for result_NodeAssoc -->

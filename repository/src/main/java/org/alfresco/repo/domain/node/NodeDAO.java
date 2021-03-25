@@ -405,6 +405,20 @@ public interface NodeDAO extends NodeBulkLoader
             Long minNodeId, Long maxNodeId,
             NodeRefQueryCallback resultsCallback);
 
+    /**
+     * Get nodes with aspects between the given ranges, ordering the results optionally
+     * 
+     * @param aspectQNames              the aspects that must be on the nodes
+     * @param minNodeId                 the minimum node ID (inclusive)
+     * @param maxNodeId                 the maximum node ID (exclusive)
+     * @param ordered                   if the results are to be ordered by nodeID
+     * @param resultsCallback           callback to process results
+     */
+    public void getNodesWithAspects(
+            Set<QName> aspectQNames,
+            Long minNodeId, Long maxNodeId, boolean ordered,
+            NodeRefQueryCallback resultsCallback);
+
     /*
      * Node Assocs
      */
@@ -922,5 +936,6 @@ public interface NodeDAO extends NodeBulkLoader
      * @return next commit time
      */
     public Long getNextTxCommitTime(Long fromCommitTime);
+
 
 }

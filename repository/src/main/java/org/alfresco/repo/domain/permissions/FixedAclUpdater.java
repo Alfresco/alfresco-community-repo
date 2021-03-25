@@ -192,7 +192,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                         public List<NodeRef> execute() throws Throwable
                         {
                             getNodesCallback.init();
-                            nodeDAO.getNodesWithAspects(aspects, getNodesCallback.getMinNodeId(), null, getNodesCallback);
+                            nodeDAO.getNodesWithAspects(aspects, getNodesCallback.getMinNodeId(), null, true, getNodesCallback);
                             getNodesCallback.done();
 
                             return getNodesCallback.getNodes();

@@ -194,7 +194,8 @@ public class CompleteRecordTests extends BaseRMRestTest
     @Test
         (
             dataProvider = "IncompleteRecordsMandatoryMetadataPresent",
-            description = "Cannot complete a record that is already completed"
+            description = "Cannot complete a record that is already completed",
+            priority = 3
         )
     @AlfrescoTest (jira = "RM-4431")
     public void completeAlreadyCompletedRecord(String electronicRecordId, String nonElectronicRecordId)

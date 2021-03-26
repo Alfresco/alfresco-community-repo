@@ -58,6 +58,8 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
 
+    private static final long DUMP_BROKER_TIMEOUT = 50000000l;
+
     private ActiveMQConnection connection;
     private ObjectMapper objectMapper;
     protected List<RepoEvent<?>> receivedEvents;
@@ -149,14 +151,14 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         }
     }
 
-    // a simple main to investigate he contents of the local broker
+    // a simple main to investigate the contents of the local broker
     public static void main(String[] args) throws Exception
     {
-        dumpBroker("tcp://localhost:61616");
+        dumpBroker("tcp://localhost:61616", DUMP_BROKER_TIMEOUT);
         System.exit(0);
     }
 
-    private static void dumpBroker(String url) throws Exception
+    private static void dumpBroker(String url, long timeout) throws Exception
     {
         System.out.println("Broker at url: '" + url + "'");
 
@@ -210,8 +212,8 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                     System.out.println("Received message " + message + "\n" + text+"\n");
                 }
             });
-            
-            Thread.sleep(50000000l);
+
+            Thread.sleep(timeout);
         }
         finally
         {

@@ -105,7 +105,7 @@
         <dependency.tas-utility.version>3.0.43</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.tas-restapi.version>1.57</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.27</dependency.tas-cmis.version>
+        <dependency.tas-cmis.version>1.29</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>

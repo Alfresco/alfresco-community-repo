@@ -306,7 +306,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                         onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
                     }
 
-                    listeners.forEach(listener -> listener.permissionsUpdated(nodeRef));
+                    listeners.forEach(listener -> listener.permissionsUpdatedAsynchronously(nodeRef));
 
                     if (log.isDebugEnabled())
                     {

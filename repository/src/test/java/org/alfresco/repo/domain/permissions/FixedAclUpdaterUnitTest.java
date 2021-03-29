@@ -88,8 +88,8 @@ public class FixedAclUpdaterUnitTest
 
         aclWorker.process(NODE_REF);
 
-        verify(listenerA).permissionsUpdated(NODE_REF);
-        verify(listenerB).permissionsUpdated(NODE_REF);
+        verify(listenerA).permissionsUpdatedAsynchronously(NODE_REF);
+        verify(listenerB).permissionsUpdatedAsynchronously(NODE_REF);
     }
 
     /** Check that archived nodes get the "Pending ACL" aspect removed without further updates, and the listeners are not notified. */
@@ -102,7 +102,7 @@ public class FixedAclUpdaterUnitTest
         aclWorker.process(ARCHIVED_NODE);
 
         verify(accessControlListDAO).removePendingAclAspect(NODE_ID);
-        verify(listenerA, never()).permissionsUpdated(any(NodeRef.class));
-        verify(listenerB, never()).permissionsUpdated(any(NodeRef.class));
+        verify(listenerA, never()).permissionsUpdatedAsynchronously(any(NodeRef.class));
+        verify(listenerB, never()).permissionsUpdatedAsynchronously(any(NodeRef.class));
     }
 }

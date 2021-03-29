@@ -31,5 +31,5 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface FixedAclUpdaterListener
 {
     /** Callback method for when permissions have been updated by the FixedAclUpdater. */
-    void permissionsUpdated(NodeRef nodeRef);
+    void permissionsUpdatedAsynchronously(NodeRef nodeRef);
 }

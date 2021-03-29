@@ -110,6 +110,7 @@ import org.junit.runners.Suite;
     org.alfresco.util.schemacomp.validator.NameValidatorTest.class,
     org.alfresco.util.schemacomp.validator.SchemaVersionValidatorTest.class,
     org.alfresco.util.schemacomp.validator.TypeNameOnlyValidatorTest.class,
+    org.alfresco.util.test.OmittedTestClassFinderUnitTest.class,
     org.alfresco.util.test.junitrules.TemporaryMockOverrideTest.class,
     org.alfresco.repo.search.impl.solr.SolrQueryHTTPClientTest.class,
     org.alfresco.repo.search.impl.solr.SolrSQLHttpClientTest.class,

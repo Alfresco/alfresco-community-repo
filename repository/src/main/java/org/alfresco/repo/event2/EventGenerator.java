@@ -32,7 +32,6 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
@@ -90,12 +89,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     protected DictionaryService dictionaryService;
     private DescriptorService descriptorService;
     private EventFilterRegistry eventFilterRegistry;
-    private Event2MessageProducer event2MessageProducer;
     private TransactionService transactionService;
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
 
-    private Executor threadPoolExecutor;
+    private EventGeneratorQueue eventGeneratorQueue;
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
@@ -110,15 +108,18 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "descriptorService", descriptorService);
         PropertyCheck.mandatory(this, "eventFilterRegistry", eventFilterRegistry);
-        PropertyCheck.mandatory(this, "event2MessageProducer", event2MessageProducer);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
 <<<<<<< HEAD
 =======
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
+<<<<<<< HEAD
         PropertyCheck.mandatory(this, "threadPoolExecutor", threadPoolExecutor);
 >>>>>>> Now the user name is collected in the calling thread, so that the sendEvent does not silently fails
+=======
+        PropertyCheck.mandatory(this, "eventGeneratorQueue", eventGeneratorQueue);
+>>>>>>> Now using queue system to guarantee events order
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
         this.childAssociationTypeFilter = eventFilterRegistry.getChildAssociationTypeFilter();
@@ -183,12 +184,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.eventFilterRegistry = eventFilterRegistry;
     }
 
-    @SuppressWarnings("unused")
-    public void setEvent2MessageProducer(Event2MessageProducer event2MessageProducer)
-    {
-        this.event2MessageProducer = event2MessageProducer;
-    }
-
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -204,9 +199,9 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.nodeResourceHelper = nodeResourceHelper;
     }
 
-    public void setThreadPoolExecutor(Executor threadPoolExecutor)
+    public void setEventGeneratorQueue(EventGeneratorQueue eventGeneratorQueue)
     {
-        this.threadPoolExecutor = threadPoolExecutor;
+        this.eventGeneratorQueue = eventGeneratorQueue;
     }
 
     @Override
@@ -440,10 +435,10 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         protected void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
         {
             String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            threadPoolExecutor.execute(()-> sendEventNow(user, nodeRef, consolidator));
+            eventGeneratorQueue.accept(()-> crateEvent(user, nodeRef, consolidator));
         }
 
-        private void sendEventNow(String user, NodeRef nodeRef, EventConsolidator consolidator)
+        private RepoEvent<?> crateEvent(String user, NodeRef nodeRef, EventConsolidator consolidator)
         {
             if (consolidator.isTemporaryNode())
             {
@@ -451,7 +446,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 {
                     LOGGER.trace("Ignoring temporary node: " + nodeRef);
                 }
-                return;
+                return null;
             }
 
             // Get the repo event before the filtering,
@@ -468,7 +463,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                             + ((nodeType == null) ? "Unknown' " : nodeType.toPrefixString())
                             + "' created by: " + user);
                 }
-                return;
+                return null;
             }
 
             if (event.getType().equals(EventType.NODE_UPDATED.getType()) && consolidator.isResourceBeforeAllFieldsNull())
@@ -477,19 +472,20 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 {
                     LOGGER.trace("Ignoring node updated event as no fields have been updated: " + nodeRef);
                 }
-                return;
+                return null;
             }
 
-            logAndSendEvent(event, consolidator.getEventTypes());
+            logEvent(event, consolidator.getEventTypes());
+            return event;
         }
 
         protected void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
             String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            threadPoolExecutor.execute(()-> sendEventNow(user, childAssociationRef, consolidator));
+            eventGeneratorQueue.accept(()-> crateEvent(user, childAssociationRef, consolidator));
         }
 
-        private void sendEventNow(String user, ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
+        private RepoEvent<?> crateEvent(String user, ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
             if (consolidator.isTemporaryChildAssociation())
             {
@@ -497,7 +493,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 {
                     LOGGER.trace("Ignoring temporary child association: " + childAssociationRef);
                 }
-                return;
+                return null;
             }
 
             // Get the repo event before the filtering,
@@ -513,7 +509,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                             + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
                             + "' created by: " + user);
                 }
-                return;
+                return null;
             } else if (childAssociationRef.isPrimary())
             {
                 if (LOGGER.isTraceEnabled())
@@ -522,19 +518,20 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                             + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
                             + "' created by: " + user);
                 }
-                return;
+                return null;
             }
 
-            logAndSendEvent(event, consolidator.getEventTypes());
+            logEvent(event, consolidator.getEventTypes());
+            return event;
         }
 
         protected void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
             String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            threadPoolExecutor.execute(()-> sendEventNow(user, peerAssociationRef, consolidator));
+            eventGeneratorQueue.accept(()-> createEvent(user, peerAssociationRef, consolidator));
         }
 
-        private void sendEventNow(String user, AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
+        private RepoEvent<?> createEvent(String user, AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
             if (consolidator.isTemporaryPeerAssociation())
             {
@@ -542,22 +539,21 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 {
                     LOGGER.trace("Ignoring temporary peer association: " + peerAssociationRef);
                 }
-                return;
+                return null;
             }
 
             RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
-            logAndSendEvent(event, consolidator.getEventTypes());
+            logEvent(event, consolidator.getEventTypes());
+            return event;
         }
 
-        protected void logAndSendEvent(RepoEvent<?> event, Deque<EventType> listOfEvents)
+        private void logEvent(RepoEvent<?> event, Deque<EventType> listOfEvents)
         {
             if (LOGGER.isTraceEnabled())
             {
                 LOGGER.trace("List of Events:" + listOfEvents);
                 LOGGER.trace("Sending event:" + event);
             }
-
-           event2MessageProducer.send(event);
         }
     }
 

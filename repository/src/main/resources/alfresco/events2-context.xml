@@ -38,7 +38,6 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="descriptorService" ref="descriptorComponent"/>
         <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
-        <property name="event2MessageProducer" ref="event2MessageProducer"/>
         <property name="transactionService" ref="transactionService"/>
         <property name="personService" ref="personService"/>
     </bean>
@@ -56,23 +55,46 @@
 
     <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2">
         <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
-        <property name="threadPoolExecutor">
-             <ref bean="eventAsyncThreadPool"/>
+        <property name="eventGeneratorQueue" ref="eventGeneratorQueue"/>
+    </bean>
+
+    <bean id="eventGeneratorQueue" class="org.alfresco.repo.event2.EventGeneratorQueue" >
+        <property name="enqueueThreadPoolExecutor">
+            <ref bean="eventAsyncEnqueueThreadPool" />
+        </property>
+        <property name="dequeueThreadPoolExecutor">
+            <ref bean="eventAsyncDequeueThreadPool" />
+        </property>
+       <property name="event2MessageProducer" ref="event2MessageProducer"/>
+    </bean>
+
+    <bean id="eventAsyncEnqueueThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>eventAsyncEnqueueThreadPool</value>
+        </property>
+        <property name="corePoolSize">
+            <value>${repo.event2.queue.enqueueThreadPool.coreSize}</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>${repo.event2.queue.enqueueThreadPool.maximumSize}</value>
+        </property>
+        <property name="threadPriority">
+            <value>${repo.event2.queue.enqueueThreadPool.priority}</value>
         </property>
     </bean>
 
-    <bean id="eventAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+    <bean id="eventAsyncDequeueThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
         <property name="poolName">
-            <value>eventAsyncThreadPool</value>
+            <value>eventAsyncDequeueThreadPool</value>
         </property>
         <property name="corePoolSize">
-            <value>${repo.event2.threadPool.coreSize}</value>
+            <value>${repo.event2.queue.dequeueThreadPool.coreSize}</value>
         </property>
         <property name="maximumPoolSize">
-            <value>${repo.event2.threadPool.maximumSize}</value>
+            <value>${repo.event2.queue.dequeueThreadPool.maximumSize}</value>
         </property>
         <property name="threadPriority">
-            <value>${repo.event2.threadPool.priority}</value>
+            <value>${repo.event2.queue.dequeueThreadPool.priority}</value>
         </property>
     </bean>
 </beans>

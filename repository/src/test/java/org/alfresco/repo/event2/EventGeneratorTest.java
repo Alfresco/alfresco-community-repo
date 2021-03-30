@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.event2;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -40,12 +41,14 @@ import javax.jms.Session;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.databind.ObjectMapperFactory;
 import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.DestinationSource;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +79,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         MessageConsumer consumer = session.createConsumer(destination);
 
         objectMapper = ObjectMapperFactory.createInstance();
-        receivedEvents = Collections.synchronizedList(new ArrayList<>());
+        receivedEvents = Collections.synchronizedList(new LinkedList<>());
         consumer.setMessageListener(new MessageListener()
         {
             @Override
@@ -122,13 +125,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
     {
         createNode(ContentModel.TYPE_CONTENT);
 
-        int i = 100;
-        while (--i > 0)
-        {
-            Thread.sleep(55l);
-            if (receivedEvents.size() == 1)
-                break;
-        }
+        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 1);
 
         assertFalse("No messages were received!", receivedEvents.isEmpty());
 
@@ -136,6 +133,26 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         RepoEvent<?> received = receivedEvents.get(0);
 
         assertEquals("Events are different!", sent, received);
+    }
+
+    @Test
+    public void shouldReceiveEvent2EventsInOrder() throws Exception
+    {
+        NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        updateNodeName(nodeRef, "TestFile-" + System.currentTimeMillis() + ".txt");
+        deleteNode(nodeRef);
+
+        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 3);
+
+        assertFalse("No messages were received!", receivedEvents.isEmpty());
+
+        RepoEvent<?> sentCreation = getRepoEvent(1);
+        RepoEvent<?> sentUpdate = getRepoEvent(2);
+        RepoEvent<?> sentDeletion = getRepoEvent(3);
+
+        assertEquals("Events are different!", sentCreation, (RepoEvent<?>) receivedEvents.get(0));
+        assertEquals("Events are different!", sentUpdate, (RepoEvent<?>) receivedEvents.get(1));
+        assertEquals("Events are different!", sentDeletion, (RepoEvent<?>) receivedEvents.get(2));
     }
 
     private static String getText(Message message)

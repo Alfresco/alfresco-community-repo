@@ -108,6 +108,9 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Autowired @Qualifier("eventGeneratorV2")
     protected EventGenerator eventGenerator;
 
+    @Autowired
+    @Qualifier("eventGeneratorQueue")
+    protected EventGeneratorQueue eventQueue;
 
     protected NodeRef rootNodeRef;
 
@@ -150,7 +153,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     @Before
     public void forceEventGeneratorToBeSynchronous() {
-        eventGenerator.setThreadPoolExecutor(new Executor()
+        eventQueue.setEnqueueThreadPoolExecutor(new Executor()
         {
             @Override
             public void execute(Runnable command)
@@ -158,6 +161,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
                 command.run();
             }
         });
+        eventGenerator.setEventGeneratorQueue(eventQueue);
     }
 
     @After
@@ -194,6 +198,16 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             QName.createQName(TEST_NAMESPACE, GUID.generate()),
             contentType,
             propertyMap).getChildRef());
+    }
+
+    protected NodeRef updateNodeName(NodeRef nodeRef, String newName)
+    {
+        PropertyMap propertyMap = new PropertyMap();
+        propertyMap.put(ContentModel.PROP_NAME, newName);
+        return retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.addProperties(nodeRef, propertyMap);
+            return null;
+        });
     }
 
     protected void deleteNode(NodeRef nodeRef)

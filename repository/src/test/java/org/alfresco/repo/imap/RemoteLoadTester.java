@@ -41,11 +41,14 @@ import javax.mail.Store;
 import javax.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
+import org.alfresco.util.testing.category.PerformanceTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 import com.sun.mail.util.BASE64DecoderStream;
 
+@Category(PerformanceTests.class)
 public class RemoteLoadTester extends TestCase
 {
 

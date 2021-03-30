@@ -41,10 +41,11 @@ import com.google.common.collect.Sets.SetView;
 
 import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.imap.LoadTester;
+import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.Suite.SuiteClasses;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -53,31 +54,82 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 
 public class OmittedTestClassFinderUnitTest
 {
-    /** The set of test classes which we don't want to execute from test suites. */
-    private Set<String> TEST_CLASSES_TO_IGNORE = Sets.newHashSet(
-            // We don't want automated load testing as part of our CI.
-            LoadTester.class
-    ).stream().map(clazz -> clazz.getCanonicalName()).collect(toSet());
-
     @Test
     public void checkTestClassesReferencedInTestSuites()
     {
         Reflections reflections = new Reflections("org.alfresco", new MethodAnnotationsScanner(), new TypeAnnotationsScanner(), new SubTypesScanner());
+
+        Set<String> testClasses = getTestClassesOnPath(reflections);
+        Set<String> classesReferencedByTestSuites = getClassesReferencedByTestSuites(reflections);
+        SetView<String> unreferencedTests = Sets.difference(testClasses, classesReferencedByTestSuites);
+
+        // Filter out tests which are in Maven modules that don't use test suites (alfresco-core and alfresco-data-model).
+        // Also filter any test classes contained in test dependencies (*.jar).
+        Set<Class> unreferencedTestClasses = unreferencedTests.stream()
+                                                              .map(this::classFromCanonicalName)
+                                                              .filter(clazz -> {
+                                                                  String path = clazz.getProtectionDomain().getCodeSource().getLocation().getPath();
+                                                                  return !path.endsWith("/data-model/target/test-classes/")
+                                                                      && !path.endsWith("/core/target/test-classes/")
+                                                                      && !path.endsWith(".jar");
+                                                              })
+                                                              .collect(toSet());
+
+        System.out.println("Unreferenced test class count: " + unreferencedTestClasses.size());
+        unreferencedTestClasses.forEach(System.out::println);
+
+        assertEquals("Found test classes which are not referenced by any test suite.", emptySet(), unreferencedTestClasses);
+    }
+
+    /**
+     * Find all test classes.  We define a class to be a test class if it contains a Test, Before or After annotation, is not a test suite,
+     * is not abstract and is not a "non-build" test (e.g. the test class is marked as a performance test).
+     * @param reflections The Reflections object used to provide information about the classes.
+     * @return A set of canonical names for the test classes.
+     */
+    private Set<String> getTestClassesOnPath(Reflections reflections)
+    {
         Set<String> classesWithTestAnnotations = Stream.of(Test.class, Before.class, After.class)
                                                        .map(annotation -> findClassesWithMethodAnnotation(reflections, annotation))
                                                        .flatMap(Set::stream)
                                                        .collect(toSet());
-        findClassesWithMethodAnnotation(reflections, Test.class);
 
         Set<String> classesExtendingTestCase = reflections.getSubTypesOf(TestCase.class).stream().map(testClass -> testClass.getCanonicalName()).collect(toSet());
 
-        Set<String> testClasses = Sets.union(classesWithTestAnnotations, classesExtendingTestCase).stream()
-                                      // Exclude test suite classes.
-                                      .filter(className -> !className.endsWith("Suite"))
-                                      // Exclude classes that are specifically referenced to be ignored.
-                                      .filter(className -> !TEST_CLASSES_TO_IGNORE.contains(className))
-                                      .collect(toSet());
+        return Sets.union(classesWithTestAnnotations, classesExtendingTestCase).stream()
+                   // Exclude test suite classes.
+                   .filter(className -> !className.endsWith("Suite"))
+                   // Exclude abstract classes.
+                   .filter(className -> !Modifier.isAbstract(classFromCanonicalName(className).getModifiers()))
+                   // Exclude test classes which are explicitly marked as "non-build" test classes.
+                   .filter(className -> !markedAsNonBuildTest(classFromCanonicalName(className)))
+                   .collect(toSet());
+    }
 
+    /**
+     * Several tests are intentionally excluded from the build. These are marked with the {@link Category} annotation referencing an
+     * interface that extends {@link NonBuildTests}. This is useful for e.g. performance testing or to help with debugging.
+     * @param clazz The test class to check.
+     * @return true if the test class has been marked with a NonBuildTests category.
+     */
+    private boolean markedAsNonBuildTest(Class<?> clazz)
+    {
+        Category category = clazz.getAnnotation(Category.class);
+        if (category == null)
+        {
+            return false;
+        }
+        return Arrays.stream(category.value())
+                      .anyMatch(value -> NonBuildTests.class.isAssignableFrom(value));
+    }
+
+    /**
+     * Get all the test classes referenced from test suites.
+     * @param reflections The Reflections object used to provide information about the classes.
+     * @return The set of canonical names of test classes referenced by test suites.
+     */
+    private Set<String> getClassesReferencedByTestSuites(Reflections reflections)
+    {
         Set<String> classesReferencedByTestSuites = new HashSet<>();
         for (Class testSuite : reflections.getTypesAnnotatedWith(SuiteClasses.class))
         {
@@ -88,27 +140,7 @@ public class OmittedTestClassFinderUnitTest
                   .filter(className -> !className.endsWith("Suite"))
                   .forEach(classesReferencedByTestSuites::add);
         }
-
-        SetView<String> unreferencedTests = Sets.difference(testClasses, classesReferencedByTestSuites);
-
-        // Filter out tests which are in Maven modules that don't use test suites (alfresco-core and alfresco-data-model).
-        // Also filter any test classes contained in test dependencies (*.jar).
-        // Filter any abstract classes too.
-        Set<Class> unreferencedTestClasses = unreferencedTests.stream()
-                                                              .map(this::classFromCanonicalName)
-                                                              .filter(clazz -> {
-                                                                  String path = clazz.getProtectionDomain().getCodeSource().getLocation().getPath();
-                                                                  return !path.endsWith("/data-model/target/test-classes/")
-                                                                      && !path.endsWith("/core/target/test-classes/")
-                                                                      && ! path.endsWith(".jar");
-                                                              })
-                                                              .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
-                                                              .collect(toSet());
-
-        System.out.println("Unreferenced test class count: " + unreferencedTestClasses.size());
-        unreferencedTestClasses.forEach(System.out::println);
-
-        assertEquals("Found test classes which are not referenced by any test suite.", emptySet(), unreferencedTestClasses);
+        return classesReferencedByTestSuites;
     }
 
     /**

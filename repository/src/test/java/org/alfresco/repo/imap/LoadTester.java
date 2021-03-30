@@ -25,16 +25,16 @@
  */
 package org.alfresco.repo.imap;
 
+import javax.mail.Flags;
+import javax.transaction.UserTransaction;
 import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.mail.Flags;
-import javax.transaction.UserTransaction;
+import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -55,13 +55,14 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
+import org.alfresco.util.testing.category.PerformanceTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
-import com.icegreen.greenmail.store.SimpleStoredMessage;
-
+@Category(PerformanceTests.class)
 public class LoadTester extends TestCase
 {
     private Log logger = LogFactory.getLog(LoadTester.class);

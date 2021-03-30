@@ -1,5 +1,15 @@
 jobs:
   include:
+    - name: "Source Clear Scan (SCA)"
+      stage: Tests
+      if: branch = master OR branch =~ /release\/V3.\d+.*/
+      script: travis_wait 30 bash scripts/source_clear.sh
+
+    - name: "Unit & Integration Tests"
+      stage: Tests
+      install: travis_retry travis_wait 60 mvn -B -V -q clean install ${MVN_SKIP}
+      script: travis_retry travis_wait 120 mvn -B -q verify -Dskip.integrationtests=false ${LOG_WARN}
+
     - name: "Community Rest API Tests"
       stage: Tests
       addons:
@@ -8,21 +18,21 @@ jobs:
             - ./rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log
             - alfresco.log
             - solr.log
-          target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
+          target_paths: ${TRAVIS_BUILD_NUMBER}/${TRAVIS_JOB_NUMBER}
       install:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
+            travis_retry travis_wait 90 mvn -B -q install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
           else
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
+            travis_retry travis_wait 90 mvn -B -q install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
           fi
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-community-rest-api -am
       before_script:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH false
+            bash scripts/startAlfresco.sh rm-community/rm-community-repo false
           else
-            bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH false
+            bash scripts/startAlfresco.sh rm-enterprise/rm-enterprise-repo false
           fi
         - bash scripts/waitForAlfrescoToStart.sh
       script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
@@ -39,10 +49,10 @@ jobs:
             - solr.log
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
+        - travis_retry travis_wait 90 mvn -B -q install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
-        - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH false
+        - bash scripts/startAlfresco.sh rm-enterprise/rm-enterprise-repo false
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
@@ -65,7 +75,7 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
         - bash scripts/create-worm-bucket.sh
-        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-rest.yml"
+        - bash scripts/start-compose.sh "rm-enterprise/rm-enterprise-share/docker-compose-worm-support-rest.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false
       after_script:
@@ -85,7 +95,7 @@ jobs:
         - travis_retry travis_wait 90 mvn -B -U -q clean install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-enterprise-rest-api -am
       before_script:
-        - bash scripts/start-compose.sh "${ENTERPRISE_REPO_PATH}/docker-compose-cluster.yml"
+        - bash scripts/start-compose.sh "rm-enterprise/rm-enterprise-repo/docker-compose-cluster.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script: mvn -B test -pl :alfresco-governance-services-automation-enterprise-rest-api -DsuiteXmlFile=clusterTestSuite.xml -Dskip.automationtests=false
       after_failure:
@@ -109,12 +119,12 @@ jobs:
       install:
         - |
           if [[ ${TRAVIS_COMMIT_MESSAGE} == *"[tests on community]"* ]]; then
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
-            bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH false
+            travis_retry travis_wait 90 mvn -B -q install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
+            bash scripts/startAlfresco.sh rm-community/rm-community-share false
             bash scripts/waitForAlfrescoToStart.sh
           else
-            travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
-            bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH true
+            travis_retry travis_wait 90 mvn -B -q install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+            bash scripts/startAlfresco.sh rm-enterprise/rm-enterprise-share true
             bash scripts/waitForAlfrescoToStart.sh
             bash scripts/dockerLimitMemory.sh
             sudo free -m -t
@@ -155,9 +165,9 @@ jobs:
             - share.log
           target_paths: $TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER
       install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
+        - travis_retry travis_wait 90 mvn -B -q install ${MVN_SKIP} -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
-        - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH true
+        - bash scripts/startAlfresco.sh rm-enterprise/rm-enterprise-share true
         - bash scripts/waitForAlfrescoToStart.sh
         - bash scripts/dockerLimitMemory.sh
         - sudo free -m -t
@@ -202,15 +212,10 @@ jobs:
         - travis_retry travis_wait 30 mvn -B -U -q clean install ${MVN_SKIP} -pl :alfresco-governance-services-automation-ui -am
       before_script:
         - bash scripts/create-worm-bucket.sh
-        - bash scripts/start-compose.sh "${ENTERPRISE_SHARE_PATH}/docker-compose-worm-support-ui.yml"
+        - bash scripts/start-compose.sh "rm-enterprise/rm-enterprise-share/docker-compose-worm-support-ui.yml"
         - bash scripts/waitForAlfrescoToStart.sh
       script:
         - travis_wait 90 xvfb-run --server-args="-screen 0 1920x1080x24" mvn -B test -pl :alfresco-governance-services-automation-ui -DsuiteXmlFile=wormTestSuite.xml -Dskip.automationtests=false -Dshare.url=${SHARE_URL} -Dalfresco.url=${ALFRESCO_URL} ${WEBDRIVER_ARGUMENTS}
       after_script:
         - bash scripts/getLogs.sh
         - bash scripts/cleanup.sh
-
-    - name: "Source Clear Scan (SCA)"
-      stage: Tests
-      if: branch = master OR branch =~ /release\/V3.\d+.*/
-      script: travis_wait 30 bash scripts/source_clear.sh

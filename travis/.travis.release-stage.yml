@@ -7,7 +7,7 @@ jobs:
         - source scripts/set-release-variables.sh
         - bash scripts/check-existing-tags.sh "alfresco/alfresco-governance-share-community"
       script:
-        - bash scripts/release.sh "community"
+        - bash scripts/community_release.sh
       before_deploy:
         - bash scripts/zip-artifacts-staging.sh "community"
         - bash scripts/pushDockerDigestTag.sh -i quay.io/alfresco/alfresco-governance-repository-community -i quay.io/alfresco/alfresco-governance-share-community -r quay.io -t ${RELEASE_VERSION}
@@ -32,7 +32,7 @@ jobs:
       before_script:
         - source scripts/set-release-variables.sh
       script:
-        - bash scripts/release.sh "enterprise"
+        - bash scripts/enterprise_release.sh
       before_deploy:
         - bash scripts/zip-artifacts-staging.sh "enterprise"
         - bash scripts/pushDockerDigestTag.sh -i quay.io/alfresco/alfresco-governance-repository-enterprise -i quay.io/alfresco/alfresco-governance-share-enterprise -r quay.io -t ${RELEASE_VERSION}

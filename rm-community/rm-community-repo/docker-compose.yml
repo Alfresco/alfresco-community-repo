@@ -39,18 +39,7 @@ services:
                 -Dshare.host=localhost
                 -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
                 -Dmessaging.broker.url=\"failover:(tcp://activemq:61616)?timeout=3000&jms.useCompression=true\"
-                -Dlocal.transform.service.enabled=${LOCAL_TRANSFORM_SERVICE_ENABLED}
-                -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
-                -DlocalTransform.imagemagick.url=http://imagemagick:8090/
-                -DlocalTransform.libreoffice.url=http://libreoffice:8090/
-                -DlocalTransform.tika.url=http://tika:8090/
-                -DlocalTransform.misc.url=http://transform-misc:8090/
-                -Dlegacy.transform.service.enabled=${LEGACY_TRANSFORM_SERVICE_ENABLED}
-                -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
-                -Djodconverter.url=http://libreoffice:8090/
-                -Dimg.url=http://imagemagick:8090/
-                -Dtika.url=http://tika:8090/
-                -Dtransform.misc.url=http://transform-misc:8090/
+                -DlocalTransform.core-aio.url=http://transform-core-aio:8090/
                 "
         ports:
             - 8080:8080
@@ -58,41 +47,6 @@ services:
             - 1143:1143
             - "21:1221"
             - "30000-30099:30000-30099"
-
-    alfresco-pdf-renderer:
-        image: alfresco/alfresco-pdf-renderer:${TRANSFORMERS_TAG}
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx256m"
-        ports:
-            - 8090:8090
-
-    imagemagick:
-        image: alfresco/alfresco-imagemagick:${TRANSFORMERS_TAG}
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx256m"
-        ports:
-            - 8091:8090
-
-    libreoffice:
-        image: alfresco/alfresco-libreoffice:${TRANSFORMERS_TAG}
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx256m"
-        ports:
-            - 8092:8090
-
-    tika:
-        image: alfresco/alfresco-tika:${TRANSFORMERS_TAG}
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx256m"
-        ports:
-            - 8093:8090
-
-    transform-misc:
-        image: alfresco/alfresco-transform-misc:${TRANSFORMERS_TAG}
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx256m"
-        ports:
-            - 8094:8090
 
     postgres:
         image: library/postgres:${POSTGRES_TAG}
@@ -126,3 +80,10 @@ services:
             - 5672:5672 # AMQP
             - 61616:61616 # OpenWire
             - 61613:61613 # STOMP
+
+    transform-core-aio:
+        image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+        ports:
+            - 8090:8090

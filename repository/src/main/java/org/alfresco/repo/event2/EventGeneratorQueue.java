@@ -37,14 +37,12 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /*
  * This queue allows to create asynchronously the RepoEvent offloading the work to a ThreadPool but
  * at the same time it preserves the order of the events
  */
-public class EventGeneratorQueue extends AbstractLifecycleBean implements InitializingBean
+public class EventGeneratorQueue implements InitializingBean
 {
     private static final Log LOGGER = LogFactory.getLog(EventGeneratorQueue.class);
     
@@ -77,16 +75,6 @@ public class EventGeneratorQueue extends AbstractLifecycleBean implements Initia
         this.dequeueThreadPoolExecutor = dequeueThreadPoolExecutor;
         dequeueThreadPoolExecutor.execute(listener);
     }
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
-    }
-    
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
-    }
-
 
     /**
      * Procedure to enqueue the callback functions that creates an event.

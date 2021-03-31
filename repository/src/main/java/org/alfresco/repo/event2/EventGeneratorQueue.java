@@ -89,7 +89,7 @@ public class EventGeneratorQueue extends AbstractLifecycleBean implements Initia
 
 
     /**
-     * Procedure to enqueue the callback functions that create an event.
+     * Procedure to enqueue the callback functions that creates an event.
      * @param maker Callback function that creates an event.
      */
     public void accept(Callable<RepoEvent<?>> maker)
@@ -103,7 +103,7 @@ public class EventGeneratorQueue extends AbstractLifecycleBean implements Initia
             }
             catch (Exception e)
             {
-                LOGGER.warn("Unexpected error while enqueuing maker function for event" + e);
+                LOGGER.error("Unexpected error while enqueuing maker function for repository event" + e);
             }
         });
     }
@@ -134,7 +134,7 @@ public class EventGeneratorQueue extends AbstractLifecycleBean implements Initia
                         }
                         catch (Exception e)
                         {
-                            LOGGER.warn("Unexpected error while dequeuing and sending event" + e);
+                            LOGGER.error("Unexpected error while dequeuing and sending repository event" + e);
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 ### Apply AGS community repo AMP to ACS image
-FROM quay.io/alfresco/alfresco-content-repository-community:latest
+FROM quay.io/alfresco/alfresco-content-repository-community:7.0.0
 
 # Alfresco user does not have permissions to modify webapps or configuration. Switch to root.
 # The access will be fixed after all operations are done.

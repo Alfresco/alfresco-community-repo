@@ -101,9 +101,6 @@ public class RecordAspect extends    AbstractDisposableItem
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
 
-    // WORM lock aspect
-    public static final String RME_URI = "http://www.alfresco.org/model/recordsmanagemententerprise/1.0";
-    public static final QName ASPECT_WORM_LOCK = QName.createQName(RME_URI, "wormLock");
     /**
      * @param extendedSecurityService   extended security service
      */

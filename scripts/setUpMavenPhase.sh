@@ -17,7 +17,7 @@ elif [[ ${TRAVIS_BRANCH} = release*  && "${TRAVIS_PULL_REQUEST}" == "false" ]] ;
    export MAVEN_PHASE="deploy"
    export IMAGE_TAG="${TRAVIS_BRANCH:8}-latest"
 else
-   export MAVEN_PHASE="verify"
+   export MAVEN_PHASE="deploy"
    export BUILD_PROFILE="buildDockerImage"
    export IMAGE_TAG="latest"
 fi

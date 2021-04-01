@@ -50,11 +50,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+@Category(NeverRunsTests.class)
 public class MetadataEncryptorTests extends TestCase
 {
     private static final String TEST_MODEL = "org/alfresco/repo/node/encrypted_prop_model.xml";

@@ -36,7 +36,9 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -45,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Roy Wetherall
  */
 @Transactional
+@Category(NeverRunsTests.class)
 public class HasTagEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;

@@ -51,6 +51,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
@@ -68,7 +69,7 @@ import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
  * 
  * @author Roy Wetherall
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, NeverRunsTests.class})
 @Transactional
 public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
 {

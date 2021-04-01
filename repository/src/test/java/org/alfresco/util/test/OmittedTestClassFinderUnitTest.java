@@ -54,12 +54,25 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 
 public class OmittedTestClassFinderUnitTest
 {
+    /**
+     * Test to look for tests which are unintentionally skipped by our CI.
+     * <p>
+     * In particular we look for classes that contain @Test methods or extend TestCase and which are not referenced by TestSuites.  There
+     * are a few subtleties to this:
+     * <ul>
+     *   <li>alfresco-core and alfresco-data-model don't use test suites, and some @Test methods are executed via inheritance;</li>
+     *   <li>some tests are explicitly marked as NonBuildTests;</li>
+     *   <li>we assume that all test suite classes have names ending in "TestSuite".</li>
+     * </ul>
+     */
     @Test
     public void checkTestClassesReferencedInTestSuites()
     {
+        // We assume that all of our tests are in org.alfresco.
         Reflections reflections = new Reflections("org.alfresco", new MethodAnnotationsScanner(), new TypeAnnotationsScanner(), new SubTypesScanner());
 
-        Set<String> testClasses = getTestClassesOnPath(reflections);
+        // Find the test classes which are not in test suites.
+        Set<String> testClasses =  getTestClassesOnPath(reflections);
         Set<String> classesReferencedByTestSuites = getClassesReferencedByTestSuites(reflections);
         SetView<String> unreferencedTests = Sets.difference(testClasses, classesReferencedByTestSuites);
 

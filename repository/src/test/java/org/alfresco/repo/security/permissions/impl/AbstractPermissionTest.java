@@ -64,7 +64,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
-public class AbstractPermissionTest extends TestCase
+public abstract class AbstractPermissionTest extends TestCase
 {
     protected static final String USER2_LEMUR = "lemur";
 

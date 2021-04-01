@@ -38,6 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +47,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Roy Wetherall
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, NeverRunsTests.class})
 public class TransitionSimpleWorkflowActionExecuterTest extends BaseAlfrescoSpringTest
 {    
     private FileFolderService fileFolderService;

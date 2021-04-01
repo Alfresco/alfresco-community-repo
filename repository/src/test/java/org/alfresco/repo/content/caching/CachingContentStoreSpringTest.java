@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.internal.runners.JUnit38ClassRunner;
@@ -58,7 +59,7 @@ import org.junit.runner.RunWith;
  * @author Matt Ward
  */
 @RunWith(JUnit38ClassRunner.class)
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class CachingContentStoreSpringTest extends AbstractWritableContentStoreTest
 {
     private CachingContentStore store;

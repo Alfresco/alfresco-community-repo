@@ -26,12 +26,16 @@
 
 package org.alfresco.repo.invitation;
 
+import org.alfresco.util.testing.category.NeverRunsTests;
+import org.junit.experimental.categories.Category;
+
 /**
  * Test InvitationService with both engines enabled.
  * 
  * @author Nick Smith
  * @since 4.0
  */
+@Category(NeverRunsTests.class)
 public class FullInvitationServiceImplTests extends AbstractInvitationServiceImplTest
 {
     // See inherited tests.

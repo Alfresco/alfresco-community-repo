@@ -55,6 +55,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -64,7 +65,7 @@ import org.springframework.context.ApplicationContext;
  * @author Alfresco
  * @since 4.2.1
  */
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class, LuceneTests.class, NeverRunsTests.class})
 public class AbstractTenantRoutingContentStoreTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

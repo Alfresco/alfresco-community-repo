@@ -894,79 +894,70 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     @Override
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
-        boolean result = false;
-        // Get the disposition instructions
-        DispositionSchedule di = getDispositionSchedule(nodeRef);
-        DispositionAction nextDa = getNextDispositionAction(nodeRef);
-        if (di != null &&
-            this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
-            nextDa != null)
+        return authenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         {
-            // for accession step we can have also AND between step conditions
-            Boolean combineSteps = false;
-            if (nextDa.getName().equals("accession"))
+            public Boolean doWork() throws Exception
             {
-                NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
-                if (accessionNodeRef != null) {
-                    Boolean combineStepsProp = (Boolean)this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
-                    if (combineStepsProp != null)
-                    {
-                        combineSteps = combineStepsProp;
-                    }
-                }
-            }
-            Date asOf = (Date)this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
-            Boolean asOfDateInPast = false;
-            if (asOf != null)
-            {
-                asOfDateInPast = asOf.before(new Date());
-            }
-            if (asOfDateInPast && !combineSteps)
-            {
-                return true;
-            }
-            else if(!asOfDateInPast && combineSteps)
-            {
-                return false;
-            }
-            DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
-            DispositionActionDefinition dad = da.getDispositionActionDefinition();
-            if (dad != null)
-            {
-                boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
-
-                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
-                for (ChildAssociationRef assoc : assocs)
-                {
-                    NodeRef eventExecution = assoc.getChildRef();
-                    Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                    boolean isComplete = false;
-                    if (isCompleteValue != null)
-                    {
-                        isComplete = isCompleteValue.booleanValue();
-
-                        // implement AND and OR combination of event completions
-                        if (isComplete)
-                        {
-                            result = true;
-                            if (firstComplete)
-                            {
-                                break;
+                boolean result = false;
+                // Get the disposition instructions
+                DispositionSchedule di = getDispositionSchedule(nodeRef);
+                DispositionAction nextDa = getNextDispositionAction(nodeRef);
+                if (di != null &&
+                        nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
+                        nextDa != null) {
+                    // for accession step we can have also AND between step conditions
+                    Boolean combineSteps = false;
+                    if (nextDa.getName().equals("accession")) {
+                        NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
+                        if (accessionNodeRef != null) {
+                            Boolean combineStepsProp = (Boolean) nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                            if (combineStepsProp != null) {
+                                combineSteps = combineStepsProp;
                             }
                         }
-                        else
-                        {
-                            result = false;
-                            if (!firstComplete)
-                            {
-                                break;
+                    }
+                    Date asOf = (Date) nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
+                    Boolean asOfDateInPast = false;
+                    if (asOf != null) {
+                        asOfDateInPast = asOf.before(new Date());
+                    }
+                    if (asOfDateInPast && !combineSteps) {
+                        return true;
+                    } else if (!asOfDateInPast && combineSteps) {
+                        return false;
+                    }
+                    DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
+                    DispositionActionDefinition dad = da.getDispositionActionDefinition();
+                    if (dad != null) {
+                        boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
+
+                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
+                        for (ChildAssociationRef assoc : assocs) {
+                            NodeRef eventExecution = assoc.getChildRef();
+                            Boolean isCompleteValue = (Boolean) nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
+                            boolean isComplete = false;
+                            if (isCompleteValue != null) {
+                                isComplete = isCompleteValue.booleanValue();
+
+                                // implement AND and OR combination of event completions
+                                if (isComplete) {
+                                    result = true;
+                                    if (firstComplete) {
+                                        break;
+                                    }
+                                } else {
+                                    result = false;
+                                    if (!firstComplete) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                return result;
             }
-        }
-        return result;
+        });
     }
 
     /**

@@ -510,13 +510,14 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         // Set the indicators array
         setIndicators(rmNodeValues, nodeRef);
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
-            @Override
-            public Void doWork() {
+        // Set the actions array
+        setActions(rmNodeValues, nodeRef);
 
-                // Set the actions array
-                setActions(rmNodeValues, nodeRef);
-                
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+
                 //Add details of the next incomplete event in the disposition schedule
                 if (dispositionService.getNextDispositionAction(nodeRef) != null)
                 {
@@ -525,9 +526,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                         if (!details.isEventComplete())
                         {
                             HashMap properties = ((HashMap) rmNodeValues.get("properties"));
-                                    properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
-                                    properties.put("incompleteDispositionEvent", details.getEventName());
-                                    properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
+                            properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+                            properties.put("incompleteDispositionEvent", details.getEventName());
+                            properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
+
                             break;
                         }
                     }

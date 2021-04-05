@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>8.394-SNAPSHOT</version>
+        <version>11.3-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.11</version>
+            <version>3.12.0</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -689,6 +689,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
+            <artifactId>camel-management</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
             <artifactId>camel-mock</artifactId>
             <scope>test</scope>
         </dependency>
@@ -806,7 +810,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.7.2</version>
+            <version>3.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

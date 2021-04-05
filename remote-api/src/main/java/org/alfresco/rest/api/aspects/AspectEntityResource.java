@@ -61,6 +61,6 @@ public class AspectEntityResource implements EntityResourceAction.ReadById<Aspec
     @Override
     public Aspect readById(String id, Parameters parameters)
     {
-        return aspects.getAspectById(id);
+        return aspects.getAspect(id);
     }
 }

@@ -9,13 +9,13 @@
     </bean>
 
     <import resource="classpath:/alfresco/subsystems/Messaging/default/messaging-context.xml" />
-    
+
     <bean id="messagingExceptionProcessor" 
         class="org.alfresco.messaging.camel.MockExceptionProcessor" />
         
     <bean id="mockConsumer" 
         class="org.alfresco.messaging.camel.MockConsumer" />
-    
+
     <bean id="mockExceptionThrowingConsumer" 
         class="org.alfresco.messaging.camel.MockExceptionThrowingConsumer" />
     
@@ -25,4 +25,19 @@
         <property name="routeContextId" value="customRoutes" />
     </bean>
 
+    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+    </bean>
+
+    <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>
+    </bean>
+
+    <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
+    </bean>
+
+    <bean id="transformRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
+    </bean>
 </beans>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,16 +23,29 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl;
+package org.alfresco.repo.search;
 
 /**
- * Json returned from Solr
+ * Additional metadata ops available for {@link org.alfresco.service.cmr.search.ResultSet} coming from a search engine.
  *
  * @author Gethin James
  * @since 5.0
+ * @see SearchEngineResultSet
  */
-public interface JSONResult
+public interface SearchEngineResultMetadata
 {
-    public Long getQueryTime();
-    public long getNumberFound();
+    /**
+     * Returns the query execution time, or put in other words, the amount of
+     * time the search engine spent for processing the request.
+     *
+     * @return the query execution time
+     */
+    Long getQueryTime();
+
+    /**
+     * Total number of items matching a the current query execution.
+     *
+     * @return the number of items in the search index that matched a query execution.
+     */
+    long getNumberFound();
 }

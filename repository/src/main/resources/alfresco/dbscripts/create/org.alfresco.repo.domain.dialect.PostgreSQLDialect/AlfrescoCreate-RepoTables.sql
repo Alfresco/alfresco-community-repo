@@ -29,7 +29,7 @@ CREATE TABLE alf_locale
     id INT8 NOT NULL,
     version INT8 NOT NULL,
     locale_str VARCHAR(20) NOT NULL,
-    PRIMARY KEY (id)    
+    PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX locale_str ON alf_locale (locale_str);
 
@@ -50,7 +50,7 @@ CREATE TABLE alf_qname
     version INT8 NOT NULL,
     ns_id INT8 NOT NULL,
     local_name VARCHAR(200) NOT NULL,
-    CONSTRAINT fk_alf_qname_ns FOREIGN KEY (ns_id) REFERENCES alf_namespace (id),    
+    CONSTRAINT fk_alf_qname_ns FOREIGN KEY (ns_id) REFERENCES alf_namespace (id),
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX ns_id ON alf_qname (ns_id, local_name);
@@ -62,7 +62,7 @@ CREATE TABLE alf_permission
     version INT8 NOT NULL,
     type_qname_id INT8 NOT NULL,
     name VARCHAR(100) NOT NULL,
-    PRIMARY KEY (id),    
+    PRIMARY KEY (id),
     CONSTRAINT fk_alf_perm_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)
 );
 CREATE UNIQUE INDEX type_qname_id ON alf_permission (type_qname_id, name);
@@ -101,7 +101,7 @@ CREATE TABLE alf_access_control_entry
     allowed BOOL NOT NULL,
     applies INT4 NOT NULL,
     context_id INT8,
-    PRIMARY KEY (id),    
+    PRIMARY KEY (id),
     CONSTRAINT fk_alf_ace_auth FOREIGN KEY (authority_id) REFERENCES alf_authority (id),
     CONSTRAINT fk_alf_ace_ctx FOREIGN KEY (context_id) REFERENCES alf_ace_context (id),
     CONSTRAINT fk_alf_ace_perm FOREIGN KEY (permission_id) REFERENCES alf_permission (id)
@@ -151,7 +151,7 @@ CREATE TABLE alf_acl_member
     acl_id INT8 NOT NULL,
     ace_id INT8 NOT NULL,
     pos INT4 NOT NULL,
-    PRIMARY KEY (id),    
+    PRIMARY KEY (id),
     CONSTRAINT fk_alf_aclm_ace FOREIGN KEY (ace_id) REFERENCES alf_access_control_entry (id),
     CONSTRAINT fk_alf_aclm_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id)
 );
@@ -174,18 +174,31 @@ CREATE UNIQUE INDEX auth_id ON alf_authority_alias (auth_id, alias_id);
 CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
 CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
 
+CREATE SEQUENCE alf_server_seq START WITH 1 INCREMENT BY 1;
+CREATE TABLE alf_server
+(
+    id INT8 NOT NULL,
+    version INT8 NOT NULL,
+    ip_address VARCHAR(39) NOT NULL,
+    PRIMARY KEY (id)
+);
+CREATE UNIQUE INDEX ip_address ON alf_server (ip_address);
+
 CREATE SEQUENCE alf_transaction_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_transaction
 (
     id INT8 NOT NULL,
     version INT8 NOT NULL,
+    server_id INT8,
     change_txn_id VARCHAR(56) NOT NULL,
     commit_time_ms INT8,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id)
 );
 CREATE INDEX idx_alf_txn_ctms ON alf_transaction (commit_time_ms, id);
 CREATE INDEX idx_alf_txn_ctms_sc ON alf_transaction (commit_time_ms);
 CREATE INDEX idx_alf_txn_id_ctms ON alf_transaction (id, commit_time_ms);
+CREATE INDEX fk_alf_txn_svr ON alf_transaction (server_id);
 
 CREATE SEQUENCE alf_store_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_store
@@ -254,7 +267,7 @@ CREATE TABLE alf_child_assoc
     qname_crc INT8 NOT NULL,
     is_primary BOOL,
     assoc_index INT4,
-    PRIMARY KEY (id),    
+    PRIMARY KEY (id),
     CONSTRAINT fk_alf_cass_cnode FOREIGN KEY (child_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_cass_pnode FOREIGN KEY (parent_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_cass_qnns FOREIGN KEY (qname_ns_id) REFERENCES alf_namespace (id),
@@ -273,7 +286,7 @@ CREATE TABLE alf_node_aspects
     node_id INT8 NOT NULL,
     qname_id INT8 NOT NULL,
     PRIMARY KEY (node_id, qname_id),
-	CONSTRAINT fk_alf_nasp_n FOREIGN KEY (node_id) REFERENCES alf_node (id),
+    CONSTRAINT fk_alf_nasp_n FOREIGN KEY (node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id)
 );
 CREATE INDEX fk_alf_nasp_n ON alf_node_aspects (node_id);
@@ -288,7 +301,7 @@ CREATE TABLE alf_node_assoc
     target_node_id INT8 NOT NULL,
     type_qname_id INT8 NOT NULL,
     assoc_index INT8 NOT NULL,
-    PRIMARY KEY (id),    
+    PRIMARY KEY (id),
     CONSTRAINT fk_alf_nass_snode FOREIGN KEY (source_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nass_tnode FOREIGN KEY (target_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)

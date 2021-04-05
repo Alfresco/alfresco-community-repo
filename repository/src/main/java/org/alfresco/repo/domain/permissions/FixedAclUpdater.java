@@ -35,9 +35,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.collect.Sets;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.lock.JobLockService;
@@ -50,6 +53,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionServicePolicies;
 import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,6 +68,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Finds nodes with ASPECT_PENDING_FIX_ACL aspect and sets fixed ACLs for them
@@ -79,18 +85,22 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     public static final String FIXED_ACL_ASYNC_REQUIRED_KEY = "FIXED_ACL_ASYNC_REQUIRED";
     public static final String FIXED_ACL_ASYNC_CALL_KEY = "FIXED_ACL_ASYNC_CALL";
+    protected static final QName LOCK_Q_NAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FixedAclUpdater");
+
+    /** A set of listeners to receive callback events whenever permissions are updated by this class. */
+    private static Set<FixedAclUpdaterListener> listeners = Sets.newConcurrentHashSet();
 
     private ApplicationContext applicationContext;
     private JobLockService jobLockService;
     private TransactionService transactionService;
     private AccessControlListDAO accessControlListDAO;
     private NodeDAO nodeDAO;
-    private QName lockQName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FixedAclUpdater");
     private long lockTimeToLive = 10000;
     private long lockRefreshTime = lockTimeToLive / 2;
 
     private int maxItemBatchSize = 100;
     private int numThreads = 4;
+    private boolean forceSharedACL = false;
 
     private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
     private PolicyComponent policyComponent;
@@ -132,6 +142,11 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         this.maxItemBatchSize = maxItemBatchSize;
     }
 
+    public void setForceSharedACL(boolean forceSharedACL)
+    {
+        this.forceSharedACL = forceSharedACL;
+    }
+
     public void setLockTimeToLive(long lockTimeToLive)
     {
         this.lockTimeToLive = lockTimeToLive;
@@ -146,6 +161,12 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     public void setPolicyIgnoreUtil(PolicyIgnoreUtil policyIgnoreUtil)
     {
         this.policyIgnoreUtil = policyIgnoreUtil;
+    }
+
+    /** Register a {@link FixedAclUpdaterListener} to be notified when a node is updated by an instance of this class. */
+    public static void registerListener(FixedAclUpdaterListener listener)
+    {
+        listeners.add(listener);
     }
 
     public void init()
@@ -182,7 +203,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                         public List<NodeRef> execute() throws Throwable
                         {
                             getNodesCallback.init();
-                            nodeDAO.getNodesWithAspects(aspects, getNodesCallback.getMinNodeId(), null, getNodesCallback);
+                            nodeDAO.getNodesWithAspects(aspects, getNodesCallback.getMinNodeId(), null, true, getNodesCallback);
                             getNodesCallback.done();
 
                             return getNodesCallback.getNodes();
@@ -231,7 +252,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         }
     }
 
-    private class AclWorker implements BatchProcessor.BatchProcessWorker<NodeRef>
+    protected class AclWorker implements BatchProcessor.BatchProcessWorker<NodeRef>
     {
         private Set<QName> aspects = new HashSet<>(1);
 
@@ -253,7 +274,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         {
         }
 
-        public void process(final NodeRef nodeRef) throws Throwable
+        public void process(final NodeRef nodeRef) 
         {
             RunAsWork<Void> findAndUpdateAclRunAsWork = new RunAsWork<Void>()
             {
@@ -265,35 +286,47 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                         log.debug(String.format("Processing node %s", nodeRef));
                     }
 
-                    final Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
-
-                    // MNT-22009 - If node was deleted and in archive store, remove the aspect and properties and do not
-                    // process
-                    if (nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
+                    try
                     {
+                        final Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
+
+                        // MNT-22009 - If node was deleted and in archive store, remove the aspect and properties and do
+                        // not
+                        // process
+                        if (nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
+                        {
+                            accessControlListDAO.removePendingAclAspect(nodeId);
+                            return null;
+                        }
+
+                        // retrieve acl properties from node
+                        Long inheritFrom = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_INHERIT_FROM_ACL);
+                        Long sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+
+                        // set inheritance using retrieved prop
+                        accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace, true,
+                                forceSharedACL);
+
+                        // Remove aspect
                         accessControlListDAO.removePendingAclAspect(nodeId);
-                        return null;
+
+                        if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+                        {
+                            boolean transformedToAsyncOperation = toBoolean((Boolean) AlfrescoTransactionSupport
+                                    .getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
+
+                            OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate
+                                    .get(ContentModel.TYPE_BASE);
+                            onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
+                        }
                     }
-
-                    // retrieve acl properties from node
-                    Long inheritFrom = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_INHERIT_FROM_ACL);
-                    Long sharedAclToReplace = (Long) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
-
-                    // set inheritance using retrieved prop
-                    accessControlListDAO.setInheritanceForChildren(nodeRef, inheritFrom, sharedAclToReplace, true);
-
-                    // Remove aspect
-                    accessControlListDAO.removePendingAclAspect(nodeId);
-
-                    if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+                    catch (Exception e)
                     {
-                        boolean transformedToAsyncOperation = toBoolean(
-                                (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
-
-                        OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate
-                                .get(ContentModel.TYPE_BASE);
-                        onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
+                        log.error("Job could not process pending ACL node " + nodeRef + ": " + e);
+                        e.printStackTrace();
                     }
+
+                    listeners.forEach(listener -> listener.permissionsUpdatedAsynchronously(nodeRef));
 
                     if (log.isDebugEnabled())
                     {
@@ -308,8 +341,15 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
             AuthenticationUtil.runAs(findAndUpdateAclRunAsWork, AuthenticationUtil.getSystemUserName());
         }
     };
+    
 
-    private class GetNodesWithAspectCallback implements NodeRefQueryCallback
+    /** Create a new AclWorker. */
+    protected AclWorker createAclWorker()
+    {
+        return new AclWorker();
+    }
+
+    class GetNodesWithAspectCallback implements NodeRefQueryCallback
     {
         private List<NodeRef> nodes = new ArrayList<>();
         private long minNodeId;
@@ -400,11 +440,11 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
         try
         {
-            lockToken = jobLockService.getLock(lockQName, lockTimeToLive, 0, 1);
-            jobLockService.refreshLock(lockToken, lockQName, lockRefreshTime, jobLockRefreshCallback);
+            lockToken = jobLockService.getLock(LOCK_Q_NAME, lockTimeToLive, 0, 1);
+            jobLockService.refreshLock(lockToken, LOCK_Q_NAME, lockRefreshTime, jobLockRefreshCallback);
 
             AclWorkProvider provider = new AclWorkProvider();
-            AclWorker worker = new AclWorker();
+            AclWorker worker = createAclWorker();
             BatchProcessor<NodeRef> bp = new BatchProcessor<>("FixedAclUpdater",
                     transactionService.getRetryingTransactionHelper(), provider, numThreads, maxItemBatchSize, applicationContext,
                     log, 100);
@@ -421,7 +461,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
             jobLockRefreshCallback.isActive.set(false);
             if (lockToken != null)
             {
-                jobLockService.releaseLock(lockToken, lockQName);
+                jobLockService.releaseLock(lockToken, LOCK_Q_NAME);
             }
         }
     }

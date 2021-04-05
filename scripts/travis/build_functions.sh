@@ -26,7 +26,13 @@ function cloneRepo() {
 }
 
 function retrievePomParentVersion() {
-  pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
+  local REPO="${1}"
+
+  if [ -z "${REPO}" ]; then
+    pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
+  else
+    pushd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${REPO%.git}")" >/dev/null
+  fi
 
   sed -n '/<parent>/,/<\/parent>/p' pom.xml \
     | sed -n '/<version>/,/<\/version>/p' \
@@ -39,8 +45,13 @@ function retrievePomParentVersion() {
 
 function retrievePomProperty() {
   local KEY="${1}"
+  local REPO="${2}"
 
-  pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
+  if [ -z "${REPO}" ]; then
+    pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
+  else
+    pushd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${REPO%.git}")" >/dev/null
+  fi
 
   sed -n '/<properties>/,/<\/properties>/p' pom.xml \
     | sed -n "/<${KEY}>/,/<\/${KEY}>/p" \
@@ -92,6 +103,42 @@ function pullUpstreamTag() {
   local TAG="${2}"
 
   cloneRepo "${UPSTREAM_REPO}" "${TAG}"
+}
+
+function pullSameBranch() {
+  local UPSTREAM_REPO="${1}"
+
+  local SOURCE_BRANCH="$(identifyUpstreamSourceBranch "${UPSTREAM_REPO}")"
+
+  cloneRepo "${UPSTREAM_REPO}" "${SOURCE_BRANCH}"
+}
+
+function buildUpstreamTag() {
+  local UPSTREAM_REPO="${1}"
+  local TAG="${2}"
+  local EXTRA_BUILD_ARGUMENTS="${3}"
+
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
+
+  cd "$(basename "${UPSTREAM_REPO%.git}")"
+
+  mvn -B -V clean package -DskipTests -Dmaven.javadoc.skip=true "-Dimage.tag=${TAG}" ${EXTRA_BUILD_ARGUMENTS}
+
+  popd
+}
+
+function buildSameBranchOnUpstream() {
+  local UPSTREAM_REPO="${1}"
+  local EXTRA_BUILD_ARGUMENTS="${2}"
+
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
+
+  cd "$(basename "${UPSTREAM_REPO%.git}")"
+
+  mvn -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true ${EXTRA_BUILD_ARGUMENTS}
+  mvn -B -V -q install -DskipTests -f packaging/tests/pom.xml
+
+  popd
 }
 
 function pullUpstreamTagAndBuildDockerImage() {

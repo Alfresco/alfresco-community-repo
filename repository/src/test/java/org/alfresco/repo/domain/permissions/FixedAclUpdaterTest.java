@@ -90,8 +90,8 @@ public class FixedAclUpdaterTest extends TestCase
     private CheckOutCheckInService checkOutCheckInService;
     private ContentService contentService;
     private AuthorityService authorityService;
-    private static final long MAX_TRANSACTION_TIME_DEFAULT = 50;
-    private static final int[] filesPerLevelMoreFolders = { 5, 3, 1, 50 };
+    private static final long MAX_TRANSACTION_TIME_DEFAULT = 10;
+    private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1 };
     private static final int[] filesPerLevelMoreFiles = { 5, 100 };
     private long maxTransactionTime;
     private static HashMap<Integer, Class<?>> errors;
@@ -306,7 +306,7 @@ public class FixedAclUpdaterTest extends TestCase
     public void testSyncCopyNoTimeOut() throws FileExistsException, FileNotFoundException
     {
         NodeRef originalRef = createFolderHierarchyInRootForFolderTests("originFolder");
-        NodeRef targetRef = createFolderHierarchyInRootForFolderTests("targetFolder");
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("targetFolder");
 
         // Get ACLS for later comparison
         ACLComparator aclComparatorOrigin = new ACLComparator(originalRef);
@@ -315,6 +315,19 @@ public class FixedAclUpdaterTest extends TestCase
         {
             maxTransactionTime = 86400000;
             setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
+
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
 
             // Set Shared permissions on origin
             permissionService.setInheritParentPermissions(originalRef, true, false);
@@ -343,7 +356,7 @@ public class FixedAclUpdaterTest extends TestCase
         finally
         {
             deleteNodes(originalRef);
-            deleteNodes(targetRef);
+            deleteNodes(targetRefBase);
         }
     }
 
@@ -354,14 +367,26 @@ public class FixedAclUpdaterTest extends TestCase
     public void testAsyncWithNodeCopy()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyOriginFolder");
-        NodeRef targetRef = createFile(fileFolderService, homeFolderNodeRef, "testAsyncWithNodeCopyTargetFolder",
-                ContentModel.TYPE_FOLDER);
-
-        // Get ACLS for later comparison
-        ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyTargetFolder");
 
         try
         {
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 permissionService.setInheritParentPermissions(targetRef, false, false);
@@ -410,7 +435,7 @@ public class FixedAclUpdaterTest extends TestCase
         finally
         {
             deleteNodes(folderRef);
-            deleteNodes(targetRef);
+            deleteNodes(targetRefBase);
         }
     }
 
@@ -421,13 +446,26 @@ public class FixedAclUpdaterTest extends TestCase
     public void testAsyncWithNodeCopyToPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyOriginFolder");
-        NodeRef targetRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyTargetFolder");
-
-        // Get ACLS for later comparison
-        ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyTargetFolder");
 
         try
         {
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 permissionService.setInheritParentPermissions(targetRef, false, false);
@@ -487,7 +525,7 @@ public class FixedAclUpdaterTest extends TestCase
         finally
         {
             deleteNodes(folderRef);
-            deleteNodes(targetRef);
+            deleteNodes(targetRefBase);
         }
     }
 
@@ -499,13 +537,26 @@ public class FixedAclUpdaterTest extends TestCase
     public void testAsyncWithNodeCopyParentToChildPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyOriginFolder");
-        NodeRef targetRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyTargetFolder");
-
-        // Get ACLS for later comparison
-        ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyTargetFolder");
 
         try
         {
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 permissionService.setInheritParentPermissions(targetRef, false, false);
@@ -585,7 +636,151 @@ public class FixedAclUpdaterTest extends TestCase
         finally
         {
             deleteNodes(folderRef);
-            deleteNodes(targetRef);
+            deleteNodes(targetRefBase);
+        }
+    }
+
+    /*
+     * Move child of node that has the aspect to a child folder of a folder that also has the aspect applied before job
+     * runs
+     */
+    @Test
+    public void testAsyncWithNodeMoveChildToChildPendingFolder()
+    {
+        NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveChildToChildPendingFolderOrigin");
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveChildToChildPendingFolderTarget");
+
+        try
+        {
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
+
+            // Set permissions on a child to get a new shared ACL with pending acl nodes
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRef, true, false);
+                permissionService.setPermission(targetRef, TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR, true);
+                return null;
+            }, false, true);
+
+            // Get target Folder with a pending ACL
+            NodeRef targetFolderWithPendingAcl = getFirstNodeWithAclPending(ContentModel.TYPE_FOLDER, targetRef);
+            assertNotNull("No children folders were found with pendingFixACl aspect", targetFolderWithPendingAcl);
+            NodeRef targetFolderWithPendingAclChild = nodeDAO
+                    .getNodePair(getChild(nodeDAO.getNodePair(targetFolderWithPendingAcl).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorTarget = new ACLComparator(targetFolderWithPendingAcl);
+            aclComparatorTarget.setOriginalPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR);
+
+            // Set permissions on origin folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(folderRef, true, false);
+                permissionService.setPermission(folderRef, TEST_GROUP_NAME_FULL, DEFAULT_PERMISSION, true);
+                return null;
+            }, false, true);
+
+            // Find a pending ACL folder
+            NodeRef originFolderWithPendingAcl = getFirstNodeWithAclPending(ContentModel.TYPE_FOLDER, folderRef);
+            assertNotNull("No children folders were found with pendingFixACl aspect", originFolderWithPendingAcl);
+            NodeRef originFolderWithPendingAclChild = nodeDAO
+                    .getNodePair(getChild(nodeDAO.getNodePair(originFolderWithPendingAcl).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorMovedNode = new ACLComparator(originFolderWithPendingAclChild);
+            aclComparatorMovedNode.setOriginalPermission(TEST_GROUP_NAME_FULL, DEFAULT_PERMISSION);
+
+            // Move one pending folder into the other
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                fileFolderService.move(originFolderWithPendingAclChild, targetFolderWithPendingAclChild, "movedFolder");
+                return null;
+            }, false, true);
+
+            // Trigger job
+            triggerFixedACLJob();
+
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+            assertTrue("Moved node did not inherit permissions from target",
+                    aclComparatorMovedNode.hasPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR));
+            assertTrue("Child of Pending Moved node did not inherit permissions from target",
+                    aclComparatorMovedNode.firstChildHasPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR));
+            assertFalse("Moved node kept original permissions", aclComparatorMovedNode.parentHasOriginalPermission());
+            assertFalse("Child of Moved node kept original permissions",
+                    aclComparatorMovedNode.firstChildHasOriginalPermission());
+        }
+        finally
+        {
+            deleteNodes(folderRef);
+            deleteNodes(targetRefBase);
+        }
+    }
+
+    /*
+     * Create a conflicting ACL on a node and then try to run the job normally, without forcing the ACL to get the
+     * expected error and then run it again with the forcedShareACL property as true so it can override the problematic
+     * ACL
+     */
+    @Test
+    public void testAsyncWithErrorsForceSharedACL()
+    {
+        NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithErrorsForceSharedACL");
+
+        try
+        {
+            // Set permissions on origin folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(folderRef, true, false);
+                permissionService.setPermission(folderRef, TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR, true);
+                return null;
+            }, false, true);
+
+            // Find a pending ACL folder
+            NodeRef originFolderWithPendingAcl = getFirstNodeWithAclPending(ContentModel.TYPE_FOLDER, folderRef);
+            assertNotNull("No children folders were found with pendingFixACl aspect", originFolderWithPendingAcl);
+            NodeRef originFolderWithPendingAclChild = nodeDAO
+                    .getNodePair(getChild(nodeDAO.getNodePair(originFolderWithPendingAcl).getFirst())).getSecond();
+
+            // Create a new ACL elsewhere and put the shared ACL (from a child) on the pending node child to simulate
+            // conflict
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                NodeRef tempNode = createFile(fileFolderService, folderRef, "testAsyncWithErrorsForceSharedACLTemp",
+                        ContentModel.TYPE_FOLDER);
+                permissionService.setInheritParentPermissions(tempNode, false, false);
+                permissionService.setPermission(tempNode, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                NodeRef tempNodeChild = createFile(fileFolderService, tempNode, "testAsyncWithErrorsForceSharedACLTempChild",
+                        ContentModel.TYPE_FOLDER);
+                setACL(permissionsDaoComponent, originFolderWithPendingAclChild,
+                        nodeDAO.getNodeAclId(nodeDAO.getNodePair(tempNodeChild).getFirst()));
+                return null;
+            }, false, true);
+
+            ACLComparator aclComparator = new ACLComparator(originFolderWithPendingAclChild);
+
+            // Trigger job without forcing the shared ACL, only 1 error is expected
+            triggerFixedACLJob(false);
+            assertEquals("Unexpected number of errors", 1, getNodesCountWithPendingFixedAclAspect());
+
+            // Trigger job forcing the shared ACL
+            triggerFixedACLJob(true);
+
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+            assertTrue("Child of node with conflict does not have correct permissions",
+                    aclComparator.firstChildHasPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR));
+            assertTrue("Node with conflict does not have correct permissions",
+                    aclComparator.hasPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR));
+        }
+        finally
+        {
+            deleteNodes(folderRef);
         }
     }
 
@@ -596,14 +791,26 @@ public class FixedAclUpdaterTest extends TestCase
     public void testAsyncWithNodeMove()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveOriginFolder");
-        NodeRef targetRef = createFile(fileFolderService, homeFolderNodeRef, "testAsyncWithNodeMoveTargetFolder",
-                ContentModel.TYPE_FOLDER);
-
-        // Get ACLS for later comparison
-        ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveTargetFolder");
 
         try
         {
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 permissionService.setInheritParentPermissions(targetRef, false, false);
@@ -649,7 +856,7 @@ public class FixedAclUpdaterTest extends TestCase
         finally
         {
             deleteNodes(folderRef);
-            deleteNodes(targetRef);
+            deleteNodes(targetRefBase);
         }
     }
 
@@ -660,13 +867,27 @@ public class FixedAclUpdaterTest extends TestCase
     public void testAsyncWithNodeMoveToPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveOriginFolder");
-        NodeRef targetRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveTargetFolder");
-
-        // Get ACLS for later comparison
-        ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+        NodeRef targetRefBase = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveTargetFolder");
 
         try
         {
+
+            // Set permissions on target folder
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                permissionService.setInheritParentPermissions(targetRefBase, true, false);
+                permissionService.setPermission(targetRefBase, TEST_GROUP_NAME_FULL, PermissionService.CONSUMER, true);
+                return null;
+            }, false, true);
+
+            // Trigger the job so the target folder structure has a different base ACL
+            triggerFixedACLJob();
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+
+            NodeRef targetRef = nodeDAO.getNodePair(getChild(nodeDAO.getNodePair(targetRefBase).getFirst())).getSecond();
+
+            // Get ACLS for later comparison
+            ACLComparator aclComparatorTarget = new ACLComparator(targetRef);
+
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 permissionService.setInheritParentPermissions(targetRef, false, false);
@@ -723,7 +944,7 @@ public class FixedAclUpdaterTest extends TestCase
         finally
         {
             deleteNodes(folderRef);
-            deleteNodes(targetRef);
+            deleteNodes(targetRefBase);
         }
     }
 
@@ -1250,6 +1471,19 @@ public class FixedAclUpdaterTest extends TestCase
         }
     }
 
+    private static void setACL(PermissionsDaoComponent permissionsDaoComponent, NodeRef nodeRef, long aclId)
+    {
+        if (permissionsDaoComponent instanceof ADMPermissionsDaoComponentImpl)
+        {
+            AccessControlListDAO acldao = ((ADMPermissionsDaoComponentImpl) permissionsDaoComponent).getACLDAO(nodeRef);
+            if (acldao instanceof ADMAccessControlListDAO)
+            {
+                ADMAccessControlListDAO admAcLDao = (ADMAccessControlListDAO) acldao;
+                admAcLDao.setAccessControlList(nodeRef, aclId);
+            }
+        }
+    }
+
     private NodeRef createFolderHierarchyInRoot(String folderName, int[] filesPerLevel)
     {
         return txnHelper.doInTransaction((RetryingTransactionCallback<NodeRef>) () -> {
@@ -1319,12 +1553,18 @@ public class FixedAclUpdaterTest extends TestCase
 
     private void triggerFixedACLJob()
     {
+        triggerFixedACLJob(false);
+    }
+
+    private void triggerFixedACLJob(boolean forceSharedACL)
+    {
         // run the fixedAclUpdater until there is nothing more to fix (running the updater may create more to fix up) or
         // the count doesn't change for 3 cycles, meaning we have a problem.
         txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
             int count = 0;
             int previousCount = 0;
             int rounds = 0;
+            fixedAclUpdater.setForceSharedACL(forceSharedACL);
             do
             {
                 previousCount = count;
@@ -1356,8 +1596,13 @@ public class FixedAclUpdaterTest extends TestCase
                         isDescendent = true;
                     }
                 }
+
                 if (isDescendent && nodeDAO.getNodeType(nodeDAO.getNodePair(nodeRef).getFirst()).equals(nodeType))
                 {
+                    // If folder, the tests will need a child and a grandchild to verify permissions
+                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef)) {
+                        continue;
+                    }
                     return nodeRef;
                 }
             }
@@ -1377,12 +1622,28 @@ public class FixedAclUpdaterTest extends TestCase
                 NodeRef nodeRef = nodesWithAclPendingAspect.get(i);
                 if (nodeDAO.getNodeType(nodeDAO.getNodePair(nodeRef).getFirst()).equals(nodeType))
                 {
+                    // If folder, the tests will need a child and a grandchild to verify permissions
+                    if (nodeType.equals(ContentModel.TYPE_FOLDER) && !hasGrandChilden(nodeRef)) {
+                        continue;
+                    }
                     return nodeRef;
                 }
             }
             return null;
         }, false, true);
 
+    }
+
+    private boolean hasGrandChilden(NodeRef nodeRef)
+    {
+        Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
+        Long childId = getChild(nodeId);
+        Long grandChild = null;
+        if (childId != null)
+        {
+            grandChild = getChild(childId);
+        }
+        return (grandChild != null);
     }
 
     private void deleteNodes(NodeRef folder)

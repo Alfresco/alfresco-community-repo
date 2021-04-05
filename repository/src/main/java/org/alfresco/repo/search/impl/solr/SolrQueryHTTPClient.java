@@ -54,7 +54,7 @@ import org.alfresco.repo.index.shard.Floc;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.repo.search.impl.QueryParserUtils;
-import org.alfresco.repo.search.impl.JSONResult;
+import org.alfresco.repo.search.SearchEngineResultMetadata;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -1098,14 +1098,14 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
         }
     }
 
-    protected JSONResult postSolrQuery(HttpClient httpClient, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor)
+    protected SearchEngineResultMetadata postSolrQuery(HttpClient httpClient, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor)
                 throws UnsupportedEncodingException, IOException, HttpException, URIException,
                 JSONException
     {
         return postSolrQuery(httpClient, url, body, jsonProcessor, null);
     }
 
-    protected JSONResult postSolrQuery(HttpClient httpClient, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor, String spellCheckParams)
+    protected SearchEngineResultMetadata postSolrQuery(HttpClient httpClient, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor, String spellCheckParams)
                 throws UnsupportedEncodingException, IOException, HttpException, URIException,
                 JSONException
     {
@@ -1120,7 +1120,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
             json.put("spellcheck", manager.getSpellCheckJsonValue());
         }
 
-            JSONResult results = jsonProcessor.getResult(json);
+            SearchEngineResultMetadata results = jsonProcessor.getResult(json);
 
             if (s_logger.isDebugEnabled())
             {

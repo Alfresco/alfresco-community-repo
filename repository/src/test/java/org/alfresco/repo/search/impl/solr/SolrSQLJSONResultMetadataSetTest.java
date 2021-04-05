@@ -35,7 +35,7 @@ import org.junit.Test;
  * @author Michael Suzuki
  *
  */
-public class SolrSQLJSONResultSetTest
+public class SolrSQLJSONResultMetadataSetTest
 {
     @Test
     public void parseSQLResponse() throws JSONException

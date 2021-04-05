@@ -54,7 +54,6 @@ public class NodePermissionAssessorPermissionsTest
     {
         AuthenticationUtil.clearCurrentSecurityContext();
         permissionService = mock(PermissionService.class);
-        DBStats.resetStopwatches();
     }
 
     @Test

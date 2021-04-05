@@ -97,6 +97,8 @@
             <mandatory-aspects/>
         </aspect>
         <aspect name="mycompany:testAspect">
+            <title>Test Aspect</title>
+            <archive>true</archive>
             <properties>
                 <property name="mycompany:testProperty">
                     <title>Test Property</title>

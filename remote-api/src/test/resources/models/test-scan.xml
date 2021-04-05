@@ -5,6 +5,7 @@
         <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
         <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
         <import uri="http://www.alfresco.org/model/content/smartfolder/1.0" prefix="smf"/>
+        <import uri="http://www.mycompany.com/model/finance/1.0" prefix="mycompany"/>
     </imports>
     <namespaces>
         <namespace uri="http://www.test.com/model/account/1.0" prefix="test"/>
@@ -49,6 +50,9 @@
             <overrides/>
             <mandatory-aspects/>
         </type>
+        <type name="test:publishable">
+            <parent>mycompany:doc</parent>
+        </type>
     </types>
     <aspects>
         <aspect name="test:rescan">
@@ -74,7 +78,7 @@
         <aspect name="test:smartFilter">
             <title>Smart filter</title>
             <description>Smart Filter</description>
-            <parent>cm:auditable</parent>
+            <parent>mycompany:testAspect</parent>
             <properties/>
             <associations/>
             <overrides/>

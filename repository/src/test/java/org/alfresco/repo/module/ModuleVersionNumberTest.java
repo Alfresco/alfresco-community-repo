@@ -231,7 +231,7 @@ public class ModuleVersionNumberTest extends TestCase
         return (ModuleVersionNumber) objectInputStream.readObject();
     }
 
-    // Tests that we can strip the suffixes such as "-M2", "-A12" or "-RC2" from versions "7.0.0-M2", "6.2.2-A12", "7.0.1-RC2"
+    // Tests that we can strip the suffixes such as "-M2", "-A12" or "-RC2" from versions "7.0.0-M2", "6.2.2-A12", "7.1.0-RC2"
     // The main version may contain 3 or 4 digit parts.
     public void testGetVersionWithoutSuffix()
     {

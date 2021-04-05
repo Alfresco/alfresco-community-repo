@@ -116,8 +116,6 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodesCache" ref="node.nodesCache"/>
-        <property name="aspectsCache" ref="node.aspectsCache"/>
-        <property name="propertiesCache" ref="node.propertiesCache"/>
         <property name="aclCrudDAO" ref="aclCrudDAO"/>
         <property name="metadataIndexCheck2">
             <ref bean="metadataQueryIndexesCheck2" />

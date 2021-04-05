@@ -427,10 +427,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeEntity node = new NodeEntity();
         node.setId(id);
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("+ Read node with id: "+id);
-        }
         return template.selectOne(SELECT_NODE_BY_ID, node);
     }
 
@@ -454,10 +450,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         node.setUuid(uuid);
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("+ Read node with uuid: "+uuid);
-        }
         return template.selectOne(SELECT_NODE_BY_NODEREF, node);
     }
 
@@ -769,6 +761,31 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         parameters.setIdOne(minNodeId);
         parameters.setIdTwo(maxNodeId);
         parameters.setIds(qnameIds);
+        template.select(SELECT_NODES_WITH_ASPECT_IDS, parameters, resultHandler);
+    }
+
+    @Override
+    protected void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId, boolean ordered,
+            final NodeRefQueryCallback resultsCallback)
+    {
+        @SuppressWarnings("rawtypes")
+        ResultHandler resultHandler = new ResultHandler()
+        {
+            public void handleResult(ResultContext context)
+            {
+                NodeEntity entity = (NodeEntity) context.getResultObject();
+                Pair<Long, NodeRef> nodePair = new Pair<Long, NodeRef>(entity.getId(), entity.getNodeRef());
+                resultsCallback.handle(nodePair);
+            }
+        };
+
+        IdsEntity parameters = new IdsEntity();
+        parameters.setIdOne(minNodeId);
+        parameters.setIdTwo(maxNodeId);
+        parameters.setIds(qnameIds);
+        parameters.setOrdered(ordered);
         template.select(SELECT_NODES_WITH_ASPECT_IDS, parameters, resultHandler);
     }
 

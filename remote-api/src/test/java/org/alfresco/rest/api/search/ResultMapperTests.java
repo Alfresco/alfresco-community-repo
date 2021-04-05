@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.alfresco.repo.search.EmptyResultSet;
+import org.alfresco.repo.search.SearchEngineResultSet;
 import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
@@ -303,7 +304,7 @@ public class ResultMapperTests
         SearchQuery searchQuery = helper.searchQueryFromJson();
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(6, searchContext.getFacetQueries().size());
         assertEquals(0,searchContext.getFacetQueries().get(0).getCount());
@@ -437,7 +438,7 @@ public class ResultMapperTests
         SearchQuery searchQuery = helper.searchQueryFromJson();
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
 
         //Facet intervals
         List<GenericFacetResponse> intervalFacets = searchContext.getFacets().stream()
@@ -477,7 +478,7 @@ public class ResultMapperTests
         SearchQuery searchQuery = helper.searchQueryFromJson();
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         
         //Numeric facet range 
         List<GenericFacetResponse> rangeFacets = searchContext.getFacets().stream()
@@ -531,7 +532,7 @@ public class ResultMapperTests
         SearchQuery searchQuery = helper.extractFromJson(updatedJSON);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         
         //Numeric facet range 
         List<GenericFacetResponse> rangeFacets = searchContext.getFacets().stream()
@@ -575,7 +576,7 @@ public class ResultMapperTests
         ResultSet results = mockResultset(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(null, searchContext.getFacetQueries());
         assertEquals(1, searchContext.getFacets().size());
@@ -610,7 +611,7 @@ public class ResultMapperTests
         ResultSet results = mockResultset(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(null, searchContext.getFacetQueries());
         assertEquals(2, searchContext.getFacets().size());
@@ -648,7 +649,7 @@ public class ResultMapperTests
         ResultSet results = mockResultset(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertTrue(searchContext.getFacets().isEmpty());
         assertEquals(3,searchContext.getFacetQueries().size());
@@ -722,7 +723,7 @@ public class ResultMapperTests
         ResultSet results = mockResultset(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(null, searchContext.getFacetQueries());
         assertEquals(1, searchContext.getFacets().size());
@@ -738,7 +739,7 @@ public class ResultMapperTests
         searchQuery = helper.extractFromJson(jsonQuery);
         results = mockResultset(expectedResponse);
         searchRequest = SearchRequestContext.from(searchQuery);
-        searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(3,searchContext.getFacetQueries().size());
         assertEquals("small",searchContext.getFacetQueries().get(0).getLabel());
@@ -759,7 +760,7 @@ public class ResultMapperTests
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
         results = mockResultset(expectedResponse);
         searchQuery = helper.extractFromJson(jsonQuery);
-        searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertFalse(searchContext.getFacetsFields().isEmpty());
         assertTrue(searchContext.getFacets().isEmpty());
         assertEquals("creator",searchContext.getFacetsFields().get(0).getLabel());
@@ -770,7 +771,7 @@ public class ResultMapperTests
         assertEquals("modifier",searchContext.getFacetsFields().get(1).getLabel());
         jsonQuery = jsonQuery.replace("V1", "V2");
         searchQuery = helper.extractFromJson(jsonQuery);
-        searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertTrue(searchContext.getFacetsFields().isEmpty());
         assertFalse(searchContext.getFacets().isEmpty());
         assertEquals("creator",searchContext.getFacets().get(0).getLabel());
@@ -835,7 +836,7 @@ public class ResultMapperTests
         ResultSet results = mockResultset(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(null, searchContext.getFacetQueries());
         assertEquals(3, searchContext.getFacets().size());

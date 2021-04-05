@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.QueryParserException;
+import org.alfresco.repo.search.SearchEngineResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
-import org.alfresco.repo.search.impl.JSONResult;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
@@ -55,7 +55,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.RangeParameters;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -68,10 +67,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * @author Andy
+ * Apache Solr {@link SearchEngineResultSet} implementation.
  */
-public class SolrJSONResultSet implements ResultSet, JSONResult
-{
+public class SolrJSONResultSet implements SearchEngineResultSet {
     private static final Log logger = LogFactory.getLog(SolrJSONResultSet.class);
     
     private NodeService nodeService;
@@ -730,6 +728,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     /**
      * @return the queryTime
      */
+    @Override
     public Long getQueryTime()
     {
         return queryTime;
@@ -739,6 +738,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     /**
      * @return the numberFound
      */
+    @Override
     public long getNumberFound()
     {
         return numberFound.longValue();
@@ -758,26 +758,31 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         }
     }
 
+    @Override
     public Map<String, List<Pair<String, Integer>>> getFieldFacets()
     {
         return Collections.unmodifiableMap(fieldFacets);
     }
 
+    @Override
     public Map<String, List<Pair<String, Integer>>> getFacetIntervals()
     {
         return Collections.unmodifiableMap(facetIntervals);
     }
 
+    @Override
     public List<GenericFacetResponse> getPivotFacets()
     {
         return pivotFacets;
     }
 
+    @Override
     public Map<String, Set<Metric>> getStats()
     {
         return Collections.unmodifiableMap(stats);
     }
 
+    @Override
     public long getLastIndexedTxId()
     {
         return lastIndexedTxId;
@@ -801,11 +806,13 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         return this.spellCheckResult;
     }
 
+    @Override
     public boolean getProcessedDenies()
     {
         return processedDenies;
     }
 
+    @Override
     public Map<String,List<Map<String,String>>> getFacetRanges()
     {
         return facetRanges;

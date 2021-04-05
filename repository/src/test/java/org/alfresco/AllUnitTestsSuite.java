@@ -170,6 +170,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategyTest.class,
     org.alfresco.repo.content.caching.CachingContentStoreTest.class,
     org.alfresco.repo.content.caching.ContentCacheImplTest.class,
+    org.alfresco.repo.domain.permissions.FixedAclUpdaterUnitTest.class,
     org.alfresco.repo.domain.propval.PropertyTypeConverterTest.class,
     org.alfresco.repo.search.MLAnaysisModeExpansionTest.class,
     org.alfresco.repo.search.DocumentNavigatorTest.class,

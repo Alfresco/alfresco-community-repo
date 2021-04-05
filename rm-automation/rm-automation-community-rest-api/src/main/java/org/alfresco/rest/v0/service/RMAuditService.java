@@ -26,10 +26,14 @@
  */
 package org.alfresco.rest.v0.service;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
@@ -90,16 +94,20 @@ public class RMAuditService
     public void checkAuditLogForEvent(UserModel user, AuditEvents auditEvent, UserModel auditUser,
                                          String nodeName, List<Object> changedValues)
     {
-        final Instant eventTimestamp = Instant.now();
+
         List<AuditEntry> auditEntries = getAuditEntriesFilteredByEvent(user, auditEvent);
         assertTrue("The list of events is not filtered by " + auditEvent.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(auditEvent.eventDisplayName)));
+        final LocalDateTime eventTimestamp =
+                LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).truncatedTo(MINUTES);
         assertTrue("The event details are not audited",
                 auditEntries.stream().anyMatch(auditEntry -> auditEntry.getNodeName().equals(nodeName) &&
                         auditEntry.getUserName().equals(auditUser.getUsername()) &&
                         CollectionUtils.isEqualCollection(auditEntry.getChangedValues(), changedValues) &&
                         !auditEntry.getTimestamp().isEmpty() &&
-                        Instant.parse(auditEntry.getTimestamp()).compareTo(eventTimestamp) <= 0));
+                        (LocalDateTime.ofInstant(Instant.parse(auditEntry.getTimestamp()), ZoneId.systemDefault()).truncatedTo(MINUTES)
+                                      .compareTo(eventTimestamp) <= 0))
+                  );
     }
 
     /**
@@ -115,16 +123,19 @@ public class RMAuditService
     public void checkAuditLogForEvent(UserModel user, AuditEvents auditEvent, UserModel auditUser,
                                          String nodeName, String nodePath, List<Object> changedValues)
     {
-        final Instant eventTimestamp = Instant.now();
         List<AuditEntry> auditEntries = getAuditEntriesFilteredByEvent(user, auditEvent);
         assertTrue("The list of events is not filtered by " + auditEvent.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(auditEvent.eventDisplayName)));
+        final LocalDateTime eventTimestamp =
+                LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).truncatedTo(MINUTES);
         assertTrue("The event details are not audited",
                 auditEntries.stream().anyMatch(auditEntry -> auditEntry.getNodeName().equals(nodeName) &&
                         auditEntry.getUserName().equals(auditUser.getUsername()) &&
                         auditEntry.getPath().equals(nodePath) &&
                         CollectionUtils.isEqualCollection(auditEntry.getChangedValues(), changedValues) &&
                         !auditEntry.getTimestamp().isEmpty() &&
-                        Instant.parse(auditEntry.getTimestamp()).compareTo(eventTimestamp) <= 0));
+                        (LocalDateTime.ofInstant(Instant.parse(auditEntry.getTimestamp()), ZoneId.systemDefault()).truncatedTo(MINUTES)
+                                      .compareTo(eventTimestamp) <= 0))
+                  );
     }
 }

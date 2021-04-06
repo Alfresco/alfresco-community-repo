@@ -52,6 +52,8 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -61,8 +63,10 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
     private static final long DUMP_BROKER_TIMEOUT = 50000000l;
 
-    private ActiveMQConnection connection;
+    @Autowired @Qualifier("event2ObjectMapper")
     private ObjectMapper objectMapper;
+
+    private ActiveMQConnection connection;
     protected List<RepoEvent<?>> receivedEvents;
 
     @Before
@@ -76,7 +80,6 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         Destination destination = session.createTopic(EVENT2_TOPIC_NAME);
         MessageConsumer consumer = session.createConsumer(destination);
 
-        objectMapper = ObjectMapperFactory.createInstance();
         receivedEvents = Collections.synchronizedList(new LinkedList<>());
         consumer.setMessageListener(new MessageListener()
         {
@@ -107,28 +110,15 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
             }
         });
 
-        flushSpuriousEvents();
-
         if (DEBUG)
         {
             System.err.println("Now actively listening on topic " + EVENT2_TOPIC_NAME);
         }
     }
 
-    /*
-     * When running with an empty database some events related to the creation may
-     * creep up here making the test fails. After attempting several other
-     * strategies, a smart sleep seems to do the work.
-     */
-    private void flushSpuriousEvents() throws InterruptedException
+    protected ObjectMapper createObjectMapper()
     {
-        do
-        {
-            receivedEvents.clear();
-            Thread.sleep(500l);
-        } while (!receivedEvents.isEmpty());
-
-        EVENT_CONTAINER.reset();
+        return ObjectMapperFactory.createInstance();
     }
 
     @After

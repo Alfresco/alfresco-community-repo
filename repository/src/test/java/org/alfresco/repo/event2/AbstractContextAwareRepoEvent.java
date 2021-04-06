@@ -30,6 +30,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
@@ -151,9 +152,34 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             return nodeService.getRootNode(storeRef);
         });
 
-        EVENT_CONTAINER.reset();
+        flushSpuriousEvents();
     }
 
+    /*
+     * When running with an empty database some events related to the creation may
+     * creep up here making the test fails. After attempting several other
+     * strategies, a smart sleep seems to do the work.
+     */
+    protected void flushSpuriousEvents() throws InterruptedException
+    {
+        int maxloops = 5;
+        
+        int count = maxloops;
+        do
+        {
+            Thread.sleep(165l);
+            if (EVENT_CONTAINER.isEmpty())
+            {
+                count--;
+            } else 
+            {
+                EVENT_CONTAINER.reset();
+                count = maxloops;
+            }
+
+        } while (count > 0);
+    }
+    
     @After
     public void tearDown()
     {
@@ -397,7 +423,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     public static class RepoEventContainer implements Processor
     {
-        private final List<RepoEvent<?>> events = new ArrayList<>();
+        private final List<RepoEvent<?>> events = Collections.synchronizedList(new ArrayList<>());
 
         @Override
         public void process(Exchange exchange)
@@ -430,6 +456,12 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         {
             events.clear();
         }
+
+        public boolean isEmpty()
+        {
+            return events.isEmpty();
+        }
+
     }
 
     @SuppressWarnings("unchecked")

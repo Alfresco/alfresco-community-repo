@@ -111,15 +111,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
-<<<<<<< HEAD
-=======
-        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
-<<<<<<< HEAD
-        PropertyCheck.mandatory(this, "threadPoolExecutor", threadPoolExecutor);
->>>>>>> Now the user name is collected in the calling thread, so that the sendEvent does not silently fails
-=======
         PropertyCheck.mandatory(this, "eventGeneratorQueue", eventGeneratorQueue);
->>>>>>> Now using queue system to guarantee events order
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
         this.childAssociationTypeFilter = eventFilterRegistry.getChildAssociationTypeFilter();
@@ -434,12 +426,14 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
         {
-            String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            eventGeneratorQueue.accept(()-> crateEvent(user, nodeRef, consolidator));
+            EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
+            eventGeneratorQueue.accept(()-> createEvent(nodeRef, consolidator, eventInfo));
         }
 
-        private RepoEvent<?> crateEvent(String user, NodeRef nodeRef, EventConsolidator consolidator)
+        private RepoEvent<?> createEvent(NodeRef nodeRef, EventConsolidator consolidator, EventInfo eventInfo)
         {
+            String user = eventInfo.getPrincipal();
+
             if (consolidator.isTemporaryNode())
             {
                 if (LOGGER.isTraceEnabled())
@@ -451,8 +445,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
             // Get the repo event before the filtering,
             // so we can take the latest node info into account
-            final RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
-
+            final RepoEvent<?> event = consolidator.getRepoEvent(eventInfo);
 
             final QName nodeType = consolidator.getNodeType();
             if (isFiltered(nodeType, user))
@@ -481,12 +474,13 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
-            String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            eventGeneratorQueue.accept(()-> crateEvent(user, childAssociationRef, consolidator));
+            EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
+            eventGeneratorQueue.accept(()-> createEvent(eventInfo, childAssociationRef, consolidator));
         }
 
-        private RepoEvent<?> crateEvent(String user, ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
+        private RepoEvent<?> createEvent(EventInfo eventInfo, ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
+            String user = eventInfo.getPrincipal();
             if (consolidator.isTemporaryChildAssociation())
             {
                 if (LOGGER.isTraceEnabled())
@@ -498,7 +492,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
             // Get the repo event before the filtering,
             // so we can take the latest association info into account
-            final RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
+            final RepoEvent<?> event = consolidator.getRepoEvent(eventInfo);
 
             final QName childAssocType = consolidator.getChildAssocType();
             if (isFilteredChildAssociation(childAssocType, user))
@@ -527,11 +521,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         protected void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
-            String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            eventGeneratorQueue.accept(()-> createEvent(user, peerAssociationRef, consolidator));
+            EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
+            eventGeneratorQueue.accept(()-> createEvent(eventInfo, peerAssociationRef, consolidator));
         }
 
-        private RepoEvent<?> createEvent(String user, AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
+        private RepoEvent<?> createEvent(EventInfo eventInfo, AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
             if (consolidator.isTemporaryPeerAssociation())
             {
@@ -542,7 +536,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 return null;
             }
 
-            RepoEvent<?> event = consolidator.getRepoEvent(getEventInfo(user));
+            RepoEvent<?> event = consolidator.getRepoEvent(eventInfo);
             logEvent(event, consolidator.getEventTypes());
             return event;
         }

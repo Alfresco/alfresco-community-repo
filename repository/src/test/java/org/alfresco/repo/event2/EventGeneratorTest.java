@@ -57,8 +57,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
-    private static final boolean DEBUG = true;
-
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
 
     private static final long DUMP_BROKER_TIMEOUT = 50000000l;
@@ -90,7 +88,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
                 if (DEBUG)
                 {
-                    System.err.println("Received message " + message + "\n" + text + "\n" + event);
+                    System.err.println("RX: " + event);
                 }
 
                 receivedEvents.add(event);
@@ -101,8 +99,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 try
                 {
                     return objectMapper.readValue(json, RepoEvent.class);
-                }
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     e.printStackTrace();
                     return null;
@@ -110,7 +107,28 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
             }
         });
 
-        if (DEBUG) System.err.println("Now actively listening on topic " + EVENT2_TOPIC_NAME);
+        flushSpuriousEvents();
+
+        if (DEBUG)
+        {
+            System.err.println("Now actively listening on topic " + EVENT2_TOPIC_NAME);
+        }
+    }
+
+    /*
+     * When running with an empty database some events related to the creation may
+     * creep up here making the test fails. After attempting several other
+     * strategies, a smart sleep seems to do the work.
+     */
+    private void flushSpuriousEvents() throws InterruptedException
+    {
+        do
+        {
+            receivedEvents.clear();
+            Thread.sleep(500l);
+        } while (!receivedEvents.isEmpty());
+
+        EVENT_CONTAINER.reset();
     }
 
     @After
@@ -127,12 +145,20 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
         Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 1);
 
-        assertFalse("No messages were received!", receivedEvents.isEmpty());
-
         RepoEvent<?> sent = getRepoEvent(1);
         RepoEvent<?> received = receivedEvents.get(0);
+        assertEventsEquals("Events are different!", sent, received);
+    }
 
-        assertEquals("Events are different!", sent, received);
+    private void assertEventsEquals(String message, RepoEvent<?> expected, RepoEvent<?> current)
+    {
+        if (DEBUG)
+        {
+            System.err.println("XP: " + expected);
+            System.err.println("CU: " + current);
+        }
+        
+        assertEquals(message, expected, current);
     }
 
     @Test
@@ -144,15 +170,12 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
         Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 3);
 
-        assertFalse("No messages were received!", receivedEvents.isEmpty());
-
         RepoEvent<?> sentCreation = getRepoEvent(1);
         RepoEvent<?> sentUpdate = getRepoEvent(2);
         RepoEvent<?> sentDeletion = getRepoEvent(3);
-
-        assertEquals("Events are different!", sentCreation, (RepoEvent<?>) receivedEvents.get(0));
-        assertEquals("Events are different!", sentUpdate, (RepoEvent<?>) receivedEvents.get(1));
-        assertEquals("Events are different!", sentDeletion, (RepoEvent<?>) receivedEvents.get(2));
+        assertEquals("Expected create event!", sentCreation, (RepoEvent<?>) receivedEvents.get(0));
+        assertEquals("Expected update event!", sentUpdate, (RepoEvent<?>) receivedEvents.get(1));
+        assertEquals("Expected delete event!", sentDeletion, (RepoEvent<?>) receivedEvents.get(2));
     }
 
     private static String getText(Message message)
@@ -161,8 +184,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         {
             ActiveMQTextMessage am = (ActiveMQTextMessage) message;
             return am.getText();
-        }
-        catch (JMSException e)
+        } catch (JMSException e)
         {
             return null;
         }
@@ -194,8 +216,7 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 try
                 {
                     System.out.println("- " + queue.getQueueName());
-                }
-                catch (JMSException e)
+                } catch (JMSException e)
                 {
                     e.printStackTrace();
                 }
@@ -208,31 +229,29 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 try
                 {
                     System.out.println("- " + topic.getTopicName());
-                }
-                catch (JMSException e)
+                } catch (JMSException e)
                 {
                     e.printStackTrace();
                 }
             }
-            
+
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination = session.createTopic(EVENT2_TOPIC_NAME);
             MessageConsumer consumer = session.createConsumer(destination);
 
-            System.out.println("\nListening to topic "+EVENT2_TOPIC_NAME+"...");
+            System.out.println("\nListening to topic " + EVENT2_TOPIC_NAME + "...");
             consumer.setMessageListener(new MessageListener()
             {
                 @Override
                 public void onMessage(Message message)
                 {
                     String text = getText(message);
-                    System.out.println("Received message " + message + "\n" + text+"\n");
+                    System.out.println("Received message " + message + "\n" + text + "\n");
                 }
             });
 
             Thread.sleep(timeout);
-        }
-        finally
+        } finally
         {
             connection.close();
         }

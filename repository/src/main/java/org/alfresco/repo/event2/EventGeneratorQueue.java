@@ -44,13 +44,13 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class EventGeneratorQueue implements InitializingBean
 {
-    private static final Log LOGGER = LogFactory.getLog(EventGeneratorQueue.class);
+	protected static final Log LOGGER = LogFactory.getLog(EventGeneratorQueue.class);
     
-    private Executor enqueueThreadPoolExecutor;
-    private Executor dequeueThreadPoolExecutor;
-    private Event2MessageProducer event2MessageProducer;
-    private BlockingQueue<EventInMaking> queue = new LinkedBlockingQueue<>();
-    private Runnable listener = createListener();
+    protected Executor enqueueThreadPoolExecutor;
+    protected Executor dequeueThreadPoolExecutor;
+    protected Event2MessageProducer event2MessageProducer;
+    protected BlockingQueue<EventInMaking> queue = new LinkedBlockingQueue<>();
+    protected Runnable listener = createListener();
 
     @Override
     public void afterPropertiesSet() throws Exception

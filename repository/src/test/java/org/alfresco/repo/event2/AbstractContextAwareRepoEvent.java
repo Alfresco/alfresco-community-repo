@@ -31,7 +31,6 @@ import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import javax.jms.ConnectionFactory;
 
@@ -78,17 +77,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 {
+    protected static final boolean            DEBUG = false;
+
     protected static final String             TEST_NAMESPACE  = "http://www.alfresco.org/test/ContextAwareRepoEvent";
+    protected static final RepoEventContainer EVENT_CONTAINER = new RepoEventContainer();
 
     private static final   String             BROKER_URL      = "tcp://localhost:61616";
     private static final   String             TOPIC_NAME      = "alfresco.repo.event2";
     private static final   String             CAMEL_ROUTE     = "jms:topic:" + TOPIC_NAME;
-    private static final   RepoEventContainer EVENT_CONTAINER = new RepoEventContainer();
     private static final   CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
-
+    
     @Autowired
     protected RetryingTransactionHelper retryingTransactionHelper;
 
@@ -149,19 +150,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             }
             return nodeService.getRootNode(storeRef);
         });
-    }
 
-    @Before
-    public void forceEventGeneratorToBeSynchronous() {
-        eventQueue.setEnqueueThreadPoolExecutor(new Executor()
-        {
-            @Override
-            public void execute(Runnable command)
-            {
-                command.run();
-            }
-        });
-        eventGenerator.setEventGeneratorQueue(eventQueue);
+        EVENT_CONTAINER.reset();
     }
 
     @After
@@ -414,6 +404,11 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         {
             Object object = exchange.getIn().getBody();
             events.add((RepoEvent<?>) object);
+
+            if (DEBUG)
+            {
+                System.err.println("XX: "+object);
+            }
         }
 
         public List<RepoEvent<?>> getEvents()

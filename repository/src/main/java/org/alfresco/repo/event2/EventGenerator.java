@@ -27,12 +27,16 @@ package org.alfresco.repo.event2;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
@@ -94,6 +98,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private TransactionService transactionService;
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
+    private NodeDAO nodeDAO;
 
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
@@ -113,6 +118,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
+        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
         this.childAssociationTypeFilter = eventFilterRegistry.getChildAssociationTypeFilter();
@@ -143,6 +149,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                                            new JavaBehaviour(this, "onCreateAssociation"));
         policyComponent.bindAssociationBehaviour(BeforeDeleteAssociationPolicy.QNAME, this,
                                            new JavaBehaviour(this, "beforeDeleteAssociation"));
+    }
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -370,11 +381,20 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private EventInfo getEventInfo(String user)
     {
-        return new EventInfo().setTimestamp(ZonedDateTime.now())
+        return new EventInfo().setTimestamp(getCurrentTransactionTimestamp())
                               .setId(UUID.randomUUID().toString())
                               .setTxnId(AlfrescoTransactionSupport.getTransactionId())
                               .setPrincipal(user)
                               .setSource(URI.create("/" + descriptorService.getCurrentRepositoryDescriptor().getId()));
+    }
+
+    private ZonedDateTime getCurrentTransactionTimestamp()
+    {
+        Long currentTransactionId = nodeDAO.getCurrentTransactionId(false);
+        Transaction transaction = nodeDAO.getTxnById(currentTransactionId);
+        Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
+        ZonedDateTime timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
+        return timestamp;
     }
 
     @Override

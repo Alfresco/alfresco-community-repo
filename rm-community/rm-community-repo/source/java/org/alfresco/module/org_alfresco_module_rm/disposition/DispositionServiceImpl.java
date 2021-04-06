@@ -27,16 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
@@ -72,6 +62,11 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.*;
+
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 
 /**
  * Disposition service implementation.
@@ -439,26 +434,30 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      */
     private NodeRef getAssociatedDispositionScheduleImpl(NodeRef nodeRef)
     {
-        NodeRef result = null;
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        // Make sure we are dealing with an RM node
-        if (!filePlanService.isFilePlanComponent(nodeRef))
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
-        }
-
-        if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
-        {
-            List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
-            if (!childAssocs.isEmpty())
+            public NodeRef doWork() throws Exception
             {
-                ChildAssociationRef firstChildAssocRef = childAssocs.get(0);
-                result = firstChildAssocRef.getChildRef();
+                NodeRef result = null;
+                // Make sure we are dealing with an RM node
+                if (!filePlanService.isFilePlanComponent(nodeRef))
+                {
+                    throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
+                }
+                if (nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
+                {
+                    List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
+                    if (!childAssocs.isEmpty())
+                    {
+                        ChildAssociationRef firstChildAssocRef = childAssocs.get(0);
+                        result = firstChildAssocRef.getChildRef();
+                    }
+                }
+                return result;
             }
-        }
-
-        return result;
+        });
     }
 
     /**
@@ -894,14 +893,15 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     @Override
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
+        // Get the disposition instructions
+        DispositionSchedule di = getDispositionSchedule(nodeRef);
+        DispositionAction nextDa = getNextDispositionAction(nodeRef);
         return authenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         {
             public Boolean doWork() throws Exception
             {
                 boolean result = false;
-                // Get the disposition instructions
-                DispositionSchedule di = getDispositionSchedule(nodeRef);
-                DispositionAction nextDa = getNextDispositionAction(nodeRef);
+
                 if (di != null &&
                         nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
                         nextDa != null) {
@@ -1218,7 +1218,15 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
         DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(dispositionSchedule);
+        List<ChildAssociationRef> assocs = AuthenticationUtil.runAsSystem(new RunAsWork<List<ChildAssociationRef> >()
+        {
+            @Override
+            public List<ChildAssociationRef>  doWork()
+            {
+                return nodeService.getChildAssocs(dispositionSchedule);
+            }
+        });
+
         if (assocs != null && !assocs.isEmpty())
         {
             for (ChildAssociationRef assoc : assocs)
@@ -1226,7 +1234,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 if (assoc != null && assoc.getQName().getLocalName().contains(dispositionActionName))
                 {
                     DispositionActionDefinition actionDefinition = ds.getDispositionActionDefinition(assoc.getChildRef().getId());
-                    return calculateAsOfDate(record, actionDefinition);
+
+                    return authenticationUtil.runAsSystem(new RunAsWork<Date>()
+                    {
+                        public Date doWork() throws Exception
+                        {
+                            return calculateAsOfDate(record, actionDefinition);
+                        }
+                    });
                 }
             }
         }

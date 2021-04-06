@@ -133,7 +133,14 @@ public class DispositionScheduleImpl implements DispositionSchedule,
     {
         if (this.actions == null)
         {
-            getDispositionActionsImpl();
+            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                    getDispositionActionsImpl();
+                    return null;
+                }
+            });
         }
 
         DispositionActionDefinition actionDef = this.actionsById.get(id);

@@ -27,8 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static java.util.Arrays.asList;
+
+import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.DOD_URI;
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.RMV_URI;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.FIRST_EVENT;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
@@ -1370,7 +1374,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             authenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception 
+                public Void doWork() throws Exception
                 {
                     nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, null);
 
@@ -1566,10 +1570,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // Note that when folder records are supported, we will need to recursively
                 // remove aspects from their descendants.
                 final Set<QName> aspects = nodeService.getAspects(nodeRef);
+                final List<String> rmURIs = asList(RM_URI, DOD_URI, RM_CUSTOM_URI, RMV_URI);
                 for (QName aspect : aspects)
                 {
-                    if (RM_URI.equals(aspect.getNamespaceURI()) ||
-                        RecordableVersionModel.RMV_URI.equals(aspect.getNamespaceURI()))
+                    if (rmURIs.contains(aspect.getNamespaceURI()))
                     {
                         nodeService.removeAspect(nodeRef, aspect);
                     }
@@ -2020,14 +2024,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /**
      * RM-5244 - workaround to make sure the incomplete aspect is removed
-     * 
+     *
      * @param nodeRef the node to reevaluate for
      */
     private void reevaluateIncompleteTag(NodeRef nodeRef)
     {
         /*
          * Check if the node has the aspect because the reevaluation is expensive.
-         * If the node doesn't have the aspect it means IncompleteNodeTagger didn't load before TransactionBehaviourQueue 
+         * If the node doesn't have the aspect it means IncompleteNodeTagger didn't load before TransactionBehaviourQueue
          * and we don't need to reevaluate.
          */
         if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE))
@@ -2083,13 +2087,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
             LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             throw new IntegrityException("The record does not exist.", null);
         }
-        
+
         if (!isRecord(nodeRef))
         {
             LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             throw new IntegrityException("The node is not a record.", null);
         }
-        
+
         if (freezeService.isFrozen(nodeRef))
         {
             LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
@@ -2142,7 +2146,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * Helper method to build single string containing list of missing properties 
+     * Helper method to build single string containing list of missing properties
      *
      * @param missingProperties list of missing properties
      * @return String of missing properties

@@ -25,10 +25,15 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.alfresco.rest.api.groups.GroupsEntityResource;
+import org.alfresco.rest.api.people.PeopleEntityResource;
+import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
+import org.alfresco.rest.framework.resource.UniqueId;
+import org.alfresco.service.cmr.security.AccessStatus;
+
 import java.util.List;
 import java.util.Set;
-
-import org.alfresco.service.cmr.security.AccessStatus;
 
 
 /**
@@ -124,6 +129,18 @@ public class NodePermissions
         }
 
         public String getAuthorityId()
+        {
+            return authorityId;
+        }
+
+        @EmbeddedEntityResource(propertyName = "person", entityResource = PeopleEntityResource.class)
+        public String getPerson()
+        {
+            return authorityId;
+        }
+
+        @EmbeddedEntityResource(propertyName = "group", entityResource = GroupsEntityResource.class)
+        public String getGroup()
         {
             return authorityId;
         }

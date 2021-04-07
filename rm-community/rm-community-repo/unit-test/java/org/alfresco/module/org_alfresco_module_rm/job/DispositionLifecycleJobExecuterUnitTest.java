@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,7 +59,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
@@ -75,7 +74,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     private static final String RETAIN = "retain";
     private static final String DESTROY = "destroy";
 
-    /** test query snipit */
+    /** test query snippet */
     private static final String QUERY = "\"" + CUTOFF + "\" OR \"" + RETAIN + "\"";
 
     /** mocked result set */
@@ -94,17 +93,11 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         super.before();
 
         // Because of the fix implemented in MNT-22310, a new setup for retrying transaction helper is required.
-        Answer<Object> doInTransactionAnswer = new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
-                return callback.execute();
-            }
+        Answer<Object> doInTransactionAnswer = invocation -> {
+            RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
+            return callback.execute();
         };
-        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class),
+        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class),
             Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // setup data
@@ -115,14 +108,6 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // setup interactions
         doReturn(mockedResultSet).when(mockedSearchService).query(any(SearchParameters.class));
         when(mockedResultSet.hasMore()).thenReturn(false);
-    }
-
-    /**
-     * Helper method to verify that the query has been executed and closed
-     */
-    private void verifyQuery()
-    {
-        verifyQueryTimes(1);
     }
 
     /**
@@ -153,7 +138,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // then
 
         // ensure the query is executed and closed
-        verifyQuery();
+        verifyQueryTimes(1);
 
         // ensure nothing else happens becuase we have no results
         verifyZeroInteractions(mockedNodeService, mockedRecordFolderService, mockedRetryingTransactionHelper);
@@ -192,7 +177,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
-        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class),
+        verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
             Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // ensure each node is process correctly
@@ -224,7 +209,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // then
 
         // ensure the query is executed and closed
-        verifyQuery();
+        verifyQueryTimes(1);
 
         // ensure the node exist check is made for the node
         verify(mockedNodeService, times(1)).exists(any(NodeRef.class));
@@ -269,7 +254,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
-        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class),
+        verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
             Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // ensure each node is process correctly
@@ -318,32 +303,26 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         final NodeRef node4 = generateNodeRef();
 
         // mock the search service to return the right page
-        when(mockedSearchService.query(any(SearchParameters.class))).thenAnswer(
-            new Answer<ResultSet>()
+        when(mockedSearchService.query(any(SearchParameters.class))).thenAnswer((Answer<ResultSet>) invocation -> {
+            SearchParameters params = invocation.getArgumentAt(0, SearchParameters.class);
+            if (params.getSkipCount() == 0)
             {
-                @Override
-                public ResultSet answer(InvocationOnMock invocation)
-                {
-                    SearchParameters params = invocation.getArgumentAt(0, SearchParameters.class);
-                    if (params.getSkipCount() == 0)
-                    {
-                        // mock first page
-                        ResultSet result1 = mock(ResultSet.class);
-                        when(result1.getNodeRefs()).thenReturn(Arrays.asList(node1, node2));
-                        when(result1.hasMore()).thenReturn(true);
-                        return result1;
-                    }
-                    else if (params.getSkipCount() == 2)
-                    {
-                        // mock second page
-                        ResultSet result2 = mock(ResultSet.class);
-                        when(result2.getNodeRefs()).thenReturn(Arrays.asList(node3, node4));
-                        when(result2.hasMore()).thenReturn(false);
-                        return result2;
-                    }
-                    throw new IndexOutOfBoundsException("Pagination did not stop after the second page!");
-                }
-            });
+                // mock first page
+                ResultSet result1 = mock(ResultSet.class);
+                when(result1.getNodeRefs()).thenReturn(Arrays.asList(node1, node2));
+                when(result1.hasMore()).thenReturn(true);
+                return result1;
+            }
+            else if (params.getSkipCount() == 2)
+            {
+                // mock second page
+                ResultSet result2 = mock(ResultSet.class);
+                when(result2.getNodeRefs()).thenReturn(Arrays.asList(node3, node4));
+                when(result2.hasMore()).thenReturn(false);
+                return result2;
+            }
+            throw new IndexOutOfBoundsException("Pagination did not stop after the second page!");
+        });
 
         // call the service
         executer.executeImpl();

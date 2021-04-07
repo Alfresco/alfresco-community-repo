@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -56,6 +57,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -91,9 +93,24 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     {
         super.before();
 
+        // Because of the fix implemented in MNT-22310, a new setup for retrying transaction helper is required.
+        Answer<Object> doInTransactionAnswer = new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
+                return callback.execute();
+            }
+        };
+        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class),
+            Matchers.anyBoolean(), Matchers.anyBoolean());
+
         // setup data
         List<String> dispositionActions = buildList(CUTOFF, RETAIN);
         executer.setDispositionActions(dispositionActions);
+        executer.setBatchSize(1);
 
         // setup interactions
         doReturn(mockedResultSet).when(mockedSearchService).query(any(SearchParameters.class));
@@ -105,11 +122,20 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
      */
     private void verifyQuery()
     {
+        verifyQueryTimes(1);
+    }
+
+    /**
+     * Helper method to verify that the query has been executed and closed
+     * @param numberOfInvocation number of times the query has been executed and closed
+     */
+    private void verifyQueryTimes(int numberOfInvocation)
+    {
         ArgumentCaptor<SearchParameters> paramsCaptor = ArgumentCaptor.forClass(SearchParameters.class);
-        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());
+        verify(mockedSearchService, times(numberOfInvocation)).query(paramsCaptor.capture());
         assertTrue(paramsCaptor.getValue().getQuery().contains(QUERY));
-        verify(mockedResultSet, times(1)).getNodeRefs();
-        verify(mockedResultSet, times(1)).close();
+        verify(mockedResultSet, times(numberOfInvocation)).getNodeRefs();
+        verify(mockedResultSet, times(numberOfInvocation)).close();
     }
 
     /**
@@ -143,12 +169,18 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // test data
         NodeRef node1 = generateNodeRef();
         NodeRef node2 = generateNodeRef();
-        List<NodeRef> nodeRefs = buildList(node1, node2);
 
         // given
-        doReturn(nodeRefs).when(mockedResultSet).getNodeRefs();
         doReturn(DESTROY).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(DESTROY).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
+
+        when(mockedResultSet.getNodeRefs())
+            .thenReturn(buildList(node1))
+            .thenReturn(buildList(node2));
+
+        when(mockedResultSet.hasMore())
+            .thenReturn(true)
+            .thenReturn(false);
 
         // when
         executer.executeImpl();
@@ -156,11 +188,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // then
 
         // ensure the query is executed and closed
-        verifyQuery();
+        verifyQueryTimes(2);
 
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
-        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class));
+        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class),
+            Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // ensure each node is process correctly
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
@@ -198,7 +231,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService);
-        verifyZeroInteractions(mockedRecordsManagementActionService, mockedRetryingTransactionHelper);
+        verifyZeroInteractions(mockedRecordsManagementActionService);
     }
 
     /**
@@ -211,15 +244,20 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // test data
         NodeRef node1 = generateNodeRef();
         NodeRef node2 = generateNodeRef();
-        List<NodeRef> nodeRefs = buildList(node1, node2);
         NodeRef parent = generateNodeRef();
         ChildAssociationRef parentAssoc = new ChildAssociationRef(ASSOC_NEXT_DISPOSITION_ACTION, parent, generateQName(), generateNodeRef());
 
-        // given
-        doReturn(nodeRefs).when(mockedResultSet).getNodeRefs();
         doReturn(CUTOFF).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(RETAIN).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(any(NodeRef.class));
+
+        when(mockedResultSet.getNodeRefs())
+            .thenReturn(buildList(node1))
+            .thenReturn(buildList(node2));
+
+        when(mockedResultSet.hasMore())
+            .thenReturn(true)
+            .thenReturn(false);
 
         // when
         executer.executeImpl();
@@ -227,11 +265,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // then
 
         // ensure the query is executed and closed
-        verifyQuery();
+        verifyQueryTimes(2);
 
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
-        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class));
+        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class),
+            Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // ensure each node is process correctly
         // node1

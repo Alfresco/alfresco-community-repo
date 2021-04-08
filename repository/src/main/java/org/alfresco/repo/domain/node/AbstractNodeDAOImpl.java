@@ -1483,7 +1483,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             // Update ACLs for moved tree
             Long newParentAclId = newParentNode.getAclId();
-            accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId);
+
+            // Verify if parent has aspect applied and ACL's are pending
+            if (hasNodeAspect(oldParentNodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                Long oldParentSharedAclId = (Long) this.getNodeProperty(oldParentNodeId, ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+                accessControlListDAO.updateInheritance(newChildNodeId, oldParentSharedAclId, newParentAclId);
+            }
+            else
+            {
+                accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId);
+            }
         }
         
         // Done
@@ -2744,6 +2754,22 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         List<Long> qnameIds = new ArrayList<Long>(qnameIdsSet);
         selectNodesWithAspects(qnameIds, minNodeId, maxNodeId, resultsCallback);
+    }
+
+    @Override
+    public void getNodesWithAspects(
+            Set<QName> aspectQNames,
+            Long minNodeId, Long maxNodeId, boolean ordered,
+            NodeRefQueryCallback resultsCallback)
+    {
+        Set<Long> qnameIdsSet = qnameDAO.convertQNamesToIds(aspectQNames, false);
+        if (qnameIdsSet.size() == 0)
+        {
+            // No point running a query
+            return;
+        }
+        List<Long> qnameIds = new ArrayList<Long>(qnameIdsSet);
+        selectNodesWithAspects(qnameIds, minNodeId, maxNodeId, ordered, resultsCallback);
     }
 
     /**
@@ -4916,6 +4942,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract void selectNodesWithAspects(
             List<Long> qnameIds,
             Long minNodeId, Long maxNodeId,
+            NodeRefQueryCallback resultsCallback);
+    protected abstract void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId, boolean ordered,
             NodeRefQueryCallback resultsCallback);
     protected abstract Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId, int assocIndex);
     protected abstract int updateNodeAssoc(Long id, int assocIndex);

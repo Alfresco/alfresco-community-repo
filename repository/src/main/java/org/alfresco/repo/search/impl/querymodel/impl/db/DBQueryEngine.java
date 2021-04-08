@@ -207,7 +207,12 @@ public class DBQueryEngine implements QueryEngine
     @Override
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
-        logger.debug("Query request received");
+        long start = 0;
+        if (logger.isDebugEnabled())
+        {
+            start = System.currentTimeMillis();
+            logger.debug("Query request received");
+        }
 
         Set<String> selectorGroup = null;
         if (query.getSource() != null)
@@ -268,8 +273,11 @@ public class DBQueryEngine implements QueryEngine
 
         ResultSet resultSet;
         resultSet = selectNodesWithPermissions(options, dbQuery);
-        logger.debug("Selected " + resultSet.length() + " nodes with accelerated permission resolution");
-
+        if (logger.isDebugEnabled())
+        {
+            long ms = System.currentTimeMillis() - start;
+            logger.debug("Selected " + resultSet.length() + " nodes with permission resolution in "+ms+" ms");
+        }
         return asQueryEngineResults(resultSet);
     }
     
@@ -349,7 +357,6 @@ public class DBQueryEngine implements QueryEngine
                     context.stop();
                     return;
                 }
-                
             }
         });
 

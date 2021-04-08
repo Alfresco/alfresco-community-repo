@@ -765,6 +765,31 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    protected void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId, boolean ordered,
+            final NodeRefQueryCallback resultsCallback)
+    {
+        @SuppressWarnings("rawtypes")
+        ResultHandler resultHandler = new ResultHandler()
+        {
+            public void handleResult(ResultContext context)
+            {
+                NodeEntity entity = (NodeEntity) context.getResultObject();
+                Pair<Long, NodeRef> nodePair = new Pair<Long, NodeRef>(entity.getId(), entity.getNodeRef());
+                resultsCallback.handle(nodePair);
+            }
+        };
+
+        IdsEntity parameters = new IdsEntity();
+        parameters.setIdOne(minNodeId);
+        parameters.setIdTwo(maxNodeId);
+        parameters.setIds(qnameIds);
+        parameters.setOrdered(ordered);
+        template.select(SELECT_NODES_WITH_ASPECT_IDS, parameters, resultHandler);
+    }
+
+    @Override
     protected Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId, int assocIndex)
     {
         NodeAssocEntity assoc = new NodeAssocEntity();

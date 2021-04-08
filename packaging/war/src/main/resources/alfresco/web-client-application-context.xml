@@ -66,6 +66,8 @@
    
    <bean id="SOLRAuthenticationFilter" class="org.alfresco.repo.web.scripts.solr.SOLRAuthenticationFilter">
       <property name="secureComms" value="${solr.secureComms}"/>
+      <property name="sharedSecret" value="${solr.sharedSecret}"/>
+      <property name="sharedSecretHeader" value="${solr.sharedSecret.header}"/>
    </bean>
    
    <bean id="WebscriptAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">

@@ -4,31 +4,71 @@
 
 <#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#macro propValue p>
-<#if p.value??>
-   <#if p.value?is_date>
-      <@dateFormat p.value />
-   <#elseif p.value?is_boolean>
-      ${p.value?string}
-   <#elseif p.value?is_number>
-      ${p.value?c}
-   <#elseif p.value?is_string>
-      ${p.value?html}
-   <#elseif p.value?is_hash>
-      <#assign result = "{"/>
-      <#assign first = true />
-      <#list p.value?keys as key>
-         <#if first = false>
-            <#assign result = result + ", "/>
+   <#attempt>
+      <#if p.value??>
+        <#if p.value?is_date>
+         <@dateFormat p.value />
+        <#elseif p.value?is_boolean>
+         ${p.value?string}
+        <#elseif p.value?is_number>
+         ${p.value?c}
+        <#elseif p.value?is_string>
+         ${p.value?html}
+        <#elseif p.value?is_hash || p.value?is_enumerable>
+            <@convertToJSON p.value />
+        </#if>
+   	  <#else>
+   	     ${null}
+      </#if>
+   <#recover>
+      <span style="color:red">${.error}</span>
+   </#attempt>
+</#macro>
+<#macro convertToJSON v>
+   <#attempt>
+      <#if v??>
+         <#if v?is_date>
+            <@dateFormat v />
+         <#elseif v?is_boolean>
+            ${v?string}
+         <#elseif v?is_number>
+            ${v?c}
+         <#elseif v?is_string>
+            "${v?string}"
+         <#elseif v?is_hash>
+            <@compress single_line=true>
+               {
+               <#assign first = true />
+               <#list v?keys as key>
+               <#if first = false>,</#if>
+               "${key}":
+               <#if v[key]??>
+                  <@convertToJSON v[key] />
+               <#else>
+                  ${null}
+               </#if>
+               <#assign first = false/>
+               </#list>
+               }
+            </@compress>
+         <#elseif v?is_enumerable>
+            <#assign first = true />
+               <@compress single_line=true>
+                  [
+                  <#list v as item>
+                     <#if first = false>,</#if>
+                     <@convertToJSON item />
+                     <#assign first = false/>
+                  </#list>
+                  ]
+               </@compress>
          </#if>
-         <#assign result = result + "${key}=${p.value[key]?html}" />
-         <#assign first = false/>
-      </#list>
-      <#assign result = result + "}"/>
-      ${result}
-   </#if>
-<#else>
-   ${null}
-</#if>
+      <#else>
+         ${null}
+      </#if>
+   <#recover>
+      <span style="color:red">${.error}</span>
+   </#attempt>
 </#macro>
 <#macro contentUrl nodeRef prop>
 ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}

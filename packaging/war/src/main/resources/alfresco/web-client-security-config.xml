@@ -184,5 +184,15 @@
       </filter>
 
    </config>
-
+   <!--
+         A set of HTTP response headers that instructs the browser to behave in certain ways to improve security
+    -->
+   <config evaluator="string-compare" condition="SecurityHeadersPolicy">
+      <headers>
+         <header>
+            <name>X-Frame-Options</name>
+            <value>SAMEORIGIN</value>
+         </header>
+      </headers>
+   </config>
 </alfresco-config>

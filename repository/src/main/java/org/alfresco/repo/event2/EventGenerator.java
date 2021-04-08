@@ -96,7 +96,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private TransactionService transactionService;
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
-    private NodeDAO nodeDAO;
+    protected NodeDAO nodeDAO;
 
     private EventGeneratorQueue eventGeneratorQueue;
     private NodeTypeFilter nodeTypeFilter;
@@ -388,7 +388,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private ZonedDateTime getCurrentTransactionTimestamp()
     {
-        Long currentTransactionId = nodeDAO.getCurrentTransactionId(false);
+        Long currentTransactionId = nodeDAO.getCurrentTransactionId(true);
         Transaction transaction = nodeDAO.getTxnById(currentTransactionId);
         Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
         ZonedDateTime timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);

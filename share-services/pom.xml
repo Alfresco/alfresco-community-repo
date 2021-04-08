@@ -7,7 +7,7 @@
     <parent>
         <artifactId>alfresco-share-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>7.0.1-SNAPSHOT</version>
+        <version>11.1-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -17,14 +17,14 @@
             <version>${dependency.alfresco-community-repo.version}</version>
             <scope>provided</scope>
             <exclusions>
-            	<exclusion>
-		            <groupId>org.alfresco</groupId>
-		            <artifactId>alfresco-core</artifactId>
-	        	</exclusion>
+                <exclusion>
+                    <groupId>org.alfresco</groupId>
+                    <artifactId>alfresco-core</artifactId>
+                </exclusion>
                 <!-- SHA-2432 -->
                 <exclusion>
-                  <groupId>javax.servlet</groupId>
-                  <artifactId>jstl</artifactId>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>jstl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-collections</groupId>
@@ -76,14 +76,14 @@
                     <groupId>dom4j</groupId>
                     <artifactId>dom4j</artifactId>
                 </exclusion>
-            	<exclusion>
-		            <groupId>org.alfresco</groupId>
-		            <artifactId>alfresco-core</artifactId>
-	        	</exclusion>
-            	<!-- SHA-2432 -->
                 <exclusion>
-                  <groupId>javax.servlet</groupId>
-                  <artifactId>jstl</artifactId>
+                    <groupId>org.alfresco</groupId>
+                    <artifactId>alfresco-core</artifactId>
+                </exclusion>
+                <!-- SHA-2432 -->
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>jstl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-collections</groupId>
@@ -117,17 +117,17 @@
             <version>${dependency.spring.version}</version>
             <scope>test</scope>
         </dependency>
-     <!--    <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>test</scope>
-        </dependency>
-		-->
+        <!--    <dependency>
+               <groupId>org.postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <scope>test</scope>
+           </dependency>
+           <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <scope>test</scope>
+           </dependency>
+           -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -137,19 +137,19 @@
 
         <!-- SHA-2432 -->
         <dependency>
-          <groupId>org.apache.taglibs</groupId>
-          <artifactId>taglibs-standard-spec</artifactId>
-          <scope>provided</scope>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-spec</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.taglibs</groupId>
-          <artifactId>taglibs-standard-impl</artifactId>
-          <scope>provided</scope>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-impl</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.taglibs</groupId>
-          <artifactId>taglibs-standard-jstlel</artifactId>
-          <scope>provided</scope>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-jstlel</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -197,22 +197,22 @@
                             <Build-Revision>${bamboo_repository_revision_number}</Build-Revision>
                         </manifestEntries>
                     </archive>
-                </configuration>                
+                </configuration>
             </plugin>
 
             <plugin>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <executions>
-                  <execution>
-                     <id>default-test</id>
-                     <!-- No unit tests in this project - all tests are integration tests -->
-                     <configuration>
-                          <includes>
-                              <include>nothing</include>
-                          </includes>
-                     </configuration>
-                  </execution>
-               </executions>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <!-- No unit tests in this project - all tests are integration tests -->
+                        <configuration>
+                            <includes>
+                                <include>nothing</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -229,20 +229,20 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                               <id>integration-tests</id>
-                               <goals>
-                                  <goal>test</goal>
-                               </goals>
-                               <configuration>
-                                  <includes combine.self="override">
-                                     <include>**/*Test.java</include>
-                                  </includes>
-                               </configuration>
+                                <id>integration-tests</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes combine.self="override">
+                                        <include>**/*Test.java</include>
+                                    </includes>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-   </profiles>
+    </profiles>
 </project>

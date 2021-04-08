@@ -41,7 +41,6 @@
         <property name="event2MessageProducer" ref="event2MessageProducer"/>
         <property name="transactionService" ref="transactionService"/>
         <property name="personService" ref="personService"/>
-        <property name="nodeDAO" ref="nodeDAO"/>
     </bean>
 
     <bean id="baseNodeResourceHelper" abstract="true">

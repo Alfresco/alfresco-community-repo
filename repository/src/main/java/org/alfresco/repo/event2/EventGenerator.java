@@ -388,10 +388,23 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private ZonedDateTime getCurrentTransactionTimestamp()
     {
-        Long currentTransactionId = nodeDAO.getCurrentTransactionId(true);
-        Transaction transaction = nodeDAO.getTxnById(currentTransactionId);
-        Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
-        ZonedDateTime timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
+        Long currentTransactionId = nodeDAO.getCurrentTransactionId(false);
+        ZonedDateTime timestamp;
+        if(currentTransactionId != null)
+        {
+            Transaction transaction = nodeDAO.getTxnById(currentTransactionId);
+            Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
+            timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
+        }
+        else 
+        {
+            /**
+             * Sometimes the transaction entry is not created because no nodes were added to the transaction, 
+             * but we need to produce some events anywhere.
+             */
+            timestamp = ZonedDateTime.now();
+        }
+        
         return timestamp;
     }
 

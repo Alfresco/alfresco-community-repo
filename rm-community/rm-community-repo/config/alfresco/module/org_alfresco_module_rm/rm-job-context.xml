@@ -80,6 +80,7 @@
       <property name="searchService" ref="searchService" />
       <property name="personService" ref="personService" />
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="batchSize" value="${rm.dispositionlifecycletrigger.batchsize}"/>
    </bean>
 
    <bean id="scheduledDispositionLifecyceleSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">

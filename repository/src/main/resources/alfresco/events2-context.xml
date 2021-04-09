@@ -40,6 +40,8 @@
         <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
         <property name="transactionService" ref="transactionService"/>
         <property name="personService" ref="personService"/>
+        <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
+        <property name="eventGeneratorQueue" ref="eventGeneratorQueue"/>
     </bean>
 
     <bean id="baseNodeResourceHelper" abstract="true">
@@ -53,10 +55,7 @@
 
     <bean id="nodeResourceHelper" class="org.alfresco.repo.event2.NodeResourceHelper" parent="baseNodeResourceHelper"/>
 
-    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2">
-        <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
-        <property name="eventGeneratorQueue" ref="eventGeneratorQueue"/>
-    </bean>
+    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2"/>
 
     <bean id="eventGeneratorQueue" class="org.alfresco.repo.event2.EventGeneratorQueue" >
         <property name="enqueueThreadPoolExecutor">

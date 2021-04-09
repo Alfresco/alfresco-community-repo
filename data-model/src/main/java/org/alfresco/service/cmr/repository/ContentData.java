@@ -115,7 +115,7 @@ public class ContentData implements Serializable
             }
             else if (token.startsWith("storageClasses="))
             {
-                contentUrl = token.substring(15);
+                storageClasses = token.substring(15);
                 if (storageClasses.length() == 0)
                 {
                     storageClasses = null;

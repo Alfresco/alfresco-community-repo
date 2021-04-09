@@ -52,6 +52,7 @@ public class ContentData implements Serializable
     private final long size;
     private final String encoding;
     private final Locale locale;
+    private final String storageClasses;
     
     /**
      * Construct a content property from a string
@@ -66,6 +67,7 @@ public class ContentData implements Serializable
         long size = 0L;
         String encoding = null;
         Locale locale = null;
+        String storageClasses = null;
         // now parse the string
         StringTokenizer tokenizer = new StringTokenizer(contentPropertyStr, "|");
         while (tokenizer.hasMoreTokens())
@@ -111,9 +113,17 @@ public class ContentData implements Serializable
                     locale = I18NUtil.parseLocale(localeStr);
                 }
             }
+            else if (token.startsWith("storageClasses="))
+            {
+                contentUrl = token.substring(15);
+                if (storageClasses.length() == 0)
+                {
+                    storageClasses = null;
+                }
+            }
         }
         
-        ContentData property = new ContentData(contentUrl, mimetype, size, encoding, locale);
+        ContentData property = new ContentData(contentUrl, mimetype, size, encoding, locale, storageClasses);
         // done
         return property;
     }
@@ -133,7 +143,8 @@ public class ContentData implements Serializable
                 mimetype,
                 existing == null ? 0L : existing.size,
                 existing == null ? "UTF-8" : existing.encoding,
-                existing == null ? null : existing.locale);
+                existing == null ? null : existing.locale,
+                existing == null? null : existing.storageClasses);
         // done
         return ret;
     }
@@ -153,7 +164,8 @@ public class ContentData implements Serializable
                 existing == null ? null : existing.mimetype,
                 existing == null ? 0L : existing.size,
                 encoding,
-                existing == null ? null : existing.locale);
+                existing == null ? null : existing.locale,
+                existing == null ? null : existing.storageClasses);
         // done
         return ret;
     }
@@ -188,24 +200,26 @@ public class ContentData implements Serializable
         this.locale = original.locale;
         this.mimetype = original.mimetype;
         this.size = original.size;
+        this.storageClasses = original.storageClasses;
     }
-    
+
     /**
      * Create a content data using the {@link I18NUtil#getLocale() default locale}.
-     * 
-     * @see #ContentData(String, String, long, String, Locale)
+     *
+     * @see #ContentData(String, String, long, String, Locale, String)
      */
     public ContentData(String contentUrl, String mimetype, long size, String encoding)
     {
-        this(contentUrl, mimetype, size, encoding, null);
+        this(contentUrl, mimetype, size, encoding, null, null);
     }
-    
+
+
     /**
      * Create a compound set of data representing a single instance of <i>content</i>.
      * <p>
      * In order to ensure data integrity, the {@link #getMimetype() mimetype}
      * must be set if the {@link #getContentUrl() content URL} is set.
-     * 
+     *
      * @param contentUrl the content URL.  If this value is non-null, then the
      *      <b>mimetype</b> must be supplied.
      * @param mimetype the content mimetype.  This is mandatory if the <b>contentUrl</b> is specified.
@@ -215,6 +229,26 @@ public class ContentData implements Serializable
      *      {@link I18NUtil#getLocale() default locale} will be used.
      */
     public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale)
+    {
+        this(contentUrl, mimetype, size, encoding, locale, null);
+    }
+
+    /**
+     * Create a compound set of data representing a single instance of <i>content</i>.
+     * <p>
+     * In order to ensure data integrity, the {@link #getMimetype() mimetype}
+     * must be set if the {@link #getContentUrl() content URL} is set.
+     *
+     * @param contentUrl the content URL.  If this value is non-null, then the
+     *      <b>mimetype</b> must be supplied.
+     * @param mimetype the content mimetype.  This is mandatory if the <b>contentUrl</b> is specified.
+     * @param size the content size.
+     * @param encoding the content encoding.  This is mandatory if the <b>contentUrl</b> is specified.
+     * @param locale the locale of the content (may be <tt>null</tt>).  If <tt>null</tt>, the
+     *      {@link I18NUtil#getLocale() default locale} will be used.
+     * @param storageClasses the storage classes of the content (may be <tt>null</tt>)
+     */
+    public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale, String storageClasses)
     {
         if (contentUrl != null && (mimetype == null || mimetype.length() == 0))
         {
@@ -230,6 +264,7 @@ public class ContentData implements Serializable
             locale = I18NUtil.getLocale();
         }
         this.locale = locale;
+        this.storageClasses = storageClasses;
     }
     
     public boolean equals(Object obj)

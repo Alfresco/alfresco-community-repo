@@ -25,20 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import junit.framework.TestCase;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentStreamListener;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.util.DataModelTestApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.config.ConfigDeployment;
-import org.springframework.extensions.config.ConfigService;
-import org.springframework.extensions.config.ConfigSource;
-import org.springframework.extensions.config.xml.XMLConfigService;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -52,6 +38,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentStreamListener;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.DataModelTestApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.config.ConfigDeployment;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.config.ConfigSource;
+import org.springframework.extensions.config.xml.XMLConfigService;
+
+import junit.framework.TestCase;
 
 /**
  * @see org.alfresco.repo.content.MimetypeMap
@@ -449,6 +450,18 @@ public class MimetypeMapTest extends TestCase
         {
 
         }
+
+        @Override
+        public String getStorageClasses()
+        {
+            return null;
+        }
+
+        @Override
+        public void setStorageClasses(String storageClasses)
+        {
+
+        }
     }
 
     public static class DummyContentWriter implements ContentWriter
@@ -593,6 +606,18 @@ public class MimetypeMapTest extends TestCase
 
         @Override
         public void setLocale(Locale locale)
+        {
+
+        }
+
+        @Override
+        public String getStorageClasses()
+        {
+            return null;
+        }
+
+        @Override
+        public void setStorageClasses(String storageClasses)
         {
 
         }

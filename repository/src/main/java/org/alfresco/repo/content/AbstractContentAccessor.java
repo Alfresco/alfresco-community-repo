@@ -70,6 +70,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     private String mimetype;
     private String encoding;
     private Locale locale;
+    private String storageClasses;
 
     /**
      * @param contentUrl the content URL
@@ -124,7 +125,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     
     public ContentData getContentData()
     {
-        ContentData property = new ContentData(contentUrl, mimetype, getSize(), encoding, locale);
+        ContentData property = new ContentData(contentUrl, mimetype, getSize(), encoding, locale, storageClasses);
         return property;
     }
 
@@ -203,6 +204,17 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     public void setLocale(Locale locale)
     {
         this.locale = locale;
+    }
+
+    @Override
+    public String getStorageClasses()
+    {
+        return storageClasses;
+    }
+
+    public void setStorageClasses(String storageClasses)
+    {
+        this.storageClasses = storageClasses;
     }
 
     /**

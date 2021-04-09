@@ -174,6 +174,12 @@ public class StreamAwareContentReaderProxy extends AbstractStreamAwareProxy impl
     }
 
     @Override
+    public String getStorageClasses()
+    {
+        return delegatee.getStorageClasses();
+    }
+
+    @Override
     public String getMimetype()
     {
         return delegatee.getMimetype();
@@ -201,6 +207,12 @@ public class StreamAwareContentReaderProxy extends AbstractStreamAwareProxy impl
     public void setLocale(Locale locale)
     {
         delegatee.setLocale(locale);
+    }
+
+    @Override
+    public void setStorageClasses(String storageClasses)
+    {
+        delegatee.setStorageClasses(storageClasses);
     }
 
     @Override

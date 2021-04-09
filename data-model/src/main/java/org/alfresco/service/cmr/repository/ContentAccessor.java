@@ -137,4 +137,8 @@ public interface ContentAccessor
      * @param locale    a java-recognised locale
      */
     public void setLocale(Locale locale);
+
+    public String getStorageClasses();
+
+    public void setStorageClasses(String storageClasses);
 }

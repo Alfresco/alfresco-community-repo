@@ -49,6 +49,7 @@ public class ContentContext implements Serializable
 
     private ContentReader existingContentReader;
     private String contentUrl;
+    private String storageClasses;
     
     /**
      * Construct the instance with the content URL.
@@ -69,6 +70,7 @@ public class ContentContext implements Serializable
         sb.append("ContentContext")
           .append("[ contentUrl=").append(getContentUrl())
           .append(", existing=").append((getExistingContentReader() == null ? false : true))
+          .append(", storageClasses=").append(getStorageClasses())
           .append("]");
         return sb.toString();
     }
@@ -88,5 +90,9 @@ public class ContentContext implements Serializable
     {
         return contentUrl;
     }
-    
+
+    public String getStorageClasses()
+    {
+        return storageClasses;
+    }
 }

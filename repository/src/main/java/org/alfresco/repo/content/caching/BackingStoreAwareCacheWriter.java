@@ -139,6 +139,18 @@ public class BackingStoreAwareCacheWriter implements ContentWriter, MimetypeServ
     }
 
     @Override
+    public String getStorageClasses()
+    {
+        return this.cacheWriter.getStorageClasses();
+    }
+
+    @Override
+    public void setStorageClasses(String storageClasses)
+    {
+        this.cacheWriter.setStorageClasses(storageClasses);
+    }
+
+    @Override
     public ContentReader getReader() throws ContentIOException
     {
         return this.cacheWriter.getReader();

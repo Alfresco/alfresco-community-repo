@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.recordfolders;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.Arrays.asList;
+
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
@@ -57,7 +58,6 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.Test;
@@ -166,10 +166,9 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * @throws Exception if record can't be created
      */
     @Test(description = "Non-electronic record can't be created in closed record folder")
-    public void cantCreateInClosedFolder() throws Exception
+    public void cantCreateInClosedFolder()
     {
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
 
@@ -204,14 +203,13 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * @throws Exception if record can't be created
      */
     @Test
     (
         dataProvider = "validRootContainers",
         description = "Non-electronic record can only be created if all mandatory properties are given"
     )
-    public void allMandatoryPropertiesRequired(String folderId, String type) throws Exception
+    public void allMandatoryPropertiesRequired(String folderId, String type)
     {
         logger.info("Root container:\n" + toJson(folderId));
 
@@ -232,25 +230,11 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                 .build();
 
             // Try to create invalid components
-            asList(noNameOrTitle, titleOnly).stream().forEach(c ->
+            asList(noNameOrTitle, titleOnly).forEach(c ->
             {
-                try
-                {
-                    logger.info("Creating non-electronic record with body:\n" + toJson(c));
-                }
-                catch (Exception error)
-                {
-                }
+                logger.info("Creating non-electronic record with body:\n" + toJson(c));
 
-                // This should fail and throw an exception
-                try
-                {
-                    getRestAPIFactory().getRecordFolderAPI().createRecord(c, folderId);
-                }
-                catch (Exception e)
-                {
-                }
-
+                getRestAPIFactory().getRecordFolderAPI().createRecord(c, folderId);
                 // Verify the status code is BAD_REQUEST
                 assertStatusCode(BAD_REQUEST);
             });
@@ -269,25 +253,11 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                 .build();
 
             // Try to create invalid components
-            asList(noNameOrTitle, titleOnly).stream().forEach(c ->
+            asList(noNameOrTitle, titleOnly).forEach(c ->
             {
-                try
-                {
-                    logger.info("Creating non-electronic record with body:\n" + toJson(c));
-                }
-                catch (Exception error)
-                {
-                }
+                logger.info("Creating non-electronic record with body:\n" + toJson(c));
 
-                // This should fail and throw an exception
-                try
-                {
-                    getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(c, folderId);
-                }
-                catch (Exception e)
-                {
-                }
-
+                getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(c, folderId);
                 // Verify the status code is BAD_REQUEST
                 assertStatusCode(BAD_REQUEST);
             });
@@ -307,24 +277,11 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                 .build();
 
             // Try to create invalid components
-            asList(noNameOrTitle, titleOnly).stream().forEach(c ->
+            asList(noNameOrTitle, titleOnly).forEach(c ->
             {
-                try
-                {
-                    logger.info("Creating non-electronic record with body:\n" + toJson(c));
-                }
-                catch (Exception error)
-                {
-                }
+                logger.info("Creating non-electronic record with body:\n" + toJson(c));
 
-                // This should fail and throw an exception
-                try
-                {
-                    getRestAPIFactory().getUnfiledRecordFoldersAPI().createUnfiledRecordFolderChild(c, folderId);
-                }
-                catch (Exception e)
-                {
-                }
+                getRestAPIFactory().getUnfiledRecordFoldersAPI().createUnfiledRecordFolderChild(c, folderId);
 
                 // Verify the status code is BAD_REQUEST
                 assertStatusCode(BAD_REQUEST);
@@ -339,16 +296,15 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * @throws Exception if record can't be created
      */
     @Test
     (
         dataProvider = "validRootContainers",
         description = "Non-electronic record can't be created if user doesn't have RM privileges"
     )
-    public void cantCreateIfNoRmPrivileges(String folderId, String type) throws Exception
+    public void cantCreateIfNoRmPrivileges(String folderId, String type)
     {
-        UserModel user = createUserWithRole("zzzuser", SiteManager);
+        UserModel user = createSiteManager("zzzuser");
 
         if (type.equals(RECORD_FOLDER_TYPE))
         {
@@ -362,14 +318,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                     .build();
 
-            // This should fail and throw an exception
-            try
-            {
-                getRestAPIFactory().getRecordFolderAPI(user).createRecord(recordModel, folderId);
-            }
-            catch (Exception e)
-            {
-            }
+            getRestAPIFactory().getRecordFolderAPI(user).createRecord(recordModel, folderId);
         }
         else if(UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
         {
@@ -383,14 +332,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                                                         .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                                                         .build();
 
-            // This should fail and throw an exception
-            try
-            {
-                getRestAPIFactory().getUnfiledContainersAPI(user).createUnfiledContainerChild(recordModel, folderId);
-            }
-            catch (Exception e)
-            {
-            }
+            getRestAPIFactory().getUnfiledContainersAPI(user).createUnfiledContainerChild(recordModel, folderId);
         }
         else
         {
@@ -404,21 +346,14 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                                                         .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                                                         .build();
 
-            // This should fail and throw an exception
-            try
-            {
-                getRestAPIFactory().getUnfiledRecordFoldersAPI(user).createUnfiledRecordFolderChild(recordModel, folderId);
-            }
-            catch (Exception e)
-            {
-            }
+            getRestAPIFactory().getUnfiledRecordFoldersAPI(user).createUnfiledRecordFolderChild(recordModel, folderId);
         }
         // User who isn't an RM site member can't access the container path
         assertStatusCode(FORBIDDEN);
     }
 
     /**
-     * Create user with given role and add it to RM site
+     * Create user with site manager role and add it to RM site
      * <br>
      * Checks whether the user exists in RM site and creates it if required, with password identical
      * to user name. Note the role is a Core API role, not an RM role.
@@ -426,23 +361,19 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * For already existing users, no site membership or role verification is performed.
      * <p>
      * @param userName user name to add
-     * @param userRole user's role
-     * @throws Exception
      */
-    private UserModel createUserWithRole(String userName, UserRole userRole) throws Exception
+    private UserModel createSiteManager(String userName)
     {
         String siteId = getRestAPIFactory().getRMSiteAPI().getSite().getId();
 
         // Check if user exists
-        UserModel user = new UserModel();
-        user.setUsername(userName);
-        user.setPassword(userName);
+        UserModel user = new UserModel(userName, userName);
 
         if (!getDataUser().isUserInRepo(userName))
         {
             // User doesn't exist, create it
             user = getDataUser().createUser(userName, userName);
-            getDataUser().addUserToSite(user, new SiteModel(siteId), userRole);
+            getDataUser().addUserToSite(user, new SiteModel(siteId), SiteManager);
         }
 
         return user;

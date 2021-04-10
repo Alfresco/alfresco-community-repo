@@ -58,7 +58,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      */
     @AlfrescoTest (jira = "MNT-19967")
     @Test
-    public void testRSInheritanceOnRecordsWhenOnlyACategoryHasRS() throws Exception
+    public void testRSInheritanceOnRecordsWhenOnlyACategoryHasRS()
     {
         STEP("Create record category with retention schedule and apply it to records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
@@ -94,7 +94,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      * Then recFolder should inherit the RS from rootCategory
      */
     @Test
-    public void testRSInheritanceOnRecordFoldersWhenOnlyACategoryHasRS() throws Exception
+    public void testRSInheritanceOnRecordFoldersWhenOnlyACategoryHasRS()
     {
         STEP("Create record category with retention schedule and apply it to record folders.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
@@ -126,7 +126,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      * Then both records should inherit the RS from subCategory1
      */
     @Test
-    public void testRSInheritanceOnRecordsWhen2CategoriesHaveRS() throws Exception
+    public void testRSInheritanceOnRecordsWhen2CategoriesHaveRS()
     {
         STEP("Create record category with retention schedule and apply it to records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
@@ -174,7 +174,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      * Then recFolder should inherit the RS from subCategory1
      */
     @Test
-    public void testRSInheritanceOnRecordFoldersWhen2CategoriesHaveRS() throws Exception
+    public void testRSInheritanceOnRecordFoldersWhen2CategoriesHaveRS()
     {
         STEP("Create record category with retention schedule and apply it to record folders.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
@@ -213,7 +213,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      * Then both records should inherit the RS from subCategory
      */
     @Test
-    public void testMixedRSInheritanceWhenFirstParentHasRSOnRecords() throws Exception
+    public void testMixedRSInheritanceWhenFirstParentHasRSOnRecords()
     {
         STEP("Create record category with retention schedule and apply it to folder records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
@@ -260,7 +260,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      * and record folder inherits the RS from subCategory
      */
     @Test
-    public void testMixedRSInheritanceWhenFirstParentHasRSOnFolders() throws Exception
+    public void testMixedRSInheritanceWhenFirstParentHasRSOnFolders()
     {
         STEP("Create record category with retention schedule and apply it to records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));

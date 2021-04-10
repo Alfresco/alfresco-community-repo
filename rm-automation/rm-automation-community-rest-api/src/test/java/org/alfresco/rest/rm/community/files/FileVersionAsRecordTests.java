@@ -99,7 +99,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     private HoldsAPI holdsAPI;
 
     @BeforeClass (alwaysRun = true)
-    public void declareAndFileVersionAsRecordSetup() throws Exception
+    public void declareAndFileVersionAsRecordSetup()
     {
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
@@ -127,7 +127,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     @BeforeMethod (alwaysRun = true)
-    public void createDocument() throws Exception
+    public void createDocument()
     {
         STEP("Create a document in the collaboration site");
         testFile = dataContent.usingSite(publicSite)

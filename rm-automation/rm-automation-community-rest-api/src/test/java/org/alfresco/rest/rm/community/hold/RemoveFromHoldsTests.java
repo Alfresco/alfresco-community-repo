@@ -88,8 +88,8 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
     private String holdNodeRefOne;
     private String holdNodeRefTwo;
     private FileModel contentHeld, contentAddToManyHolds;
-    private Set<UserModel> usersToBeClean = new HashSet<>();
-    private Set<String> nodesToBeClean = new HashSet<>();
+    private final Set<UserModel> usersToBeClean = new HashSet<>();
+    private final Set<String> nodesToBeClean = new HashSet<>();
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
@@ -202,10 +202,9 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
     /**
      * Data provider with user without right permission or capability to remove from hold a specific node
      * @return user model and the node ref to be removed from hold
-     * @throws Exception
      */
     @DataProvider (name = "userWithoutPermissionForRemoveFromHold")
-    public Object[][] getUserWithoutPermissionForAddToHold() throws Exception
+    public Object[][] getUserWithoutPermissionForAddToHold()
     {
         //create record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -277,10 +276,9 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
      * Data provider with user with right permission or capability to remove from hold a specific node
      *
      * @return user model and the node ref to be removed from hold
-     * @throws Exception
      */
     @DataProvider (name = "userWithPermissionForRemoveFromHold")
-    public Object[][] getUserWithPermissionForAddToHold() throws Exception
+    public Object[][] getUserWithPermissionForAddToHold()
     {
         //create record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -332,7 +330,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         dataSite.usingAdmin().deleteSite(testSite);
         dataSite.usingAdmin().deleteSite(privateSite);
         usersToBeClean.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
-        nodesToBeClean.forEach(category -> getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(category));
+        nodesToBeClean.forEach(category -> deleteRecordCategory(category));
 
     }
 }

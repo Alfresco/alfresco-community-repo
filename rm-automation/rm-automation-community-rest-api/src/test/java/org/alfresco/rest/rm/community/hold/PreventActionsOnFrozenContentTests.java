@@ -96,7 +96,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForPreventActionsOnFrozenContent() throws Exception
+    public void preconditionForPreventActionsOnFrozenContent()
     {
         STEP("Create a hold.");
         holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
@@ -262,12 +262,10 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
      * When I add a disposition schedule
      * Then I am successful
      * And the record search disposition schedule properties are updated
-     *
-     * @throws Exception
      */
     @Test
     @AlfrescoTest (jira = "RM-6929")
-    public void createDispositionScheduleOnCategoryWithHeldChildren() throws Exception
+    public void createDispositionScheduleOnCategoryWithHeldChildren()
     {
         STEP("Create a retention schedule on the category with frozen children");
         RecordCategory categoryWithRS = getRestAPIFactory().getRecordCategoryAPI()
@@ -290,12 +288,10 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
      * When I execute the retain action
      * Then the action is executed
      * And the record search disposition schedule properties are updated
-     *
-     * @throws Exception
      */
     @Test
     @AlfrescoTest (jira = "RM-6931")
-    public void retainActionOnFrozenHeldRecords() throws Exception
+    public void retainActionOnFrozenHeldRecords()
     {
         STEP("Add a category with a disposition schedule.");
         categoryWithRS = createRootCategory(getRandomName("CategoryWithRS"));
@@ -326,8 +322,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     {
         holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordFolder.getParentId());
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(categoryWithRS.getId());
+        deleteRecordCategory(recordFolder.getParentId());
+        deleteRecordCategory(categoryWithRS.getId());
     }
 
 }

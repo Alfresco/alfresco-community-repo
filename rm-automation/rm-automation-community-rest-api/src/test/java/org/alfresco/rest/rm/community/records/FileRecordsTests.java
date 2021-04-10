@@ -86,7 +86,7 @@ public class FileRecordsTests extends BaseRMRestTest
     private String targetFolderId, folderToLink, closedFolderId, unfiledRecordFolderId;
 
     @BeforeClass (alwaysRun = true)
-    public void setupFileRecordsTests() throws Exception
+    public void setupFileRecordsTests()
     {
         // create 3 record folders and close one of them
         targetFolderId = createCategoryFolderInFilePlan().getId();
@@ -103,7 +103,7 @@ public class FileRecordsTests extends BaseRMRestTest
      * Invalid  containers where electronic and non-electronic records can be filed
      */
     @DataProvider (name = "invalidContainersToFile")
-    public Object[][] getFolderContainers() throws Exception
+    public Object[][] getFolderContainers()
     {
         return new String[][] {
             { FILE_PLAN_ALIAS},
@@ -123,13 +123,10 @@ public class FileRecordsTests extends BaseRMRestTest
     public Object[][] getRecordsFromUnfiledRecordsContainer()
     {
         UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-        UnfiledContainerChild recordElectronic = unfiledContainersAPI.uploadRecord(electronicRecord,
-                UNFILED_RECORDS_CONTAINER_ALIAS, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
-
         return new String[][] {
-            { recordElectronic.getId()},
-            { recordNonElect.getId()}
+            { unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS,
+                    createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()},
+            { unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS).getId()}
         };
     }
 
@@ -140,13 +137,11 @@ public class FileRecordsTests extends BaseRMRestTest
     public Object[][] getRecordsFromUnfiledRecordFolder()
     {
         UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
-        UnfiledContainerChild recordElectronic = unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId,
-                createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId);
 
         return new String[][] {
-            { recordElectronic.getId()},
-            { recordNonElect.getId()}
+            { unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId,
+                    createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()},
+            { unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId).getId()}
         };
     }
 
@@ -264,7 +259,7 @@ public class FileRecordsTests extends BaseRMRestTest
         // link the record to the second folder
         Record recordLink = fileRecordToFolder(unfiledRecordId, folderToLink);
         assertStatusCode(CREATED);
-        assertTrue(recordLink.getParentId().equals(targetFolderId));
+        assertEquals(recordLink.getParentId(), targetFolderId);
 
         // check the record is added into the record folder
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();

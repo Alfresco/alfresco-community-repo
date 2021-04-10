@@ -143,7 +143,7 @@ public class BaseRMRestTest extends RestTest
 
     /** Valid root containers where electronic and non-electronic records can be created */
     @DataProvider(name = "validRootContainers")
-    public Object[][] getValidRootContainers() throws Exception
+    public Object[][] getValidRootContainers()
     {
         return new String[][]
         {
@@ -171,7 +171,7 @@ public class BaseRMRestTest extends RestTest
      * Helper method to create the RM Site via the POST request
      * if the site doesn't exist
      */
-    public void createRMSiteIfNotExists() throws Exception
+    public void createRMSiteIfNotExists()
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
@@ -189,7 +189,7 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to delete the RM site if exists and to create a new one
      */
-    public void createRMSite(RMSite rmSiteModel) throws Exception
+    public void createRMSite(RMSite rmSiteModel)
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
         if (rmSiteAPI.existsRMSite())
@@ -207,9 +207,9 @@ public class BaseRMRestTest extends RestTest
      *
      * @param categoryName The name of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(String categoryName) throws Exception
+    public RecordCategory createRootCategory(String categoryName)
     {
         return createRootCategory(getAdminUser(), categoryName, RECORD_CATEGORY_TITLE);
     }
@@ -233,9 +233,9 @@ public class BaseRMRestTest extends RestTest
      * @param categoryName The name of the category
      * @param categoryTitle The title of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(String categoryName, String categoryTitle) throws Exception
+    public RecordCategory createRootCategory(String categoryName, String categoryTitle)
     {
         return createRootCategory(getAdminUser(), categoryName, categoryTitle);
     }
@@ -263,9 +263,9 @@ public class BaseRMRestTest extends RestTest
      * @param name The name of the record category child
      * @param type The type of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name, String type) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name, String type)
     {
         RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(name, type);
         return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel, recordCategoryId);
@@ -278,9 +278,9 @@ public class BaseRMRestTest extends RestTest
      * @param name The name of the record category child
      * @param type The type of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type)
     {
         return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, type);
     }
@@ -291,9 +291,9 @@ public class BaseRMRestTest extends RestTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategory(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createRecordCategory(String recordCategoryId, String name)
     {
         return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, RECORD_CATEGORY_TYPE);
     }
@@ -304,9 +304,9 @@ public class BaseRMRestTest extends RestTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name)
     {
         return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, RECORD_FOLDER_TYPE);
     }
@@ -332,9 +332,9 @@ public class BaseRMRestTest extends RestTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the folder
      * @return The created folder
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createFolder(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createFolder(String recordCategoryId, String name)
     {
         return createFolder(getAdminUser(), recordCategoryId, name);
     }
@@ -346,9 +346,9 @@ public class BaseRMRestTest extends RestTest
      * @param parentId The id of the parent folder
      * @param nodeType The child type
      * @return The created folder
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName, String nodeType)
     {
         UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
         UnfiledContainerChild child = getRestAPIFactory().getUnfiledRecordFoldersAPI(user).createUnfiledRecordFolderChild(childModel, parentId);
@@ -363,9 +363,9 @@ public class BaseRMRestTest extends RestTest
      * @param parentId The id of the parent folder
      * @param nodeType The child type
      * @return The created folder
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType)
     {
         return createUnfiledRecordsFolderChild(getAdminUser(), parentId, childName, nodeType);
     }
@@ -376,11 +376,11 @@ public class BaseRMRestTest extends RestTest
      * @param user The user under whose privileges this structure is going to be created
      * @param parentId The id of the parent container
      * @param childName The name of the child
-     * @oaram nodeType the child type
+     * @param nodeType the child type
      * @return The created chid
-     * @throws Exception on unsuccessful child creation
+     * @throws RuntimeException on unsuccessful child creation
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType)
     {
         UnfiledContainerChild child = null;
         UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
@@ -403,11 +403,11 @@ public class BaseRMRestTest extends RestTest
      *
      * @param parentId The id of the parent container
      * @param childName The name of the child
-     * @oaram nodeType the child type
+     * @param nodeType the child type
      * @return The created chid
-     * @throws Exception on unsuccessful child creation
+     * @throws RuntimeException on unsuccessful child creation
      */
-    public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType)
     {
         return createUnfiledContainerChild(getAdminUser(), parentId, childName, nodeType);
     }
@@ -417,9 +417,8 @@ public class BaseRMRestTest extends RestTest
      *
      * @param folderId The id of the folder
      * @return The closed folder
-     * @throws Exception
      */
-    protected RecordFolder closeFolder(String folderId) throws Exception
+    protected RecordFolder closeFolder(String folderId)
     {
         RecordFolder recordFolderModel = RecordFolder.builder()
                                             .properties(RecordFolderProperties.builder()
@@ -437,9 +436,8 @@ public class BaseRMRestTest extends RestTest
      *
      * @param recordId The id of the record to complete
      * @return The completed record
-     * @throws Exception
      */
-    public Record completeRecord(String recordId) throws Exception
+    public Record completeRecord(String recordId)
     {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         List<String> aspects = recordsAPI.getRecord(recordId).getAspectNames();
@@ -532,7 +530,6 @@ public class BaseRMRestTest extends RestTest
      * @param parentId the id of the parent
      * @param name the name of the record
      * @return the created record
-     * @throws Exception
      */
     public Record createElectronicRecord(String parentId, String name)
     {
@@ -546,7 +543,6 @@ public class BaseRMRestTest extends RestTest
      * @param parentId the id of the parent
      * @param name     the name of the record
      * @return the created record
-     * @throws Exception
      */
     public Record createElectronicRecord(String parentId, String name, UserModel user)
     {
@@ -561,9 +557,8 @@ public class BaseRMRestTest extends RestTest
      * @param parentId the id of the parent
      * @param name     the name of the record
      * @return the created record
-     * @throws Exception
      */
-    public Record createNonElectronicRecord(String parentId, String name) throws Exception
+    public Record createNonElectronicRecord(String parentId, String name)
     {
         return createNonElectronicRecord(parentId, name, null);
     }
@@ -575,9 +570,8 @@ public class BaseRMRestTest extends RestTest
      * @param name     the name of the record
      * @param user the user who creates the  non-electronic record
      * @return the created record
-     * @throws Exception
      */
-    public Record createNonElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    public Record createNonElectronicRecord(String parentId, String name, UserModel user)
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(NON_ELECTRONIC_RECORD_TYPE).build();
@@ -623,9 +617,8 @@ public class BaseRMRestTest extends RestTest
      * @param user
      * @param term
      * @return
-     * @throws Exception
      */
-    public List<String> searchForContentAsUser(UserModel user, String term) throws Exception
+    public List<String> searchForContentAsUser(UserModel user, String term)
     {
         getRestAPIFactory().getRmRestWrapper().authenticateUser(user);
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -833,7 +826,7 @@ public class BaseRMRestTest extends RestTest
     {
         try
         {
-            Utility.sleep(5000, 15000,
+            Utility.sleep(1000, 10000,
                     () -> {
                         Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
                                                                                                  .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
@@ -863,7 +856,7 @@ public class BaseRMRestTest extends RestTest
     {
         try
         {
-            Utility.sleep(5000, 15000,
+            Utility.sleep(1000, 10000,
                     () -> {
                         Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory().getRecordFolderAPI()
                                                                                         .getRecordFolderChildren(recFolder.getId())
@@ -892,7 +885,7 @@ public class BaseRMRestTest extends RestTest
     {
         try
         {
-            Utility.sleep(5000, 15000,
+            Utility.sleep(1000, 10000,
                     () -> {
                         UnfiledContainerChildEntry matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
                                                                                        .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS, "include=properties,aspectNames")
@@ -926,7 +919,7 @@ public class BaseRMRestTest extends RestTest
     {
         try
         {
-            Utility.sleep(5000, 15000,
+            Utility.sleep(1000, 10000,
                     () -> {
                         RecordFolderEntry matchingRecord = getRestAPIFactory().getRecordFolderAPI()
                                                                               .getRecordFolderChildren(recordFolder.getId(),"include=properties,aspectNames")

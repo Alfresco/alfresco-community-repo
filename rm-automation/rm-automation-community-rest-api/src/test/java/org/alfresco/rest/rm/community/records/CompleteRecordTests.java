@@ -31,14 +31,10 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
-import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.List;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -65,7 +61,7 @@ public class CompleteRecordTests extends BaseRMRestTest
      * Incomplete records with mandatory meta-data missing
      */
     @DataProvider (name = "IncompleteRecordsMandatoryMetadataMissing")
-    public Object[][] getIncompleteRecordsMandatoryMetadataMissing() throws Exception
+    public Object[][] getIncompleteRecordsMandatoryMetadataMissing()
     {
         //create RM site
         createRMSite(createDOD5015RMSiteModel());
@@ -78,24 +74,10 @@ public class CompleteRecordTests extends BaseRMRestTest
      * Incomplete records with mandatory meta-data present
      */
     @DataProvider (name = "IncompleteRecordsMandatoryMetadataPresent")
-    public Object[][] getIncompleteRecordsMandatoryMetadataPresent() throws Exception
+    public Object[][] getIncompleteRecordsMandatoryMetadataPresent()
     {
         // create electronic and non-electronic records
         return createAndVerifyRecordsInFolder();
-    }
-
-    /**
-     * Document to be completed is not a record
-     */
-    @DataProvider (name = "Supplied node is not a record")
-    public Object[][] getNodesWhichAreNotRecords() throws Exception
-    {
-        createRMSite(createStandardRMSiteModel());
-        return new String[][]
-            {
-                { createCategoryFolderInFilePlan().getId() },
-
-            };
     }
 
     /**
@@ -114,21 +96,15 @@ public class CompleteRecordTests extends BaseRMRestTest
             priority = 1
         )
     @AlfrescoTest (jira = "RM-4431")
-    public void completeRecordWithMandatoryMetadataMissing(String electronicRecordId, String nonElectronicRecordId)
-        throws Exception
+    public void completeRecordWithMandatoryMetadataMissing(Record record)
     {
-        List<Record> records = getRecordsList(electronicRecordId, nonElectronicRecordId);
+        verifyRecordCompletionStatus(record, INCOMPLETE);
 
-        for (Record record : records)
-        {
-            verifyRecordCompletionStatus(record, INCOMPLETE);
+        // Complete record
+        completeRecord(record);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
 
-            // Complete record
-            completeRecord(record);
-            assertStatusCode(UNPROCESSABLE_ENTITY);
-
-            verifyRecordCompletionStatus(record, INCOMPLETE);
-        }
+        verifyRecordCompletionStatus(record, INCOMPLETE);
     }
 
     /**
@@ -145,21 +121,15 @@ public class CompleteRecordTests extends BaseRMRestTest
             description = "Can complete electronic and non-electronic records with mandatory metadata present"
         )
     @AlfrescoTest (jira = "RM-4431")
-    public void completeRecordWithMandatoryMetadataPresent(String electronicRecordId, String nonElectronicRecordId)
-        throws Exception
+    public void completeRecordWithMandatoryMetadataPresent(Record record)
     {
-        List<Record> records = getRecordsList(electronicRecordId, nonElectronicRecordId);
+        verifyRecordCompletionStatus(record, INCOMPLETE);
 
-        for (Record record : records)
-        {
-            verifyRecordCompletionStatus(record, INCOMPLETE);
+        // Complete record
+        completeRecord(record);
+        assertStatusCode(CREATED);
 
-            // Complete record
-            completeRecord(record);
-            assertStatusCode(CREATED);
-
-            verifyRecordCompletionStatus(record, COMPLETE);
-        }
+        verifyRecordCompletionStatus(record, COMPLETE);
     }
 
     /**
@@ -169,18 +139,13 @@ public class CompleteRecordTests extends BaseRMRestTest
      * Then I receive an unsupported operation error
      * </pre>
      */
-    @Test
-        (
-            dataProvider = "Supplied node is not a record",
-            description = "Cannot complete a document that is not a record",
-            priority = 2
-        )
+    @Test (description = "Cannot complete a document that is not a record")
     @AlfrescoTest (jira = "RM-4431")
-    public void completeNonRecord(String nonRecordId) throws Exception
+    public void completeNonRecord()
     {
         // Get the recordsAPI
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        recordsAPI.completeRecord(nonRecordId, PARAMETERS);
+        getRestAPIFactory().getRecordsAPI()
+                           .completeRecord(createCategoryFolderInFilePlan().getId(), PARAMETERS);
         assertStatusCode(BAD_REQUEST);
     }
 
@@ -194,35 +159,28 @@ public class CompleteRecordTests extends BaseRMRestTest
     @Test
         (
             dataProvider = "IncompleteRecordsMandatoryMetadataPresent",
-            description = "Cannot complete a record that is already completed",
-            priority = 3
+            description = "Cannot complete a record that is already completed"
         )
     @AlfrescoTest (jira = "RM-4431")
-    public void completeAlreadyCompletedRecord(String electronicRecordId, String nonElectronicRecordId)
-        throws Exception
+    public void completeAlreadyCompletedRecord(Record record)
     {
-        List<Record> records = getRecordsList(electronicRecordId, nonElectronicRecordId);
+        verifyRecordCompletionStatus(record, INCOMPLETE);
 
-        for (Record record : records)
-        {
-            verifyRecordCompletionStatus(record, INCOMPLETE);
+        // Complete record
+        completeRecord(record);
+        assertStatusCode(CREATED);
 
-            // Complete record
-            completeRecord(record);
-            assertStatusCode(CREATED);
+        verifyRecordCompletionStatus(record, COMPLETE);
 
-            verifyRecordCompletionStatus(record, COMPLETE);
-
-            // Complete record
-            completeRecord(record);
-            assertStatusCode(UNPROCESSABLE_ENTITY);
-        }
+        // Complete record
+        completeRecord(record);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
      * Helper method to create records and and assert successful creation
      */
-    private String[][] createAndVerifyRecordsInFolder() throws Exception
+    private Record[][] createAndVerifyRecordsInFolder()
     {
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
@@ -230,32 +188,18 @@ public class CompleteRecordTests extends BaseRMRestTest
         String recordFolderId = createCategoryFolderInFilePlan().getId();
 
         // create electronic record in record folder
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
-            getFile(IMAGE_FILE));
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId, getFile(IMAGE_FILE));
         assertStatusCode(CREATED);
 
         // create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
         assertStatusCode(CREATED);
 
-        return new String[][]
-            {
-                { electronicRecord.getId(), nonElectronicRecord.getId() },
-            };
-    }
-
-    /**
-     * Helper method to provide list of records from record Ids
-     */
-    private List<Record> getRecordsList(String electronicRecordId, String nonElectronicRecordId)
-    {
-        // Get the recordsAPI
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
-        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
-        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
-
-        return Arrays.asList(electronicRecord,nonElectronicRecord);
+        return new Record[][]
+        {
+            { electronicRecord },
+            { nonElectronicRecord }
+        };
     }
 
     /**
@@ -271,7 +215,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     /**
      * Helper method to complete a record
      */
-    private void completeRecord(Record record) throws Exception
+    private void completeRecord(Record record)
     {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         recordsAPI.completeRecord(record.getId(), PARAMETERS);

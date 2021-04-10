@@ -1,9 +1,121 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="300000">
-   <test name="restapi">
+<suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="600000">
+   <test name="Before suite" >
+      <!-- These tests are meant to run first, because they all clear the audit log and can't run in parallel. -->
       <packages>
-         <package name="org.alfresco.rest.rm.community.*"/>
+         <package name="org.alfresco.rest.rm.community.audit.*"/>
       </packages>
+      <classes>
+         <!-- This test fails intermittently when is run in parallel. see APPS-132 -->
+         <class name="org.alfresco.rest.rm.community.records.UpdateRecordsTests" >
+            <methods>
+               <include name="completeRecordsCantBeUpdated" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.records.ReadRecordTests" >
+            <methods>
+               <include name="readRecordContent" />
+            </methods>
+         </class>
+         <!-- These tests fail intermittently when are run in parallel because they interact a lot with Unfiled Records
+          container -->
+         <class name="org.alfresco.rest.rm.community.unfiledrecordfolders.UnfiledRecordsFolderTests" />
+         <class name="org.alfresco.rest.rm.community.records.FileRecordsTests" />
+
+         <!-- These tests are meant to run first, because they interact with alfresco logs and can't run in parallel -->
+         <class name="org.alfresco.rest.rm.community.files.DeclareAndFileDocumentAsRecordTests" />
+         <class name="org.alfresco.rest.rm.community.files.FileVersionAsRecordTests">
+            <methods>
+               <include name="declareVersionAndFileToInvalidLocationUsingActionsAPI"/>
+            </methods>
+         </class>
+         <!-- This test is meant to run first, because it needs a static number of categories in the fileplan and can't
+          run in parallel -->
+         <class name="org.alfresco.rest.rm.community.recordcategories.RecordCategoryTests">
+            <methods>
+               <include name="deleteCategory" />
+            </methods>
+         </class>
+      </classes>
+   </test>
+   <!-- These tests can run in parallel -->
+   <test name="Parallel Tests Suite" parallel="classes" thread-count="2">
+      <packages>
+         <package name="org.alfresco.rest.rm.community.*">
+            <exclude name="org.alfresco.rest.rm.community.audit.*"/>
+         </package>
+      </packages>
+      <classes>
+         <class name="org.alfresco.rest.rm.community.files.DeclareAndFileDocumentAsRecordTests">
+            <methods>
+               <exclude name=".*" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.files.FileVersionAsRecordTests">
+            <methods>
+               <exclude name="declareVersionAndFileToInvalidLocationUsingActionsAPI"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordcategories.RecordCategoryTests">
+            <methods>
+               <exclude name="deleteCategory" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.unfiledrecordfolders.UnfiledRecordsFolderTests">
+            <methods>
+               <exclude name=".*" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.records.FileRecordsTests">
+            <methods>
+               <exclude name=".*" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.records.UpdateRecordsTests" >
+            <methods>
+               <exclude name="completeRecordsCantBeUpdated" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.records.ReadRecordTests" >
+            <methods>
+               <exclude name="readRecordContent" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.records.CompleteRecordTests">
+            <methods>
+               <exclude name="completeRecordWithMandatoryMetadataMissing" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.site.RMSiteTests">
+            <methods>
+               <exclude name=".*" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.fileplans.FilePlanTests">
+            <methods>
+               <!-- deletes all categories -->
+               <exclude name="listFilePlanChildren" />
+               <exclude name="getFilePlanWhenRMIsNotCreated" />
+            </methods>
+         </class>
+      </classes>
+   </test>
+   <!-- These tests are meant to run last, because they delete rm site and can't run in parallel -->
+   <test name="After suite">
+      <classes>
+         <class name="org.alfresco.rest.rm.community.records.CompleteRecordTests">
+            <methods>
+               <include name="completeRecordWithMandatoryMetadataMissing" />
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.site.RMSiteTests"/>
+         <class name="org.alfresco.rest.rm.community.fileplans.FilePlanTests" >
+            <methods>
+               <include name="listFilePlanChildren" />
+               <include name="getFilePlanWhenRMIsNotCreated"/>
+            </methods>
+         </class>
+      </classes>
    </test>
 </suite>

@@ -44,6 +44,7 @@ import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -67,8 +68,6 @@ import org.testng.annotations.Test;
  */
 public class ElectronicRecordTests extends BaseRMRestTest
 {
-    private static final String TEXT_PLAIN_VALUE = "text/plain";
-
     /** Invalid parent containers where electronic records can't be created */
     @DataProvider(name = "invalidParentContainers")
     public  Object[][] invalidParentContainers()
@@ -92,7 +91,6 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * And an error is reported
      * </pre>
      * @param container The parent container
-     * @throws Exception if record can't be created
      */
     @Test
     (
@@ -116,13 +114,12 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * @throws Exception if record can't be created
      */
     @Test
     (
         description = "Electronic record can't be created in closed record folder"
     )
-    public void cantCreateElectronicRecordInClosedFolder() throws Exception
+    public void cantCreateElectronicRecordInClosedFolder()
     {
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
 
@@ -334,7 +331,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      */
     @Test
     @Bug (id = "RM-4568")
-    public void createElectronicRecordWithRelativePath() throws Exception
+    public void createElectronicRecordWithRelativePath()
     {
         // The containers specified on the relativePath parameter don't exist on server
         String parentUbnfiledRecordFolderName = "ParentUnfiledRecordFolder" + getRandomAlphanumeric();
@@ -364,7 +361,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         Record record = recordsAPI.getRecord(recordCreated.getId());
 
         assertTrue(record.getName().startsWith(ELECTRONIC_RECORD_NAME));
-        assertTrue(unfiledRecordFoldersAPI.getUnfiledRecordFolder(record.getParentId()).getName().equals(unfiledRecordFolderPathEl3));
+        assertEquals(unfiledRecordFoldersAPI.getUnfiledRecordFolder(record.getParentId()).getName(), unfiledRecordFolderPathEl3);
 
         // The first relative path element exists and the second one does not exist
         String unfiledRecordFolderPathEl4 = "UnfiledRecordFolderPathEl4" + getRandomAlphanumeric();
@@ -399,9 +396,6 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * When I try to create a record with name1 and create another one with the same given name
      * Then the second record is created with success
      * </pre>
-     * 
-     * @throws Exception
-     *             if record can't be created
      */
     @Test(description = "Electronic records can be created in record folder with duplicate name")
     @Bug(id ="RM-5116, RM-5012")

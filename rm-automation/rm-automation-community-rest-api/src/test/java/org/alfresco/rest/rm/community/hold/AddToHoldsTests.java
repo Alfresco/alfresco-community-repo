@@ -98,8 +98,8 @@ public class AddToHoldsTests extends BaseRMRestTest
     private String holdNodeRef;
     private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
     private UserModel userAddHoldPermission;
-    private List<UserModel> users = new ArrayList<>();
-    private List<String> nodesToBeClean = new ArrayList<>();
+    private final List<UserModel> users = new ArrayList<>();
+    private final List<String> nodesToBeClean = new ArrayList<>();
 
     @Autowired
     private HoldsAPI holdsAPI;
@@ -233,7 +233,7 @@ public class AddToHoldsTests extends BaseRMRestTest
      * @return object with user model and the node ref to be added to hold
      */
     @DataProvider (name = "userWithoutPermissionForAddToHold")
-    public Object[][] getUserWithoutPermissionForAddToHold() throws Exception
+    public Object[][] getUserWithoutPermissionForAddToHold()
     {
         //create record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -299,7 +299,7 @@ public class AddToHoldsTests extends BaseRMRestTest
      * Data provider with invalid node types that can be added to a hold
      */
     @DataProvider (name = "invalidNodesForAddToHold")
-    public Object[][] getInvalidNodesForAddToHold() throws Exception
+    public Object[][] getInvalidNodesForAddToHold()
     {
         //create locked file
         FileModel contentLocked = dataContent.usingAdmin().usingSite(testSite)
@@ -360,6 +360,6 @@ public class AddToHoldsTests extends BaseRMRestTest
         holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
         users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
-        nodesToBeClean.forEach( category -> getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(category));
+        nodesToBeClean.forEach( category -> deleteRecordCategory(category));
     }
 }

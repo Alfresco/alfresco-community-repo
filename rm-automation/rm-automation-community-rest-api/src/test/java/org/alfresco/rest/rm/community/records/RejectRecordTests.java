@@ -73,7 +73,7 @@ public class RejectRecordTests extends BaseRMRestTest
     private RulesAPI rulesAPI;
 
     @BeforeClass (alwaysRun = true)
-    public void setUp() throws Exception
+    public void setUp()
     {
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         recordCategory = createRootCategory(getRandomName("recordCategory"));
@@ -121,7 +121,7 @@ public class RejectRecordTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6881")
-    public void rejectCompletedRecord() throws Exception
+    public void rejectCompletedRecord()
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)

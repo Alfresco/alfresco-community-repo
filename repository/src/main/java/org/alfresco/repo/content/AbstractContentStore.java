@@ -178,7 +178,21 @@ public abstract class AbstractContentStore implements ContentStore
      * 
      * @since 2.1
      */
+    @Deprecated
     protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl)
+    {
+        return getWriterInternal(existingContentReader, newContentUrl, null);
+    }
+
+    /**
+     *
+     * @param existingContentReader
+     * @param newContentUrl
+     * @param storageClasses
+     * @return
+     * @since 7.1
+     */
+    protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl, String storageClasses)
     {
         throw new UnsupportedOperationException("Override getWriterInternal (preferred) or getWriter");
     }

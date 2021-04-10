@@ -37,6 +37,7 @@ public class ContentInfo
     private String mimeTypeName;
 	private Long sizeInBytes;
 	private String encoding;
+	private String storageClasses;
 
 	public ContentInfo()
 	{
@@ -44,10 +45,16 @@ public class ContentInfo
 
 	public ContentInfo(String mimeType, String mimeTypeName, Long sizeInBytes, String encoding)
 	{
+		this(mimeType, mimeTypeName, sizeInBytes, encoding, null);
+	}
+
+	public ContentInfo(String mimeType, String mimeTypeName, Long sizeInBytes, String encoding, String storageClasses)
+	{
 		this.mimeType = mimeType;
 		this.mimeTypeName = mimeTypeName;
 		this.sizeInBytes = sizeInBytes;
 		this.encoding = encoding;
+		this.storageClasses = storageClasses;
 	}
 
     public String getMimeType() {
@@ -70,10 +77,20 @@ public class ContentInfo
         return encoding;
     }
 
-    @Override
+	public String getStorageClasses()
+	{
+		return storageClasses;
+	}
+
+	public void setStorageClasses(String storageClasses)
+	{
+		this.storageClasses = storageClasses;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "ContentInfo [mimeType=" + mimeType + ", mimeTypeName=" + mimeTypeName
-				+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + "]";
+				+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + ",storageClasses=" + storageClasses + "]";
 	}
 }

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Date;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -32,8 +34,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-
-import java.util.Date;
 
 /**
  * Provides low-level retrieval of content
@@ -261,6 +261,10 @@ public interface ContentStore
      */
     default boolean isDirectAccessSupported()
     {
+        return false;
+    }
+
+    default boolean isStorageClassesSupported(String storageClasses) {
         return false;
     }
 }

@@ -95,7 +95,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private FolderModel testFolder;
     private FileModel testFile;
     private RecordCategory recordCategory;
-    private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory, closedRecordFolder, recordFolderWithSpacesInName;
+    private RecordCategoryChild recordFolder, subcategoryRecordFolder, closedRecordFolder, recordFolderWithSpacesInName;
     private UnfiledContainerChild unfiledContainerFolder;
     private String holdNodeRef;
 
@@ -154,7 +154,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     }
 
     @BeforeClass (alwaysRun = true)
-    public void declareAndFileDocumentAsRecordSetup() throws Exception
+    public void declareAndFileDocumentAsRecordSetup()
     {
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
@@ -164,7 +164,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 
         STEP("Create record categories and record folders");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
-        subCategory = createRecordCategory(recordCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild subCategory = createRecordCategory(recordCategory.getId(), getRandomName("subCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
         subcategoryRecordFolder = createFolder(subCategory.getId(), getRandomName("recordFolder"));
         unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
@@ -180,7 +180,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     }
 
     @BeforeMethod(alwaysRun = true)
-    public void createDocument() throws Exception
+    public void createDocument()
     {
         STEP("Create a document in the collaboration site");
         testFile = dataContent.usingSite(publicSite)
@@ -429,7 +429,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
      * Then I get an invalid operation exception
      */
     @Test
-    public void declareAndFileTwiceDifferentLocations() throws Exception
+    public void declareAndFileTwiceDifferentLocations()
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite).usingAdmin()

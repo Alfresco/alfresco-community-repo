@@ -42,7 +42,6 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -83,7 +82,6 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private final String HOLD1 = PREFIX + "hold1";
     private final String HOLD2 = PREFIX + "hold2";
     private final String HOLD3 = PREFIX + "hold3";
-    private final String DELETED_HOLD = PREFIX + "deletedHold";
 
     @Autowired
     private RMAuditService rmAuditService;
@@ -98,13 +96,13 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private RecordCategoryChild recordFolder, heldRecordFolder;
     private Record heldRecord;
     private List<AuditEntry> auditEntries;
-    private List<String> holdsList = asList(HOLD1, HOLD2, HOLD3);
+    private final List<String> holdsList = asList(HOLD1, HOLD2, HOLD3);
     private List<String> holdsListRef = new ArrayList<>();
     private FileModel heldContent;
     private String hold1NodeRef;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForAuditRemoveFromHoldTests() throws Exception
+    public void preconditionForAuditRemoveFromHoldTests()
     {
         STEP("Create an user with full rights to remove content from a hold.");
         rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
@@ -117,7 +115,6 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
                 HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
         String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
         String hold3NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD3, HOLD_REASON, HOLD_DESCRIPTION);
-        String deleteNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), DELETED_HOLD, HOLD_REASON, HOLD_DESCRIPTION);
         holdsListRef = asList(hold1NodeRef, hold2NodeRef, hold3NodeRef);
 
         STEP("Create a new record category with a record folder.");
@@ -216,7 +213,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
      * Then only an entry has been created in the audit log for the record folder removed
      */
     @Test
-    public void removeFromHoldNotAuditedForRecordFolderChildren() throws Exception
+    public void removeFromHoldNotAuditedForRecordFolderChildren()
     {
         STEP("Create a new record folder with a record inside");
         RecordCategoryChild notEmptyRecFolder = createRecordFolder(recordCategory.getId(), PREFIX + "notEmptyRecFolder");
@@ -324,6 +321,6 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
         dataSite.usingAdmin().deleteSite(privateSite);
         asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordCategory.getId());
+        deleteRecordCategory(recordCategory.getId());
     }
 }

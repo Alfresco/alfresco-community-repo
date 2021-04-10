@@ -70,7 +70,7 @@ public class RMSiteUtil
      * @param compliance The RM site compliance
      * @return The {@link RMSite} with the given details
      */
-    private static RMSite createRMSiteModel(RMSiteCompliance compliance)
+    public static RMSite createRMSiteModel(RMSiteCompliance compliance)
     {
         return createRMSiteModel(compliance, RM_TITLE, RM_DESCRIPTION);
     }

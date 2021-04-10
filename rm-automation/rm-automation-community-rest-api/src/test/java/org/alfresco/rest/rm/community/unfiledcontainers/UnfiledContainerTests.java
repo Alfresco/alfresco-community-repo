@@ -37,6 +37,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createUnfiledContainerChildModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -48,6 +49,7 @@ import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -55,13 +57,11 @@ import java.util.NoSuchElementException;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
-import org.alfresco.rest.rm.community.model.record.RecordProperties;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledRecordFolder;
-import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil;
 import org.alfresco.utility.report.Bug;
 import org.springframework.http.HttpStatus;
@@ -79,6 +79,7 @@ public class UnfiledContainerTests extends BaseRMRestTest
 {
     /** Number of children (for children creation test) */
     private static final int NUMBER_OF_CHILDREN = 10;
+    private final List<UnfiledContainerChild> unfiledChildren = new ArrayList<>();
 
     /**
      * Data Provider with:
@@ -101,13 +102,13 @@ public class UnfiledContainerTests extends BaseRMRestTest
      * Given the RM site exists
      * When I retrieve the unfiled record conteiner by placeholder
      * Then the details of the unfiled record container is returned
-     * </pre> 
+     * </pre>
      */
     @Test
     (
         description = "Get the unfiled records container"
     )
-    public void getUnfiledRecordsContainer() throws Exception
+    public void getUnfiledRecordsContainer()
     {
         // Get the unfiled records container
         UnfiledContainer container = getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS);
@@ -130,7 +131,7 @@ public class UnfiledContainerTests extends BaseRMRestTest
     (
         description = "Rename unfiled container"
     )
-    public void renameUnfiledContainer() throws Exception
+    public void renameUnfiledContainer()
     {
         String newContainerName = "RenamedUnfiledContainer (" + getRandomAlphanumeric() + ")";
 
@@ -165,10 +166,11 @@ public class UnfiledContainerTests extends BaseRMRestTest
         description = "Create unfiled record folder child in unfiled root container",
         dataProvider = "unfiledFolderTypes"
     )
-    public void createUnfiledRecordFolderChild(String folderType) throws Exception
+    public void createUnfiledRecordFolderChild(String folderType)
     {
         String unfiledRecordFolderName = "UnfiledRecordFolder-" + getRandomAlphanumeric();
         UnfiledContainerChild unfiledRecordFolderChild = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, unfiledRecordFolderName, folderType);
+        unfiledChildren.add(unfiledRecordFolderChild);
 
         assertNotNull(unfiledRecordFolderChild.getId());
 
@@ -195,7 +197,7 @@ public class UnfiledContainerTests extends BaseRMRestTest
         dataProvider = "unfiledFolderTypes"
     )
     @Bug(id ="RM-5116, RM-5148")
-    public void createDuplicateUnfiledFolderChild(String folderType) throws Exception
+    public void createDuplicateUnfiledFolderChild(String folderType)
     {
         String unfiledRecordFolderName = "UnfiledRecordFolder-" + getRandomAlphanumeric();
         UnfiledContainerChild unfiledRecordFolderChild = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
@@ -203,26 +205,29 @@ public class UnfiledContainerTests extends BaseRMRestTest
 
         // Verify the status code
         assertStatusCode(CREATED);
+        unfiledChildren.add(unfiledRecordFolderChild);
         assertEquals(unfiledRecordFolderChild.getName(), unfiledRecordFolderName);
-		
+
 		// create the same unfiled folder
         UnfiledContainerChild unfiledRecordFolderDuplicate = getRestAPIFactory().getUnfiledContainersAPI()
-                    .createUnfiledContainerChild(createUnfiledContainerChildModel(unfiledRecordFolderName, folderType),
-                                UNFILED_RECORDS_CONTAINER_ALIAS);
+                .createUnfiledContainerChild(createUnfiledContainerChildModel(unfiledRecordFolderName, folderType),
+                        UNFILED_RECORDS_CONTAINER_ALIAS);
 
         // Verify the status code
         assertStatusCode(CONFLICT);
 
         // create the same unfiled folder with the autoRename parameter on true
         unfiledRecordFolderDuplicate = getRestAPIFactory().getUnfiledContainersAPI()
-                    .createUnfiledContainerChild(createUnfiledContainerChildModel(unfiledRecordFolderName, folderType),UNFILED_RECORDS_CONTAINER_ALIAS,"autoRename=true");
+                .createUnfiledContainerChild(createUnfiledContainerChildModel(unfiledRecordFolderName, folderType),
+                        UNFILED_RECORDS_CONTAINER_ALIAS, "autoRename=true");
 
         //verify the response status code
 		assertStatusCode(CREATED);
+        unfiledChildren.add(unfiledRecordFolderDuplicate);
         assertNotEquals(unfiledRecordFolderDuplicate.getName(), unfiledRecordFolderName);
         assertTrue(unfiledRecordFolderDuplicate.getName().startsWith(unfiledRecordFolderName));
-
     }
+
     /**
      * <pre>
      * Given that an unfiled records container exists
@@ -234,21 +239,18 @@ public class UnfiledContainerTests extends BaseRMRestTest
     (
         description = "Create unfiled record folder child in unfiled root container"
     )
-    public void createUnfiledRecordFolderChildWithRelativePathNotSuported() throws Exception
+    public void createUnfiledRecordFolderChildWithRelativePathNotSuported()
     {
-        UnfiledContainerAPI unfiledContainerAPI = getRestAPIFactory().getUnfiledContainersAPI();
         // relativePath specify the container structure to create relative to
         // the record folder to be created
         String relativePath = now().getYear() + "/" + now().getMonth() + "/" + now().getDayOfMonth();
-
-        String unfiledRecordFolderName = "UnfiledRecordFolder-" + getRandomAlphanumeric();
-
         UnfiledContainerChild unfiledFolderModel = UnfiledContainerChild.builder()
-                                                            .name(unfiledRecordFolderName)
-                                                            .nodeType(UNFILED_RECORD_FOLDER_TYPE)
-                                                            .relativePath(relativePath)
-                                                            .build();
-        unfiledContainerAPI.createUnfiledContainerChild(unfiledFolderModel, UNFILED_RECORDS_CONTAINER_ALIAS);
+                                                                        .name(getRandomName("UnfiledRecordFolder"))
+                                                                        .nodeType(UNFILED_RECORD_FOLDER_TYPE)
+                                                                        .relativePath(relativePath)
+                                                                        .build();
+        getRestAPIFactory().getUnfiledContainersAPI()
+                           .createUnfiledContainerChild(unfiledFolderModel, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         // Check the API response code
         assertStatusCode(BAD_REQUEST);
@@ -265,10 +267,11 @@ public class UnfiledContainerTests extends BaseRMRestTest
     (
         description = "Create non-electronic record child in unfiled root container"
     )
-    public void createNonElectronicRecordChild() throws Exception
+    public void createNonElectronicRecordChild()
     {
         String recordName = "NERecord-" + getRandomAlphanumeric();
         UnfiledContainerChild unfiledRecord = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, recordName, NON_ELECTRONIC_RECORD_TYPE);
+        unfiledChildren.add(unfiledRecord);
 
         assertNotNull(unfiledRecord.getId());
         assertTrue(unfiledRecord.getIsRecord());
@@ -293,10 +296,11 @@ public class UnfiledContainerTests extends BaseRMRestTest
     (
         description = "Create electronic record child in unfiled root container"
     )
-    public void createElectronicRecordChild() throws Exception
+    public void createElectronicRecordChild()
     {
         String recordName = "ERecord-" + getRandomAlphanumeric();
         UnfiledContainerChild unfiledRecord = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, recordName, CONTENT_TYPE);
+        unfiledChildren.add(unfiledRecord);
 
         assertNotNull(unfiledRecord.getId());
         assertTrue(unfiledRecord.getIsRecord());
@@ -322,11 +326,11 @@ public class UnfiledContainerTests extends BaseRMRestTest
     (
         description = "Get children of the root unfiled root container"
     )
-    public void getUnfiledRootContainerChildren() throws Exception
+    public void getUnfiledRootContainerChildren()
     {
         // Add unfiled root container children
         List<UnfiledContainerChild> createdChildren = new LinkedList<>();
-        for (int i=0; i < NUMBER_OF_CHILDREN; i++)
+        for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
         {
             String childType;
             if (i % 3 == 0)
@@ -367,9 +371,8 @@ public class UnfiledContainerTests extends BaseRMRestTest
             {
                 // Get the element from the created children list
                 UnfiledContainerChild createdComponent = createdChildren.stream()
-                    .filter(child -> child.getId().equals(childId))
-                    .findFirst()
-                    .get();
+                                                                        .filter(child -> child.getId().equals(childId))
+                                                                        .findFirst().orElseThrow();
 
                 // Created by
                 assertEquals(containerChild.getCreatedByUser().getId(), getAdminUser().getUsername());
@@ -408,6 +411,7 @@ public class UnfiledContainerTests extends BaseRMRestTest
         // check all the created elements have been returned
         assertTrue(verifiedChildren.containsAll(createdChildren));
         assertTrue(createdChildren.containsAll(verifiedChildren));
+        unfiledChildren.addAll(createdChildren);
     }
 
     /**
@@ -429,35 +433,28 @@ public class UnfiledContainerTests extends BaseRMRestTest
         // Build unfiled records folder properties
         UnfiledContainerChild unfiledFolderModel = createUnfiledContainerChildModel(unfiledRecordFolderName, filePlanComponentType);
 
-        try
-        {
-            getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(unfiledFolderModel, UNFILED_RECORDS_CONTAINER_ALIAS);
-        }
-        catch (Exception error)
-        {
-        }
+        getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(unfiledFolderModel, UNFILED_RECORDS_CONTAINER_ALIAS);
         // Verify the status code
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     @Test(description = "Create a record with custom record identifier in unfiled container")
-    public void createRecordWithCustomIdentifier() throws Exception
+    public void createRecordWithCustomIdentifier()
     {
         String recordName = "customIdRecord-" + getRandomAlphanumeric();
         String customIdentifier = "customId";
-        RecordProperties propertiesModel = RecordProperties.builder().identifier(customIdentifier).build();
+        UnfiledContainerChildProperties propertiesModel = UnfiledContainerChildProperties.builder().identifier(customIdentifier).build();
 
         UnfiledContainerChild childModel = UnfiledContainerChild.builder()
-            .name(recordName)
-            .nodeType(CONTENT_TYPE)
-            .properties(UnfiledContainerChildProperties.builder()
-                .identifier(customIdentifier)
-                .build())
-            .build();
+                                                                .name(recordName)
+                                                                .nodeType(CONTENT_TYPE)
+                                                                .properties(propertiesModel)
+                                                                .build();
 
         UnfiledContainerChild child = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(childModel, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         assertStatusCode(HttpStatus.CREATED);
+        unfiledChildren.add(child);
         assertEquals(child.getProperties().getIdentifier(), customIdentifier);
         assertEquals(child.getName(), recordName + " (" + customIdentifier + ")");
     }
@@ -465,18 +462,15 @@ public class UnfiledContainerTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void tearDown()
     {
-        UnfiledContainerChildCollection listedChildren = getRestAPIFactory().getUnfiledContainersAPI()
-                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS);
-
-        listedChildren.getEntries().forEach(UnfiledContainerChildEntry ->
+        unfiledChildren.forEach(unfiledChild ->
         {
-            if (UnfiledContainerChildEntry.getEntry().getIsRecord())
+            if (unfiledChild.getIsRecord())
             {
-                getRestAPIFactory().getRecordsAPI().deleteRecord(UnfiledContainerChildEntry.getEntry().getId());
+                getRestAPIFactory().getRecordsAPI().deleteRecord(unfiledChild.getId());
             }
             else
             {
-                getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(UnfiledContainerChildEntry.getEntry().getId());
+                getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(unfiledChild.getId());
             }
         });
     }

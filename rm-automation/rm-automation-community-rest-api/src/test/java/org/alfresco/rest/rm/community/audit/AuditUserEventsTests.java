@@ -59,8 +59,6 @@ public class AuditUserEventsTests extends BaseRMRestTest
      * Given I have created a new user
      * When I view the RM audit
      * Then there is an entry showing that I created a user
-     *
-     * @throws Exception
      */
     @Test
     @AlfrescoTest(jira = "RM-6223")

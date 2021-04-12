@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="600000">
+<suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="300000">
    <test name="Before suite" >
       <!-- These tests are meant to run first, because they all clear the audit log and can't run in parallel. -->
       <packages>
@@ -39,8 +39,9 @@
          </class>
       </classes>
    </test>
-   <!-- These tests can run in parallel -->
-   <test name="Parallel Tests Suite" parallel="classes" thread-count="2">
+   <!-- These tests can run in parallel. Run them in single thread though because runtime increase with the number of
+   threads -->
+   <test name="Parallel Tests Suite">
       <packages>
          <package name="org.alfresco.rest.rm.community.*">
             <exclude name="org.alfresco.rest.rm.community.audit.*"/>

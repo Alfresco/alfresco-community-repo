@@ -60,6 +60,9 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** logger */
     private static Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
 
+    /** batching properties */
+    private int batchSize;
+
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
 
@@ -86,6 +89,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     public void setDispositionActions(List<String> dispositionActions)
     {
         this.dispositionActions = dispositionActions;
+    }
+
+    public void setBatchSize(int batchSize)
+    {
+        this.batchSize = batchSize;
     }
 
     /**
@@ -167,13 +175,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             {
                 boolean hasMore = true;
                 int skipCount = 0;
-                while(hasMore)
+                while (hasMore)
                 {
                     SearchParameters params = new SearchParameters();
                     params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                     params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
                     params.setQuery(getQuery());
                     params.setSkipCount(skipCount);
+                    params.setMaxItems(batchSize);
 
                     // execute search
                     ResultSet results = searchService.query(params);
@@ -188,13 +197,12 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     }
 
                     // process search results
-                    for (NodeRef node : resultNodes)
+                    if (!resultNodes.isEmpty())
                     {
-                        executeAction(node);
+                        executeAction(resultNodes);
                     }
                 }
             }
-
             logger.debug("Job Finished");
         }
         catch (AlfrescoRuntimeException exception)
@@ -209,57 +217,52 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * Helper method that executes a disposition action
      *
-     * @param actionNode - the disposition action to execute
+     * @param actionNodes - the disposition actions to execute
      */
-    private void executeAction(final NodeRef actionNode)
+    private void executeAction(final List<NodeRef> actionNodes)
     {
-        RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
-        {
-            public Boolean execute()
+        RetryingTransactionCallback<Boolean> processTranCB = () -> {
+            for (NodeRef actionNode : actionNodes)
             {
-                final String dispAction = (String) nodeService.getProperty(actionNode,
-                            RecordsManagementModel.PROP_DISPOSITION_ACTION);
-
-                // Run disposition action
-                if (dispAction != null && dispositionActions.contains(dispAction))
+                if (nodeService.exists(actionNode))
                 {
-                    ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
-                    if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
+                    final String dispAction = (String) nodeService
+                        .getProperty(actionNode, RecordsManagementModel.PROP_DISPOSITION_ACTION);
+
+                    // Run disposition action
+                    if (dispAction != null && dispositionActions.contains(dispAction))
                     {
-                        Map<String, Serializable> props = new HashMap<>(1);
-                        props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK,
-                                    Boolean.FALSE);
-
-                        try
+                        ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
+                        if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                         {
-                            // execute disposition action
-                            recordsManagementActionService.executeRecordsManagementAction(
-                                        parent.getParentRef(), dispAction, props);
+                            Map<String, Serializable> props = new HashMap<>(1);
+                            props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
 
-                            if (logger.isDebugEnabled())
+                            try
                             {
-                                logger.debug("Processed action: " + dispAction + "on" + parent);
+                                // execute disposition action
+                                recordsManagementActionService
+                                    .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Processed action: " + dispAction + "on" + parent);
+                                }
                             }
-                        }
-                        catch (AlfrescoRuntimeException exception)
-                        {
-                            if (logger.isDebugEnabled())
+                            catch (AlfrescoRuntimeException exception)
                             {
-                                logger.debug(exception);
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug(exception);
+                                }
                             }
                         }
                     }
                 }
-
-                return Boolean.TRUE;
             }
+            return Boolean.TRUE;
         };
-
-        // if exists
-        if (nodeService.exists(actionNode))
-        {
-            retryingTransactionHelper.doInTransaction(processTranCB);
-        }
+        retryingTransactionHelper.doInTransaction(processTranCB, false, true);
     }
 
     public PersonService getPersonService()

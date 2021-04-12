@@ -586,4 +586,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             }
         }
     }
+
+    @Override
+    public boolean isStorageClassesSupported(String storageClasses)
+    {
+        // TODO: should we have an switch for this feature?
+        return store.isStorageClassesSupported(storageClasses);
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        // TODO: should we have an switch for this feature?
+        return store.getSupportedStorageClasses();
+    }
 }

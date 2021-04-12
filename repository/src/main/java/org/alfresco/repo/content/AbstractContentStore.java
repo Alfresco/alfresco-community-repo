@@ -210,6 +210,7 @@ public abstract class AbstractContentStore implements ContentStore
     {
         ContentReader existingContentReader = context.getExistingContentReader();
         String contentUrl = context.getContentUrl();
+        String storageClasses = context.getStorageClasses();
         // Check if the store handles writes
         if (!isWriteSupported())
         {
@@ -248,8 +249,25 @@ public abstract class AbstractContentStore implements ContentStore
                 throw new ContentExistsException(this, contentUrl);
             }
         }
+
+        // Check storage classes
+        if (storageClasses != null)
+        {
+            if (!isStorageClassesSupported(storageClasses))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Specific writer storage classes are unsupported: \n" +
+                                    "   Store:   " + this + "\n" +
+                                    "   Context: " + context);
+                }
+                throw new UnsupportedStorageClassException(this, storageClasses);
+            }
+        }
+
         // Get the writer
-        ContentWriter writer = getWriterInternal(existingContentReader, contentUrl);
+        ContentWriter writer = getWriterInternal(existingContentReader, contentUrl, storageClasses);
         // Done
         if (logger.isDebugEnabled())
         {

@@ -27,6 +27,7 @@ package org.alfresco.repo.content.replication;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -65,12 +66,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AggregatingContentStore extends AbstractContentStore
 {    
-    private static Log logger = LogFactory.getLog(AggregatingContentStore.class);
+    private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
     
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
     
-    private Lock readLock;
+    private final Lock readLock;
 
     /**
      * Default constructor 
@@ -374,5 +375,41 @@ public class AggregatingContentStore extends AbstractContentStore
         {
             readLock.unlock();
         }
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(String storageClasses)
+    {
+        // Check the primary store
+        boolean isStorageClassesSupported = primaryStore.isStorageClassesSupported(storageClasses);
+
+        if (!isStorageClassesSupported)
+        {
+            // Storage class is not supported by the primary store so we have to check the
+            // other stores
+            for (ContentStore store : secondaryStores)
+            {
+                isStorageClassesSupported = store.isDirectAccessSupported();
+
+                if (isStorageClassesSupported)
+                {
+                    break;
+                }
+            }
+        }
+
+        return isStorageClassesSupported;
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        Set<String> supportedStorageClasses = primaryStore.getSupportedStorageClasses();
+        for (ContentStore store : secondaryStores)
+        {
+            supportedStorageClasses.addAll(store.getSupportedStorageClasses());
+        }
+
+        return supportedStorageClasses;
     }
 }

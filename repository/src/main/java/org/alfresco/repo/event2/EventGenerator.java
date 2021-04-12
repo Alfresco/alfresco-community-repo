@@ -398,10 +398,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         }
         else 
         {
-            /**
-             * Sometimes the transaction entry is not created because no nodes were added to the transaction, 
-             * but we need to produce some events anywhere.
-             */
+            // Sometimes the transaction entry is not created because no nodes were added to the transaction, but we are producing events anywhere.
+            if(log.isDebugEnabled()){
+                log.debug("Unable to retrieve the commit time for transaction " + AlfrescoTransactionSupport.getTransactionId() + " the current timestamp will be used as event timestamp.");
+            }
+                
             timestamp = ZonedDateTime.now();
         }
         

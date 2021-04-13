@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.content.caching;
 
+import java.util.Set;
+
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -50,5 +52,13 @@ public class TestCenteraLikeContentStore extends FileContentStore
         FileContentWriter fileContentWriter = (FileContentWriter)super.getWriterInternal(existingContentReader, newContentUrl);
         
         return new TestCenteraLikeContentWriter(fileContentWriter.getFile(), fileContentWriter.getContentUrl(), existingContentReader);
+    }
+
+    @Override
+    protected ContentWriter getWriterInternal(ContentReader existingContentReader,
+        String newContentUrl, Set<String> storageClasses)
+    {
+        // TODO: Use the storage class
+        return getWriterInternal(existingContentReader, newContentUrl);
     }
 }

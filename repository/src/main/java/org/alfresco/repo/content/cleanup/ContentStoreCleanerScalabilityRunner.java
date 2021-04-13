@@ -28,6 +28,7 @@ package org.alfresco.repo.content.cleanup;
 import java.io.File;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentStore;
@@ -212,6 +213,14 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                 hammeredFile.set(file);
             }
             return new FileContentWriter(file);
+        }
+
+        @Override
+        protected ContentWriter getWriterInternal(ContentReader existingContentReader,
+            String newContentUrl, Set<String> storageClasses)
+        {
+            // TODO: Use the storage class
+            return getWriterInternal(existingContentReader, newContentUrl);
         }
 
         public ContentReader getReader(String contentUrl)

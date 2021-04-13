@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -533,7 +534,14 @@ public class FileContentStore
             throw new ContentIOException("Failed to get writer", e);
         }
     }
-    
+
+    @Override
+    protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl, Set<String> storageClasses)
+    {
+        // TODO: Use the storage class
+        return getWriterInternal(existingContentReader, newContentUrl);
+    }
+
     /**
      * Attempts to delete the content.  The actual deletion is optional on the interface
      * so it just returns the success or failure of the underlying delete.

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -83,7 +84,15 @@ class SlowContentStore extends AbstractContentStore
         
         return new SlowWriter(newContentUrl, existingContentReader);
     }
-        
+
+    @Override
+    protected ContentWriter getWriterInternal(ContentReader existingContentReader,
+        String newContentUrl, Set<String> storageClasses)
+    {
+        // TODO: Use the storage class
+        return getWriterInternal(existingContentReader, newContentUrl);
+    }
+
     @Override
     public boolean exists(String contentUrl)
     {

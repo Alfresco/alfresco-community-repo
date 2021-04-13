@@ -57,8 +57,8 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
    <title>Alfresco</title>
-   <link rel="stylesheet" type="text/css" href="./css/reset.css" />
-   <link rel="stylesheet" type="text/css" href="./css/alfresco.css" />
+   <link rel="stylesheet" type="text/css" href="packaging/war/src/main/webapp/css/reset.css" />
+   <link rel="stylesheet" type="text/css" href="packaging/war/src/main/webapp/css/alfresco.css" />
 </head>
 <body>
    <div class="sticky-wrapper">

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Set;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -192,7 +194,7 @@ public abstract class AbstractContentStore implements ContentStore
      * @return
      * @since 7.1
      */
-    protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl, String storageClasses)
+    protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl, Set<String> storageClasses)
     {
         throw new UnsupportedOperationException("Override getWriterInternal (preferred) or getWriter");
     }
@@ -210,7 +212,7 @@ public abstract class AbstractContentStore implements ContentStore
     {
         ContentReader existingContentReader = context.getExistingContentReader();
         String contentUrl = context.getContentUrl();
-        String storageClasses = context.getStorageClasses();
+        Set<String> storageClasses = context.getStorageClasses();
         // Check if the store handles writes
         if (!isWriteSupported())
         {

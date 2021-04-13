@@ -25,10 +25,12 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Set;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Exception produced when a storage class is not supported by a particular {@link ContentStore} implementation.
+ * Exception produced when a storage classes is not supported by a particular {@link ContentStore} implementation.
  *
  * @since 7.1
  * @see ContentStore#getWriter(ContentContext)
@@ -38,29 +40,29 @@ public class UnsupportedStorageClassException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 1349903839801739376L;
 
     private final ContentStore contentStore;
-    private final String storageClass;
+    private final Set<String> storageClasses;
 
     /**
      * @param contentStore the originating content store
-     * @param storageClass the offending storage class
+     * @param storageClasses the offending storage classes
      */
-    public UnsupportedStorageClassException(ContentStore contentStore, String storageClass)
+    public UnsupportedStorageClassException(ContentStore contentStore, Set<String> storageClasses)
     {
-        this(contentStore, storageClass,
+        this(contentStore, storageClasses,
                 "The storage class is not supported by the content store: \n" +
                 "   Store:       " + contentStore.getClass().getName() + "\n" +
-                "   Storage class: " + storageClass);
+                "   Storage class: " + storageClasses);
     }
 
     /**
      * @param contentStore the originating content store
-     * @param storageClass the offending storage class
+     * @param storageClasses the offending storage classes
      */
-    public UnsupportedStorageClassException(ContentStore contentStore, String storageClass, String msg)
+    public UnsupportedStorageClassException(ContentStore contentStore, Set<String> storageClasses, String msg)
     {
         super(msg);
         this.contentStore = contentStore;
-        this.storageClass = storageClass;
+        this.storageClasses = storageClasses;
     }
 
     public ContentStore getContentStore()
@@ -68,8 +70,8 @@ public class UnsupportedStorageClassException extends AlfrescoRuntimeException
         return contentStore;
     }
 
-    public String getStorageClass()
+    public Set<String> getStorageClass()
     {
-        return storageClass;
+        return storageClasses;
     }
 }

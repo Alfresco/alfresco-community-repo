@@ -26,7 +26,10 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -52,7 +55,7 @@ public class ContentData implements Serializable
     private final long size;
     private final String encoding;
     private final Locale locale;
-    private final String storageClasses;
+    private final Set<String> storageClasses;
     
     /**
      * Construct a content property from a string
@@ -67,7 +70,7 @@ public class ContentData implements Serializable
         long size = 0L;
         String encoding = null;
         Locale locale = null;
-        String storageClasses = null;
+        Set<String> storageClasses = null;
         // now parse the string
         StringTokenizer tokenizer = new StringTokenizer(contentPropertyStr, "|");
         while (tokenizer.hasMoreTokens())
@@ -115,10 +118,14 @@ public class ContentData implements Serializable
             }
             else if (token.startsWith("storageClasses="))
             {
-                storageClasses = token.substring(15);
-                if (storageClasses.length() == 0)
+                String ssc = token.substring(15);
+                if (ssc.length() == 0)
                 {
                     storageClasses = null;
+                }
+                else
+                {
+                    storageClasses = new HashSet<>(Arrays.asList(ssc.split(", ")));
                 }
             }
         }
@@ -248,7 +255,7 @@ public class ContentData implements Serializable
      *      {@link I18NUtil#getLocale() default locale} will be used.
      * @param storageClasses the storage classes of the content (may be <tt>null</tt>)
      */
-    public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale, String storageClasses)
+    public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale, Set<String> storageClasses)
     {
         if (contentUrl != null && (mimetype == null || mimetype.length() == 0))
         {

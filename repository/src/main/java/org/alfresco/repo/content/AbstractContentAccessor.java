@@ -35,6 +35,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.service.cmr.repository.ContentAccessor;
@@ -70,7 +71,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     private String mimetype;
     private String encoding;
     private Locale locale;
-    private String storageClasses;
+    private Set<String> storageClasses;
 
     /**
      * @param contentUrl the content URL
@@ -207,12 +208,12 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
 
     @Override
-    public String getStorageClasses()
+    public Set<String> getStorageClasses()
     {
         return storageClasses;
     }
 
-    public void setStorageClasses(String storageClasses)
+    public void setStorageClasses(Set<String> storageClasses)
     {
         this.storageClasses = storageClasses;
     }

@@ -26,6 +26,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 
@@ -138,7 +139,7 @@ public interface ContentAccessor
      */
     public void setLocale(Locale locale);
 
-    public String getStorageClasses();
+    public Set<String> getStorageClasses();
 
-    public void setStorageClasses(String storageClasses);
+    public void setStorageClasses(Set<String> storageClasses);
 }

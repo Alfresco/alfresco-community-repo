@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -452,13 +453,13 @@ public class MimetypeMapTest extends TestCase
         }
 
         @Override
-        public String getStorageClasses()
+        public Set<String> getStorageClasses()
         {
             return null;
         }
 
         @Override
-        public void setStorageClasses(String storageClasses)
+        public void setStorageClasses(Set<String> storageClasses)
         {
 
         }
@@ -611,13 +612,13 @@ public class MimetypeMapTest extends TestCase
         }
 
         @Override
-        public String getStorageClasses()
+        public Set<String> getStorageClasses()
         {
             return null;
         }
 
         @Override
-        public void setStorageClasses(String storageClasses)
+        public void setStorageClasses(Set<String> storageClasses)
         {
 
         }

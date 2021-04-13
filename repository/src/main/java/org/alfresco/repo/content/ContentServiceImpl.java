@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
@@ -61,13 +68,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Service implementation acting as a level of indirection between the client
@@ -588,16 +588,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
 
     @Override
-    public boolean isStorageClassesSupported(String storageClasses)
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
-        // TODO: should we have an switch for this feature?
+        // TODO: should we have a switch for this feature?
         return store.isStorageClassesSupported(storageClasses);
     }
 
     @Override
     public Set<String> getSupportedStorageClasses()
     {
-        // TODO: should we have an switch for this feature?
+        // TODO: should we have a switch for this feature?
         return store.getSupportedStorageClasses();
     }
 }

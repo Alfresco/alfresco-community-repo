@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -175,7 +176,7 @@ public class StreamAwareContentWriterProxy extends AbstractStreamAwareProxy impl
     }
 
     @Override
-    public String getStorageClasses()
+    public Set<String> getStorageClasses()
     {
         return delegatee.getStorageClasses();
     }
@@ -211,7 +212,7 @@ public class StreamAwareContentWriterProxy extends AbstractStreamAwareProxy impl
     }
 
     @Override
-    public void setStorageClasses(String storageClasses)
+    public void setStorageClasses(Set<String> storageClasses)
     {
         delegatee.setStorageClasses(storageClasses);
     }

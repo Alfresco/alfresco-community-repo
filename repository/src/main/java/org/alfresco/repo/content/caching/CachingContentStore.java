@@ -490,7 +490,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     }
 
     @Override
-    public boolean isStorageClassesSupported(String storageClasses)
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
         return backingStore.isStorageClassesSupported(storageClasses);
     }

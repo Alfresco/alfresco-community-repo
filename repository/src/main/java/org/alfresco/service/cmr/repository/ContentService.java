@@ -25,14 +25,13 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.Date;
+import java.util.Set;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections4.SetUtils;
-
-import java.util.Date;
-import java.util.Set;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -173,7 +172,7 @@ public interface ContentService
     @Auditable(parameters = {"nodeRef", "expiresAt"})
     public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
 
-    boolean isStorageClassesSupported(String storageClasses);
+    boolean isStorageClassesSupported(Set<String> storageClasses);
 
     Set<String> getSupportedStorageClasses();
 }

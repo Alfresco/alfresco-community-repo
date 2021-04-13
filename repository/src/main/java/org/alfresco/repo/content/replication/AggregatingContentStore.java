@@ -378,7 +378,7 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     @Override
-    public boolean isStorageClassesSupported(String storageClasses)
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
         // Check the primary store
         boolean isStorageClassesSupported = primaryStore.isStorageClassesSupported(storageClasses);

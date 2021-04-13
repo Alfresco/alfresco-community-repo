@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentAccessor;
@@ -264,7 +266,13 @@ public interface ContentStore
         return false;
     }
 
-    default boolean isStorageClassesSupported(String storageClasses) {
+    default boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
         return false;
+    }
+
+    default Set<String> getSupportedStorageClasses()
+    {
+        return Collections.emptySet();
     }
 }

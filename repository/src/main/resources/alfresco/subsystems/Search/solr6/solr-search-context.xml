@@ -165,6 +165,8 @@
         <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
         <property name="keyStoreParameters" ref="keyStoreParameters"/>
         <property name="encryptionParameters" ref="md5EncryptionParameters"/>
+        <property name="sharedSecret" value="${solr.sharedSecret}"/>
+        <property name="sharedSecretHeader" value="${solr.sharedSecret.header}"/>
         <property name="host" value="${solr.host}"/>
         <property name="port" value="${solr.port}"/>
         <property name="sslPort" value="${solr.port.ssl}"/>

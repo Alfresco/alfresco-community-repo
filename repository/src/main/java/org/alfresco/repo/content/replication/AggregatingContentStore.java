@@ -27,6 +27,7 @@ package org.alfresco.repo.content.replication;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -405,11 +406,18 @@ public class AggregatingContentStore extends AbstractContentStore
     public Set<String> getSupportedStorageClasses()
     {
         Set<String> supportedStorageClasses = primaryStore.getSupportedStorageClasses();
-        for (ContentStore store : secondaryStores)
-        {
-            supportedStorageClasses.addAll(store.getSupportedStorageClasses());
-        }
+        // TODO: review
+//        for (ContentStore store : secondaryStores)
+//        {
+//            supportedStorageClasses.addAll(store.getSupportedStorageClasses());
+//        }
 
         return supportedStorageClasses;
+    }
+
+    @Override
+    public void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters)
+    {
+        primaryStore.updateStorageClasses(contentUrl, storageClasses, parameters);
     }
 }

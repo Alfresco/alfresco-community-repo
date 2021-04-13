@@ -600,4 +600,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         // TODO: should we have a switch for this feature?
         return store.getSupportedStorageClasses();
     }
+
+    @Override
+    public void updateStorageClasses(NodeRef nodeRef, Set<String> storageClasses, Map<String, Object> parameters)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        store.updateStorageClasses(contentData.getContentUrl(), storageClasses, parameters);
+    }
 }

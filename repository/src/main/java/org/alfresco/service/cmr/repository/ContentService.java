@@ -26,6 +26,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -175,4 +176,7 @@ public interface ContentService
     boolean isStorageClassesSupported(Set<String> storageClasses);
 
     Set<String> getSupportedStorageClasses();
+
+    //@Auditable(parameters = {"nodeRef", "storageClasses", "parameters"})
+    void updateStorageClasses(NodeRef nodeRef, Set<String> storageClasses, Map<String, Object> parameters);
 }

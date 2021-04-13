@@ -125,6 +125,7 @@ public class ContentData implements Serializable
                 }
                 else
                 {
+                    // TODO: double check delimiter
                     storageClasses = new HashSet<>(Arrays.asList(ssc.split(", ")));
                 }
             }

@@ -97,13 +97,14 @@ public class ReadRecordTests extends BaseRMRestTest
                                              .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                              .build();
 
-    private RecordCategory rootCategory;
+    private RecordCategory rootCategory, rootCategory2;
     private RecordCategoryChild recordFolder;
 
     @BeforeClass(alwaysRun = true)
     public void setupReadRecordTests()
     {
         rootCategory = createRootCategory(getRandomName("rootCategory"));
+        rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
         recordFolder = createRecordFolder(rootCategory.getId(), getRandomName("recFolder"));
     }
     /**
@@ -244,7 +245,6 @@ public class ReadRecordTests extends BaseRMRestTest
 
         String RECORD_ELECTRONIC = "Record " + getRandomAlphanumeric();
         String RECORD_ELECTRONIC_BINARY = "Binary Record" + getRandomAlphanumeric();
-        String existentRecordCategoryId = createRootCategory(getRandomName("rootCategory2")).getId();
 
         String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
 
@@ -255,7 +255,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                     .relativePath(RELATIVE_PATH)
                                                     .build();
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
-        String folderId = recordCategoryAPI.createRecordCategoryChild(recordFolder, existentRecordCategoryId).getId();
+        String folderId = recordCategoryAPI.createRecordCategoryChild(recordFolder, rootCategory2.getId()).getId();
 
         // text file as an electronic record
         Record recordText = Record.builder()
@@ -346,6 +346,7 @@ public class ReadRecordTests extends BaseRMRestTest
     public void cleanupReadRecordTests()
     {
         deleteRecordCategory(rootCategory.getId());
+        deleteRecordCategory(rootCategory2.getId());
     }
 
 }

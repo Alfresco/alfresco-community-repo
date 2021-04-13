@@ -116,6 +116,8 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test (priority = 1)
+    // Set priority to 1 in order for this test to run last one in this class. The rm site is created only once at the
+    // beginning of the class and because this test deletes the rm site, the other tests might be affected
     public void getFilePlanWhenRMIsNotCreated()
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();

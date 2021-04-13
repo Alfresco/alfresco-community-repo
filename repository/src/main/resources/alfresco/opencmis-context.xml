@@ -120,7 +120,7 @@
 
     <bean id="cmisActivityPoster" class="org.alfresco.opencmis.ActivityPosterImpl">
         <property name="poster"                 ref="activitiesPoster" />
-        <property name="siteService"            ref="siteService" />
+        <property name="siteService"            ref="SiteService" />
         <property name="tenantService"          ref="tenantService" />
         <property name="nodeService"            ref="NodeService" />
         <property name="fileFolderService"      ref="FileFolderService" />

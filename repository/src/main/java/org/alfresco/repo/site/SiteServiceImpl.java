@@ -1419,7 +1419,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }
         else
         {
-            ChildAssociationRef primaryParent = directNodeService.getPrimaryParent(nodeRef);
+            ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
             if (primaryParent != null && primaryParent.getParentRef() != null)
             {
                 siteNodeRef = getSiteNodeRef(primaryParent.getParentRef());

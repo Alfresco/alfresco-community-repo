@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -274,5 +275,10 @@ public interface ContentStore
     default Set<String> getSupportedStorageClasses()
     {
         return Collections.emptySet();
+    }
+
+    default void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters) 
+    {
+        throw new UnsupportedOperationException("Updating storage classes is not supported by this content store.");
     }
 }

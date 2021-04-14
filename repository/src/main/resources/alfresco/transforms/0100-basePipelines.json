@@ -118,31 +118,6 @@
       ]
     },
     {
-      "transformerName": "htmlToPdfViaOdt",
-      "transformerPipeline" : [
-        {"transformerName": "libreoffice",                  "targetMediaType": "application/vnd.oasis.opendocument.text"},
-        {"transformerName": "libreoffice"}
-      ],
-      "supportedSourceAndTargetList": [
-        {"sourceMediaType": "text/html",                    "targetMediaType": "application/pdf" }
-      ],
-      "transformOptions": [
-      ]
-    },
-    {
-      "transformerName": "htmlToImageViaPdf",
-      "transformerPipeline" : [
-        {"transformerName": "htmlToPdfViaOdt",               "targetMediaType": "application/pdf"},
-        {"transformerName": "pdfToImageViaPng"}
-      ],
-      "supportedSourceAndTargetList": [
-      ],
-      "transformOptions": [
-        "pdfRendererOptions",
-        "imageMagickOptions"
-      ]
-    },
-    {
       "transformerName": "ooXmlToImageViaText",
       "transformerPipeline" : [
         {"transformerName": "OOXML",                                                                        "targetMediaType": "text/plain"},
@@ -199,20 +174,8 @@
       ]
     },
     {
-      "transformerName": "libreofficeHtmlToPdfViaOdt",
-      "transformerPipeline" : [
-        {"transformerName": "libreoffice", "targetMediaType": "application/vnd.oasis.opendocument.text"},
-        {"transformerName": "libreoffice"}
-      ],
-      "supportedSourceAndTargetList": [
-        {"sourceMediaType": "text/html",  "targetMediaType": "application/pdf" }
-      ],
-      "transformOptions": [
-      ]
-    },
-    {
       "transformerName": "libreofficeToPdf",
-      "transformerFailover" : [ "libreoffice", "libreofficeHtmlToPdfViaOdt" ],
+      "transformerFailover" : [ "libreoffice" ],
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/vnd.oasis.opendocument.graphics", "priority": 150, "targetMediaType": "application/pdf" },
         {"sourceMediaType": "application/vnd.sun.xml.calc.template",       "priority": 150, "targetMediaType": "application/pdf" },
@@ -262,6 +225,32 @@
       ],
       "transformOptions": [
         "tikaOptions"
+      ]
+    },
+    {
+      "transformerName": "htmlToPdfViaTXT",
+      "transformerPipeline" : [
+        {"transformerName": "string", "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/html",                             "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "htmlToImageViaTXT",
+      "transformerPipeline" : [
+        {"transformerName": "string", "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/html",                             "targetMediaType": "image/png" }
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
       ]
     }
   ]

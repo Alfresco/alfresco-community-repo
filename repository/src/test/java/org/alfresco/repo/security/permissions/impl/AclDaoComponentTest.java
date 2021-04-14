@@ -31,8 +31,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -54,6 +62,7 @@ import org.alfresco.repo.security.permissions.SimpleAccessControlEntry;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -71,8 +80,13 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
+import org.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class AclDaoComponentTest extends TestCase
@@ -243,6 +257,40 @@ public class AclDaoComponentTest extends TestCase
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
         assertEquals(aclDaoComponent.getAccessControlListProperties(aclProps.getId()), aclProps);
+    }
+
+    public void testGetCurrentACLChangeSet()
+            throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException
+    {
+
+        SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+        properties.setAclType(ACLType.DEFINING);
+        properties.setVersioned(true);
+        Long id = aclDaoComponent.createAccessControlList(properties).getId();
+
+        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        assertEquals(aclProps.getAclType(), ACLType.DEFINING);
+        assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
+        assertEquals(aclProps.getInherits(), Boolean.TRUE);
+
+        assertNotNull(aclDaoComponent.getCurrentACLChangeSet());
+        assertNotNull(aclDaoComponent.getCurrentACLChangeSet().getId());
+
+        AtomicBoolean afterCommit = new AtomicBoolean();
+        AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter() {
+            @Override
+            public void afterCommit()
+            {
+                //The commit time is available only after a transaction is committed
+                assertNotNull(aclDaoComponent.getCurrentACLChangeSet().getCommitTimeMs());
+                afterCommit.set(true);
+            }
+        });
+
+        testTX.commit();
+        await("Commit time not null")
+                .atMost(3, TimeUnit.SECONDS)
+                .untilAtomic(afterCommit, equalTo(true));
     }
     
     public void testCreateShared()

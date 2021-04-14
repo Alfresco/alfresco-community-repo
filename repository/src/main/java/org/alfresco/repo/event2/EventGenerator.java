@@ -377,7 +377,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         return (childAssociationTypeFilter.isExcluded(childAssocType) || (userFilter.isExcluded(user)));
     }
 
-    private EventInfo getEventInfo(String user)
+    protected EventInfo getEventInfo(String user)
     {
         return new EventInfo().setTimestamp(getCurrentTransactionTimestamp())
                               .setId(UUID.randomUUID().toString())

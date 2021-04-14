@@ -25,21 +25,18 @@
  */
 package org.alfresco.repo.web.scripts.solr;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,9 +85,7 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter, Initi
 
 	private String sharedSecret;
 
-	private String sharedSecretHeader = DEFAULT_SHAREDSECRET_HEADER;
-
-	private static final String DEFAULT_SHAREDSECRET_HEADER = "X-Alfresco-Search-Secret";
+	private String sharedSecretHeader = HttpClientFactory.DEFAULT_SHAREDSECRET_HEADER;
 
 	public void setSecureComms(String type)
 	{

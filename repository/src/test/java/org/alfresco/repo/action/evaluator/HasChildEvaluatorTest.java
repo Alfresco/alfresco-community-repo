@@ -34,7 +34,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -44,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 3.4
  */
 @Transactional
+@Category(NeverRunsTests.class)
 public class HasChildEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;

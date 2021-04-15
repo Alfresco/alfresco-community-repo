@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  * to route content from a store to a selection of filesystem volumes
  * @author Andreea Dragoi
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class VolumeAwareFileContentStoreTest extends FileContentStoreTest{
     
     private static final String VOLUMES = "volumeA,volumeB,volumeC";

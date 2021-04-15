@@ -47,6 +47,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoTestCase;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -57,7 +58,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
 {
     private static final String FROM_USER = "fromUser" + GUID.generate();

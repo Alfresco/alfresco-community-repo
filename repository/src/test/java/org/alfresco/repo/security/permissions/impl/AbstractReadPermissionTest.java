@@ -70,7 +70,7 @@ import org.springframework.context.ApplicationContext;
 import junit.framework.TestCase;
 
 @Category(LuceneTests.class)
-public class AbstractReadPermissionTest extends TestCase
+public abstract class AbstractReadPermissionTest extends TestCase
 {
     protected static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
 

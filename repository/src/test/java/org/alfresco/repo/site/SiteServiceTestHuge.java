@@ -47,11 +47,13 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.PerformanceTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -59,6 +61,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Alan Davis
  */
+@Category(PerformanceTests.class)
 public class SiteServiceTestHuge
 {
     private enum Allocation

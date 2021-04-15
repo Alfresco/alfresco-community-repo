@@ -51,6 +51,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.NeverRunsTests;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -59,6 +61,7 @@ import org.mockito.ArgumentCaptor;
  * @deprecated We are introducing the new async RenditionService2.
  */
 @Deprecated
+@Category(NeverRunsTests.class)
 public class AbstractRenderingEngineTest extends TestCase
 {
     private final NodeRef source = new NodeRef("http://test/sourceId");

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,7 +70,7 @@ import static org.mockito.Mockito.when;
  * @author Derek Hulley
  * @author Mark Rogers
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class AggregatingContentStoreTest extends AbstractWritableContentStoreTest
 {
     private static final String SOME_CONTENT = "The No. 1 Ladies' Detective Agency";

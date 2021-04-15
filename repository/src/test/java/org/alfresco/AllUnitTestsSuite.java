@@ -43,8 +43,6 @@ import org.junit.runners.Suite;
     org.alfresco.encryption.KeyStoreKeyProviderTest.class,
     org.alfresco.filesys.config.ServerConfigurationBeanTest.class,
     org.alfresco.filesys.repo.rules.ShuffleTest.class,
-    org.alfresco.messaging.camel.CamelComponentsTest.class,
-    org.alfresco.messaging.camel.CamelRoutesTest.class,
     org.alfresco.opencmis.AlfrescoCmisExceptionInterceptorTest.class,
     org.alfresco.repo.admin.Log4JHierarchyInitTest.class,
     org.alfresco.repo.attributes.PropTablesCleanupJobTest.class,

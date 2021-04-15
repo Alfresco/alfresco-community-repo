@@ -92,7 +92,6 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     {
         super.before();
 
-        // Because of the fix implemented in MNT-22310, a new setup for retrying transaction helper is required.
         Answer<Object> doInTransactionAnswer = invocation -> {
             RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
             return callback.execute();

@@ -388,12 +388,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private ZonedDateTime getCurrentTransactionTimestamp()
     {
-        Long currentTransactionId = nodeDAO.getCurrentTransactionId(false);
+        Long currentTransactionCommitTime = nodeDAO.getCurrentTransactionCommitTime();
         ZonedDateTime timestamp;
-        if(currentTransactionId != null)
+        if(currentTransactionCommitTime != null)
         {
-            Transaction transaction = nodeDAO.getTxnById(currentTransactionId);
-            Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
+            Instant commitTimeMs = Instant.ofEpochMilli(currentTransactionCommitTime);
             timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
         }
         else 

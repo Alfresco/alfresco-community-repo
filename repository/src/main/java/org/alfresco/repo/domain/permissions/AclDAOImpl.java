@@ -1668,22 +1668,10 @@ public class AclDAOImpl implements AclDAO
         }
     }
 
-    /**
-     * Retrieve the value from the current thread local, avoiding the access to the database.
-     * @return
-     */
     @Override
-    public AclChangeSet getCurrentACLChangeSet()
+    public Long getCurrentChangeSetCommitTime()
     {
-        AclChangeSetEntity aclChangeSetEntity = null;
-        Long id = AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_ID);
-        if(id != null)
-        {
-            aclChangeSetEntity = new AclChangeSetEntity();
-            aclChangeSetEntity.setId(id);
-            aclChangeSetEntity.setCommitTimeMs(AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS));    
-        }
-        return aclChangeSetEntity;
+        return AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS);
     }
 
     /**

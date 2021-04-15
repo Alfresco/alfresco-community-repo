@@ -273,16 +273,13 @@ public class AclDaoComponentTest extends TestCase
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
 
-        assertNotNull(aclDaoComponent.getCurrentACLChangeSet());
-        assertNotNull(aclDaoComponent.getCurrentACLChangeSet().getId());
-
         AtomicBoolean afterCommit = new AtomicBoolean();
         AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter() {
             @Override
             public void afterCommit()
             {
                 //The commit time is available only after a transaction is committed
-                assertNotNull(aclDaoComponent.getCurrentACLChangeSet().getCommitTimeMs());
+                assertNotNull(aclDaoComponent.getCurrentChangeSetCommitTime());
                 afterCommit.set(true);
             }
         });

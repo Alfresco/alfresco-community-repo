@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.domain.node.Transaction;
+import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
@@ -425,35 +425,40 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         @Override
         public void afterCommit()
         {
-            try
+            if(isTransactionCommitted())
             {
-                final Consolidators consolidators = getTxnConsolidators(this);
-
-                // Node events
-                for (Map.Entry<NodeRef, EventConsolidator> entry : consolidators.getNodes().entrySet())
+                try
                 {
-                    EventConsolidator eventConsolidator = entry.getValue();
-                    sendEvent(entry.getKey(), eventConsolidator);
-                }
+                    final Consolidators consolidators = getTxnConsolidators(this);
 
-                // Child assoc events
-                for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs().entrySet())
-                {
-                    ChildAssociationEventConsolidator eventConsolidator = entry.getValue();
-                    sendEvent(entry.getKey(), eventConsolidator);
-                }
+                    // Node events
+                    for (Map.Entry<NodeRef, EventConsolidator> entry : consolidators.getNodes().entrySet())
+                    {
+                        EventConsolidator eventConsolidator = entry.getValue();
+                        sendEvent(entry.getKey(), eventConsolidator);
+                    }
 
-                // Peer assoc events
-                for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs().entrySet())
-                {
-                    PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
-                    sendEvent(entry.getKey(), eventConsolidator);
+                    // Child assoc events
+                    for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs()
+                                                                                                           .entrySet())
+                    {
+                        ChildAssociationEventConsolidator eventConsolidator = entry.getValue();
+                        sendEvent(entry.getKey(), eventConsolidator);
+                    }
+
+                    // Peer assoc events
+                    for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs()
+                                                                                                     .entrySet())
+                    {
+                        PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
+                        sendEvent(entry.getKey(), eventConsolidator);
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                // Must consume the exception to protect other TransactionListeners
-                LOGGER.error("Unexpected error while sending repository events", e);
+                catch (Exception e)
+                {
+                    // Must consume the exception to protect other TransactionListeners
+                    LOGGER.error("Unexpected error while sending repository events", e);
+                }
             }
         }
 
@@ -461,6 +466,15 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         {
             EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
             eventGeneratorQueue.accept(()-> createEvent(nodeRef, consolidator, eventInfo));
+        }
+
+        /**
+         * @return true if a node transaction is not only active, but also committed with modifications.
+         * This means that a {@link TransactionEntity} object was created.
+         */
+        protected boolean isTransactionCommitted()
+        {
+            return nodeDAO.getCurrentTransactionCommitTime() != null;
         }
 
         private RepoEvent<?> createEvent(NodeRef nodeRef, EventConsolidator consolidator, EventInfo eventInfo)

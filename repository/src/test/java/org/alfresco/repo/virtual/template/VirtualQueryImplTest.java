@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,6 +32,7 @@ import java.util.Collections;
 
 import junit.framework.TestCase;
 
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.ref.Protocols;
@@ -150,6 +151,89 @@ public class VirtualQueryImplTest extends TestCase
 
         assertPerform2Results();
     }
+
+    public void testZeroSkipCountAndMaxItems()
+    {
+        // Case 1 skiCount=0, maxItems=50
+        PagingRequest pagingRequest = new PagingRequest(0,50);
+
+        VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
+        constraint = new PagingRequestConstraint(constraint, pagingRequest);
+
+        query.perform(mockitoActualEnvironment,
+            constraint,
+            null,
+            nodeOneReference);
+
+        ArgumentCaptor<SearchParameters> queryCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        Mockito.verify(mockitoActualEnvironment).query(queryCaptor.capture());
+
+        assertEquals(0, queryCaptor.getValue().getSkipCount());
+        assertEquals(50, queryCaptor.getValue().getMaxItems());
+    }
+
+    public void testSkipCountAndMaxItems()
+    {
+        // Case 2 skiCount=25, maxItems=50
+        PagingRequest pagingRequest = new PagingRequest(25,50);
+
+        VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
+        constraint = new PagingRequestConstraint(constraint, pagingRequest);
+
+        query.perform(mockitoActualEnvironment,
+            constraint,
+            null,
+            nodeOneReference);
+
+        ArgumentCaptor<SearchParameters> queryCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        Mockito.verify(mockitoActualEnvironment).query(queryCaptor.capture());
+
+        assertEquals(25, queryCaptor.getValue().getSkipCount());
+        assertEquals(50, queryCaptor.getValue().getMaxItems());
+    }
+
+    public void testZeroSkipCountAndTotalCountAndMaxItems()
+    {
+        // Case 3 skiCount=0, maxItems=50 requestTotalCountMax=100
+        PagingRequest pagingRequest = new PagingRequest(0,50);
+        pagingRequest.setRequestTotalCountMax(100);
+
+        VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
+        constraint = new PagingRequestConstraint(constraint, pagingRequest);
+
+        query.perform(mockitoActualEnvironment,
+            constraint,
+            null,
+            nodeOneReference);
+
+        ArgumentCaptor<SearchParameters> queryCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        Mockito.verify(mockitoActualEnvironment).query(queryCaptor.capture());
+
+        assertEquals(0, queryCaptor.getValue().getSkipCount());
+        assertEquals(100, queryCaptor.getValue().getMaxItems());
+    }
+
+    public void testSkipCountAndTotalCountAndMaxItems()
+    {
+        // Case 4 skiCount=25, maxItems=50
+        PagingRequest pagingRequest = new PagingRequest(25,50);
+        pagingRequest.setRequestTotalCountMax(100);
+
+        VirtualQueryConstraint constraint = BasicConstraint.INSTANCE;
+        constraint = new PagingRequestConstraint(constraint, pagingRequest);
+
+        query.perform(mockitoActualEnvironment,
+            constraint,
+            null,
+            nodeOneReference);
+
+        ArgumentCaptor<SearchParameters> queryCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        Mockito.verify(mockitoActualEnvironment).query(queryCaptor.capture());
+
+        assertEquals(25, queryCaptor.getValue().getSkipCount());
+        assertEquals(75, queryCaptor.getValue().getMaxItems());
+    }
+
 
     private void assertPerform1Results(Pair<QName, Boolean> withSortDefinitions)
     {

@@ -90,7 +90,7 @@ public class DeleteNotExistsExecutorTest
             {
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_READ_ONLY)).thenReturn("true");
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
-                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties);
+                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties, null);
                 deleteNotExistsExecutor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
@@ -100,7 +100,7 @@ public class DeleteNotExistsExecutorTest
             {
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_READ_ONLY)).thenReturn("false");
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
-                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties);
+                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties, null);
                 deleteNotExistsExecutor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
@@ -133,7 +133,7 @@ public class DeleteNotExistsExecutorTest
             {
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_DELETE_BATCH_SIZE)).thenReturn("1");
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_READ_ONLY)).thenReturn("false");
-                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties);
+                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties, null);
                 deleteNotExistsExecutor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
@@ -167,7 +167,7 @@ public class DeleteNotExistsExecutorTest
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_BATCH_SIZE)).thenReturn("2");
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_READ_ONLY)).thenReturn("false");
                 when(properties.getProperty(DeleteNotExistsExecutor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
-                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties);
+                DeleteNotExistsExecutor deleteNotExistsExecutor = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, properties, null);
                 deleteNotExistsExecutor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);

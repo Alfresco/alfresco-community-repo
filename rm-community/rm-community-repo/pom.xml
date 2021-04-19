@@ -639,18 +639,7 @@
            </build>
        </profile>
        <profile>
-           <id>internal</id>
-           <build>
-               <plugins>
-                   <plugin>
-                       <groupId>io.fabric8</groupId>
-                       <artifactId>docker-maven-plugin</artifactId>
-                   </plugin>
-               </plugins>
-           </build>
-       </profile>
-       <profile>
-           <id>master</id>
+           <id>publish-docker-latest</id>
            <build>
                <plugins>
                    <plugin>

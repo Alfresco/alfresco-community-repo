@@ -3,9 +3,9 @@ jobs:
     - name: "Community Publish to S3 Release Bucket"
       stage: Publish
       if: commit_message =~ /\[community release .*\]/ AND commit_message =~ /\[publish\]/
-      before_script: source scripts/set-release-variables.sh
+      before_script: source travis/scripts/set-release-variables.sh
       script: skip
-      before_deploy: bash scripts/zip-artifacts-release.sh "community"
+      before_deploy: bash travis/scripts/zip-artifacts-release.sh "community"
       deploy:
         - provider: s3
           access_key_id: ${RELEASE_AWS_ACCESS_KEY}
@@ -24,9 +24,9 @@ jobs:
     - name: "Enterprise Publish to S3 Release Bucket"
       stage: Publish
       if: commit_message =~ /\[enterprise release .*\]/ AND commit_message =~ /\[publish\]/
-      before_script: source scripts/set-release-variables.sh
+      before_script: source travis/scripts/set-release-variables.sh
       script: skip
-      before_deploy: bash scripts/zip-artifacts-release.sh "enterprise"
+      before_deploy: bash travis/scripts/zip-artifacts-release.sh "enterprise"
       deploy:
         - provider: s3
           access_key_id: ${RELEASE_AWS_ACCESS_KEY}

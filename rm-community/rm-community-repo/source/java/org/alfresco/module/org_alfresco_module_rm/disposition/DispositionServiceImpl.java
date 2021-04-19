@@ -27,6 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
@@ -62,11 +72,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.*;
-
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 
 /**
  * Disposition service implementation.
@@ -434,30 +439,25 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      */
     private NodeRef getAssociatedDispositionScheduleImpl(NodeRef nodeRef)
     {
+        NodeRef result = null;
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+        // Make sure we are dealing with an RM node
+        if (!filePlanService.isFilePlanComponent(nodeRef))
         {
-            public NodeRef doWork() throws Exception
+            throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
+        }
+        if (getInternalNodeService().hasAspect(nodeRef, ASPECT_SCHEDULED))
+        {
+            List<ChildAssociationRef> childAssocs = getInternalNodeService().getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
+            if (!childAssocs.isEmpty())
             {
-                NodeRef result = null;
-                // Make sure we are dealing with an RM node
-                if (!filePlanService.isFilePlanComponent(nodeRef))
-                {
-                    throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
-                }
-                if (nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
-                {
-                    List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
-                    if (!childAssocs.isEmpty())
-                    {
-                        ChildAssociationRef firstChildAssocRef = childAssocs.get(0);
-                        result = firstChildAssocRef.getChildRef();
-                    }
-                }
-                return result;
+                ChildAssociationRef firstChildAssocRef = childAssocs.get(0);
+                result = firstChildAssocRef.getChildRef();
             }
-        });
+        }
+
+        return result;
     }
 
     /**
@@ -893,71 +893,81 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     @Override
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
+        boolean result = false;
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
         DispositionAction nextDa = getNextDispositionAction(nodeRef);
-        return authenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
-            public Boolean doWork() throws Exception
-            {
-                boolean result = false;
 
-                if (di != null &&
-                        nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
-                        nextDa != null) {
-                    // for accession step we can have also AND between step conditions
-                    Boolean combineSteps = false;
-                    if (nextDa.getName().equals("accession")) {
-                        NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
-                        if (accessionNodeRef != null) {
-                            Boolean combineStepsProp = (Boolean) nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
-                            if (combineStepsProp != null) {
-                                combineSteps = combineStepsProp;
+        if (di != null &&
+                nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
+                nextDa != null)
+        {
+            // for accession step we can have also AND between step conditions
+            boolean combineSteps = false;
+            if (nextDa.getName().equals("accession"))
+            {
+                NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
+                if (accessionNodeRef != null)
+                {
+                    Boolean combineStepsProp = (Boolean) getInternalNodeService().getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                    if (combineStepsProp != null)
+                    {
+                        combineSteps = combineStepsProp;
+                    }
+                }
+            }
+            Date asOf = (Date) getInternalNodeService().getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
+            boolean asOfDateInPast = false;
+            if (asOf != null)
+            {
+                asOfDateInPast = asOf.before(new Date());
+            }
+            if (asOfDateInPast && !combineSteps)
+            {
+                return true;
+            } else if (!asOfDateInPast && combineSteps)
+            {
+                return false;
+            }
+            DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
+            DispositionActionDefinition dad = da.getDispositionActionDefinition();
+            if (dad != null)
+            {
+                boolean firstComplete =  authenticationUtil.runAsSystem(() -> dad.eligibleOnFirstCompleteEvent());
+
+                List<ChildAssociationRef> assocs = getInternalNodeService().getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS,
+                        RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef assoc : assocs)
+                {
+                    NodeRef eventExecution = assoc.getChildRef();
+                    Boolean isCompleteValue = (Boolean) getInternalNodeService().getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
+                    boolean isComplete = false;
+                    if (isCompleteValue != null)
+                    {
+                        isComplete = isCompleteValue.booleanValue();
+
+                        // implement AND and OR combination of event completions
+                        if (isComplete)
+                        {
+                            result = true;
+                            if (firstComplete)
+                            {
+                                break;
                             }
                         }
-                    }
-                    Date asOf = (Date) nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
-                    Boolean asOfDateInPast = false;
-                    if (asOf != null) {
-                        asOfDateInPast = asOf.before(new Date());
-                    }
-                    if (asOfDateInPast && !combineSteps) {
-                        return true;
-                    } else if (!asOfDateInPast && combineSteps) {
-                        return false;
-                    }
-                    DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
-                    DispositionActionDefinition dad = da.getDispositionActionDefinition();
-                    if (dad != null) {
-                        boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
-
-                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
-                        for (ChildAssociationRef assoc : assocs) {
-                            NodeRef eventExecution = assoc.getChildRef();
-                            Boolean isCompleteValue = (Boolean) nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                            boolean isComplete = false;
-                            if (isCompleteValue != null) {
-                                isComplete = isCompleteValue.booleanValue();
-
-                                // implement AND and OR combination of event completions
-                                if (isComplete) {
-                                    result = true;
-                                    if (firstComplete) {
-                                        break;
-                                    }
-                                } else {
-                                    result = false;
-                                    if (!firstComplete) {
-                                        break;
-                                    }
-                                }
+                        else
+                        {
+                            result = false;
+                            if (!firstComplete)
+                            {
+                                break;
                             }
                         }
                     }
                 }
-                return result;
             }
-        });
+        }
+        return result;
     }
 
     /**
@@ -1218,14 +1228,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
         DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
-        List<ChildAssociationRef> assocs = AuthenticationUtil.runAsSystem(new RunAsWork<List<ChildAssociationRef> >()
-        {
-            @Override
-            public List<ChildAssociationRef>  doWork()
-            {
-                return nodeService.getChildAssocs(dispositionSchedule);
-            }
-        });
+        List<ChildAssociationRef> assocs = getInternalNodeService().getChildAssocs(dispositionSchedule);
 
         if (assocs != null && !assocs.isEmpty())
         {
@@ -1235,13 +1238,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     DispositionActionDefinition actionDefinition = ds.getDispositionActionDefinition(assoc.getChildRef().getId());
 
-                    return authenticationUtil.runAsSystem(new RunAsWork<Date>()
-                    {
-                        public Date doWork() throws Exception
-                        {
-                            return calculateAsOfDate(record, actionDefinition);
-                        }
-                    });
+                    return authenticationUtil.runAsSystem(() -> calculateAsOfDate(record, actionDefinition));
                 }
             }
         }

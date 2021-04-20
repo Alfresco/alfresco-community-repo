@@ -1,6 +1,7 @@
 package org.alfresco.rest.search;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -40,7 +41,10 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     private boolean isFile;
 
     @JsonProperty
-    private boolean isLocked;
+    private Boolean isLocked;
+
+    @JsonProperty
+    private Map<String, Object> association;
 
     @JsonProperty(required = true)
     private String modifiedAt;
@@ -56,7 +60,7 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
 
     private String parentId;
 
-    private boolean isLink;
+    private Boolean isLink;
 
     private RestContentModel content;
 
@@ -72,6 +76,16 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     private Object permissions;
     
     private String location;
+
+    public Map<String, Object> getAssociation()
+    {
+        return association;
+    }
+
+    public void setAssociation(Map<String, Object> association)
+    {
+        this.association = association;
+    }
 
     public SearchScoreModel getSearch()
     {
@@ -161,12 +175,12 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
         this.isFile = isFile;
     }
 
-    public boolean isLocked()
+    public Boolean isLocked()
     {
         return isLocked;
     }
 
-    public void setLocked(boolean isLocked)
+    public void setLocked(Boolean isLocked)
     {
         this.isLocked = isLocked;
     }
@@ -221,12 +235,12 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
         this.parentId = parentId;
     }
 
-    public boolean isLink()
+    public Boolean isLink()
     {
         return isLink;
     }
 
-    public void setLink(boolean isLink)
+    public void setIsLink(Boolean isLink)
     {
         this.isLink = isLink;
     }

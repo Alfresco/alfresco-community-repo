@@ -186,7 +186,7 @@ public interface AclDAO
     /**
     * @return                 the commit time of the current ACL change set entry or <tt>null</tt> if
     *                         there have not been any modifications.
-    */ 
-    Long getCurrentChangeSetCommitTime();
+    */
+    public Long getCurrentChangeSetCommitTime();
 
 }

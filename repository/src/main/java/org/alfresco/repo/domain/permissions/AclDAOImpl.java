@@ -1636,8 +1636,8 @@ public class AclDAOImpl implements AclDAO
         return changes;
     }
 
-    public static final String RESOURCE_KEY_ACL_CHANGE_SET_ID = "acl.change.set.id";
-    public static final String RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS = "acl.change.commit.set.time.ms";
+    private static final String RESOURCE_KEY_ACL_CHANGE_SET_ID = "acl.change.set.id";
+    private static final String RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS = "acl.change.commit.set.time.ms";
 
     private UpdateChangeSetListener updateChangeSetListener = new UpdateChangeSetListener();
     /**

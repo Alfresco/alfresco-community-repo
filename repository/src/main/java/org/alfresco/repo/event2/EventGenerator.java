@@ -389,23 +389,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private ZonedDateTime getCurrentTransactionTimestamp()
     {
         Long currentTransactionCommitTime = nodeDAO.getCurrentTransactionCommitTime();
-        ZonedDateTime timestamp;
-        if(currentTransactionCommitTime != null)
-        {
-            Instant commitTimeMs = Instant.ofEpochMilli(currentTransactionCommitTime);
-            timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
-        }
-        else 
-        {
-            // Sometimes the transaction entry is not created because no nodes were added to the transaction, but we are producing events anywhere.
-            if(log.isDebugEnabled()){
-                log.debug("Unable to retrieve the commit time for transaction " + AlfrescoTransactionSupport.getTransactionId() + " the current timestamp will be used as event timestamp.");
-            }
-                
-            timestamp = ZonedDateTime.now();
-        }
-        
-        return timestamp;
+        Instant commitTimeMs = Instant.ofEpochMilli(currentTransactionCommitTime);
+        return ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
     }
 
     @Override
@@ -439,16 +424,14 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                     }
 
                     // Child assoc events
-                    for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs()
-                                                                                                           .entrySet())
+                    for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs().entrySet())
                     {
                         ChildAssociationEventConsolidator eventConsolidator = entry.getValue();
                         sendEvent(entry.getKey(), eventConsolidator);
                     }
 
                     // Peer assoc events
-                    for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs()
-                                                                                                     .entrySet())
+                    for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs().entrySet())
                     {
                         PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
                         sendEvent(entry.getKey(), eventConsolidator);

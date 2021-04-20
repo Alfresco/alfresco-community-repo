@@ -350,7 +350,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                 }
                 else if (sql.startsWith("--DELETE_NOT_EXISTS"))
                 {
-                    DeleteNotExistsExecutor deleteNotExists = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties, dialect);
+                    DeleteNotExistsExecutor deleteNotExists = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties);
                     deleteNotExists.execute();
 
                     // Reset

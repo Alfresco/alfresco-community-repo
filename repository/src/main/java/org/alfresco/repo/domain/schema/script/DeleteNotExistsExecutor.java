@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.domain.schema.script;
 
-import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -76,7 +74,6 @@ public class DeleteNotExistsExecutor implements StatementExecutor
     private int line;
     private File scriptFile;
     private Properties globalProperties;
-    private Dialect dialect;
 
     private boolean readOnly;
     private int deleteBatchSize;
@@ -88,17 +85,11 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
     public DeleteNotExistsExecutor(Connection connection, String sql, int line, File scriptFile, Properties globalProperties)
     {
-        this(connection, sql, line, scriptFile, globalProperties, null);
-    }
-
-    public DeleteNotExistsExecutor(Connection connection, String sql, int line, File scriptFile, Properties globalProperties, Dialect dialect)
-    {
         this.connection = connection;
         this.sql = sql;
         this.line = line;
         this.scriptFile = scriptFile;
         this.globalProperties = globalProperties;
-        this.dialect = dialect;
     }
 
     public void checkProperties()
@@ -173,21 +164,6 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    /**
-     * @return Integer.MIN_VALUE in case of MySQL otherwise the batch size.
-     */
-    private int computeFetchSize()
-    {
-        if (this.dialect instanceof MySQLInnoDBDialect)
-        {
-            // Note the MySQL specific fetch size limitation (Integer.MIN_VALUE). fetchSize
-            // activates result set streaming.
-            return Integer.MIN_VALUE;
-        }
-
-        return batchSize;
-    }
-
     private void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses) throws SQLException
     {
         // The approach is to fetch ordered row ids from all referencer/secondary (e.g.
@@ -208,7 +184,6 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         PreparedStatement[] secondaryPrepStmts = null;
         PreparedStatement deletePrepStmt = null;
         Set<Long> deleteIds = new HashSet<>();
-        int fetchSize = computeFetchSize();
 
         deletedCount = 0L;
         startTime = new Date();
@@ -216,7 +191,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         {
             connection.setAutoCommit(false);
             primaryPrepStmt = connection.prepareStatement(createPreparedSelectStatement(primaryTableName, primaryColumnName, primaryWhereClause));
-            primaryPrepStmt.setFetchSize(fetchSize);
+            primaryPrepStmt.setFetchSize(batchSize);
             primaryPrepStmt.setLong(1, primaryId);
             primaryPrepStmt.setLong(2, tableUpperLimits[0]);
 
@@ -229,7 +204,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                 for (int i = 1; i < tableColumn.length; i++)
                 {
                     PreparedStatement secStmt = connection.prepareStatement(createPreparedSelectStatement(tableColumn[i].getFirst(), tableColumn[i].getSecond(), optionalWhereClauses[i]));
-                    secStmt.setFetchSize(fetchSize);
+                    secStmt.setFetchSize(batchSize);
                     secStmt.setLong(1, primaryId);
                     secStmt.setLong(2, tableUpperLimits[i]);
 

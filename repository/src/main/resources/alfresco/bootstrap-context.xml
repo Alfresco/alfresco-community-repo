@@ -101,10 +101,9 @@
        </property>
     </bean>
 
-    <bean id="differenceHelper" class="org.alfresco.repo.domain.schema.SchemaDifferenceHelper">
+    <bean id="differenceHelper" class="org.alfresco.util.schemacomp.SchemaDifferenceHelper">
         <constructor-arg ref="dialect"/>
         <constructor-arg ref="patchComponent"/>
-        <constructor-arg ref="optionalUpgradePatches"/>
     </bean>
 
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">

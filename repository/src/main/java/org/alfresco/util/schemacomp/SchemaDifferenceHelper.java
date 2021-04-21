@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.domain.schema;
+package org.alfresco.util.schemacomp;
 
 import static java.util.Locale.ENGLISH;
 
@@ -37,7 +37,6 @@ import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.DialectUtil;
-import org.alfresco.util.schemacomp.Difference;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
@@ -53,13 +52,28 @@ public class SchemaDifferenceHelper
     private PatchService patchService;
     private List<SchemaUpgradeScriptPatch> optionalUpgradePatches;
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
-    
+
+    public SchemaDifferenceHelper(Dialect dialect, PatchService patchService)
+    {
+        this.dialect = dialect;
+        this.patchService = patchService;
+        this.optionalUpgradePatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
+    }
+
     public SchemaDifferenceHelper(Dialect dialect, PatchService patchService,
             List<SchemaUpgradeScriptPatch> upgradePatches)
     {
         this.dialect = dialect;
         this.patchService = patchService;
         this.optionalUpgradePatches = upgradePatches;
+    }
+
+    public void addUpgradeScriptPatch(SchemaUpgradeScriptPatch patch)
+    {
+        if (patch.isIgnored())
+        {
+            this.optionalUpgradePatches.add(patch);
+        }
     }
 
     public String findPatchCausingDifference(Difference difference)
@@ -78,26 +92,31 @@ public class SchemaDifferenceHelper
                }
            }
         }
-        
+
         return null;
     }
-    
+
     private boolean isPatchApplied(SchemaUpgradeScriptPatch patch)
     {
         return patchService.getPatch(patch.getId()) != null;
     }
-    
-    private Resource getDialectResource(String resourceUrl)
+
+    protected Resource getDialectResource(String resourceUrl)
     {
+        if(resourceUrl == null)
+        {
+            return null;
+        }
+
         return DialectUtil.getDialectResource(rpr, dialect.getClass(), resourceUrl);
     }
-    
+
     private List<String> getProblemsPatterns(SchemaUpgradeScriptPatch patch)
     {
         List<String> optionalProblems = new ArrayList<>();
-        String problemFileUrl = patch.getProblemsPatternFileUrl();
+        String problemFileUrl = patch.getProblemPatternsFileUrl();
         Resource problemFile = getDialectResource(problemFileUrl);
-        
+
         if (problemFile != null)
         {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(problemFile.getInputStream(), StandardCharsets.UTF_8))) 
@@ -114,11 +133,11 @@ public class SchemaDifferenceHelper
                 logger.error("Error while parsing problems patterns for patch " + patch.getId() + ex);
             }
         }
-        
+
         return optionalProblems;
     }
-    
-    private String describe(Difference difference)
+
+    protected String describe(Difference difference)
     {
         if (difference.getLeft() == null)
         {
@@ -138,7 +157,7 @@ public class SchemaDifferenceHelper
                         difference.getLeft().getPath(),
                         difference.getLeft().getPropertyValue());
         }
-        
+
         return I18NUtil.getMessage(
                     "system.schema_comp.diff",
                     ENGLISH,

@@ -233,7 +233,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition2.TransformationOptionsConverterTest.class,
     org.alfresco.transform.client.registry.TransformServiceRegistryConfigTest.class,
 
-    org.alfresco.repo.event2.RepoEvent2UnitSuite.class
+    org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
+
+    org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class
 })
 public class AllUnitTestsSuite
 {

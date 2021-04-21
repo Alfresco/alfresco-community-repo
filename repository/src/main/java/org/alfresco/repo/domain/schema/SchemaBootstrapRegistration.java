@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.schemacomp.SchemaDifferenceHelper;
 
 /**
  * Registers a list of create scripts.
@@ -45,6 +46,7 @@ public class SchemaBootstrapRegistration
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> updateActivitiScriptPatches;
+    private SchemaDifferenceHelper differenceHelper;
     
     public SchemaBootstrapRegistration()
     {
@@ -61,6 +63,14 @@ public class SchemaBootstrapRegistration
     public void setSchemaBootstrap(SchemaBootstrap schemaBootstrap)
     {
         this.schemaBootstrap = schemaBootstrap;
+    }
+
+    /**
+     * @param differenceHelper           the component with which to register upgrade script pacthes
+     */
+    public void setDifferenceHelper(SchemaDifferenceHelper differenceHelper)
+    {
+        this.differenceHelper = differenceHelper;
     }
 
     /**
@@ -140,6 +150,7 @@ public class SchemaBootstrapRegistration
         for (SchemaUpgradeScriptPatch postUpdateScriptPatch : postUpdateScriptPatches)
         {
             schemaBootstrap.addPostUpdateScriptPatch(postUpdateScriptPatch);
+            differenceHelper.addUpgradeScriptPatch(postUpdateScriptPatch);
         }
         for (SchemaUpgradeScriptPatch updateActivitiScriptPatch : updateActivitiScriptPatches)
         {

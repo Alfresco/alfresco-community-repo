@@ -85,6 +85,7 @@ import org.junit.runners.Suite;
     org.alfresco.util.schemacomp.DbToXMLTest.class,
     org.alfresco.util.schemacomp.ExportDbTest.class,
     org.alfresco.util.schemacomp.SchemaReferenceFileTest.class,
+    org.alfresco.util.schemacomp.SchemaBootstrapTest.class,
     org.alfresco.repo.module.ModuleComponentHelperTest.class,
     org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class,
 

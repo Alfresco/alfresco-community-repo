@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -92,6 +92,7 @@ import org.alfresco.util.schemacomp.MultiFileDumper.DbToXMLFactory;
 import org.alfresco.util.schemacomp.Result;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.SchemaComparator;
+import org.alfresco.util.schemacomp.SchemaDifferenceHelper;
 import org.alfresco.util.schemacomp.XMLToSchema;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.commons.logging.Log;
@@ -1935,7 +1936,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 String optionalPatchId = findPatchCausingDifference(result, target);
                 String differenceMessage = result.describe();
-                if (optionalPatchId == null) {
+                if (optionalPatchId == null)
+                {
                     pw.print(differenceMessage);
                     pw.print(SchemaComparator.LINE_SEPARATOR);
                 }

@@ -1806,7 +1806,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // and process each in turn.
         for (String schemaReferenceUrl : schemaReferenceUrls)
         {
-            Resource referenceResource = getDialectResource(schemaReferenceUrl);
+            Resource referenceResource = DialectUtil.getDialectResource(rpr, dialect.getClass(), schemaReferenceUrl);
             
             if (referenceResource == null || !referenceResource.exists())
             {
@@ -1825,11 +1825,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         return totalProblems;
     }
 
-    private Resource getDialectResource(String resourceUrl)
-    {
-        return DialectUtil.getDialectResource(rpr, dialect.getClass(), resourceUrl);
-    }
-    
     private int validateSchema(Resource referenceResource, String outputFileNameTemplate, PrintWriter out)
     {
         try

@@ -21,7 +21,7 @@
       <property name="maxItems">
          <value>${rm.recordSearch.maxItems}</value>
       </property>
-</bean>
+   </bean>
 
    <!--  Helper beans -->
 

@@ -2,14 +2,14 @@
 
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-governance-services-community-repo</artifactId>
-   <name>AGS Repo</name>
+   <name>Alfresco Governance Services Community Repository</name>
    <description>Alfresco Governance Services Repository Extension</description>
    <packaging>amp</packaging>
 
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community</artifactId>
-      <version>3.5.1-SNAPSHOT</version>
+      <version>11.14-ags-1.0-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -198,10 +198,10 @@
                      <outputDirectory>${app.amp.client.war.folder}</outputDirectory>
                      <artifactItems>
                         <artifactItem>
-                           <groupId>${alfresco.groupId}</groupId>
+                           <groupId>org.alfresco</groupId>
                            <artifactId>content-services-community</artifactId>
                            <type>war</type>
-                           <version>${alfresco-community-repo.version}</version>
+                           <version>${project.version}</version>
                         </artifactItem>
                      </artifactItems>
                   </configuration>
@@ -323,39 +323,39 @@
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-data-model</artifactId>
-         <version>${alfresco-community-repo.version}</version>
+         <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>${alfresco.groupId}</groupId>
+         <groupId>org.alfresco</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco-community-repo.version}</version>
+         <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>${alfresco.groupId}</groupId>
+         <groupId>org.alfresco</groupId>
          <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco-community-repo.version}</version>
+         <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>${alfresco.groupId}</groupId>
+         <groupId>org.alfresco</groupId>
          <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco-community-repo.version}</version>
+         <version>${project.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>${alfresco.groupId}</groupId>
+         <groupId>org.alfresco</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco-community-repo.version}</version>
+         <version>${project.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>${alfresco.groupId}</groupId>
+         <groupId>org.alfresco</groupId>
          <artifactId>alfresco-core</artifactId>
-         <version>${alfresco-community-repo.version}</version>
+         <version>${project.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
@@ -492,10 +492,10 @@
                            <outputDirectory>${app.amp.client.war.folder}</outputDirectory>
                            <artifactItems>
                               <artifactItem>
-                                 <groupId>${alfresco.groupId}</groupId>
+                                 <groupId>org.alfresco</groupId>
                                  <artifactId>content-services-community</artifactId>
                                  <type>war</type>
-                                 <version>${alfresco-community-repo.version}</version>
+                                 <version>${project.version}</version>
                               </artifactItem>
                            </artifactItems>
                         </configuration>

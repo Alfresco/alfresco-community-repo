@@ -330,19 +330,24 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         final String dispositionActionName = dsNextAction.getNextActionName();
                         final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
 
-                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        // check if current transaction is a READ ONLY one and if true set the property on the node
+                        // in a READ WRITE transaction
+                        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
                         {
-                            @Override
-                            public Void doWork()
-                            {
-                                nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                                if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
-                                {
-                                    nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
-                                }
+                            transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                                getInternalNodeService().setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
                                 return null;
-                            }
-                        });
+                            }, false, true);
+                        }
+                        else
+                        {
+                            getInternalNodeService().setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        }
+
+                        if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                        {
+                            nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
+                        }
                     }
                 }
                 

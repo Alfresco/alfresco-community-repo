@@ -14,6 +14,15 @@
       http://www.springframework.org/schema/util
       http://www.springframework.org/schema/util/spring-util.xsd">
 
+   <!-- Records Management Search Parameters-->
+
+   <bean id="recordsManagemantSearchParameters"
+         class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters">
+      <property name="maxItems">
+         <value>${rm.recordSearch.maxItems}</value>
+      </property>
+</bean>
+
    <!--  Helper beans -->
 
    <bean id="baseTransaction" abstract="true" class="org.springframework.transaction.interceptor.TransactionInterceptor">
@@ -346,6 +355,7 @@
             </value>
         </property>
        <property name="nodeService" ref="NodeService" />
+       <property name="recordsManagementSearchParameters" ref="recordsManagemantSearchParameters" />
     </bean>
 
     <bean id="RecordsManagementSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">

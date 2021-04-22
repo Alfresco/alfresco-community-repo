@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-governance-services-automation</artifactId>
+   <name>Alfresco Governance Services Automation</name>
+   <packaging>pom</packaging>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-governance-services</artifactId>
+      <version>3.5.1-SNAPSHOT</version>
+   </parent>
+
+   <licenses>
+      <license>
+         <name>LGPL 3</name>
+      </license>
+   </licenses>
+
+   <modules>
+      <module>rm-automation-community-rest-api</module>
+      <module>rm-automation-enterprise-rest-api</module>
+      <module>rm-automation-ui</module>
+   </modules>
+
+   <properties>
+      <suiteXmlFile>testng.xml</suiteXmlFile>
+      <skip.automationtests>true</skip.automationtests>
+   </properties>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>default-cli</id>
+                  <configuration>
+                     <target>
+                        <echo>Stopping Alfresco...</echo>
+                        <exec executable="${basedir}/target/alf-installation/alfresco.sh" dir="target/alf-installation" failonerror="true">
+                           <arg value="stop" />
+                        </exec>
+                     </target>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <redirectTestOutputToFile>false</redirectTestOutputToFile>
+               <suiteXmlFiles>
+                  <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
+               </suiteXmlFiles>
+               <skipTests>${skip.automationtests}</skipTests>
+            </configuration>
+         </plugin>
+      </plugins>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>org.codehaus.mojo</groupId>
+                              <artifactId>license-maven-plugin</artifactId>
+                              <versionRange>[1.8,)</versionRange>
+                              <goals>
+                                 <goal>update-file-header</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+   </build>
+</project>

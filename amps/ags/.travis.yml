@@ -4,8 +4,6 @@ import:
   - source: travis/.travis.tests-stage.yml
   - source: travis/.travis.integration-test-MySQL.yml
   - source: travis/.travis.deploy-stage.yml
-  - source: travis/.travis.release-stage.yml
-  - source: travis/.travis.publish-stage.yml
 dist: xenial
 sudo: required
 language: java
@@ -31,12 +29,6 @@ cache:
     - ${HOME}/.m2/repository
 
 before_cache: rm -rf ${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*
-
-before_install:
-  - mkdir -p "${HOME}/.m2" && cp -f .travis.settings.xml "${HOME}/.m2/settings.xml"
-  - find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
-  - echo "${DOCKERHUB_PASSWORD}" | docker login -u="${DOCKERHUB_USERNAME}" --password-stdin
-  - echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
 
 install: skip
 

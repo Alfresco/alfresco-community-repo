@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>11.14-ags-1.0-SNAPSHOT</version>
+    <version>11.7-ags-1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -105,7 +105,7 @@
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.58</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.57</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.29</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
@@ -334,6 +334,11 @@
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>1.15</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.6</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -633,19 +638,16 @@
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>utility</artifactId>
                 <version>${dependency.tas-utility.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${dependency.rest-assured.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>restapi</artifactId>
                 <version>${dependency.tas-restapi.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
@@ -675,7 +677,6 @@
                 <groupId>org.alfresco.test</groupId>
                 <artifactId>dataprep</artifactId>
                 <version>${dependency.tas-dataprep.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
@@ -789,6 +790,21 @@
                 <version>${dependency.camel.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-spec</artifactId>
+                <version>${dependency.apache.taglibs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-impl</artifactId>
+                <version>${dependency.apache.taglibs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-jstlel</artifactId>
+                <version>${dependency.apache.taglibs.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -830,5 +846,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
 </project>

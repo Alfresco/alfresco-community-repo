@@ -8,7 +8,7 @@ jobs:
     - name: "Unit & Integration Tests"
       stage: Tests
       install: travis_retry travis_wait 60 mvn -B -V -q clean install ${MVN_SKIP}
-      script: travis_retry travis_wait 120 mvn -B -q verify -Dskip.integrationtests=false ${LOG_WARN}
+      script: travis_retry travis_wait 120 mvn -B -q verify ${LOG_WARN}
 
     - name: "Community Rest API Tests"
       stage: Tests

@@ -4,27 +4,33 @@
     <name>Alfresco Share Services AMP</name>
     <description>Module to be applied to alfresco.war, containing APIs for Alfresco Share</description>
     <packaging>amp</packaging>
+
     <parent>
-        <artifactId>alfresco-share-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>7.0.1-SNAPSHOT</version>
+        <artifactId>alfresco-community-repo-amps</artifactId>
+        <version>11.7-ags-1.0-SNAPSHOT</version>
     </parent>
+
+    <properties>
+        <scm-path>${project.parent.scm.url}</scm-path>
+        <scm-revision>${buildNumber}</scm-revision>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-community-repo.version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
-            	<exclusion>
-		            <groupId>org.alfresco</groupId>
-		            <artifactId>alfresco-core</artifactId>
-	        	</exclusion>
+                <exclusion>
+                    <groupId>org.alfresco</groupId>
+                    <artifactId>alfresco-core</artifactId>
+                </exclusion>
                 <!-- SHA-2432 -->
                 <exclusion>
-                  <groupId>javax.servlet</groupId>
-                  <artifactId>jstl</artifactId>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>jstl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-collections</groupId>
@@ -35,7 +41,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-community-repo.version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -62,13 +68,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-community-repo.version}</version>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
@@ -76,14 +81,14 @@
                     <groupId>dom4j</groupId>
                     <artifactId>dom4j</artifactId>
                 </exclusion>
-            	<exclusion>
-		            <groupId>org.alfresco</groupId>
-		            <artifactId>alfresco-core</artifactId>
-	        	</exclusion>
-            	<!-- SHA-2432 -->
                 <exclusion>
-                  <groupId>javax.servlet</groupId>
-                  <artifactId>jstl</artifactId>
+                    <groupId>org.alfresco</groupId>
+                    <artifactId>alfresco-core</artifactId>
+                </exclusion>
+                <!-- SHA-2432 -->
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>jstl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-collections</groupId>
@@ -94,7 +99,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-community-repo.version}</version>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -117,39 +122,27 @@
             <version>${dependency.spring.version}</version>
             <scope>test</scope>
         </dependency>
-     <!--    <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>test</scope>
-        </dependency>
-		-->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
 
         <!-- SHA-2432 -->
         <dependency>
-          <groupId>org.apache.taglibs</groupId>
-          <artifactId>taglibs-standard-spec</artifactId>
-          <scope>provided</scope>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-spec</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.taglibs</groupId>
-          <artifactId>taglibs-standard-impl</artifactId>
-          <scope>provided</scope>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-impl</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.taglibs</groupId>
-          <artifactId>taglibs-standard-jstlel</artifactId>
-          <scope>provided</scope>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-jstlel</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -188,31 +181,32 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <Specification-Version>${version.major}.${version.minor}.${version.revision}</Specification-Version>
+                            <Specification-Version>${acs.version.major}.${acs.version.minor}.${acs.version.revision}</Specification-Version>
                             <Implementation-Version>${project.version}</Implementation-Version>
                             <Build-Date>${maven.build.timestamp}</Build-Date>
                             <Build-Name>${bamboo_planName}</Build-Name>
                             <Build-Key>${bamboo_fullBuildKey}</Build-Key>
-                            <Build-Number>${bamboo_buildNumber}</Build-Number>
-                            <Build-Revision>${bamboo_repository_revision_number}</Build-Revision>
+                            <Build-Number>${build-number}</Build-Number>
+                            <Build-Revision>${scm-revision}</Build-Revision>
                         </manifestEntries>
                     </archive>
-                </configuration>                
+                </configuration>
             </plugin>
 
             <plugin>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <executions>
-                  <execution>
-                     <id>default-test</id>
-                     <!-- No unit tests in this project - all tests are integration tests -->
-                     <configuration>
-                          <includes>
-                              <include>nothing</include>
-                          </includes>
-                     </configuration>
-                  </execution>
-               </executions>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+
+                        <!-- No unit tests in this project - all tests are integration tests -->
+                        <configuration>
+                            <includes>
+                                <include>nothing</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -229,20 +223,20 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                               <id>integration-tests</id>
-                               <goals>
-                                  <goal>test</goal>
-                               </goals>
-                               <configuration>
-                                  <includes combine.self="override">
-                                     <include>**/*Test.java</include>
-                                  </includes>
-                               </configuration>
+                                <id>integration-tests</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes combine.self="override">
+                                        <include>**/*Test.java</include>
+                                    </includes>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-   </profiles>
+    </profiles>
 </project>

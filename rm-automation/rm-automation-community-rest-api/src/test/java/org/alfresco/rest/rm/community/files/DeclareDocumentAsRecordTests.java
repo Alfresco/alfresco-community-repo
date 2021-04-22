@@ -76,7 +76,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     RecordsAPI recordsAPI;
 
     @BeforeClass(alwaysRun=true)
-    public void declareDocumentAsRecordSetup() throws Exception
+    public void declareDocumentAsRecordSetup()
     {
         // create test user and test collaboration site to store documents in
         testUser = getDataUser().createRandomTestUser();
@@ -208,11 +208,10 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When I declare the record as a record
      * Then I get a invalid operation exception
      * </pre>
-     * @throws Exception for malformed JSON API response
      */
     @Test(description = "Record can't be declared a record")
     @AlfrescoTest(jira = "RM-4429")
-    public void recordCantBeDeclaredARecord() throws Exception
+    public void recordCantBeDeclaredARecord()
     {
         // create a non-electronic record in a random folder
         Record nonelectronicRecord = Record.builder()
@@ -238,11 +237,10 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When I declare the node as a record
      * Then I get a invalid operation exception
      * </pre>
-     * @throws Exception for malformed JSON API response
      */
     @Test(description = "Node that is not a document can't be declared a record")
     @AlfrescoTest(jira = "RM-4429")
-    public void nonDocumentCantBeDeclaredARecord() throws Exception
+    public void nonDocumentCantBeDeclaredARecord()
     {
         FolderModel otherTestFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
@@ -258,7 +256,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      */
     @Test (description = "Declaring as record a file that already has its version declared as record is successful")
     @AlfrescoTest (jira = "RM-6786")
-    public void declareAsRecordAFileWithARecordVersion() throws Exception
+    public void declareAsRecordAFileWithARecordVersion()
     {
         STEP("Create a file.");
         FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);

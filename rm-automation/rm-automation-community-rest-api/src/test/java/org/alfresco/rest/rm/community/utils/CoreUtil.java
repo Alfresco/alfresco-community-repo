@@ -63,7 +63,6 @@ public class CoreUtil
      * Helper method to create a Content Model
      *
      * @return ContentModel
-     * @throws Exception
      */
     public static ContentModel toContentModel(String nodeId)
     {
@@ -74,7 +73,6 @@ public class CoreUtil
      * Helper method to create a File Model
      *
      * @return ContentModel
-     * @throws Exception
      */
     public  static FileModel toFileModel(String nodeId)
     {

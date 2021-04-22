@@ -71,11 +71,9 @@ public class RMSiteTests extends BaseRMRestTest
      * When I want to create the RM site with specific title, description and compliance
      * Then the RM site is created
      */
-    @Test
-    (
-        description = "Create RM site with Standard Compliance as admin user"
-    )
-    public void createRMSiteAsAdminUser() throws Exception
+    @Test (description = "Create RM site with Standard Compliance as admin user", priority = 2)
+    // Run after createRMSiteAsAnotherAdminUser. In this way the Dod site is deleted and standard site is created for the rest of the tests
+    public void createRMSiteAsAdminUser()
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
@@ -106,11 +104,9 @@ public class RMSiteTests extends BaseRMRestTest
      * When I want to  create the RM site
      * Then the response code 409 (Site with the given identifier already exists) is return
      */
-    @Test
-    (
-        description = "Create RM site when site already exist with admin user"
-    )
-    public void createRMSiteWhenSiteExists() throws Exception
+    @Test (description = "Create RM site when site already exist with admin user", priority = 3)
+    // Run test after the other tests with priority 0, 1 or 2
+    public void createRMSiteWhenSiteExists()
     {
         // Create the RM site if it does not exist
         createRMSiteIfNotExists();
@@ -132,11 +128,8 @@ public class RMSiteTests extends BaseRMRestTest
      * When I want to delete the RM site
      * Then RM site is successfully deleted
      */
-    @Test
-    (
-        description = "Delete RM site as admin user"
-    )
-    public void deleteRMSite() throws Exception
+    @Test (description = "Delete RM site as admin user")
+    public void deleteRMSite()
     {
         // Create the RM site if it does not exist
         createRMSiteIfNotExists();
@@ -153,11 +146,9 @@ public class RMSiteTests extends BaseRMRestTest
      * When I GET the retrieve the RM site details
      * Then RM site details are returned
      */
-    @Test
-    (
-        description = "GET the RM site as admin user"
-    )
-    public void getRMSite() throws Exception
+    @Test (description = "GET the RM site as admin user", priority = 3)
+    // Run test after the tests with priority 0, 1 or 2
+    public void getRMSite()
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
@@ -187,12 +178,10 @@ public class RMSiteTests extends BaseRMRestTest
      * When the user wants to create a RM site with DOD compliance
      * Then RM site is created
      */
-    @Test
-    (
-        description = "Create RM site with DOD compliance as an another admin user"
-    )
+    // Run test after deleteRMSite. In this way rmSiteAPI.deleteRMSite isn't called because site is already deleted
+    @Test (description = "Create RM site with DOD compliance as an another admin user", priority = 1)
     @Bug (id="RM-4289")
-    public void createRMSiteAsAnotherAdminUser() throws Exception
+    public void createRMSiteAsAnotherAdminUser()
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
@@ -228,8 +217,8 @@ public class RMSiteTests extends BaseRMRestTest
      * When the admin user wants to update the RM site details (title or description)
      * Then RM site details are updated
      */
-    @Test
-    public void updateRMSiteDetails() throws Exception
+    @Test(priority = 3) // Run test after the other tests with priority 0, 1 or 2
+    public void updateRMSiteDetails()
     {
         String NEW_TITLE = RM_TITLE + RandomData.getRandomAlphanumeric();
         String NEW_DESCRIPTION = RM_DESCRIPTION + RandomData.getRandomAlphanumeric();
@@ -265,8 +254,8 @@ public class RMSiteTests extends BaseRMRestTest
      * When the admin user wants to update the RM site compliance
      * Then RM site compliance is not updated
      */
-    @Test
-    public void updateRMSiteComplianceAsAdmin() throws Exception
+    @Test(priority = 3) // Run test after the other tests with priority 0, 1 or 2
+    public void updateRMSiteComplianceAsAdmin()
     {
         // Create the RM site if it does not exist
         createRMSiteIfNotExists();

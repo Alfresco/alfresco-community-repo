@@ -45,6 +45,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -65,7 +66,6 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlanProperties;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryProperties;
@@ -115,8 +115,10 @@ public class FilePlanTests extends BaseRMRestTest
      * Then I get the 404 response code
      * </pre>
      */
-    @Test
-    public void getFilePlanWhenRMIsNotCreated() throws Exception
+    @Test (priority = 1)
+    // Set priority to 1 in order for this test to run last one in this class. The rm site is created only once at the
+    // beginning of the class and because this test deletes the rm site, the other tests might be affected
+    public void getFilePlanWhenRMIsNotCreated()
     {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
@@ -141,19 +143,18 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void getFilePlanWhenRMIsCreated() throws Exception
+    public void getFilePlanWhenRMIsCreated()
     {
         // Create RM Site if doesn't exist
         createRMSiteIfNotExists();
 
-        FilePlan  filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
+        FilePlan filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
 
         // Check the response code
         assertStatusCode(OK);
         //check file plan details
-        assertTrue(filePlan.getNodeType().equals(FilePlanComponentType.FILE_PLAN_TYPE));
-        assertTrue(filePlan.getName().equals(ContainerName.documentLibrary.toString()));
-
+        assertEquals(FILE_PLAN_TYPE, filePlan.getNodeType());
+        assertEquals(ContainerName.documentLibrary.toString(), filePlan.getName());
     }
 
     /**
@@ -164,11 +165,8 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void includeAllowableOperations() throws Exception
+    public void includeAllowableOperations()
     {
-        // Create RM Site if doesn't exist
-        createRMSiteIfNotExists();
-
         // Check the list of allowableOperations returned
         FilePlan filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS, "include=" + ALLOWABLE_OPERATIONS);
 
@@ -178,7 +176,6 @@ public class FilePlanTests extends BaseRMRestTest
         // Check the list of allowableOperations doesn't contain DELETE operation
         assertFalse(filePlan.getAllowableOperations().contains(DELETE),
                 "The list of allowable operations contains delete option" + filePlan.getAllowableOperations().toString());
-
     }
 
     /**
@@ -189,11 +186,8 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void getFilePlanWithNonRMuser() throws Exception
+    public void getFilePlanWithNonRMuser()
     {
-        // Create RM Site if doesn't exist
-        createRMSiteIfNotExists();
-
         // Create a random user
         UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
 
@@ -212,13 +206,10 @@ public class FilePlanTests extends BaseRMRestTest
      */
     @Test
     @Bug (id = "RM-4295")
-    public void updateFilePlan() throws Exception
+    public void updateFilePlan()
     {
         String FILE_PLAN_DESCRIPTION = "Description updated " + getRandomAlphanumeric();
         String FILE_PLAN_TITLE = "Title updated " + getRandomAlphanumeric();
-
-        // Create RM Site if doesn't exist
-        createRMSiteIfNotExists();
 
         // Build object for updating the filePlan
         FilePlan filePlanComponent = FilePlan.builder()
@@ -256,16 +247,11 @@ public class FilePlanTests extends BaseRMRestTest
      */
     @Test
     @Bug (id = "RM-4295")
-    public void updateFilePlanName() throws Exception
+    public void updateFilePlanName()
     {
-        String FILE_PLAN_NAME = "File Plan name updated " + getRandomAlphanumeric();
-
-        // Create RM Site if doesn't exist
-        createRMSiteIfNotExists();
-
         // Build object for updating the filePlan
         FilePlan filePlanComponent = FilePlan.builder()
-                                             .name(FILE_PLAN_NAME)
+                                             .name(getRandomName("File Plan name updated "))
                                              .build();
 
         // Update the file plan
@@ -294,7 +280,7 @@ public class FilePlanTests extends BaseRMRestTest
         dataProviderClass = DataProviderClass.class,
         dataProvider = "categoryTypes"
     )
-    public void createFilePlanChildren(String nodeType) throws Exception
+    public void createFilePlanChildren(String nodeType)
     {
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
@@ -338,7 +324,7 @@ public class FilePlanTests extends BaseRMRestTest
      */
     @Test
     @Bug(id = "RM-5116")
-    public void createDuplicateCategories() throws Exception
+    public void createDuplicateCategories()
     {
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
@@ -375,15 +361,13 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     @Test
-    public void listFilePlanChildren() throws Exception
+    public void listFilePlanChildren()
     {
         //delete all the root categories
         getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry ->
-        {
-            getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordCategoryEntry.getEntry().getId());
-        });
+                deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
         // Add child folders
-        ArrayList<RecordCategory> children = new ArrayList<RecordCategory>();
+        ArrayList<RecordCategory> children = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
         {
             String categoryName = "Category name " + getRandomAlphanumeric();
@@ -415,7 +399,7 @@ public class FilePlanTests extends BaseRMRestTest
                         RecordCategory createdComponent = children.stream()
                                                                        .filter(child -> child.getId().equals(recordCategoryChildId))
                                                                        .findFirst()
-                                                                       .get();
+                                                                       .orElseThrow();
 
                         // Created by
                         assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
@@ -444,7 +428,7 @@ public class FilePlanTests extends BaseRMRestTest
         description = "Create a record folder/unfiled container/unfiled folder/record/file plan container",
         dataProvider = "childrenNotAllowedForFilePlan"
     )
-    public void createChildrenNotAllowedInFilePlan(String nodeType) throws Exception
+    public void createChildrenNotAllowedInFilePlan(String nodeType)
     {
         String componentName = "Component" + getRandomAlphanumeric();
 
@@ -468,16 +452,13 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     @Test
-    public  void listChildrenUserPermission() throws Exception
+    public  void listChildrenUserPermission()
     {
-        // Create RM Site if doesn't exist
-        createRMSiteIfNotExists();
-
         // Create a random user
         UserModel managerUser = getDataUser().createRandomTestUser("managerUser");
 
         // Add child folders
-        ArrayList<RecordCategory> children = new ArrayList<RecordCategory>();
+        ArrayList<RecordCategory> children = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_CHILDREN/2; i++)
         {
             String categoryName = "Category name " + getRandomAlphanumeric();
@@ -493,7 +474,7 @@ public class FilePlanTests extends BaseRMRestTest
         getRestAPIFactory().getFilePlansAPI(managerUser).getRootRecordCategories(FILE_PLAN_ALIAS)
                            .assertThat().entriesListIsEmpty().assertThat().paginationExist();
 
-        ArrayList<RecordCategory> childrenManager = new ArrayList<RecordCategory>();
+        ArrayList<RecordCategory> childrenManager = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_CHILDREN / 2; i++)
         {
             String categoryName = "Category for manager " + getRandomAlphanumeric();

@@ -45,7 +45,6 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;

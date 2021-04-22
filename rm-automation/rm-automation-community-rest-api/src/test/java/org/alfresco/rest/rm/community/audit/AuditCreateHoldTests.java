@@ -68,7 +68,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     private final String HOLD1 = PREFIX + "createHold";
     private final String HOLD2 = PREFIX + "createHold2";
     private final String HOLD3 = PREFIX + "createHold3";
-    private List<String> holdsListRef = new ArrayList<>();
+    private final List<String> holdsListRef = new ArrayList<>();
 
     @Autowired
     private RMAuditService rmAuditService;

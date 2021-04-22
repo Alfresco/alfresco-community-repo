@@ -40,11 +40,13 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.FileInputStream;
@@ -57,11 +59,14 @@ import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.rest.rm.community.model.record.RecordProperties;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildCollection;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -92,27 +97,37 @@ public class ReadRecordTests extends BaseRMRestTest
                                              .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                              .build();
 
+    private RecordCategory rootCategory, rootCategory2;
+    private RecordCategoryChild recordFolder;
+
+    @BeforeClass(alwaysRun = true)
+    public void setupReadRecordTests()
+    {
+        rootCategory = createRootCategory(getRandomName("rootCategory"));
+        rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
+        recordFolder = createRecordFolder(rootCategory.getId(), getRandomName("recFolder"));
+    }
     /**
      * Given a record category or a container which can't contain records
      * When I try to read the children filtering the results to records
      * Then I receive an empty list
      */
-    @DataProvider(name="invalidContainersForRecords")
-    public  Object[][] getInvalidContainersForRecords() throws Exception
+    @DataProvider (name = "invalidContainersForRecords")
+    public  Object[][] getInvalidContainersForRecords()
     {
         return new String[][] {
             { FILE_PLAN_ALIAS },
             { TRANSFERS_ALIAS },
-            { createCategoryFolderInFilePlan().getParentId()}
+            { rootCategory.getId()}
         };
     }
     @Test
     (
-        dataProvider ="invalidContainersForRecords",
-        description ="Reading records from invalid containers"
+        dataProvider = "invalidContainersForRecords",
+        description = "Reading records from invalid containers"
     )
     @AlfrescoTest(jira="RM-4361")
-    public void readRecordsFromInvalidContainers(String container) throws Exception
+    public void readRecordsFromInvalidContainers(String container)
     {
         Record electronicRecord = Record.builder()
                                               .name(ELECTRONIC_RECORD_NAME)
@@ -137,33 +152,29 @@ public class ReadRecordTests extends BaseRMRestTest
         if(FILE_PLAN_ALIAS.equals(container))
         {
             getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(container, "")
-                                                    .assertThat()//check the list returned is not empty
-                                                    .entriesListIsNotEmpty().assertThat().paginationExist();
+                               .assertThat()//check the list returned is not empty
+                               .entriesListIsNotEmpty().assertThat().paginationExist();
             //check response status code
             assertStatusCode(OK);
         }
         else if(TRANSFERS_ALIAS.equals(container))
         {
             getRestAPIFactory().getTransferContainerAPI().getTransfers(container, "where=(isRecord=true)")
-                                                            .assertThat()//check the list returned is empty
-                                                            .entriesListIsEmpty().assertThat().paginationExist();
+                               .assertThat()//check the list returned is empty
+                               .entriesListIsEmpty().assertThat().paginationExist();
             //check response status code
             assertStatusCode(OK);
         }
         else
         {
-            String recordCategoryId = getRestAPIFactory().getRecordCategoryAPI().getRecordCategory(container).getId();
-            assertStatusCode(OK);
-            getRestAPIFactory().getRecordCategoryAPI().getRecordCategoryChildren(recordCategoryId)
-                                                            .assertThat()//check the list returned is empty
-                                                            .entriesListCountIs(1).assertThat().paginationExist();
-            String nodeType = getRestAPIFactory().getRecordCategoryAPI().getRecordCategoryChildren(recordCategoryId).getEntries().get(0).getEntry().getNodeType();
-            assertEquals(nodeType, RECORD_FOLDER_TYPE);
+            RecordCategoryChildCollection children = getRestAPIFactory().getRecordCategoryAPI().getRecordCategoryChildren(container);
             //check response status code
             assertStatusCode(OK);
+            children.assertThat() //check the list returned is not empty because there is a record folder created inside
+                    .entriesListCountIs(1).assertThat().paginationExist();
+            assertEquals(children.getEntries().get(0).getEntry().getNodeType(), RECORD_FOLDER_TYPE);
         }
     }
-
 
     /**
      * Given a record
@@ -172,7 +183,7 @@ public class ReadRecordTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest (jira = "RM-4361")
-    public void readRecordMetadata() throws Exception
+    public void readRecordMetadata()
     {
         String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
 
@@ -201,7 +212,7 @@ public class ReadRecordTests extends BaseRMRestTest
         assertNotNull(recordWithContent.getContent().getEncoding());
         assertNotNull(recordWithContent.getContent().getMimeType());
         assertNotNull(recordWithContent.getAspectNames());
-        assertFalse(recordWithContent.getName().equals(ELECTRONIC_RECORD_NAME));
+        assertNotEquals(ELECTRONIC_RECORD_NAME, recordWithContent.getName());
         assertTrue(recordWithContent.getName().contains(recordWithContent.getProperties().getIdentifier()));
         assertStatusCode(OK);
 
@@ -212,11 +223,11 @@ public class ReadRecordTests extends BaseRMRestTest
 
         //Check the metadata returned
         assertTrue(nonElectronicRecord.getName().startsWith(NONELECTRONIC_RECORD_NAME));
-        assertEquals(nonElectronicRecord.getContent(), null);
+        assertNull(nonElectronicRecord.getContent());
         assertEquals(nonElectronicRecord.getNodeType(), NON_ELECTRONIC_RECORD_TYPE);
         assertNotNull(nonElectronicRecord.getAspectNames());
         assertEquals(nonElectronicRecord.getProperties().getDescription(), NONELECTRONIC_RECORD_NAME);
-        assertFalse(nonElectronicRecord.getName().equals(NONELECTRONIC_RECORD_NAME));
+        assertNotEquals(NONELECTRONIC_RECORD_NAME, nonElectronicRecord.getName());
         assertTrue(nonElectronicRecord.getName().contains(nonElectronicRecord.getProperties().getIdentifier()));
         assertStatusCode(OK);
     }
@@ -234,7 +245,6 @@ public class ReadRecordTests extends BaseRMRestTest
 
         String RECORD_ELECTRONIC = "Record " + getRandomAlphanumeric();
         String RECORD_ELECTRONIC_BINARY = "Binary Record" + getRandomAlphanumeric();
-        String existentRecordCategoryId = createCategoryFolderInFilePlan().getParentId();
 
         String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
 
@@ -245,7 +255,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                     .relativePath(RELATIVE_PATH)
                                                     .build();
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
-        String folderId = recordCategoryAPI.createRecordCategoryChild(recordFolder, existentRecordCategoryId).getId();
+        String folderId = recordCategoryAPI.createRecordCategoryChild(recordFolder, rootCategory2.getId()).getId();
 
         // text file as an electronic record
         Record recordText = Record.builder()
@@ -292,18 +302,15 @@ public class ReadRecordTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest (jira = "RM-4361")
-    public void readNonElectronicRecordContent() throws Exception
+    public void readNonElectronicRecordContent()
     {
-
-        String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
-        String folderId = createCategoryFolderInFilePlan().getId();
         Record record = Record.builder()
-                                    .name(NONELECTRONIC_RECORD_NAME)
-                                    .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                                    .build();
+                              .name(getRandomName("Record nonelectronic"))
+                              .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                              .build();
 
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        String nonElectronicRecord = recordFolderAPI.createRecord(record, folderId).getId();
+        String nonElectronicRecord = recordFolderAPI.createRecord(record, recordFolder.getId()).getId();
 
         getRestAPIFactory().getRecordsAPI().getRecordContent(nonElectronicRecord);
         assertStatusCode(BAD_REQUEST);
@@ -315,12 +322,12 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I receive an error
      */
     @DataProvider(name="noContentNodes")
-    public  Object[][] getNonRecordTypes() throws Exception
+    public  Object[][] getNonRecordTypes()
     {
         return new String[][] {
             { getFilePlan(FILE_PLAN_ALIAS).getId() },
             { getTransferContainer(TRANSFERS_ALIAS).getId() },
-            { createCategoryFolderInFilePlan().getParentId()}
+            { rootCategory.getId()}
         };
     }
     @Test
@@ -329,11 +336,17 @@ public class ReadRecordTests extends BaseRMRestTest
         description = "Reading records from invalid containers"
     )
     @AlfrescoTest (jira = "RM-4361")
-    public void readContentFromInvalidContainers(String container) throws Exception
+    public void readContentFromInvalidContainers(String container)
     {
         getRestAPIFactory().getRecordsAPI().getRecordContent(container).asString();
         assertStatusCode(BAD_REQUEST);
     }
 
+    @AfterClass(alwaysRun = true)
+    public void cleanupReadRecordTests()
+    {
+        deleteRecordCategory(rootCategory.getId());
+        deleteRecordCategory(rootCategory2.getId());
+    }
 
 }

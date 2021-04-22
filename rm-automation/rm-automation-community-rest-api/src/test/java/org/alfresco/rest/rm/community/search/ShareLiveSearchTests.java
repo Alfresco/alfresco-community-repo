@@ -49,11 +49,10 @@ public class ShareLiveSearchTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-5882")
-    public void liveSearchForVitalWord() throws Exception
+    public void liveSearchForVitalWord()
     {
-        createRMSiteIfNotExists();
         List<String> results = searchApi.liveSearchForDocumentsAsUser(getAdminUser().getUsername(), getAdminUser().getPassword(), "vital");
-        assertTrue(results.isEmpty() || !results.stream().anyMatch("Vital Records due for Review"::equalsIgnoreCase),
+        assertTrue(results.isEmpty() || results.stream().noneMatch("Vital Records due for Review"::equalsIgnoreCase),
                     "Share Live Search should return 0 results when searching for RM Saved Search filter words, but it returned:"
                                 + Arrays.toString(results.toArray()));
     }

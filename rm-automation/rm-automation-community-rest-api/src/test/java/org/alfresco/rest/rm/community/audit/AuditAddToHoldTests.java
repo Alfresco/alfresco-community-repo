@@ -94,12 +94,12 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
     private List<AuditEntry> auditEntries;
-    private List<String> holdsList = asList(HOLD1, HOLD2);
+    private final List<String> holdsList = asList(HOLD1, HOLD2);
     private List<String> holdsListRef = new ArrayList<>();
     private String hold1NodeRef;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForAuditAddToHoldTests() throws Exception
+    public void preconditionForAuditAddToHoldTests()
     {
         STEP("Create 2 holds.");
         hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(),
@@ -128,10 +128,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Data provider with valid nodes that can be added to a hold
      *
      * @return the node id, the node name and the node path
-     * @throws Exception
      */
     @DataProvider (name = "validNodesForAddToHold")
-    public Object[][] getValidNodesForAddToHold() throws Exception
+    public Object[][] getValidNodesForAddToHold()
     {
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
                                                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -184,7 +183,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then the add to hold event isn't audited
      */
     @Test
-    public void unsuccessfulAddToHoldIsNotAudited() throws Exception
+    public void unsuccessfulAddToHoldIsNotAudited()
     {
         STEP("Create a new record");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
@@ -207,7 +206,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then only an entry has been created in the audit log for the record folder added
      */
     @Test
-    public void addToHoldIsNotAuditedForRecordFolderChildren() throws Exception
+    public void addToHoldIsNotAuditedForRecordFolderChildren()
     {
         STEP("Create a new record folder with a record inside");
         RecordCategoryChild notEmptyRecFolder = createRecordFolder(recordCategory.getId(), PREFIX + "notEmptyRecFolder");
@@ -232,7 +231,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then multiple entries have been created in the audit log for each add to hold event
      */
     @Test
-    public void addToHoldIsAuditedInBulkAddition() throws Exception
+    public void addToHoldIsAuditedInBulkAddition()
     {
         STEP("Create a new record");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
@@ -308,6 +307,6 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
         dataSite.usingAdmin().deleteSite(privateSite);
         asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordCategory.getId());
+        deleteRecordCategory(recordCategory.getId());
     }
 }

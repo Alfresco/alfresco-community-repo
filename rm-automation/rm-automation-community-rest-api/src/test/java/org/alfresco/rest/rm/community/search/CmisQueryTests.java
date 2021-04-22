@@ -36,7 +36,6 @@ import static org.testng.AssertJUnit.assertTrue;
 
 
 import org.alfresco.dataprep.ContentActions;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
@@ -173,7 +172,7 @@ public class CmisQueryTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest (jira = "MNT-19442")
-    public void getDocumentsWithSpecificNamesCmisQuery() throws Exception
+    public void getDocumentsWithSpecificNamesCmisQuery()
     {
         // execute the cmis query
         ItemIterable<QueryResult> results =
@@ -196,7 +195,7 @@ public class CmisQueryTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest (jira = "MNT-19442")
-    public void getDocumentsCmisQueryWithPagination() throws Exception
+    public void getDocumentsCmisQueryWithPagination()
     {
         OperationContext oc = new OperationContextImpl();
         oc.setMaxItemsPerPage(10);
@@ -216,7 +215,7 @@ public class CmisQueryTests extends BaseRMRestTest
     private void clearCmisQueryTests()
     {
         dataSite.usingAdmin().deleteSite(collaborationSite);
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordFolder.getParentId());
+        deleteRecordCategory(recordFolder.getParentId());
         getDataUser().usingAdmin().deleteUser(rmUser);
         getDataUser().usingAdmin().deleteUser(nonRMUser);
     }

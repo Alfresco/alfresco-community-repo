@@ -84,7 +84,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.node.cleanup.TransactionCleanupTest.class,
     org.alfresco.repo.security.person.GetPeopleCannedQueryTest.class,
 
-    org.alfresco.repo.domain.schema.script.DeleteNotExistsExecutorTest.class,
+    org.alfresco.repo.domain.schema.script.DeleteNotExistsExecutorTest.class
 })
 public class AllDBTestsTestSuite
 {

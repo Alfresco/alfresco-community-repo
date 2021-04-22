@@ -38,9 +38,11 @@ import javax.sql.DataSource;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +52,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * 
  * @author Cristian Turlica
  */
+@Category({DBTests.class})
 public class DeleteNotExistsExecutorTest
 {
     private static ApplicationContext ctx;

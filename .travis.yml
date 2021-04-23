@@ -28,6 +28,7 @@ env:
   global:
     - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
     - TAS_ENVIRONMENT=./packaging/tests/environment
+    - LOG_WARN="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
 stages:
   - name: test
@@ -279,8 +280,27 @@ jobs:
       script: travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "AGS Unit & Integration Tests"
-      if: branch = master OR commit_message =~ /\[ags\]/
-      script: travis_retry travis_wait mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-db -f amps/ags/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags\]/
+      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-postgres -f amps/ags/pom.xml ${LOG_WARN}
+
+    - name: "AGS Integrations Tests on MySQL"
+      if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags on MySQL\]/
+      script: travis_retry travis_wait 80 mvn -B -q verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-mysql -f amps/ags/rm-community/rm-community-repo/pom.xml ${LOG_WARN}
+
+    - name: "AGS Community Rest API Tests"
+      if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags\]/
+      addons:
+        artifacts:
+          paths:
+            - ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log
+            - alfresco.log
+            - solr.log
+          target_paths: ${TRAVIS_BUILD_NUMBER}/${TRAVIS_JOB_NUMBER}
+      before_script:
+        - ${TAS_SCRIPTS}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
+        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
+      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
+      after_script: bash amps/ags/travis/scripts/getLogs.sh
 
     - name: "Push to Nexus"
       stage: release

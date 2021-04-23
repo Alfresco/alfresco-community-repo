@@ -492,7 +492,9 @@
                   <configuration>
                      <images>
                         <image>
-                           <name>postgres:13.1</name>
+                           <!-- TODO upgrade this old postgres version -->
+                           <name>postgres:9.4.12</name>
+                           <!--<name>postgres:13.1</name>-->
                            <run>
                               <ports>
                                  <port>${postgresql.tests.port}:${postgresql.port}</port>

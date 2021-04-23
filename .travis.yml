@@ -279,13 +279,13 @@ jobs:
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
-    - name: "AGS Unit & Integration Tests"
+    - name: "AGS Unit & Integration Tests (PostgreSQL)"
       if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-postgres -f amps/ags/pom.xml ${LOG_WARN}
 
-    - name: "AGS Integrations Tests on MySQL"
+    - name: "AGS Unit & Integration Tests (MySQL) "
       if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B -q verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-mysql -f amps/ags/rm-community/rm-community-repo/pom.xml ${LOG_WARN}
+      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-mysql -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
       if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags\]/

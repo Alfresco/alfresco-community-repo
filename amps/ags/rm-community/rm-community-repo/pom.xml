@@ -19,6 +19,15 @@
       <alfresco.db.password>alfresco</alfresco.db.password>
       <alfresco.db.host>localhost</alfresco.db.host>
       <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
+
+      <mysql.version>5.7.23</mysql.version>
+      <mysql.port>3306</mysql.port>
+      <mysql.tests.port>3307</mysql.tests.port>
+
+      <postgresql.port>5432</postgresql.port>
+      <!--This prevents a clash when postgres is already running natively on the machine.-->
+      <postgresql.tests.port>5431</postgresql.tests.port>
+
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
@@ -264,9 +273,9 @@
                   </goals>
                   <configuration>
                      <systemPropertyVariables>
-                        <db.name>${alfresco.test.db.name}</db.name>
-                        <db.driver>org.postgresql.Driver</db.driver>
-                        <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
+                        <db.name>${db.name}</db.name>
+                        <db.driver>${alfresco.db.datasource.class}</db.driver>
+                        <db.url>${alfresco.db.url}</db.url>
                         <dir.root>${project.build.directory}/alf-data-test</dir.root>
                      </systemPropertyVariables>
                      <includes>
@@ -465,8 +474,16 @@
          </properties>
       </profile>
 
+      <!-- Profile used for running integration tests using postgres database -->
       <profile>
-         <id>start-db</id>
+         <id>start-postgres</id>
+         <properties>
+            <db.name>${alfresco.test.db.name}</db.name>
+            <alfresco.db.port>${postgresql.tests.port}</alfresco.db.port>
+            <alfresco.db.master.url>jdbc:postgresql://${alfresco.db.host}:${alfresco.db.port}/${db.name}</alfresco.db.master.url>
+            <alfresco.db.url>jdbc:postgresql://${alfresco.db.host}:${alfresco.db.port}/${db.name}</alfresco.db.url>
+            <alfresco.db.datasource.class>org.postgresql.Driver</alfresco.db.datasource.class>
+         </properties>
          <build>
             <plugins>
                <plugin>
@@ -480,7 +497,7 @@
                            <!--<name>postgres:13.1</name>-->
                            <run>
                               <ports>
-                                 <port>${database.port}:${postgresql.port}</port>
+                                 <port>${postgresql.tests.port}:${postgresql.port}</port>
                               </ports>
                               <env>
                                  <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
@@ -492,6 +509,77 @@
                               </cmd>
                               <wait>
                                  <log>database system is ready to accept connections</log>
+                                 <time>20000</time>
+                              </wait>
+                           </run>
+                        </image>
+                        <image>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}</name>
+                           <run>
+                              <ports>
+                                 <port>${activemq.port1}:${activemq.port1}</port>
+                                 <port>${activemq.port2}:${activemq.port2}</port>
+                              </ports>
+                           </run>
+                        </image>
+                     </images>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <id>before-integration-tests</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                           <goal>stop</goal>
+                           <goal>start</goal>
+                        </goals>
+                     </execution>
+                     <execution>
+                        <id>after-integration-tests</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                           <goal>stop</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
+      <!-- Profile used for running integration tests using mysql database -->
+      <profile>
+         <id>start-mysql</id>
+         <properties>
+            <db.name>${alfresco.db.name}</db.name>
+            <alfresco.db.port>${mysql.tests.port}</alfresco.db.port>
+            <alfresco.db.master.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${db.name}</alfresco.db.master.url>
+            <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${db.name}</alfresco.db.url>
+            <alfresco.db.datasource.class>com.mysql.cj.jdbc.Driver</alfresco.db.datasource.class>
+         </properties>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>io.fabric8</groupId>
+                  <artifactId>docker-maven-plugin</artifactId>
+                  <configuration>
+                     <images>
+                        <image>
+                           <name>mysql:${mysql.version}</name>
+                           <run>
+                              <ports>
+                                 <port>${mysql.tests.port}:${mysql.port}</port>
+                              </ports>
+                              <env>
+                                 <MYSQL_ROOT_PASSWORD>${alfresco.db.password}</MYSQL_ROOT_PASSWORD>
+                                 <MYSQL_PASSWORD>${alfresco.db.password}</MYSQL_PASSWORD>
+                                 <MYSQL_USER>${alfresco.db.username}</MYSQL_USER>
+                                 <MYSQL_DATABASE>${alfresco.db.name}</MYSQL_DATABASE>
+                              </env>
+                              <cmd>
+                                 <arg>--transaction-isolation=READ-COMMITTED</arg>
+                              </cmd>
+                              <wait>
+                                 <log>mysqld: ready for connections</log>
                                  <time>20000</time>
                               </wait>
                            </run>
@@ -622,7 +710,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${mysql.version}</version>
+                        <version>${dependency.mysql.version}</version>
                      </dependency>
                   </dependencies>
                </plugin>
@@ -653,7 +741,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${mysql.version}</version>
+                        <version>${dependency.mysql.version}</version>
                      </dependency>
                   </dependencies>
                   <executions>

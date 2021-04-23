@@ -81,7 +81,7 @@ public class RMSiteAPI extends RMModelRequest
     /**
      * Create the RM site
      *
-     * @param rmSite The properties of the rm site to be created
+     * @param rmSiteModel The properties of the rm site to be created
      * @return The {@link RMSite} with the given properties
      * @throws RuntimeException for the following cases:
      * <ul>
@@ -124,7 +124,7 @@ public class RMSiteAPI extends RMModelRequest
     /**
      * Update RM site
      *
-     * @param rmSiteProperties The properties to be updated
+     * @param rmSiteModel The properties to be updated
      * @return The updated {@link RMSite}
      * @throws RuntimeException for the following cases:
      * <ul>
@@ -161,6 +161,6 @@ public class RMSiteAPI extends RMModelRequest
     public boolean existsRMSite()
     {
         getSite();
-        return getRmRestWrapper().getStatusCode().equals(OK.toString());
+        return getRmRestWrapper().getStatusCode().equals(String.valueOf(OK.value()));
     }
 }

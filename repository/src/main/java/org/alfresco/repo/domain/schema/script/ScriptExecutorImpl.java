@@ -350,7 +350,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                 }
                 else if (sql.startsWith("--DELETE_NOT_EXISTS"))
                 {
-                    DeleteNotExistsExecutor deleteNotExists = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties);
+                    DeleteNotExistsExecutor deleteNotExists = createDeleteNotExistsExecutor(dialect, connection, sql, line, scriptFile);
                     deleteNotExists.execute();
 
                     // Reset
@@ -537,7 +537,17 @@ public class ScriptExecutorImpl implements ScriptExecutor
             try { scriptInputStream.close(); } catch (Throwable e) {}
         }
     }
-    
+
+    private DeleteNotExistsExecutor createDeleteNotExistsExecutor(Dialect dialect, Connection connection, String sql, int line, File scriptFile)
+    {
+        if (dialect instanceof MySQLInnoDBDialect)
+        {
+            return new MySQLDeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties, dataSource);
+        }
+
+        return new DeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties);
+    }
+
     /**
      * Execute the given SQL statement, absorbing exceptions that we expect during
      * schema creation or upgrade.

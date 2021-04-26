@@ -55,7 +55,7 @@
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
 
-        <dependency.spring.version>5.1.1.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.1.15.RELEASE</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.9.8</dependency.jackson.version>
         <dependency.cxf.version>3.2.7</dependency.cxf.version>
@@ -227,7 +227,7 @@
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>1.9.3</version>
+                <version>1.9.4</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>

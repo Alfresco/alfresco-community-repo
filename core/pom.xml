@@ -128,11 +128,6 @@
          <version>2.3.0.1</version>
       </dependency>
       <dependency>
-         <groupId>dom4j</groupId>
-         <artifactId>dom4j</artifactId>
-         <version>1.6.1</version>
-      </dependency>
-      <dependency>
          <groupId>org.codehaus.guessencoding</groupId>
          <artifactId>guessencoding</artifactId>
          <version>1.4</version>

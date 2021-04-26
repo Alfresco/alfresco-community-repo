@@ -181,6 +181,22 @@ public class BufferedResponse implements WrappingWebScriptResponse
         res.reset();
     }
 
+    /* (non-Javadoc)
+     * @see org./alfresco.web.scripts.WebScriptResponse#resetjava.lang.String)
+     */
+    public void reset(String preserveHeadersPattern)
+    {
+        if (outputStream != null)
+        {
+            outputStream = null;
+        }
+        else if (outputWriter != null)
+        {
+            outputWriter = null;
+        }
+        res.reset(preserveHeadersPattern);
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#setCache(org.alfresco.web.scripts.Cache)

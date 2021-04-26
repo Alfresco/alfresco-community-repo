@@ -80,8 +80,6 @@
       <property name="eventPublisher" ref="eventPublisher" />
     </bean>   
    
-   <bean id="defaultImageResolver" class="org.alfresco.repo.utils.FacesImageResolver" />
-
     <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" parent="baseWebDAVHelper" />
 
    <!--  Content Streamer -->

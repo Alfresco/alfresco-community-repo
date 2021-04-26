@@ -132,12 +132,6 @@ public class PersonSearchTest extends BaseWebScriptTest
     	sendRequest(new GetRequest("/api/search/person?"), Status.STATUS_INTERNAL_SERVER_ERROR);
     }
     
-    public void testPortletSearch() throws Exception
-    {
-		Response response = sendRequest(new GetRequest("/api/search/person.portlet?q=*"), Status.STATUS_OK);
-    	logger.debug(response.getContentAsString());
-    }
-    
     public void testAtomSearch() throws Exception
     {
 		Response response = sendRequest(new GetRequest("/api/search/person.atom?q=*"), Status.STATUS_OK);

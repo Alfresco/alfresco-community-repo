@@ -405,12 +405,14 @@ public class AggregatingContentStore extends AbstractContentStore
     @Override
     public Set<String> getSupportedStorageClasses()
     {
+        // We only care about the primary, because the aggregating CS only allows to be written in the primary
         Set<String> supportedStorageClasses = primaryStore.getSupportedStorageClasses();
+
         // TODO: review
-//        for (ContentStore store : secondaryStores)
-//        {
-//            supportedStorageClasses.addAll(store.getSupportedStorageClasses());
-//        }
+        // for (ContentStore store : secondaryStores)
+        // {
+        //    supportedStorageClasses.addAll(store.getSupportedStorageClasses());
+        // }
 
         return supportedStorageClasses;
     }
@@ -419,5 +421,73 @@ public class AggregatingContentStore extends AbstractContentStore
     public void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters)
     {
         primaryStore.updateStorageClasses(contentUrl, storageClasses, parameters);
+    }
+
+    @Override
+    public Set<String> getStorageClassesForNode(String contentUrl)
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+        }
+
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        try
+        {
+            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+            boolean contentUrlSupported = true;
+            Set<String> storageClasses = null;
+
+            // Check the primary store
+            try
+            {
+                storageClasses = primaryStore.getStorageClassesForNode(contentUrl);
+            }
+            catch (UnsupportedContentUrlException e)
+            {
+                // The store can't handle the content URL
+                contentUrlSupported = false;
+            }
+
+            if (storageClasses != null)
+            {
+                return storageClasses;
+            }
+
+            // the content is not in the primary store so we have to go looking for it
+            for (ContentStore store : secondaryStores)
+            {
+                try
+                {
+                    storageClasses = store.getStorageClassesForNode(contentUrl);
+                }
+                catch (UnsupportedContentUrlException e)
+                {
+                    // The store can't handle the content URL
+                    contentUrlSupported = false;
+                }
+
+                if (storageClasses != null)
+                {
+                    break;
+                }
+            }
+
+            if (storageClasses == null)
+            {
+                if (!contentUrlSupported)
+                {
+                    // The content URL was not supported
+                    throw new UnsupportedContentUrlException(this, contentUrl);
+                }
+            }
+
+            return storageClasses;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 }

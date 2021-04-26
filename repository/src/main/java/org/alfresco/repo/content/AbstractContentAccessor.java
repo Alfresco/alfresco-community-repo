@@ -120,6 +120,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
           .append(", size=").append(getSize())
           .append(", encoding=").append(getEncoding())
           .append(", locale=").append(getLocale())
+          .append(", storageClasses").append(getStorageClasses())
           .append("]");
         return sb.toString();
     }

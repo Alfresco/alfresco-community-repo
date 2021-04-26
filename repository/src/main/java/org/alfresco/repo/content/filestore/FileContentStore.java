@@ -82,7 +82,8 @@ public class FileContentStore
     public static final String SPOOF_PROTOCOL = "spoof";
     
     private static final Log logger = LogFactory.getLog(FileContentStore.class);
-    
+    private static final String FILE_STORAGE_CLASS = "file";
+
     private File rootDirectory;
     private String rootAbsolutePath;
     private boolean allowRandomAccess;
@@ -633,7 +634,14 @@ public class FileContentStore
     {
         this.deleteEmptyDirs = deleteEmptyDirs;
     }
-    
+
+    @Override
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        // TODO : Mocked
+        return storageClasses.contains(FILE_STORAGE_CLASS);
+    }
+
     /*
      * Added as fix for MNT-12301, we should ensure that content store accesses content only inside of store root
      */
@@ -646,5 +654,32 @@ public class FileContentStore
         {
             throw new ContentIOException("Access to files outside of content store root is not allowed: " + file);
         }
+    }
+
+    @Override
+    public Set<String> getStorageClassesForNode(String contentUrl)
+    {
+        if (isContentUrlSupported(contentUrl))
+        {
+            if (exists(contentUrl))
+            {
+                return Set.of(FILE_STORAGE_CLASS);
+            }
+            else
+            {
+                // TODO : Review - consider throwing an exception
+                return null;
+            }
+        }
+        else
+        {
+            throw new UnsupportedContentUrlException(this, contentUrl);
+        }
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return Set.of(FILE_STORAGE_CLASS);
     }
 }

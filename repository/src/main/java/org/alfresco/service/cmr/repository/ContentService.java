@@ -25,6 +25,7 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -179,4 +180,9 @@ public interface ContentService
 
     //@Auditable(parameters = {"nodeRef", "storageClasses", "parameters"})
     void updateStorageClasses(NodeRef nodeRef, Set<String> storageClasses, Map<String, Object> parameters);
+
+    default Set<String> getStorageClassesForNode(NodeRef nodeRef)
+    {
+        return Collections.emptySet();
+    }
 }

@@ -612,6 +612,25 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
         }
 
+        if (!isStorageClassesSupported(storageClasses))
+        {
+            throw new IllegalArgumentException("The supplied storage classes are not supported");
+        }
+
         store.updateStorageClasses(contentData.getContentUrl(), storageClasses, parameters);
+    }
+
+    @Override
+    public Set<String> getStorageClassesForNode(NodeRef nodeRef)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        return store.getStorageClassesForNode(contentData.getContentUrl());
     }
 }

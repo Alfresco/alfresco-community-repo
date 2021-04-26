@@ -177,6 +177,27 @@ public class ContentData implements Serializable
         // done
         return ret;
     }
+
+    /**
+     * Constructs a new instance using the existing one as a template, but replacing the
+     * storage classes.
+     *
+     * @param existing      an existing set of content data, null to use default values
+     * @param storageClasses      the storage classes
+     * @return              Returns a new, immutable instance of the data
+     */
+    public static ContentData setStorageClasses(ContentData existing, Set<String> storageClasses)
+    {
+        ContentData ret = new ContentData(
+            existing == null ? null : existing.contentUrl,
+            existing == null ? null : existing.mimetype,
+            existing == null ? 0L : existing.size,
+            existing == null ? null : existing.encoding,
+            existing == null ? null : existing.locale,
+            storageClasses);
+        // done
+        return ret;
+    }
     
     /**
      * Helper method to determine if the data represents any physical content or not.
@@ -311,7 +332,9 @@ public class ContentData implements Serializable
           .append("|mimetype=").append(mimetype == null ? "" : mimetype)
           .append("|size=").append(size)
           .append("|encoding=").append(encoding == null ? "" : encoding)
+          .append("|storageClasses=").append(storageClasses == null ? "" : storageClasses)
           .append("|locale=").append(locale == null ? "" : DefaultTypeConverter.INSTANCE.convert(String.class, locale));
+
         return sb.toString();
     }
     

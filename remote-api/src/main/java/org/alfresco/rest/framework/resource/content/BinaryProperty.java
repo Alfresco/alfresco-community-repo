@@ -27,9 +27,11 @@ package org.alfresco.rest.framework.resource.content;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Set;
+
+import org.alfresco.service.cmr.repository.ContentReader;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
  * A POJO property that is of type "Binary"
@@ -47,6 +49,7 @@ public class BinaryProperty implements ContentInfo, Serializable
     private final String encoding;
     private final long length;
     private final Locale locale;
+    private Set<String> storageClasses;
     
     /**
      * Sets the content length to zero, Locale to null, no stream and no caching
@@ -123,5 +126,10 @@ public class BinaryProperty implements ContentInfo, Serializable
     {
         return this.locale;
     }
-   
+
+    @Override
+    public Set<String> getStorageClasses()
+    {
+        return storageClasses;
+    }
 }

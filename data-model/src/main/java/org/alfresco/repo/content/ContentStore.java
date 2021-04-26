@@ -91,7 +91,8 @@ public interface ContentStore
      * The delimiter that must be found in all URLS, i.e <b>://</b>
      */
     public static final String PROTOCOL_DELIMITER = "://";
-    
+    public static final String DEFAULT = "DEFAULT";
+
     /**
      * Check if the content URL format is supported by the store.
      * 
@@ -280,5 +281,10 @@ public interface ContentStore
     default void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters) 
     {
         throw new UnsupportedOperationException("Updating storage classes is not supported by this content store.");
+    }
+
+    default Set<String> getStorageClassesForNode(String contentUrl)
+    {
+        return Collections.emptySet();
     }
 }

@@ -1048,6 +1048,11 @@ public class NodesImpl implements Nodes
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
+        if (node.getContent() != null)
+        {
+            node.getContent().setStorageClasses(contentService.getStorageClassesForNode(node.getNodeRef()));
+        }
+
         return node;
     }
 
@@ -2362,6 +2367,12 @@ public class NodesImpl implements Nodes
         }
 
         processNodePermissions(nodeRef, nodeInfo);
+
+        final Set<String> newStorageClasses = nodeInfo.getContent().getStorageClasses();
+        if (contentService.isStorageClassesSupported(newStorageClasses))
+        {
+            contentService.updateStorageClasses(nodeRef, newStorageClasses, null);
+        }
         
         return nodeRef;
     }

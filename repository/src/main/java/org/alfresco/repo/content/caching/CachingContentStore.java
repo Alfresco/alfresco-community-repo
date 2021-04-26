@@ -507,4 +507,10 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         backingStore.updateStorageClasses(contentUrl, storageClasses, parameters);
     }
+
+    @Override
+    public Set<String> getStorageClassesForNode(String contentUrl)
+    {
+        return backingStore.getStorageClassesForNode(contentUrl);
+    }
 }

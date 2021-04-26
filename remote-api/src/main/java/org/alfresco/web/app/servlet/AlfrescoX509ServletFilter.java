@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
+import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.web.scripts.servlet.X509ServletFilterBase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,7 +71,9 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
          * Return true or false based on the property. This will switch on/off X509 enforcement in the X509ServletFilterBase.
          */
 
-        if (prop == null || "none".equals(prop))
+        if (prop == null || 
+            SecureCommsType.getType(prop) == SecureCommsType.NONE || 
+            SecureCommsType.getType(prop) == SecureCommsType.SECRET)
         {
             return false;
         }

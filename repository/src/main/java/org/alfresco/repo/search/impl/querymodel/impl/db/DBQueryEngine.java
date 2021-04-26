@@ -46,6 +46,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -335,6 +336,7 @@ public class DBQueryEngine implements QueryEngine
                 }
                 
                 Node node = context.getResultObject();
+                addStoreInfo(node);
                 
                 boolean shouldCache = nodes.size() >= options.getSkipCount();
                 if(shouldCache)
@@ -455,6 +457,24 @@ public class DBQueryEngine implements QueryEngine
         public NodeRef getValueKey(Node value)
         {
             return value.getNodeRef();
+        }
+    }
+
+    private void addStoreInfo(Node node)
+    {
+        StoreEntity storeEntity = node.getStore();
+        logger.debug("Adding store info for store id " + storeEntity.getId());
+        List<Pair<Long, StoreRef>> stores = nodeDAO.getStores();
+        for (Pair<Long, StoreRef> storeRefPair : stores)
+        {
+            if (storeEntity.getId() == storeRefPair.getFirst())
+            {
+                StoreRef storeRef = storeRefPair.getSecond();
+                storeEntity.setIdentifier(storeRef.getIdentifier());
+                storeEntity.setProtocol(storeRef.getProtocol());
+                logger.debug("Added store info" + storeEntity.toString());
+                break;
+            }
         }
     }
 }

@@ -16,7 +16,7 @@
 
    <!-- Records Management Search Parameters-->
 
-   <bean id="recordsManagemantSearchParameters"
+   <bean id="recordsManagementSearchParameters"
          class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters">
       <property name="maxItems">
          <value>${rm.recordSearch.maxItems}</value>
@@ -355,7 +355,7 @@
             </value>
         </property>
        <property name="nodeService" ref="NodeService" />
-       <property name="recordsManagementSearchParameters" ref="recordsManagemantSearchParameters" />
+       <property name="recordsManagementSearchParameters" ref="recordsManagementSearchParameters" />
     </bean>
 
     <bean id="RecordsManagementSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -32,25 +32,25 @@ stages:
     if: commit_message !~ /\[skip tests\]/
   - name: release
     if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no release\]/
-  - name: update_downstream
-    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
-  - name: trigger_downstream
-    if: fork = false AND (branch != master AND branch !~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
+#  - name: update_downstream
+#    if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
+#  - name: trigger_downstream
+#    if: fork = false AND (branch != master AND branch !~ /release\/.*/) AND type != pull_request AND commit_message !~ /\[no downstream\]/
 
 before_install: travis_retry bash scripts/travis/init.sh
 install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 
 jobs:
   include:
-    - name: "WhiteSource scan"
-      stage: test
-      # only on release branches or master and if it is not a PR
-      if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
-      script:
-        # Download the latest version of WhiteSource Unified Agent
-        - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
-        # Run WhiteSource Unified Agent
-        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./packaging/war
+#    - name: "WhiteSource scan"
+#      stage: test
+#      # only on release branches or master and if it is not a PR
+#      if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
+#      script:
+#        # Download the latest version of WhiteSource Unified Agent
+#        - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
+#        # Run WhiteSource Unified Agent
+#        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./packaging/war
 
 #    - name: "Source Clear Scan"
 #      # only on release branches or master and if it is not a PR
@@ -59,194 +59,194 @@ jobs:
 #      addons:
 #        srcclr: true
 
-    - name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
+    - name: "Core, Data-Model - AllUnitTestsSuite - Build and test"
       script:
         - travis_retry mvn -B test -pl core,data-model
-        - travis_retry mvn -B test -pl repository -Dtest=AllUnitTestsSuite
+#        - travis_retry mvn -B test -pl repository -Dtest=AllUnitTestsSuite
 
-    - name: "Repository - AppContext01TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - AppContext02TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - AppContext03TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
-
-    - name: "Repository - AppContext04TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - AppContext05TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - mkdir -p "${HOME}/tmp"
-        - cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
-        - export HOST_IP=$(hostname  -I | cut -f1 -d' ')
-        - docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json quay.io/alfresco/alfresco-identity-service:1.2
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext05TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"
-
-    - name: "Repository - AppContext06TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
-
-    - name: "Repository - AppContextExtraTestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - MiscContextTestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
-
-    - name: "Repository - MySQL tests"
-      if: commit_message !~ /\[skip db\]/
-      before_script:
-        - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - PostgreSQL 10 tests"
-      if: commit_message !~ /\[skip db\]/
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:10.9 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - PostgreSQL 11 tests"
-      if: commit_message !~ /\[skip db\]/
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Repository - MariaDB tests"
-      if: commit_message !~ /\[skip db\]/
-      before_script:
-        - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.2.18 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
-
-    - name: "Remote-api - AppContext01TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Remote-api - AppContext02TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Remote-api - AppContext03TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Remote-api - AppContext04TestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "Remote-api - AppContextExtraTestSuite"
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-    - name: "REST API TAS tests part1"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
-
-    - name: "REST API TAS tests part2"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
-
-    - name: "REST API TAS tests part3"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
-
-    - name: "CMIS TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
-
-    - name: "Email TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 30 mvn -B install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
-
-    - name: "WebDAV TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 30 mvn -B install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
-
-    - name: "Integration TAS tests"
-      if: commit_message =~ /\[tas\]/
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      script:
-        - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+#    - name: "Repository - AppContext01TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - AppContext02TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - AppContext03TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
+#
+#    - name: "Repository - AppContext04TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - AppContext05TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#        - mkdir -p "${HOME}/tmp"
+#        - cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
+#        - export HOST_IP=$(hostname  -I | cut -f1 -d' ')
+#        - docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json quay.io/alfresco/alfresco-identity-service:1.2
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext05TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"
+#
+#    - name: "Repository - AppContext06TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
+#
+#    - name: "Repository - AppContextExtraTestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - MiscContextTestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.5
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8090/ -Dimg.url=http://localhost:8090/ -Dtika.url=http://localhost:8090/ -Dtransform.misc.url=http://localhost:8090/
+#
+#    - name: "Repository - MySQL tests"
+#      if: commit_message !~ /\[skip db\]/
+#      before_script:
+#        - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - PostgreSQL 10 tests"
+#      if: commit_message !~ /\[skip db\]/
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:10.9 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - PostgreSQL 11 tests"
+#      if: commit_message !~ /\[skip db\]/
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Repository - MariaDB tests"
+#      if: commit_message !~ /\[skip db\]/
+#      before_script:
+#        - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.2.18 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+#
+#    - name: "Remote-api - AppContext01TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Remote-api - AppContext02TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Remote-api - AppContext03TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Remote-api - AppContext04TestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "Remote-api - AppContextExtraTestSuite"
+#      before_script:
+#        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
+#        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+#      script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+#
+#    - name: "REST API TAS tests part1"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
+#
+#    - name: "REST API TAS tests part2"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
+#
+#    - name: "REST API TAS tests part3"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
+#
+#    - name: "CMIS TAS tests"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+#
+#    - name: "Email TAS tests"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 30 mvn -B install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+#
+#    - name: "WebDAV TAS tests"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 30 mvn -B install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+#
+#    - name: "Integration TAS tests"
+#      if: commit_message =~ /\[tas\]/
+#      before_script:
+#        - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
+#        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+#      script:
+#        - travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Push to Nexus"
       stage: release
       before_script: bash scripts/travis/verify_release_tag.sh
       script: travis_wait 40 bash scripts/travis/maven_release.sh
 
-    - name: "Update alfresco-enterprise-repo"
-      stage: update_downstream
-      install: skip
-      script: bash scripts/travis/update_downstream.sh
-
-    - name: "Trigger alfresco-enterprise-repo build"
-      stage: trigger_downstream
-      before_install: skip
-      install: skip
-      script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
+#    - name: "Update alfresco-enterprise-repo"
+#      stage: update_downstream
+#      install: skip
+#      script: bash scripts/travis/update_downstream.sh
+#
+#    - name: "Trigger alfresco-enterprise-repo build"
+#      stage: trigger_downstream
+#      before_install: skip
+#      install: skip
+#      script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
 

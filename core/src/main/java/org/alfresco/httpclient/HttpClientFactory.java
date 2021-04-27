@@ -21,7 +21,6 @@ package org.alfresco.httpclient;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AlgorithmParameters;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,14 +31,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.alfresco.encryption.AlfrescoKeyStoreImpl;
 import org.alfresco.encryption.EncryptionUtils;
-import org.alfresco.encryption.Encryptor;
-import org.alfresco.encryption.KeyProvider;
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.KeyStoreParameters;
 import org.alfresco.encryption.ssl.AuthSSLProtocolSocketFactory;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -53,8 +49,6 @@ import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.DefaultHttpParams;
 import org.apache.commons.httpclient.params.DefaultHttpParamsFactory;
 import org.apache.commons.httpclient.params.HttpClientParams;
@@ -75,23 +69,25 @@ import org.apache.commons.logging.LogFactory;
  */
 public class HttpClientFactory
 {
+    /**
+     * Communication type for HttpClient:
+     * - NONE is plain http
+     * - SECRET is plain http with a shared secret via request header
+     * - HTTPS is mTLS with client authentication (certificates are required)
+     */
     public static enum SecureCommsType
     {
-        HTTPS, NONE;
+        HTTPS, NONE, SECRET;
         
         public static SecureCommsType getType(String type)
         {
-            if(type.equalsIgnoreCase("https"))
+            switch (type.toLowerCase())
             {
-                return HTTPS;
-            }
-            else if(type.equalsIgnoreCase("none"))
-            {
-                return NONE;
-            }
-            else
-            {
-                throw new IllegalArgumentException("Invalid communications type");
+                case "https": return HTTPS;
+                case "none": return NONE;
+                case "secret": return SECRET;
+                default: throw new IllegalArgumentException("Invalid communications type");
+                    
             }
         }
     };
@@ -122,14 +118,24 @@ public class HttpClientFactory
 
     private int connectionTimeout = 0;
     
+    // Shared secret parameters
+    private String sharedSecret;
+    private String sharedSecretHeader = DEFAULT_SHAREDSECRET_HEADER;
+
+    // Default name for HTTP Request Header when using shared secret communication
+    public static final String DEFAULT_SHAREDSECRET_HEADER = "X-Alfresco-Search-Secret";
+    
     public HttpClientFactory()
     {
     }
-
+    
+    /**
+     * Default constructor for legacy subsystems.
+     */
     public HttpClientFactory(SecureCommsType secureCommsType, SSLEncryptionParameters sslEncryptionParameters,
-            KeyResourceLoader keyResourceLoader, KeyStoreParameters keyStoreParameters,
-            MD5EncryptionParameters encryptionParameters, String host, int port, int sslPort, int maxTotalConnections,
-            int maxHostConnections, int socketTimeout)
+                KeyResourceLoader keyResourceLoader, KeyStoreParameters keyStoreParameters,
+                MD5EncryptionParameters encryptionParameters, String host, int port, int sslPort,
+                int maxTotalConnections, int maxHostConnections, int socketTimeout)
     {
         this.secureCommsType = secureCommsType;
         this.sslEncryptionParameters = sslEncryptionParameters;
@@ -143,6 +149,21 @@ public class HttpClientFactory
         this.maxHostConnections = maxHostConnections;
         this.socketTimeout = socketTimeout;
         init();
+    }
+
+    /**
+     * Recommended constructor for subsystems supporting Shared Secret communication.
+     * This constructor supports Shared Secret ("secret") communication method additionally to the legacy ones: "none" and "https".
+     */
+    public HttpClientFactory(SecureCommsType secureCommsType, SSLEncryptionParameters sslEncryptionParameters,
+                KeyResourceLoader keyResourceLoader, KeyStoreParameters keyStoreParameters,
+                MD5EncryptionParameters encryptionParameters, String sharedSecret, String sharedSecretHeader, 
+                String host, int port, int sslPort, int maxTotalConnections, int maxHostConnections, int socketTimeout)
+    {
+        this(secureCommsType, sslEncryptionParameters, keyResourceLoader, keyStoreParameters, encryptionParameters,
+                    host, port, sslPort, maxTotalConnections, maxHostConnections, socketTimeout);
+        this.sharedSecret = sharedSecret;
+        this.sharedSecretHeader = sharedSecretHeader;
     }
 
     public void init()
@@ -272,10 +293,44 @@ public class HttpClientFactory
         this.connectionTimeout = connectionTimeout;
     }
 
-    protected HttpClient constructHttpClient()
+    /**
+     * Shared secret used for SECRET communication
+     * @param secret shared secret word
+     */
+    public void setSharedSecret(String sharedSecret)
+    {
+        this.sharedSecret = sharedSecret;
+    }
+    
+    /**
+     * @return Shared secret used for SECRET communication
+     */
+    public String getSharedSecret()
+    {
+        return sharedSecret;
+    }
+    
+    /**
+     * HTTP Request header used for SECRET communication
+     * @param sharedSecretHeader HTTP Request header
+     */
+    public void setSharedSecretHeader(String sharedSecretHeader)
+    {
+        this.sharedSecretHeader = sharedSecretHeader;
+    }
+    
+    /**
+     * @return HTTP Request header used for SECRET communication
+     */
+    public String getSharedSecretHeader()
+    {
+        return sharedSecretHeader;
+    }
+
+    protected RequestHeadersHttpClient constructHttpClient()
     {
         MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-        HttpClient httpClient = new HttpClient(connectionManager);
+        RequestHeadersHttpClient httpClient = new RequestHeadersHttpClient(connectionManager);
         HttpClientParams params = httpClient.getParams();
         params.setBooleanParameter(HttpConnectionParams.TCP_NODELAY, true);
         params.setBooleanParameter(HttpConnectionParams.STALE_CONNECTION_CHECK, true);
@@ -291,15 +346,15 @@ public class HttpClientFactory
         return httpClient;
     }
     
-    protected HttpClient getHttpsClient()
+    protected RequestHeadersHttpClient getHttpsClient()
     {
        return getHttpsClient(host, sslPort);
     }
     
-    protected HttpClient getHttpsClient(String httpsHost, int httpsPort)
+    protected RequestHeadersHttpClient getHttpsClient(String httpsHost, int httpsPort)
     {
         // Configure a custom SSL socket factory that will enforce mutual authentication
-        HttpClient httpClient = constructHttpClient();
+        RequestHeadersHttpClient httpClient = constructHttpClient();
         // Default port is 443 for the HostFactory, when including customised port (like 8983) the port name is skipped from "getHostURL" string
         HttpHostFactory hostFactory = new HttpHostFactory(new Protocol("https", sslSocketFactory, HttpsURL.DEFAULT_PORT));
         httpClient.setHostConfiguration(new HostConfigurationWithHostFactory(hostFactory));
@@ -307,28 +362,54 @@ public class HttpClientFactory
         return httpClient;
     }
 
-    protected HttpClient getDefaultHttpClient()
+    protected RequestHeadersHttpClient getDefaultHttpClient()
     {
         return getDefaultHttpClient(host, port);
     }
     
-    protected HttpClient getDefaultHttpClient(String httpHost, int httpPort)
+    protected RequestHeadersHttpClient getDefaultHttpClient(String httpHost, int httpPort)
     {
-        HttpClient httpClient = constructHttpClient();
+        RequestHeadersHttpClient httpClient = constructHttpClient();
         httpClient.getHostConfiguration().setHost(httpHost, httpPort);
         return httpClient;
+    }
+       
+    /**
+     * Build HTTP Client using default headers
+     * @return RequestHeadersHttpClient including default header for shared secret method
+     */
+    protected RequestHeadersHttpClient constructSharedSecretHttpClient()
+    {
+        RequestHeadersHttpClient client = constructHttpClient();
+        client.setDefaultHeaders(Map.of(sharedSecretHeader, sharedSecret));
+        return client;
+    }
+    
+    protected RequestHeadersHttpClient getSharedSecretHttpClient()
+    {
+        return getSharedSecretHttpClient(host, port);
+    }
+    
+    protected RequestHeadersHttpClient getSharedSecretHttpClient(String httpHost, int httpPort)
+    {
+        RequestHeadersHttpClient httpClient = constructSharedSecretHttpClient();
+        httpClient.getHostConfiguration().setHost(httpHost, httpPort);
+        return httpClient;       
     }
     
     protected AlfrescoHttpClient getAlfrescoHttpsClient()
     {
-        AlfrescoHttpClient repoClient = new HttpsClient(getHttpsClient());
-        return repoClient;
+        return new HttpsClient(getHttpsClient());
     }
 
     protected AlfrescoHttpClient getAlfrescoHttpClient()
     {
-        AlfrescoHttpClient repoClient = new DefaultHttpClient(getDefaultHttpClient());
-        return repoClient;
+        return new DefaultHttpClient(getDefaultHttpClient());
+    }
+    
+    protected AlfrescoHttpClient getAlfrescoSharedSecretClient()
+    {
+        return new DefaultHttpClient(getSharedSecretHttpClient());
     }
     
     protected HttpClient getMD5HttpClient(String host, int port)
@@ -341,65 +422,36 @@ public class HttpClientFactory
     
     public AlfrescoHttpClient getRepoClient(String host, int port)
     {
-        AlfrescoHttpClient repoClient = null;
-
-        if(secureCommsType == SecureCommsType.HTTPS)
+        switch (secureCommsType)
         {
-            repoClient = getAlfrescoHttpsClient();
+            case HTTPS: return getAlfrescoHttpsClient();
+            case NONE: return getAlfrescoHttpClient();
+            case SECRET: return getAlfrescoSharedSecretClient();
+            default: throw new AlfrescoRuntimeException("Invalid Solr secure communications type configured in [solr|alfresco].secureComms, should be 'ssl', 'none' or 'secret'");
         }
-        else if(secureCommsType == SecureCommsType.NONE)
+    }
+ 
+    public RequestHeadersHttpClient getHttpClient()
+    {       
+        switch (secureCommsType)
         {
-            repoClient = getAlfrescoHttpClient();
+            case HTTPS: return getHttpsClient();
+            case NONE: return getDefaultHttpClient();
+            case SECRET: return getSharedSecretHttpClient();
+            default: throw new AlfrescoRuntimeException("Invalid Solr secure communications type configured in [solr|alfresco].secureComms, should be 'ssl', 'none' or 'secret'");
         }
-        else
-        {
-            throw new AlfrescoRuntimeException("Invalid Solr secure communications type configured in alfresco.secureComms, should be 'ssl'or 'none'");
-        }
-
-        return repoClient;
     }
     
-    public HttpClient getHttpClient()
+    public RequestHeadersHttpClient getHttpClient(String host, int port)
     {
-        HttpClient httpClient = null;
-
-        if(secureCommsType == SecureCommsType.HTTPS)
+        switch (secureCommsType)
         {
-            httpClient = getHttpsClient();
+            case HTTPS: return getHttpsClient(host, port);
+            case NONE: return getDefaultHttpClient(host, port);
+            case SECRET: return getSharedSecretHttpClient(host, port);
+            default: throw new AlfrescoRuntimeException("Invalid Solr secure communications type configured in [solr|alfresco].secureComms, should be 'ssl', 'none' or 'secret'");
         }
-        else if(secureCommsType == SecureCommsType.NONE)
-        {
-            httpClient = getDefaultHttpClient();
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("Invalid Solr secure communications type configured in alfresco.secureComms, should be 'ssl'or 'none'");
-        }
-
-        return httpClient;
     }
-    
-    public HttpClient getHttpClient(String host, int port)
-    {
-        HttpClient httpClient = null;
-
-        if(secureCommsType == SecureCommsType.HTTPS)
-        {
-            httpClient = getHttpsClient(host, port);
-        }
-        else if(secureCommsType == SecureCommsType.NONE)
-        {
-            httpClient = getDefaultHttpClient(host, port);
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("Invalid Solr secure communications type configured in alfresco.secureComms, should be 'ssl'or 'none'");
-        }
-
-        return httpClient;
-    }
-    
-
     
     /**
      * A secure client connection to the repository.

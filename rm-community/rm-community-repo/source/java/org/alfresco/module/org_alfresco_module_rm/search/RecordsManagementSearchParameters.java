@@ -87,7 +87,7 @@ public class RecordsManagementSearchParameters
     private static final List<QName> DEFAULT_INCLUDED_CONTAINER_TYPES = Collections.emptyList();
 
     /** Max items */
-    private int maxItems = 500;
+    private int maxItems;
 
     private boolean includeRecords = true;
     private boolean includeUndeclaredRecords = false;

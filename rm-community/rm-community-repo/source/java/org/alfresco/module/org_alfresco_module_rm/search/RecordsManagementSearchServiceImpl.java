@@ -93,6 +93,11 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     /** List of report details */
 	private List<ReportDetails> reports = new ArrayList<>(13);
 
+    /**
+     * Records Search Parameters
+     */
+    private RecordsManagementSearchParameters recordsManagementSearchParameters;
+
 	/**
 	 * @param fileFolderService    file folder service
 	 */
@@ -176,14 +181,13 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                    }
                }
 
-               RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
                if (report.has("searchparams"))
                {
-                   searchParameters = RecordsManagementSearchParameters.createFromJSON(report.getJSONObject("searchparams"), namespaceService);
+                   recordsManagementSearchParameters = RecordsManagementSearchParameters.createFromJSON(report.getJSONObject("searchparams"), namespaceService);
                }
 
                // Create the report details and add to list
-               ReportDetails reportDetails = new ReportDetails(name, description, query, searchParameters);
+               ReportDetails reportDetails = new ReportDetails(name, description, query, recordsManagementSearchParameters);
                reports.add(reportDetails);
            }
 	    }
@@ -191,6 +195,16 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 	    {
 	        throw new AlfrescoRuntimeException("Unable to load report details.\n" + reportsJSON, exception);
 	    }
+    }
+
+    /**
+     * Set RecordsManagementSearchParameters service
+     *
+     * @param recordsManagementSearchParameters
+     */
+    public void setRecordsManagementSearchParameters(RecordsManagementSearchParameters recordsManagementSearchParameters)
+    {
+        this.recordsManagementSearchParameters = recordsManagementSearchParameters;
     }
 
 	/**
@@ -213,7 +227,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         searchParameters.setQuery(fullQuery.toString());
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        searchParameters.setMaxItems(rmSearchParameters.getMaxItems());
+        searchParameters.setMaxItems(recordsManagementSearchParameters.getMaxItems());
         searchParameters.setNamespace(RecordsManagementModel.RM_URI);
 
         // set sort

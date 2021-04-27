@@ -930,7 +930,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             if (asOfDateInPast && !combineSteps)
             {
                 return true;
-            } else if (!asOfDateInPast && combineSteps)
+            }
+            else if (!asOfDateInPast && combineSteps)
             {
                 return false;
             }

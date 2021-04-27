@@ -121,11 +121,11 @@ git clone git@github.com:Alfresco/acs-community-packaging.git
 If you wish to build these projects from the command line, use the following commands.
 ~~~
 cd alfresco-community-repo
-mvn clean install -PcommunityDocker -DskipTests=true -Dversion.edition=Community
+mvn clean install -Pbuild-docker-images -DskipTests=true -Dversion.edition=Community
 cd ..
 
 cd acs-community-packaging
-mvn clean install -PcommunityDocker -Dmaven.javadoc.skip=true
+mvn clean install -Pbuild-docker-images -Dmaven.javadoc.skip=true
 cd ..
 ~~~
 In Intellij IDEA, create a new project using the `work` directory as the source.

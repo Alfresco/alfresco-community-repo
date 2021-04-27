@@ -618,7 +618,7 @@
 
        <profile>
           <!-- builds "image:latest" locally -->
-          <id>communityDocker</id>
+          <id>build-docker-images</id>
           <build>
              <plugins>
                 <plugin>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -233,7 +233,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition2.TransformationOptionsConverterTest.class,
     org.alfresco.transform.client.registry.TransformServiceRegistryConfigTest.class,
 
-    org.alfresco.repo.event2.RepoEvent2UnitSuite.class
+    org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
+
+    org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class
 })
 public class AllUnitTestsSuite
 {

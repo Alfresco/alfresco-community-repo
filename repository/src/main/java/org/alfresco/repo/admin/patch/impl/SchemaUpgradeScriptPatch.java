@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,6 +41,7 @@ public class SchemaUpgradeScriptPatch extends AbstractPatch
     private static final String MSG_NOT_EXECUTED = "patch.schemaUpgradeScript.err.not_executed";
     
     private String scriptUrl;
+    private String problemsPatternFileUrl;
     
     public SchemaUpgradeScriptPatch()
     {
@@ -54,6 +55,11 @@ public class SchemaUpgradeScriptPatch extends AbstractPatch
         return scriptUrl;
     }
     
+    public String getProblemPatternsFileUrl()
+    {
+        return problemsPatternFileUrl;
+    }
+
     /**
      * Set the URL of the upgrade scriptUrl to execute.  This is the full URL of the
      * file, e.g. <b>classpath:alfresco/patch/scripts/upgrade-1.4/${hibernate.dialect.class}/patchAlfrescoSchemaUpdate-1.4-2.sql</b>
@@ -65,6 +71,19 @@ public class SchemaUpgradeScriptPatch extends AbstractPatch
     public void setScriptUrl(String script)
     {
         this.scriptUrl = script;
+    }
+
+    /**
+     * Set the URL of the problems pattern file to accompany the upgrade script.  This is the full URL of the
+     * file, e.g. <b>classpath:alfresco/patch/scripts/upgrade-1.4/${hibernate.dialect.class}/patchAlfrescoSchemaUpdate-1.4-2-problems.txt</b>
+     * where the <b>${hibernate.dialect.class}</b> placeholder will be substituted with the Hibernate
+     * <code>Dialect</code> as configured for the system.
+     *
+     * @param problemsFile the problems file
+     */
+    public void setProblemsPatternFileUrl(String problemsFile)
+    {
+        this.problemsPatternFileUrl = problemsFile;
     }
 
     protected void checkProperties()

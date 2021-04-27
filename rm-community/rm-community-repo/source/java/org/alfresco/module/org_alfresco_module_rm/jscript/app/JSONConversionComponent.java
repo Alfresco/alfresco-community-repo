@@ -513,22 +513,25 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         // Set the actions array
         setActions(rmNodeValues, nodeRef);
 
-
-        //Add details of the next incomplete event in the disposition schedule
-        if(dispositionService.getNextDispositionAction(nodeRef) != null)
-        {
-            for(EventCompletionDetails details: dispositionService.getNextDispositionAction(nodeRef).getEventCompletionDetails())
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            //Add details of the next incomplete event in the disposition schedule
+            if (dispositionService.getNextDispositionAction(nodeRef) != null)
             {
-                if(!details.isEventComplete())
+                for (EventCompletionDetails details : dispositionService.getNextDispositionAction(nodeRef).getEventCompletionDetails())
                 {
-                    HashMap properties = ((HashMap) rmNodeValues.get("properties"));
-                    properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
-                    properties.put("incompleteDispositionEvent", details.getEventName());
-                    properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
-                    break;
+                    if (!details.isEventComplete())
+                    {
+                        HashMap properties = (HashMap) rmNodeValues.get("properties");
+                        properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+                        properties.put("incompleteDispositionEvent", details.getEventName());
+                        properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
+
+                        break;
+                    }
                 }
             }
-        }
+            return null;
+        });
 
         return rmNodeValues;
     }

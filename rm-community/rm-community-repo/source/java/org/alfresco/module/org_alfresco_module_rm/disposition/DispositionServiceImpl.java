@@ -447,10 +447,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
-
-        if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
+        if (getInternalNodeService().hasAspect(nodeRef, ASPECT_SCHEDULED))
         {
-            List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> childAssocs = getInternalNodeService().getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
             if (!childAssocs.isEmpty())
             {
                 ChildAssociationRef firstChildAssocRef = childAssocs.get(0);
@@ -898,25 +897,27 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
         DispositionAction nextDa = getNextDispositionAction(nodeRef);
+
         if (di != null &&
-            this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
-            nextDa != null)
+                nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
+                nextDa != null)
         {
             // for accession step we can have also AND between step conditions
-            Boolean combineSteps = false;
+            boolean combineSteps = false;
             if (nextDa.getName().equals("accession"))
             {
                 NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
-                if (accessionNodeRef != null) {
-                    Boolean combineStepsProp = (Boolean)this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                if (accessionNodeRef != null)
+                {
+                    Boolean combineStepsProp = (Boolean) getInternalNodeService().getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
                     if (combineStepsProp != null)
                     {
                         combineSteps = combineStepsProp;
                     }
                 }
             }
-            Date asOf = (Date)this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
-            Boolean asOfDateInPast = false;
+            Date asOf = (Date) getInternalNodeService().getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
+            boolean asOfDateInPast = false;
             if (asOf != null)
             {
                 asOfDateInPast = asOf.before(new Date());
@@ -925,7 +926,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             {
                 return true;
             }
-            else if(!asOfDateInPast && combineSteps)
+            else if (!asOfDateInPast && combineSteps)
             {
                 return false;
             }
@@ -933,13 +934,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             DispositionActionDefinition dad = da.getDispositionActionDefinition();
             if (dad != null)
             {
-                boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
+                boolean firstComplete =  authenticationUtil.runAsSystem(() -> dad.eligibleOnFirstCompleteEvent());
 
-                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
+                List<ChildAssociationRef> assocs = getInternalNodeService().getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS,
+                        RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef eventExecution = assoc.getChildRef();
-                    Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
+                    Boolean isCompleteValue = (Boolean) getInternalNodeService().getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
                     boolean isComplete = false;
                     if (isCompleteValue != null)
                     {
@@ -1227,7 +1229,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
         DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(dispositionSchedule);
+        List<ChildAssociationRef> assocs = getInternalNodeService().getChildAssocs(dispositionSchedule);
+
         if (assocs != null && !assocs.isEmpty())
         {
             for (ChildAssociationRef assoc : assocs)
@@ -1235,7 +1238,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 if (assoc != null && assoc.getQName().getLocalName().contains(dispositionActionName))
                 {
                     DispositionActionDefinition actionDefinition = ds.getDispositionActionDefinition(assoc.getChildRef().getId());
-                    return calculateAsOfDate(record, actionDefinition);
+
+                    return authenticationUtil.runAsSystem(() -> calculateAsOfDate(record, actionDefinition));
                 }
             }
         }

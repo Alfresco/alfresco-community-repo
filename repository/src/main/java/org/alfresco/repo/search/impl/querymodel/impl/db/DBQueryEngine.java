@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -471,7 +472,7 @@ public class DBQueryEngine implements QueryEngine
         logger.debug("Adding store info for store id " + storeEntity.getId());
         for (Pair<Long, StoreRef> storeRefPair : stores)
         {
-            if (storeEntity.getId() == storeRefPair.getFirst())
+            if (Objects.equals(storeEntity.getId(), storeRefPair.getFirst()))
             {
                 StoreRef storeRef = storeRefPair.getSecond();
                 storeEntity.setIdentifier(storeRef.getIdentifier());

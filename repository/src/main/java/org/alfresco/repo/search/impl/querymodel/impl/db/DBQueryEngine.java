@@ -217,9 +217,6 @@ public class DBQueryEngine implements QueryEngine
             logger.debug("Query request received");
         }
 
-        // get list of stores from database
-        stores = nodeDAO.getStores();
-
         Set<String> selectorGroup = null;
         if (query.getSource() != null)
         {
@@ -319,6 +316,9 @@ public class DBQueryEngine implements QueryEngine
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
     {
+        // get list of stores from database
+        stores = nodeDAO.getStores();
+
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
         

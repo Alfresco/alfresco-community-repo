@@ -25,12 +25,15 @@
  */
 package org.alfresco.repo.content.filestore;
 
+import static org.alfresco.repo.content.StorageClassesEnum.STANDARD;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -39,6 +42,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStoreCreatedEvent;
 import org.alfresco.repo.content.EmptyContentReader;
+import org.alfresco.repo.content.StorageClassesEnum;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -82,7 +86,8 @@ public class FileContentStore
     public static final String SPOOF_PROTOCOL = "spoof";
     
     private static final Log logger = LogFactory.getLog(FileContentStore.class);
-    private static final String FILE_STORAGE_CLASS = "file";
+
+    private static final Map<StorageClassesEnum, Set<StorageClassesEnum>> STORAGE_CLASSES_TRANSITIONS = Map.of(STANDARD, Set.of(STANDARD));
 
     private File rootDirectory;
     private String rootAbsolutePath;
@@ -639,7 +644,7 @@ public class FileContentStore
     public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
         // TODO : Mocked
-        return storageClasses.contains(FILE_STORAGE_CLASS);
+        return storageClasses.contains(STANDARD.getLabel());
     }
 
     /*
@@ -663,7 +668,7 @@ public class FileContentStore
         {
             if (exists(contentUrl))
             {
-                return Set.of(FILE_STORAGE_CLASS);
+                return Set.of(STANDARD.getLabel());
             }
             else
             {
@@ -680,6 +685,22 @@ public class FileContentStore
     @Override
     public Set<String> getSupportedStorageClasses()
     {
-        return Set.of(FILE_STORAGE_CLASS);
+        return STORAGE_CLASSES_TRANSITIONS.keySet().stream()
+            .map(StorageClassesEnum::getLabel)
+            .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitions()
+    {
+        return STORAGE_CLASSES_TRANSITIONS;
+    }
+
+    @Override
+    public Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitionForNode(
+        String contentUrl)
+    {
+        // There are no other checks or manipulations required as this is the only supported storage class.
+        return STORAGE_CLASSES_TRANSITIONS;
     }
 }

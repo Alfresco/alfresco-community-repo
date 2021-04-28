@@ -26,6 +26,7 @@
 package org.alfresco.repo.content.replication;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassesEnum;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.content.caching.CachingContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -484,6 +486,90 @@ public class AggregatingContentStore extends AbstractContentStore
             }
 
             return storageClasses;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitions()
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+        }
+        final Map<StorageClassesEnum, Set<StorageClassesEnum>> allAllowedStorageClassTransitions = new HashMap<>(
+            primaryStore.getAllowedStorageClassesTransitions());
+
+        for (ContentStore store : secondaryStores)
+        {
+            allAllowedStorageClassTransitions.putAll(store.getAllowedStorageClassesTransitions());
+        }
+        return allAllowedStorageClassTransitions;
+    }
+
+    @Override
+    public Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitionForNode(String contentUrl)
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+        }
+
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        try
+        {
+            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+            boolean contentUrlSupported = true;
+            Set<String> storageClasses = null;
+
+            // Check the primary store
+            try
+            {
+                storageClasses = primaryStore.getStorageClassesForNode(contentUrl);
+            }
+            catch (UnsupportedContentUrlException e)
+            {
+                // The store can't handle the content URL
+                contentUrlSupported = false;
+            }
+
+            if (storageClasses != null)
+            {
+                return primaryStore.getAllowedStorageClassesTransitionForNode(contentUrl);
+            }
+
+            // the content is not in the primary store so we have to go looking for it
+            ContentStore store = null;
+            for (ContentStore secondaryStore : secondaryStores)
+            {
+                store = secondaryStore;
+                try
+                {
+                    storageClasses = store.getStorageClassesForNode(contentUrl);
+                }
+                catch (UnsupportedContentUrlException e)
+                {
+                    // The store can't handle the content URL
+                    contentUrlSupported = false;
+                }
+
+                if (storageClasses != null)
+                {
+                    break;
+                }
+            }
+
+            if ((storageClasses == null && !contentUrlSupported) || store == null)
+            {
+                    // The content URL was not supported
+                    throw new UnsupportedContentUrlException(this, contentUrl);
+            }
+
+            return store.getAllowedStorageClassesTransitionForNode(contentUrl);
         }
         finally
         {

@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassesEnum;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -512,5 +513,17 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     public Set<String> getStorageClassesForNode(String contentUrl)
     {
         return backingStore.getStorageClassesForNode(contentUrl);
+    }
+
+    @Override
+    public Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitions()
+    {
+        return backingStore.getAllowedStorageClassesTransitions();
+    }
+
+    @Override
+    public Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitionForNode(String contentUrl)
+    {
+        return backingStore.getAllowedStorageClassesTransitionForNode(contentUrl);
     }
 }

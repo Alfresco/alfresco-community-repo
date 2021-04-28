@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,7 +92,6 @@ public interface ContentStore
      * The delimiter that must be found in all URLS, i.e <b>://</b>
      */
     public static final String PROTOCOL_DELIMITER = "://";
-    public static final String DEFAULT = "DEFAULT";
 
     /**
      * Check if the content URL format is supported by the store.
@@ -286,5 +286,15 @@ public interface ContentStore
     default Set<String> getStorageClassesForNode(String contentUrl)
     {
         return Collections.emptySet();
+    }
+
+    default Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitions()
+    {
+        return new HashMap<>();
+    }
+
+    default Map<StorageClassesEnum, Set<StorageClassesEnum>> getAllowedStorageClassesTransitionForNode(String contentUrl)
+    {
+        return new HashMap<>();
     }
 }

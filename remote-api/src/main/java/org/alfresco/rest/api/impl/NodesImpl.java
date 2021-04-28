@@ -2369,6 +2369,8 @@ public class NodesImpl implements Nodes
         processNodePermissions(nodeRef, nodeInfo);
 
         final Set<String> newStorageClasses = nodeInfo.getContent().getStorageClasses();
+
+        // contentService.getSupportedTransitions(nodeRef)
         if (contentService.isStorageClassesSupported(newStorageClasses))
         {
             contentService.updateStorageClasses(nodeRef, newStorageClasses, null);

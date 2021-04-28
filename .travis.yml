@@ -293,7 +293,7 @@ jobs:
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
-    - name: "Share Service - ShareServicesTestSuite"
+    - name: "Share Services - ShareServicesTestSuite"
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'

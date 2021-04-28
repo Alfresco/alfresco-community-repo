@@ -14,7 +14,8 @@ else
   PROFILES="-Pbuild-docker-images"
 fi
 
-mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true "${PROFILES}"
+# Build the current project
+mvn -B -V install -DskipTests -Dmaven.javadoc.skip=true "${PROFILES}" -Pags
 
 
 popd

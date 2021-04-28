@@ -12,6 +12,17 @@
 
     <modules>
         <module>share-services</module>
-        <module>ags</module>
     </modules>
+
+    <!-- When adding a new AMP, create a profile for it here to add the module. The AMPS environment variable may
+         then be used in aliases to optionally build it. The profile will however need to be added to the Travis
+         build scripts. The share-services AMP is build by default as it is very fast. -->
+    <profiles>
+        <profile>
+            <id>ags</id>
+            <modules>
+                <module>ags</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

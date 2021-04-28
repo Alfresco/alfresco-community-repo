@@ -217,6 +217,7 @@ public class DBQueryEngine implements QueryEngine
             logger.debug("Query request received");
         }
 
+        // get list of stores from database
         stores = nodeDAO.getStores();
 
         Set<String> selectorGroup = null;

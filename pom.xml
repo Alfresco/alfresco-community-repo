@@ -85,7 +85,7 @@
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
 
-        <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
+        <dependency.jakarta-jaxb-api.version>3.0.1</dependency.jakarta-jaxb-api.version>
         <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
         <dependency.jakarta-soap-api.version>1.4.2</dependency.jakarta-soap-api.version>
         <dependency.jakarta-activation-api.version>1.2.2</dependency.jakarta-activation-api.version>

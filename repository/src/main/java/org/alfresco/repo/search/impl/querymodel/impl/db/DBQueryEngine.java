@@ -112,6 +112,8 @@ public class DBQueryEngine implements QueryEngine
     private long maxPermissionCheckTimeMillis;
 
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
+
+    private List<Pair<Long, StoreRef>> stores;
     
     AclCrudDAO aclCrudDAO;
 
@@ -214,6 +216,8 @@ public class DBQueryEngine implements QueryEngine
             start = System.currentTimeMillis();
             logger.debug("Query request received");
         }
+
+        stores = nodeDAO.getStores();
 
         Set<String> selectorGroup = null;
         if (query.getSource() != null)
@@ -464,7 +468,6 @@ public class DBQueryEngine implements QueryEngine
     {
         StoreEntity storeEntity = node.getStore();
         logger.debug("Adding store info for store id " + storeEntity.getId());
-        List<Pair<Long, StoreRef>> stores = nodeDAO.getStores();
         for (Pair<Long, StoreRef> storeRefPair : stores)
         {
             if (storeEntity.getId() == storeRefPair.getFirst())

@@ -282,14 +282,6 @@
                   <goals>
                      <goal>site</goal>
                   </goals>
-                  <configuration>
-                     <reportPlugins>
-                        <reportPlugin>
-                           <groupId>org.apache.maven.plugins</groupId>
-                           <artifactId>maven-project-info-reports-plugin</artifactId>
-                        </reportPlugin>
-                     </reportPlugins>
-                  </configuration>
                </execution>
                <execution>
                   <id>default-deploy</id>
@@ -297,24 +289,8 @@
                   <goals>
                      <goal>deploy</goal>
                   </goals>
-                  <configuration>
-                     <reportPlugins>
-                        <reportPlugin>
-                           <groupId>org.apache.maven.plugins</groupId>
-                           <artifactId>maven-project-info-reports-plugin</artifactId>
-                        </reportPlugin>
-                     </reportPlugins>
-                  </configuration>
                </execution>
             </executions>
-            <configuration>
-               <reportPlugins>
-                  <reportPlugin>
-                     <groupId>org.apache.maven.plugins</groupId>
-                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                  </reportPlugin>
-               </reportPlugins>
-            </configuration>
          </plugin>
       </plugins>
       <extensions>
@@ -643,6 +619,15 @@
          </plugins>
       </pluginManagement>
    </build>
+
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </reporting>
 
    <profiles>
       <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->

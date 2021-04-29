@@ -38,9 +38,6 @@
       <maven.javadoc.skip>true</maven.javadoc.skip>
       <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
-      <java.version>11</java.version>
-      <maven.compiler.source>${java.version}</maven.compiler.source>
-      <maven.compiler.target>${java.version}</maven.compiler.target>
       <testJavaVersion>${java.version}</testJavaVersion>
       <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
       <maven.compiler.version>3.8.0</maven.compiler.version>
@@ -252,7 +249,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
             <executions>
                <execution>
                   <id>default-install</id>
@@ -354,34 +350,9 @@
       <pluginManagement>
          <plugins>
             <plugin>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <version>2.22.1</version>
-               <configuration>
-                  <argLine>
-                     --illegal-access=permit
-                  </argLine>
-               </configuration>
-            </plugin>
-            <plugin>
-               <artifactId>maven-install-plugin</artifactId>
-               <version>2.5.2</version>
-            </plugin>
-            <plugin>
-               <artifactId>maven-jar-plugin</artifactId>
-               <version>3.1.0</version>
-            </plugin>
-            <plugin>
-               <artifactId>maven-assembly-plugin</artifactId>
-               <version>3.1.0</version>
-            </plugin>
-            <plugin>
                <groupId>org.alfresco.maven.plugin</groupId>
                <artifactId>alfresco-maven-plugin</artifactId>
-               <version>2.1.1</version>
                <extensions>true</extensions>
-               <configuration>
-                  <snapshotToTimestamp>true</snapshotToTimestamp>
-               </configuration>
             </plugin>
             <plugin>
                <artifactId>maven-compiler-plugin</artifactId>
@@ -604,7 +575,6 @@
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
                      <artifactId>alfresco-maven-plugin</artifactId>
-                     <version>2.1.1</version>
                   </dependency>
                </dependencies>
                <configuration>

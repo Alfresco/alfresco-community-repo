@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -112,6 +113,8 @@ public class DBQueryEngine implements QueryEngine
     private long maxPermissionCheckTimeMillis;
 
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
+
+    private List<Pair<Long, StoreRef>> stores;
     
     AclCrudDAO aclCrudDAO;
 
@@ -314,6 +317,9 @@ public class DBQueryEngine implements QueryEngine
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
     {
+        // get list of stores from database
+        stores = nodeDAO.getStores();
+
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
         
@@ -464,10 +470,9 @@ public class DBQueryEngine implements QueryEngine
     {
         StoreEntity storeEntity = node.getStore();
         logger.debug("Adding store info for store id " + storeEntity.getId());
-        List<Pair<Long, StoreRef>> stores = nodeDAO.getStores();
         for (Pair<Long, StoreRef> storeRefPair : stores)
         {
-            if (storeEntity.getId() == storeRefPair.getFirst())
+            if (Objects.equals(storeEntity.getId(), storeRefPair.getFirst()))
             {
                 StoreRef storeRef = storeRefPair.getSecond();
                 storeEntity.setIdentifier(storeRef.getIdentifier());

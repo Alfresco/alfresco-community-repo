@@ -64,6 +64,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/*
+ * Note: this test has to be run on an empty database (no tables)
+ */
 @Category({OwnJVMTestsCategory.class})
 public class SchemaBootstrapTest
 {

@@ -12,8 +12,6 @@
 
     <properties>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <build>
@@ -68,7 +66,7 @@
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>api-explorer</artifactId>
-         <version>${api.explorer.version}</version>
+         <version>${alfresco.api-explorer.version}</version>
          <type>war</type>
       </dependency>
    </dependencies>

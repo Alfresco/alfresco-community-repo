@@ -26,6 +26,7 @@
         <acs.version.minor>1</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
+        <amp.min.version>${acs.version.major}.0.0</amp.min.version>
 
         <version.edition>Community</version.edition>
         <licenseName>community</licenseName>
@@ -65,6 +66,7 @@
         <dependency.webscripts.version>8.18</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.8.0</dependency.mockito-core.version>
+        <dependency.mockito-all.version>1.10.19</dependency.mockito-all.version>
         <dependency.org-json.version>20210307</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
@@ -85,6 +87,7 @@
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.1</dependency.camel.version>
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
+        <dependency.apache-compress.version>1.20</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
         <swagger-ui.version>3.38.0</swagger-ui.version>
@@ -105,9 +108,9 @@
         <alfresco.api-explorer.version>7.0.0</alfresco.api-explorer.version>
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
 
-
         <dependency.postgresql.version>42.2.19</dependency.postgresql.version>
         <dependency.mysql.version>8.0.23</dependency.mysql.version>
+        <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
@@ -119,52 +122,20 @@
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
 
         <!-- AGS properties shared between community and enterprise -->
-
-        <alfresco-spring-webscripts.version>8.15</alfresco-spring-webscripts.version>
-
-        <alfresco.min.version>7.0.0</alfresco.min.version>
-
-        <activemq.version>5.15.8</activemq.version>
         <activemq.port1>61616</activemq.port1>
         <activemq.port2>5672</activemq.port2>
-        <camel.mock.version>3.7.0</camel.mock.version>
-        <share.client.contextPath>/share</share.client.contextPath>
-
-        <testJavaVersion>${java.version}</testJavaVersion>
-
-        <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
-        <maven.compiler.version>3.8.0</maven.compiler.version>
-        <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
-        <maven.resources.version>3.1.0</maven.resources.version>
-        <maven.tomcat.port>8080</maven.tomcat.port>
-
-        <jackson.version>2.12.1</jackson.version>
-        <jackson-databind.version>2.12.1</jackson-databind.version>
-        <fabric8.docker.version>0.34.1</fabric8.docker.version>
-        <mockito.version>1.10.19</mockito.version>
-
-        <postgresql.version>42.2.16</postgresql.version>
         <postgresql.port>5432</postgresql.port>
-        <mysql.version>5.1.40</mysql.version>
+        <postgresql.tests.port>5431</postgresql.tests.port>
         <mysql.port>3306</mysql.port>
-        <!--This prevents a clash when postgres is already running natively on the machine.-->
-        <database.port>5431</database.port>
+        <mysql.tests.port>3307</mysql.tests.port>
 
-        <license.update.dryrun>true</license.update.dryrun>
-        <license.verbose>false</license.verbose>
-
-        <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
-        <app.amp.folder>src/main/amp</app.amp.folder>
-        <app.amp.output.folder>../${project.build.finalName}</app.amp.output.folder>
-        <app.properties.include>**</app.properties.include>
-        <app.properties.folder>src/main/properties/local</app.properties.folder>
-        <app.properties.test.include>**</app.properties.test.include>
-        <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
-
-        <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
-        <javax-jaxb-impl.version>3.0.0-M4</javax-jaxb-impl.version>
-        <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
-        <apache-compress.version>1.19</apache-compress.version>
+        <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
+        <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+        <alfresco.db.name>alfresco</alfresco.db.name>
+        <alfresco.db.username>alfresco</alfresco.db.username>
+        <alfresco.db.password>alfresco</alfresco.db.password>
+        <alfresco.db.host>localhost</alfresco.db.host>
+        <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
     </properties>
 
     <scm>
@@ -529,6 +500,16 @@
                 <version>${dependency.jackson-databind.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-joda</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
@@ -661,7 +642,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.20</version>
+                <version>${dependency.apache-compress.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -750,13 +731,19 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>gunit</artifactId>
                 <version>${dependency.antlr.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${dependency.mockito-all.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

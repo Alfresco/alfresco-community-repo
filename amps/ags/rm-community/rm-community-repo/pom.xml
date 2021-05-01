@@ -402,47 +402,6 @@
             </configuration>
          </plugin>
       </plugins>
-
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <groupId>org.eclipse.m2e</groupId>
-               <artifactId>lifecycle-mapping</artifactId>
-               <configuration>
-                  <lifecycleMappingMetadata>
-                     <pluginExecutions>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>org.codehaus.mojo</groupId>
-                              <artifactId>properties-maven-plugin</artifactId>
-                              <versionRange>[1.0-alpha-2,)</versionRange>
-                              <goals>
-                                 <goal>read-project-properties</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore />
-                           </action>
-                        </pluginExecution>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>org.codehaus.mojo</groupId>
-                              <artifactId>license-maven-plugin</artifactId>
-                              <versionRange>[1.8,)</versionRange>
-                              <goals>
-                                 <goal>update-file-header</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore />
-                           </action>
-                        </pluginExecution>
-                     </pluginExecutions>
-                  </lifecycleMappingMetadata>
-               </configuration>
-            </plugin>
-         </plugins>
-      </pluginManagement>
    </build>
 
    <profiles>

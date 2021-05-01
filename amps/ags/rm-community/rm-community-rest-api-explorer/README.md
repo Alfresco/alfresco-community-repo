@@ -19,7 +19,7 @@ Now the application is running at [http://localhost:8085/api-explorer](http://lo
 #### Config option
 You can run tomcat on another port using the following command
 
-- ` mvn clean install -Pstart-api-explorer -Dmaven.tomcat.port=8086`
+- ` mvn clean install -Pstart-api-explorer`
 
 Then the application will run at [http://localhost:8086/api-explorer](http://localhost:8086/api-explorer/)
 

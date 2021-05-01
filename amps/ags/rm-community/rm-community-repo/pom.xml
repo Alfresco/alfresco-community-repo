@@ -29,11 +29,8 @@
       <postgresql.tests.port>5431</postgresql.tests.port>
 
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
-      <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
 
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
-
-      <maven.javadoc.skip>false</maven.javadoc.skip>
    </properties>
 
    <dependencies>
@@ -84,6 +81,7 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
+         <version>${dependency.webscripts.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>

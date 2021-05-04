@@ -183,7 +183,6 @@
 
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.1</version>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
                 <executions>
                     <execution>

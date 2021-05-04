@@ -26,6 +26,7 @@
         <acs.version.minor>1</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
+        <amp.min.version>${acs.version.major}.0.0</amp.min.version>
 
         <version.edition>Community</version.edition>
         <licenseName>community</licenseName>
@@ -38,6 +39,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.build.sourceVersion>${java.version}</maven.build.sourceVersion>
+        <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
+        <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
 
@@ -63,6 +66,7 @@
         <dependency.webscripts.version>8.18</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.8.0</dependency.mockito-core.version>
+        <dependency.mockito-all.version>1.10.19</dependency.mockito-all.version>
         <dependency.org-json.version>20210307</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
@@ -83,8 +87,10 @@
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.1</dependency.camel.version>
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
+        <dependency.apache-compress.version>1.20</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
+        <swagger-ui.version>3.38.0</swagger-ui.version>
 
         <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
         <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
@@ -99,9 +105,12 @@
 
         <alfresco.googledrive.version>3.2.1</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.0</alfresco.aos-module.version>
+        <alfresco.api-explorer.version>7.0.0</alfresco.api-explorer.version>
+        <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
 
         <dependency.postgresql.version>42.2.19</dependency.postgresql.version>
         <dependency.mysql.version>8.0.23</dependency.mysql.version>
+        <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
@@ -111,6 +120,22 @@
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
+
+        <!-- AGS properties shared between community and enterprise -->
+        <activemq.port1>61616</activemq.port1>
+        <activemq.port2>5672</activemq.port2>
+        <postgresql.port>5432</postgresql.port>
+        <postgresql.tests.port>5431</postgresql.tests.port>
+        <mysql.port>3306</mysql.port>
+        <mysql.tests.port>3307</mysql.tests.port>
+
+        <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
+        <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+        <alfresco.db.name>alfresco</alfresco.db.name>
+        <alfresco.db.username>alfresco</alfresco.db.username>
+        <alfresco.db.password>alfresco</alfresco.db.password>
+        <alfresco.db.host>localhost</alfresco.db.host>
+        <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
     </properties>
 
     <scm>
@@ -475,6 +500,16 @@
                 <version>${dependency.jackson-databind.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-joda</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
@@ -607,7 +642,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.20</version>
+                <version>${dependency.apache-compress.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -695,13 +730,19 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>gunit</artifactId>
                 <version>${dependency.antlr.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${dependency.mockito-all.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -824,13 +865,28 @@
                     <version>0.34.1</version>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.2</version>
+                    <configuration>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <runOrder>alphabetical</runOrder>
+                        <argLine>
+                            --illegal-access=permit
+                        </argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.2.0</version>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven.war.plugin.version}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>${maven.javadoc.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -841,6 +897,16 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.1.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.alfresco.maven.plugin</groupId>
+                    <artifactId>alfresco-maven-plugin</artifactId>
+                    <version>${alfresco.maven-plugin.version}</version>
+                    <extensions>true</extensions>
                 </plugin>
             </plugins>
         </pluginManagement>

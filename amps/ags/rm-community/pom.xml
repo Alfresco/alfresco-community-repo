@@ -28,31 +28,6 @@
             <artifactId>spring-test</artifactId>
             <version>${dependency.spring.version}</version>
          </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${dependency.jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${dependency.jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${dependency.jackson-databind.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-joda</artifactId>
-            <version>${dependency.jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${dependency.jackson.version}</version>
-         </dependency>
       </dependencies>
    </dependencyManagement>
 </project>

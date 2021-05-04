@@ -62,7 +62,7 @@
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>api-explorer</artifactId>
-         <version>${api.explorer.version}</version>
+         <version>${alfresco.api-explorer.version}</version>
          <type>war</type>
       </dependency>
    </dependencies>

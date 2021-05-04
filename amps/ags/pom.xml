@@ -16,27 +16,13 @@
    </modules>
 
    <properties>
-      <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
-      <alfresco.data.location>${session.executionRootDirectory}/alf_data_dev</alfresco.data.location>
-      <alfresco.db.datasource.class>org.gjt.mm.mysql.Driver</alfresco.db.datasource.class>
-      <alfresco.db.name>alf_dev</alfresco.db.name>
-      <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
-      <alfresco.db.password>alfresco</alfresco.db.password>
-      <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
-      <alfresco.db.username>alfresco</alfresco.db.username>
-
-      <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
-
-      <api.explorer.version>7.0.0</api.explorer.version>
-
-      <alfresco.min.version>7.0.0</alfresco.min.version>
-
-      <activemq.port1>61616</activemq.port1>
-      <activemq.port2>5672</activemq.port2>
+      <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
+      <maven.compiler.version>3.8.0</maven.compiler.version>
+      <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
+      <maven.resources.version>3.1.0</maven.resources.version>
 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
 
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
@@ -45,41 +31,13 @@
       <app.amp.folder>src/main/amp</app.amp.folder>
       <app.amp.output.folder>../${project.build.finalName}</app.amp.output.folder>
       <app.filtering.enabled>true</app.filtering.enabled>
-      <app.log.dir>${project.build.directory}/</app.log.dir>
-      <app.log.root.level>WARN</app.log.root.level>
       <app.properties.include>**</app.properties.include>
       <app.properties.folder>src/main/properties/local</app.properties.folder>
       <app.properties.test.include>**</app.properties.test.include>
       <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
    </properties>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-         </dependency>
-         <dependency>
-            <groupId>org.alfresco.surf</groupId>
-            <artifactId>spring-webscripts</artifactId>
-            <classifier>tests</classifier>
-         </dependency>
-         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${alfresco.postgres.version}</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <dependencies>
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <version>4.13.2</version>
-         <scope>test</scope>
-      </dependency>
       <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
@@ -91,18 +49,16 @@
          <artifactId>jaxb-runtime</artifactId>
          <scope>provided</scope>
       </dependency>
+      <dependency>
+         <groupId>jakarta.jws</groupId>
+         <artifactId>jakarta.jws-api</artifactId>
+         <scope>provided</scope>
+      </dependency>
 
       <dependency>
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-mock</artifactId>
          <scope>test</scope>
-      </dependency>
-
-      <dependency>
-         <groupId>org.apache.bcel</groupId>
-         <artifactId>bcel</artifactId>
-         <version>6.2.99</version>
-         <scope>provided</scope>
       </dependency>
    </dependencies>
 
@@ -144,7 +100,7 @@
                      <regexPropertySettings>
                         <regexPropertySetting>
                            <name>ags.module.repo.version.min</name>
-                           <value>${alfresco.min.version}</value>
+                           <value>${amp.min.version}</value>
                            <regex>(\d+)\.(\d+).*</regex>
                            <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
@@ -187,7 +143,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.1.0</version>
             <configuration>
                <doclint>none</doclint>
             </configuration>
@@ -218,7 +173,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
             <executions>
                <execution>
                   <id>default-install</id>
@@ -252,14 +206,6 @@
                   <goals>
                      <goal>site</goal>
                   </goals>
-                  <configuration>
-                     <reportPlugins>
-                        <reportPlugin>
-                           <groupId>org.apache.maven.plugins</groupId>
-                           <artifactId>maven-project-info-reports-plugin</artifactId>
-                        </reportPlugin>
-                     </reportPlugins>
-                  </configuration>
                </execution>
                <execution>
                   <id>default-deploy</id>
@@ -267,24 +213,8 @@
                   <goals>
                      <goal>deploy</goal>
                   </goals>
-                  <configuration>
-                     <reportPlugins>
-                        <reportPlugin>
-                           <groupId>org.apache.maven.plugins</groupId>
-                           <artifactId>maven-project-info-reports-plugin</artifactId>
-                        </reportPlugin>
-                     </reportPlugins>
-                  </configuration>
                </execution>
             </executions>
-            <configuration>
-               <reportPlugins>
-                  <reportPlugin>
-                     <groupId>org.apache.maven.plugins</groupId>
-                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                  </reportPlugin>
-               </reportPlugins>
-            </configuration>
          </plugin>
       </plugins>
       <extensions>
@@ -320,38 +250,8 @@
       <pluginManagement>
          <plugins>
             <plugin>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <version>2.22.1</version>
-               <configuration>
-                  <argLine>
-                     --illegal-access=permit
-                  </argLine>
-               </configuration>
-            </plugin>
-            <plugin>
-               <artifactId>maven-install-plugin</artifactId>
-               <version>2.5.2</version>
-            </plugin>
-            <plugin>
-               <artifactId>maven-jar-plugin</artifactId>
-               <version>3.1.0</version>
-            </plugin>
-            <plugin>
-               <artifactId>maven-assembly-plugin</artifactId>
-               <version>3.1.0</version>
-            </plugin>
-            <plugin>
-               <groupId>org.alfresco.maven.plugin</groupId>
-               <artifactId>alfresco-maven-plugin</artifactId>
-               <version>2.1.1</version>
-               <extensions>true</extensions>
-               <configuration>
-                  <snapshotToTimestamp>true</snapshotToTimestamp>
-               </configuration>
-            </plugin>
-            <plugin>
                <artifactId>maven-compiler-plugin</artifactId>
-               <version>3.8.0</version>
+               <version>${maven.compiler.version}</version>
                <configuration>
                   <source>${maven.compiler.source}</source>
                   <target>${maven.compiler.target}</target>
@@ -372,7 +272,7 @@
             </plugin>
             <plugin>
                <artifactId>maven-enforcer-plugin</artifactId>
-               <version>3.0.0-M2</version>
+               <version>${maven.enforcer.plugin}</version>
             </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
@@ -395,7 +295,7 @@
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>build-helper-maven-plugin</artifactId>
-               <version>1.9.1</version>
+               <version>${maven.buildhelper.version}</version>
             </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
@@ -474,7 +374,7 @@
             </plugin>
             <plugin>
                <artifactId>maven-resources-plugin</artifactId>
-               <version>3.1.0</version>
+               <version>${maven.resources.version}</version>
                <dependencies>
                   <dependency>
                      <groupId>org.apache.maven.shared</groupId>
@@ -516,18 +416,17 @@
             </plugin>
             <plugin>
                <artifactId>maven-war-plugin</artifactId>
-               <version>3.2.2</version>
                <dependencies>
                   <!-- Needed when creating the community and enterprise rest api wars  -->
                   <dependency>
                      <groupId>org.apache.commons</groupId>
                      <artifactId>commons-compress</artifactId>
-                     <version>1.19</version>
+                     <version>${dependency.apache-compress.version}</version>
                   </dependency>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
                      <artifactId>alfresco-maven-plugin</artifactId>
-                     <version>2.1.1</version>
+                     <version>${alfresco.maven-plugin.version}</version>
                   </dependency>
                </dependencies>
                <configuration>
@@ -595,6 +494,15 @@
       </pluginManagement>
    </build>
 
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </reporting>
+
    <profiles>
       <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
       <profile>
@@ -642,7 +550,6 @@
 
                <plugin>
                   <artifactId>maven-javadoc-plugin</artifactId>
-                  <version>3.1.0</version>
                   <configuration>
                      <doclet>com.docflex.javadoc.Doclet</doclet>
                      <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
@@ -682,7 +589,7 @@
                <plugin>
                   <groupId>org.codehaus.mojo</groupId>
                   <artifactId>build-helper-maven-plugin</artifactId>
-                  <version>1.9.1</version>
+                  <version>${maven.buildhelper.version}</version>
                   <executions>
                      <execution>
                         <id>add-env-test-properties</id>

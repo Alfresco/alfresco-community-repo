@@ -12,22 +12,6 @@
    </parent>
 
    <properties>
-      <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
-      <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
-      <alfresco.db.name>alfresco</alfresco.db.name>
-      <alfresco.db.username>alfresco</alfresco.db.username>
-      <alfresco.db.password>alfresco</alfresco.db.password>
-      <alfresco.db.host>localhost</alfresco.db.host>
-      <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
-
-      <mysql.version>5.7.23</mysql.version>
-      <mysql.port>3306</mysql.port>
-      <mysql.tests.port>3307</mysql.tests.port>
-
-      <postgresql.port>5432</postgresql.port>
-      <!--This prevents a clash when postgres is already running natively on the machine.-->
-      <postgresql.tests.port>5431</postgresql.tests.port>
-
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
 
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
@@ -97,7 +81,7 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>postgresql</groupId>
+         <groupId>org.postgresql</groupId>
          <artifactId>postgresql</artifactId>
          <scope>test</scope>
       </dependency>
@@ -520,7 +504,7 @@
                   <configuration>
                      <images>
                         <image>
-                           <name>mysql:${mysql.version}</name>
+                           <name>mysql:${dependency.mysql-image.version}</name>
                            <run>
                               <ports>
                                  <port>${mysql.tests.port}:${mysql.port}</port>

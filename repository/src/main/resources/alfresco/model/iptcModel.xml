@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="iptcxmp:iptcmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0/modelSchema.xsd">
+
+   <description>IPTC Model</description>
+   <author>rgauss</author>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/content/metadata/IPTCXMP/1.0" prefix="iptcxmp"/>
+      <namespace uri="http://purl.org/dc/elements/1.1/" prefix="dc"/>
+      <namespace uri="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" prefix="Iptc4xmpCore"/>
+      <namespace uri="http://iptc.org/std/Iptc4xmpExt/2008-02-29/" prefix="Iptc4xmpExt"/>
+      <namespace uri="http://ns.adobe.com/photoshop/1.0/" prefix="photoshop"/>
+      <namespace uri="http://ns.useplus.org/ldf/xmp/1.0/" prefix="plus"/>
+      <namespace uri="http://ns.adobe.com/xap/1.0/rights/" prefix="xmpRights"/>
+   </namespaces>
+
+    <!-- Definition of new Content Aspect: IPTC -->
+    <aspects>
+      <aspect name="iptcxmp:iptcxmpAspect">
+         <title>IPTC</title>
+         <properties>
+
+         	<!-- Start of IPTC Core -->
+            <property name="photoshop:City">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:Country">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CountryCode">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="dc:description">
+               <type>d:mltext</type>
+            </property>
+            <property name="photoshop:Headline">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:IntellectualGenre">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="dc:subject">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:State">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:Scene">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:SubjectCode">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:Location">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:DateCreated">
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:CaptionWriter">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:Instructions">
+               <type>d:text</type>
+            </property>
+            <property name="photoshop:TransmissionReference">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="dc:title">
+               <type>d:mltext</type>
+            </property>
+            <property name="dc:rights">
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="dc:creator">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:AuthorsPosition">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:Credit">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="xmpRights:UsageTerms">
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="photoshop:Source">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiAdrExtadr">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="Iptc4xmpCore:CiAdrCity">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiAdrCtry">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiEmailWork">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiTelWork">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiAdrPcode">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiAdrRegion">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpCore:CiUrlWork">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            
+            <!-- Deprecated by IPTC
+            <property name="photoshop:Urgency">
+               <type>d:text</type>
+            </property>
+            <property name="photoshop:Category">
+               <type>d:text</type>
+            </property>
+            <property name="photoshop:SupplementalCategories">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            -->
+            <!-- End of IPTC Core -->
+
+            <!-- Start of IPTC Ext -->
+			<property name="Iptc4xmpExt:AddlModelInfo">
+               <type>d:text</type>
+            </property>
+            <property name="Iptc4xmpExt:OrganisationInImageCode">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:CVterm">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:ModelAge">
+               <type>d:int</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="Iptc4xmpExt:OrganisationInImageName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:PersonInImage">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:DigImageGUID">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <!-- Deprecated by IPTC 
+            <property name="Iptc4xmpExt:DigitalSourcefileType">
+               <type>d:text</type>
+            </property>
+            -->
+            <property name="Iptc4xmpExt:DigitalSourceType">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:Event">
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="plus:ImageSupplierID">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:ImageSupplierName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="plus:ImageSupplierImageID">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:IptcLastEdited">
+               <type>d:datetime</type>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:MaxAvailHeight">
+               <type>d:int</type>
+            </property>
+            <property name="Iptc4xmpExt:MaxAvailWidth">
+               <type>d:int</type>
+            </property>
+            <property name="plus:Version">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:CopyrightOwnerID">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:CopyrightOwnerName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="plus:ImageCreatorID">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:ImageCreatorName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorID">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorCity">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorCountry">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorEmail">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorExtendedAddress">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="plus:LicensorPostalCode">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorRegion">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorStreetAddress">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="plus:LicensorTelephone1">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorTelephoneType1">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorTelephone2">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorTelephoneType2">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:LicensorURL">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:MinorModelAgeDisclosure">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:ModelReleaseID">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:ModelReleaseStatus">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:PropertyReleaseID">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="plus:PropertyReleaseStatus">
+               <type>d:text</type>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:AOCopyrightNotice">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:AOCreator">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:AODateCreated">
+               <type>d:datetime</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:AOSource">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:AOSourceInvNo">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:AOTitle">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="Iptc4xmpExt:LocationShownCity">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationShownCountryCode">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationShownCountryName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationShownProvinceState">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationShownSublocation">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationShownWorldRegion">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationCreatedCity">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationCreatedCountryCode">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationCreatedCountryName">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationCreatedProvinceState">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationCreatedSublocation">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:LocationCreatedWorldRegion">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:RegItemId">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="Iptc4xmpExt:RegOrgId">
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+
+            <!-- End of IPTC Ext -->
+
+         </properties>
+      </aspect>
+      
+   </aspects>
+
+</model>

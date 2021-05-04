@@ -720,7 +720,7 @@
                 <value>alfresco/model/smartfolder-model.xml</value>
 
                 <!-- IPTC model -->
-                <value>alfresco/model/contentModel.xml</value>
+                <value>alfresco/model/iptcModel.xml</value>
 
             </list>
         </property>

@@ -719,6 +719,9 @@
                 <!-- Smart Folders model -->
                 <value>alfresco/model/smartfolder-model.xml</value>
 
+                <!-- IPTC model -->
+                <value>alfresco/model/contentModel.xml</value>
+
             </list>
         </property>
         <property name="labels">
@@ -733,6 +736,7 @@
                 <value>alfresco/messages/transfer-model</value>
                 <value>alfresco/messages/site-model</value>
                 <value>alfresco/messages/smartfolder-model</value>
+                <value>alfresco/messages/iptc-model</value>
             </list>
         </property>
     </bean>

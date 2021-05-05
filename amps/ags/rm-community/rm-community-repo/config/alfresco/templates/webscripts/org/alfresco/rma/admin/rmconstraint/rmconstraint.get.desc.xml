@@ -1,0 +1,22 @@
+<webscript>
+  <shortname>Get a RM Constraint method</shortname>
+  <description>
+  <![CDATA[
+  Get an RM Constraint including the details. The list name is qualified with an underscore between prefix and name to be compatible with Java Script and URLs
+  e.g. rma_listName rather than rma:listName
+   <BR />
+   Constraint object
+   <dl>
+   <dt>constraintName</dt> <dd>the name of the constraint. The underscore character is used instead of the colon</dd>  
+   <dt>constraintTitle</dt> <dd>the title of the constraint (human readable)</dd>
+   <dt>caseSensitive</dt> <dd>Are the values case sensitive</dd>
+   <dt>allowedValues</dt> <dd>array of allowed values, this is the complete unrestricted list of all values</dd>   
+   </dl>
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmconstraints/{listName}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

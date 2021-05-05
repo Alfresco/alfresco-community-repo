@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================================================================
+    This context file is used only in a development IDE for rapid development,
+    it is never released with the Alfresco.war
+    =================================================================================================================-->
+
+<!-- Setup docBase to something like repo-amp/target/repo-amp-war
+     and path to /alfresco
+     The Alfresco.war 5.0 does not have a webapp (it used to have Alfresco Explorer but not anymore)
+     that we will access, so this docBase might not be needed
+-->
+<Context docBase="${app.amp.client.war.folder}" path="${alfresco.client.contextPath}">
+
+  <Resources className="org.apache.naming.resources.VirtualDirContext"
+             extraResourcePaths="/=${project.build.directory}/${project.build.finalName}/web" />
+
+    <!-- Setup the virtual class path like this:
+         1) target/classes
+         2) target/${project.build.finalName}/config
+         3) target/test-classes
+
+         This way mvn compile can be invoked and all changes will be picked up
+    -->
+    <Loader searchVirtualFirst="true"
+            className="org.apache.catalina.loader.VirtualWebappLoader"
+            virtualClasspath="${project.build.outputDirectory};${project.build.directory}/${project.build.finalName}/config;${project.build.testOutputDirectory}" />
+
+
+    <!-- This enables hot reloading of web resources from uncompressed jars (while in prod they would be loaded from  WEB-INF/lib/{\*.jar}/META-INF/resources -->
+    <JarScanner scanAllDirectories="true" />
+</Context>

@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/util
+          http://www.springframework.org/schema/util/spring-util.xsd
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context.xsd">
+
+   <bean id="baseRMJobExecuter" abstract="true">
+		<property name="repositoryState" ref="repositoryState" />
+        <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+	</bean>
+
+	<!-- Scheduled actions -->
+
+    <!-- Notify Of Records Due For Review Job
+    Sends out emails of records due for review
+    -->
+   <bean id="scheduledNotifyOfRecordsDueForReviewSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers" >
+         <list>
+            <bean id="scheduledNotifyOfRecordsDueForReviewJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+               <property name="jobDetail" ref="scheduledNotifyOfRecordsDueForReviewJobDetail" />
+               <property name="cronExpression" value="${rm.notifyOfRecordsDueForReview.cronExpression}"/>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="scheduledNotifyOfRecordsDueForReviewJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+      <property name="jobClass" value ="org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob" />
+
+      <property name="jobDataAsMap">
+         <map>
+            <entry key="jobName" value="scheduledNotifyOfRecordsDueForReview"/>
+            <entry key="jobLockService" value-ref="jobLockService" />
+            <entry key="jobExecuter" value-ref="scheduledNotifyOfRecordsDueForReviewJobExecuter" />
+         </map>
+      </property>
+   </bean>
+
+   <bean id="scheduledNotifyOfRecordsDueForReviewJobExecuter"
+         class="org.alfresco.module.org_alfresco_module_rm.job.NotifyOfRecordsDueForReviewJobExecuter"
+         parent="baseRMJobExecuter">
+      <property name="nodeService" ref="nodeService" />
+      <property name="searchService" ref="searchService" />
+      <property name="recordsManagementNotificationHelper" ref="recordsManagementNotificationHelper" />
+   </bean>
+
+	<!-- Disposition Lifecycle Job -->
+	<bean id="scheduledDispositionLifecyceleJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+      <property name="jobClass" value="org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob"/>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="jobName" value="dispositionLifecycle" />
+				<entry key="runAuditAs" value="${audit.rm.runas}" />
+				<entry key="jobLockService" value-ref="jobLockService" />
+				<entry key="jobExecuter" value-ref="dispositionLifecycleJobExecuter" />
+ 			</map>
+		</property>
+	</bean>
+
+   <bean id="dispositionLifecycleJobExecuter"
+   		 class="org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuter"
+         parent="baseRMJobExecuter">
+
+      <!-- list of disposition actions to automatically execute when eligible -->
+      <property name="dispositionActions">
+         <list>
+         	<value>cutoff</value>
+         	<value>retain</value>
+         </list>
+      </property>
+
+      <property name="nodeService" ref="nodeService" />
+      <property name="searchService" ref="searchService" />
+      <property name="personService" ref="personService" />
+      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="batchSize" value="${rm.dispositionlifecycletrigger.batchsize}"/>
+   </bean>
+
+   <bean id="scheduledDispositionLifecyceleSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers">
+         <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+               <property name="jobDetail" ref ="scheduledDispositionLifecyceleJobDetail" />
+               <!-- run at 3am -->
+               <!-- <value>0 30 3 * * ?</value> -->
+               <!-- <value>0/30 * * * * ?</value> -->
+               <property name="cronExpression" value="${rm.dispositionlifecycletrigger.cronexpression}"/>
+         </bean>
+      </property >
+   </bean>
+
+   <bean id="scheduledPublishUpdatesJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+      <property name="jobClass" value="org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob" />
+      <property name="jobDataAsMap">
+         <map>
+            <entry key="jobName" value="publishUpdates" />
+            <entry key="jobLockService" value-ref="jobLockService" />
+            <entry key="jobExecuter" value-ref="publishUpdatesJobExecuter" />
+         </map>
+      </property>
+   </bean>
+
+   <bean id="scheduledPublishUpdatesSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers">
+         <list>
+            <bean id="scheduledPublishUpdatesJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                     <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
+                     <property name="cronExpression">
+                        <!-- <value>0 30 3 * * ?</value> -->
+                        <value>0/30 * * * * ?</value>
+                     </property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="publishUpdatesJobExecuter"
+         class="org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter"
+         parent="baseRMJobExecuter">
+      <property name="nodeService" ref="nodeService" />
+      <property name="searchService" ref="searchService" />
+      <property name="publishExecutorRegistry" ref="publishExecutorRegistry" />
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="dictionaryService" ref="dictionaryService" />
+   </bean>
+
+   <bean id="publishExecutorRegistry" class="org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry"/>
+
+   <bean id="dispositionActionDefintionPublishExecutor"
+   	     class="org.alfresco.module.org_alfresco_module_rm.job.publish.DispositionActionDefinitionPublishExecutor"
+   	     init-method="init">
+   	  <property name="rmActionService"  ref="recordsManagementActionService"/>
+	  <property name="nodeService"  ref="nodeService"/>
+	  <property name="publishExecutorRegistry" ref="publishExecutorRegistry"/>
+   </bean>
+
+</beans>

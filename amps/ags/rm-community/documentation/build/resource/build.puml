@@ -1,0 +1,66 @@
+@startuml
+
+Title: Governance Services Build Pipeline (RM HEAD)
+
+'build plans:
+'Ent UI: Automated UI Tests Enterprise
+'Com API: Automation Community REST API
+'Ent API: Automation Enterprise REST API
+'Community
+'Com UI: Community Automated UI Tests
+'Enterprise
+'Ent L1: Enterprise Level 1 Automated UI Tests
+'Ent L2: Level 2 Automated UI Tests Enterprise
+'RM Benchmark Driver
+
+
+start
+
+if(Trigger) then (commit to path)
+    if (rm-community/*)
+        :Community;
+        fork
+            :Ent L1;
+        fork again
+            :Enterprise;
+            fork
+               :Ent L2;
+            fork again
+                :Ent UI;
+            end fork
+        end fork
+    elseif (rm-enterprise/*)
+        :Enterprise;
+        fork
+           :Ent L2;
+        fork again
+            :Ent UI;
+        end fork
+    elseif (rm-automation/*)
+        fork
+            :Ent L1;
+        fork again
+            :Ent L2;
+        fork again
+            :Ent UI;
+        end fork
+        stop
+    elseif (rm-community-rest-api/*)
+        :Com API;
+        stop
+    elseif (rm-enterprise-rest-api/*)
+        :Ent API;
+        stop
+    elseif (rm-benchmark-driver/*)
+        :Benchmark;
+        stop
+    else
+        end
+    endif
+else (Time: 1am)
+    :Community UI;
+    stop
+endif
+:Release Step;
+end
+@enduml

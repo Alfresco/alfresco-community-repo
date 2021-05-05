@@ -1,0 +1,125 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-governance-services-community</artifactId>
+   <name>Alfresco Governance Services Community</name>
+   <packaging>pom</packaging>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-governance-services</artifactId>
+      <version>3.5.1-SNAPSHOT</version>
+   </parent>
+
+   <licenses>
+      <license>
+         <name>LGPL 3</name>
+      </license>
+   </licenses>
+
+   <modules>
+      <module>rm-community-rest-api-explorer</module>
+      <module>rm-community-repo</module>
+      <module>rm-community-share</module>
+   </modules>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-community-repo</artifactId>
+            <version>${alfresco-community-repo.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-share-parent</artifactId>
+            <version>${share.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <properties>
+      <spring.version>5.3.3</spring.version>
+      <alfresco.min.version>7.0.0</alfresco.min.version>
+      <share.version>7.0.0</share.version>
+      <!-- The properties app.amp.* need to be set for share to work. -->
+      <app.filtering.enabled>true</app.filtering.enabled>
+   </properties>
+
+   <profiles>
+      <profile>
+         <id>publish-docker-latest</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <executions>
+                        <execution>
+                           <id>build-push-image</id>
+                           <phase>deploy</phase>
+                           <goals>
+                              <goal>build</goal>
+                              <goal>push</goal>
+                           </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <registry>${image.registry}</registry>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                                 <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                              </images>
+                           </configuration>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+   </profiles>
+</project>

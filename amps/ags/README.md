@@ -163,19 +163,6 @@ mvn clean install -DskipTests -Dalfresco.aikau.version=LATEST -U
 
 Thereafter start the Share instance and run automation tests as described above.
 
-## Configuring Outlook Integration
-To download and run RM with the Outlook Integration AMPs installed on the repo and Share use the following commands:
-
-```
-mvn clean install -Pstart-repo,outlook-integration
-mvn clean install -Pstart-share,outlook-integration
-```
-
-Follow these instructions to install licence and Outlook plugin:
-
-* http://docs.alfresco.com/outlook2.1/tasks/Outlook-license.html
-* http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html
-
 ## SNAPSHOT dependencies
 If you're building Enterprise RM, the base project (Community) is pulled in via a snapshot dependency configured in maven.
 This dependency will either be loaded from your local .m2 cache, or from Nexus if the version in your .m2 doesn't exist or is old

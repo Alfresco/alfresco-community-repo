@@ -26,8 +26,8 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco-spring-webscripts.version>8.15</alfresco-spring-webscripts.version>
       <api.explorer.version>7.0.0</api.explorer.version>
-      <!-- Set this here and override it in the community and enterprise modules. -->
-      <alfresco.min.version>0.0</alfresco.min.version>
+
+      <alfresco.min.version>7.0.0</alfresco.min.version>
 
       <activemq.port1>61616</activemq.port1>
       <activemq.port2>5672</activemq.port2>
@@ -129,6 +129,7 @@
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-mock</artifactId>
          <version>${camel.mock.version}</version>
+         <scope>test</scope>
       </dependency>
 
       <dependency>

@@ -38,32 +38,11 @@
    </properties>
 
    <dependencies>
-<!--      <dependency>-->
-<!--         <groupId>junit</groupId>-->
-<!--         <artifactId>junit</artifactId>-->
-<!--         <scope>test</scope>-->
-<!--      </dependency>-->
       <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
-      <dependency>
-         <groupId>jakarta.xml.bind</groupId>
-         <artifactId>jakarta.xml.bind-api</artifactId>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.glassfish.jaxb</groupId>
-         <artifactId>jaxb-runtime</artifactId>
-         <scope>provided</scope>
-      </dependency>
       <dependency>
          <groupId>jakarta.jws</groupId>
          <artifactId>jakarta.jws-api</artifactId>
          <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-         <groupId>org.apache.camel</groupId>
-         <artifactId>camel-mock</artifactId>
-         <scope>test</scope>
       </dependency>
    </dependencies>
 

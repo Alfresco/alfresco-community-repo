@@ -315,7 +315,6 @@
                 <artifactId>spring-webscripts</artifactId>
                 <version>${dependency.webscripts.version}</version>
                 <classifier>tests</classifier>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.surf</groupId>
@@ -459,7 +458,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${dependency.spring.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -664,7 +662,6 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${dependency.postgresql.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>
@@ -675,7 +672,6 @@
                 <groupId>org.mariadb.jdbc</groupId>
                 <artifactId>mariadb-java-client</artifactId>
                 <version>${dependency.mariadb.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -697,25 +693,21 @@
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>cmis</artifactId>
                 <version>${dependency.tas-cmis.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>email</artifactId>
                 <version>${dependency.tas-email.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>webdav</artifactId>
                 <version>${dependency.tas-webdav.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>ftp</artifactId>
                 <version>${dependency.tas-ftp.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.test</groupId>
@@ -733,7 +725,6 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>3.0.1</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- Test only dependencies, as popped up while running mvn test -->
@@ -741,25 +732,21 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.13.2</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>gunit</artifactId>
                 <version>${dependency.antlr.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
                 <version>${dependency.mockito-all.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${dependency.mockito-core.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>commons-dbcp</groupId>
@@ -838,7 +825,6 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-mock</artifactId>
                 <version>${dependency.camel.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.taglibs</groupId>

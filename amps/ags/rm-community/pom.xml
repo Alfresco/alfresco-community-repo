@@ -7,8 +7,8 @@
 
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-governance-services</artifactId>
-      <version>3.5.1-SNAPSHOT</version>
+      <artifactId>alfresco-governance-services-community-parent</artifactId>
+      <version>11.21-ags-1.0-SNAPSHOT</version>
    </parent>
 
    <licenses>
@@ -20,22 +20,14 @@
    <modules>
       <module>rm-community-rest-api-explorer</module>
       <module>rm-community-repo</module>
-      <module>rm-community-share</module>
    </modules>
 
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <groupId>${alfresco.groupId}</groupId>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-community-repo</artifactId>
-            <version>${alfresco-community-repo.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-         <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-share-parent</artifactId>
-            <version>${share.version}</version>
+            <version>${project.version}</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -75,8 +67,6 @@
    <properties>
       <spring.version>5.3.3</spring.version>
       <alfresco.min.version>7.0.0</alfresco.min.version>
-      <share.version>7.0.0</share.version>
-      <!-- The properties app.amp.* need to be set for share to work. -->
       <app.filtering.enabled>true</app.filtering.enabled>
    </properties>
 

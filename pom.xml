@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>11.21-SNAPSHOT</version>
+    <version>11.21-ags-1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -18,6 +18,7 @@
         <module>repository</module>
         <module>remote-api</module>
         <module>packaging</module>
+        <module>amps</module>
     </modules>
 
     <properties>
@@ -61,7 +62,7 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.18</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>3.9.0</dependency.mockito-core.version>
+        <dependency.mockito-core.version>3.8.0</dependency.mockito-core.version>
         <dependency.org-json.version>20210307</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>

@@ -37,8 +37,6 @@ stages:
     if: commit_message !~ /\[no release\]/ AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND fork = false
   - name: update_downstream
     if: commit_message !~ /\[no downstream\]/ AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND fork = false
-  - name: trigger_downstream
-    if: commit_message !~ /\[no downstream\]/ AND (branch != master AND branch !~ /release\/.*/) AND type != pull_request AND fork = false
 
 before_install: travis_retry bash scripts/travis/init.sh
 install: travis_retry travis_wait 40 bash scripts/travis/build.sh
@@ -311,10 +309,4 @@ jobs:
       stage: update_downstream
       install: skip
       script: bash scripts/travis/update_downstream.sh
-
-    - name: "Trigger alfresco-enterprise-repo build"
-      stage: trigger_downstream
-      before_install: skip
-      install: skip
-      script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"
 

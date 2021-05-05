@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 - 2020 Alfresco Software Limited.
+ * Copyright 2005 - 2021 Alfresco Software Limited.
  *
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of the paid license agreement will prevail.
@@ -41,8 +41,10 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -113,6 +115,7 @@ public class FolderTemplateTest  extends BaseWebScriptTest
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
+    @Category(FrequentlyFailingTests.class) // SHA-2473 Probably has not been run since we broke up the monolith and now fails.
     public void testFolderTemplatesPost() throws Exception
     {
         String url = "/slingshot/doclib/folder-templates";

@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Remote Widgets</shortname>
+  <description>Returns available widgets</description>
+  <family>Remote Share</family>
+  <url>/remote-share/widgets</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

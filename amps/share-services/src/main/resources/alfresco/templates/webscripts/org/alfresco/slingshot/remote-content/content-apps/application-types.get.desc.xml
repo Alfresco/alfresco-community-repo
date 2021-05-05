@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Application Types</shortname>
+  <description>Returns available Application Types</description>
+  <family>Content Applications</family>
+  <url>/remote-share/content-app-types</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

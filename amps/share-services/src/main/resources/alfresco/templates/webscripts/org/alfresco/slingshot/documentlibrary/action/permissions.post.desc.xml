@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>permissions</shortname>
+  <description>Document List Action - set permissions</description>
+  <url>/slingshot/doclib/action/permissions/{operation}/site/{site}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

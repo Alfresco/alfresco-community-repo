@@ -279,11 +279,11 @@ jobs:
 
     - name: "AGS Unit & Integration Tests (PostgreSQL)"
       if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-postgres -f amps/ags/pom.xml ${LOG_WARN}
+      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Unit & Integration Tests (MySQL) "
       if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pstart-mysql -f amps/ags/pom.xml ${LOG_WARN}
+      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
       if: branch =~ /(release\/.*$|master)/ OR commit_message =~ /\[ags\]/
@@ -297,7 +297,7 @@ jobs:
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
-      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false
+      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags
       after_script: bash amps/ags/travis/scripts/getLogs.sh
 
     - name: "Push to Nexus"

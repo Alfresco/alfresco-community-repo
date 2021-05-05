@@ -16,62 +16,10 @@
    </modules>
 
    <properties>
-      <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
-      <alfresco.data.location>${session.executionRootDirectory}/alf_data_dev</alfresco.data.location>
-      <alfresco.db.datasource.class>org.gjt.mm.mysql.Driver</alfresco.db.datasource.class>
-      <alfresco.db.name>alf_dev</alfresco.db.name>
-      <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
-      <alfresco.db.password>alfresco</alfresco.db.password>
-      <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
-      <alfresco.db.username>alfresco</alfresco.db.username>
-      <alfresco-spring-webscripts.version>8.15</alfresco-spring-webscripts.version>
-      <api.explorer.version>7.0.0</api.explorer.version>
-
-      <alfresco.min.version>7.0.0</alfresco.min.version>
-
-      <activemq.port1>61616</activemq.port1>
-      <activemq.port2>5672</activemq.port2>
-      <camel.mock.version>3.7.0</camel.mock.version>
-      <share.client.contextPath>/share</share.client.contextPath>
-
-      <maven.javadoc.version>3.1.0</maven.javadoc.version>
       <maven.javadoc.skip>true</maven.javadoc.skip>
-      <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
-      <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
-      <testJavaVersion>${java.version}</testJavaVersion>
-      <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
-      <maven.compiler.version>3.8.0</maven.compiler.version>
-      <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
-      <maven.resources.version>3.1.0</maven.resources.version>
-      <maven.tomcat.port>8080</maven.tomcat.port>
-
-      <jackson.version>2.12.1</jackson.version>
-      <jackson-databind.version>2.12.1</jackson-databind.version>
-      <fabric8.docker.version>0.34.1</fabric8.docker.version>
-      <mockito.version>1.10.19</mockito.version>
-
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-
-      <license.update.dryrun>true</license.update.dryrun>
-      <license.verbose>false</license.verbose>
-
-      <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
-      <app.amp.folder>src/main/amp</app.amp.folder>
-      <app.amp.output.folder>../${project.build.finalName}</app.amp.output.folder>
       <app.filtering.enabled>true</app.filtering.enabled>
-      <app.log.dir>${project.build.directory}/</app.log.dir>
-      <app.log.root.level>WARN</app.log.root.level>
-      <app.properties.include>**</app.properties.include>
-      <app.properties.folder>src/main/properties/local</app.properties.folder>
-      <app.properties.test.include>**</app.properties.test.include>
-      <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
-
-      <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
-      <javax-jaxb-impl.version>3.0.0-M4</javax-jaxb-impl.version>
-      <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
-      <apache-compress.version>1.19</apache-compress.version>
    </properties>
 
    <dependencyManagement>
@@ -218,7 +166,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>${maven.javadoc.version}</version>
             <configuration>
                <doclint>none</doclint>
             </configuration>
@@ -541,7 +488,6 @@
             </plugin>
             <plugin>
                <artifactId>maven-war-plugin</artifactId>
-               <version>${maven.war.plugin.version}</version>
                <dependencies>
                   <!-- Needed when creating the community and enterprise rest api wars  -->
                   <dependency>
@@ -676,7 +622,6 @@
 
                <plugin>
                   <artifactId>maven-javadoc-plugin</artifactId>
-                  <version>${maven.javadoc.version}</version>
                   <configuration>
                      <doclet>com.docflex.javadoc.Doclet</doclet>
                      <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>

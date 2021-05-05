@@ -80,7 +80,7 @@ public class SchemaReferenceFileTest
         if (maybeProblems > 0)
         {
             List<String> errors = computeRealErrors(buff);
-            assertTrue(errors.toString(), errors.isEmpty());
+            assertTrue("\n"+buff, errors.isEmpty());
         }
     }
 

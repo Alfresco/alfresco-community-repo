@@ -78,19 +78,20 @@ public class SchemaDifferenceHelper
 
     public String findPatchCausingDifference(Difference difference)
     {
-        for (SchemaUpgradeScriptPatch patch: optionalUpgradePatches)
+        String differenceText = describe(difference);
+        for (SchemaUpgradeScriptPatch patch : optionalUpgradePatches)
         {
-           if (!isPatchApplied(patch))
-           {
-               List<String> problemPatterns = getProblemsPatterns(patch);
-               for (String problemPattern: problemPatterns)
-               {
-                   if (describe(difference).matches(problemPattern))
-                   {
-                       return patch.getId();
-                   }
-               }
-           }
+            if (!isPatchApplied(patch))
+            {
+                List<String> problemPatterns = getProblemsPatterns(patch);
+                for (String problemPattern : problemPatterns)
+                {
+                    if (differenceText.matches(problemPattern))
+                    { 
+                        return patch.getId(); 
+                    }
+                }
+            }
         }
 
         return null;
@@ -103,10 +104,8 @@ public class SchemaDifferenceHelper
 
     protected Resource getDialectResource(String resourceUrl)
     {
-        if(resourceUrl == null)
-        {
-            return null;
-        }
+        if (resourceUrl == null)
+        { return null; }
 
         return DialectUtil.getDialectResource(rpr, dialect.getClass(), resourceUrl);
     }
@@ -119,13 +118,14 @@ public class SchemaDifferenceHelper
 
         if (problemFile != null)
         {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(problemFile.getInputStream(), StandardCharsets.UTF_8))) 
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(problemFile.getInputStream(), StandardCharsets.UTF_8)))
             {
                 String line = reader.readLine();
                 while (line != null)
                 {
-                   optionalProblems.add(line);
-                   line = reader.readLine();
+                    optionalProblems.add(line);
+                    line = reader.readLine();
                 }
             }
             catch (Exception ex)
@@ -142,29 +142,29 @@ public class SchemaDifferenceHelper
         if (difference.getLeft() == null)
         {
             return I18NUtil.getMessage(
-                        "system.schema_comp.diff.target_only",
-                        ENGLISH,
-                        difference.getRight().getDbObject().getTypeName(),
-                        difference.getRight().getPath(),
-                        difference.getRight().getPropertyValue());
+                    "system.schema_comp.diff.target_only",
+                    ENGLISH,
+                    difference.getRight().getDbObject().getTypeName(),
+                    difference.getRight().getPath(),
+                    difference.getRight().getPropertyValue());
         }
         if (difference.getRight() == null)
         {
             return I18NUtil.getMessage(
-                        "system.schema_comp.diff.ref_only",
-                        ENGLISH,
-                        difference.getLeft().getDbObject().getTypeName(),
-                        difference.getLeft().getPath(),
-                        difference.getLeft().getPropertyValue());
-        }
-
-        return I18NUtil.getMessage(
-                    "system.schema_comp.diff",
+                    "system.schema_comp.diff.ref_only",
                     ENGLISH,
                     difference.getLeft().getDbObject().getTypeName(),
                     difference.getLeft().getPath(),
-                    difference.getLeft().getPropertyValue(),
-                    difference.getRight().getPath(),
-                    difference.getRight().getPropertyValue());
+                    difference.getLeft().getPropertyValue());
+        }
+
+        return I18NUtil.getMessage(
+                "system.schema_comp.diff",
+                ENGLISH,
+                difference.getLeft().getDbObject().getTypeName(),
+                difference.getLeft().getPath(),
+                difference.getLeft().getPropertyValue(),
+                difference.getRight().getPath(),
+                difference.getRight().getPropertyValue());
     }
 }

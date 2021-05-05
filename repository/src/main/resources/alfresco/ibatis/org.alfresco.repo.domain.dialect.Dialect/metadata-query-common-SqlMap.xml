@@ -8,7 +8,7 @@
         select 
             node.id             as id,
             node.version        as version,
-            store.identifier    as identifier,
+            node.store_id       as store_id,
             node.uuid           as uuid,
             node.type_qname_id  as type_qname_id,
             node.locale_id      as locale_id,

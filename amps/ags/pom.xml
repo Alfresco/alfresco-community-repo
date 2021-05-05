@@ -16,13 +16,10 @@
    </modules>
 
    <properties>
-      <maven.javadoc.skip>true</maven.javadoc.skip>
-
       <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
       <maven.compiler.version>3.8.0</maven.compiler.version>
       <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
       <maven.resources.version>3.1.0</maven.resources.version>
-      <maven.tomcat.port>8080</maven.tomcat.port>
 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -48,9 +45,25 @@
 <!--      </dependency>-->
       <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
       <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.glassfish.jaxb</groupId>
+         <artifactId>jaxb-runtime</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
          <groupId>jakarta.jws</groupId>
          <artifactId>jakarta.jws-api</artifactId>
          <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>camel-mock</artifactId>
+         <scope>test</scope>
       </dependency>
    </dependencies>
 

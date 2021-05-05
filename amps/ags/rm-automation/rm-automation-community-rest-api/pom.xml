@@ -11,8 +11,7 @@
    </parent>
 
    <properties>
-      <dependency.jackson-databind.version>2.7.9.1</dependency.jackson-databind.version> <!-- does this fix the 2 tests? -->
-      <maven.javadoc.skip>false</maven.javadoc.skip>
+      <jackson.databind.version>2.7.9.1</jackson.databind.version>
    </properties>
 
    <build>

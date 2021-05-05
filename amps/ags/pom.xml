@@ -17,72 +17,56 @@
 
    <properties>
       <maven.javadoc.skip>true</maven.javadoc.skip>
+
+      <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
+      <maven.compiler.version>3.8.0</maven.compiler.version>
+      <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
+      <maven.resources.version>3.1.0</maven.resources.version>
+      <maven.tomcat.port>8080</maven.tomcat.port>
+
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+      <license.update.dryrun>true</license.update.dryrun>
+      <license.verbose>false</license.verbose>
+
+      <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
+      <app.amp.folder>src/main/amp</app.amp.folder>
+      <app.amp.output.folder>../${project.build.finalName}</app.amp.output.folder>
       <app.filtering.enabled>true</app.filtering.enabled>
+      <app.properties.include>**</app.properties.include>
+      <app.properties.folder>src/main/properties/local</app.properties.folder>
+      <app.properties.test.include>**</app.properties.test.include>
+      <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
    </properties>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>${mockito.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.alfresco.surf</groupId>
-            <artifactId>spring-webscripts</artifactId>
-            <version>${alfresco-spring-webscripts.version}</version>
-            <classifier>tests</classifier>
-         </dependency>
-         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${alfresco.postgres.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${dependency.mysql.version}</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <dependencies>
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <version>4.13.2</version>
-         <scope>test</scope>
-      </dependency>
       <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
       <dependency>
-         <groupId>javax.xml.bind</groupId>
-         <artifactId>jaxb-api</artifactId>
-         <version>${javax-jaxb.version}</version>
+         <groupId>jakarta.jws</groupId>
+         <artifactId>jakarta.jws-api</artifactId>
          <scope>provided</scope>
       </dependency>
 
-      <dependency>
-         <groupId>org.apache.camel</groupId>
-         <artifactId>camel-mock</artifactId>
-         <version>${camel.mock.version}</version>
-         <scope>test</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--         <groupId>javax.xml.bind</groupId>-->
+<!--         <artifactId>jaxb-api</artifactId>-->
+<!--         <version>${javax-jaxb.version}</version>-->
+<!--         <scope>provided</scope>-->
+<!--      </dependency>-->
 
-      <dependency>
-         <groupId>com.sun.xml.bind</groupId>
-         <artifactId>jaxb-impl</artifactId>
-         <version>${javax-jaxb-impl.version}</version>
-         <scope>provided</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--         <groupId>com.sun.xml.bind</groupId>-->
+<!--         <artifactId>jaxb-impl</artifactId>-->
+<!--         <scope>provided</scope>-->
+<!--      </dependency>-->
 
-      <dependency>
-         <groupId>org.apache.bcel</groupId>
-         <artifactId>bcel</artifactId>
-         <version>6.2.99</version>
-         <scope>provided</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--         <groupId>org.apache.bcel</groupId>-->
+<!--         <artifactId>bcel</artifactId>-->
+<!--         <version>6.2.99</version>-->
+<!--         <scope>provided</scope>-->
+<!--      </dependency>-->
    </dependencies>
 
    <build>
@@ -123,7 +107,7 @@
                      <regexPropertySettings>
                         <regexPropertySetting>
                            <name>ags.module.repo.version.min</name>
-                           <value>${alfresco.min.version}</value>
+                           <value>${amp.min.version}</value>
                            <regex>(\d+)\.(\d+).*</regex>
                            <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
@@ -287,8 +271,8 @@
                         <goal>testCompile</goal>
                      </goals>
                      <configuration>
-                        <source>${testJavaVersion}</source>
-                        <target>${testJavaVersion}</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                      </configuration>
                   </execution>
                </executions>
@@ -487,7 +471,7 @@
                   <dependency>
                      <groupId>org.apache.commons</groupId>
                      <artifactId>commons-compress</artifactId>
-                     <version>${apache-compress.version}</version>
+                     <version>${dependency.apache-compress.version}</version>
                   </dependency>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>

@@ -41,12 +41,11 @@
    </properties>
 
    <dependencies>
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-<!--         <version>4.13.2</version>-->
-         <scope>test</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--         <groupId>junit</groupId>-->
+<!--         <artifactId>junit</artifactId>-->
+<!--         <scope>test</scope>-->
+<!--      </dependency>-->
       <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
       <dependency>
          <groupId>jakarta.jws</groupId>
@@ -178,7 +177,7 @@
          </plugin>
          <plugin>
             <artifactId>maven-deploy-plugin</artifactId>
-<!--            <version>2.7</version>-->
+            <version>2.7</version>
             <executions>
                <execution>
                   <id>default-deploy</id>
@@ -409,19 +408,17 @@
             </plugin>
             <plugin>
                <artifactId>maven-war-plugin</artifactId>
-               <version>${maven.war.plugin.version}</version>
                <dependencies>
                   <!-- Needed when creating the community and enterprise rest api wars  -->
                   <dependency>
                      <groupId>org.apache.commons</groupId>
                      <artifactId>commons-compress</artifactId>
-<!--                     <version>1.19</version>-->
                      <version>${dependency.apache-compress.version}</version>
                   </dependency>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
                      <artifactId>alfresco-maven-plugin</artifactId>
-                     <version>2.1.1</version>
+                     <version>${alfresco.maven-plugin.version}</version>
                   </dependency>
                </dependencies>
                <configuration>
@@ -545,7 +542,6 @@
 
                <plugin>
                   <artifactId>maven-javadoc-plugin</artifactId>
-<!--                  <version>3.1.0</version>-->
                   <configuration>
                      <doclet>com.docflex.javadoc.Doclet</doclet>
                      <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>

@@ -12,6 +12,7 @@
 
    <properties>
       <dependency.jackson-databind.version>2.7.9.1</dependency.jackson-databind.version> <!-- does this fix the 2 tests? -->
+      <maven.javadoc.skip>false</maven.javadoc.skip>
    </properties>
 
    <build>
@@ -84,7 +85,6 @@
       <dependency>
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-collections4</artifactId>
-<!--         <version>4.1</version>-->
       </dependency>
       <dependency>
          <groupId>com.github.docker-java</groupId>

@@ -77,13 +77,6 @@
       <apache-compress.version>1.19</apache-compress.version>
    </properties>
 
-   <distributionManagement>
-      <repository>
-         <id>alfresco-internal</id>
-         <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
-      </repository>
-   </distributionManagement>
-
    <dependencyManagement>
       <dependencies>
          <dependency>

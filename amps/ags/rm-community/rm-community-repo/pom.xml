@@ -12,10 +12,7 @@
    </parent>
 
    <properties>
-      <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
-
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
-
       <maven.javadoc.skip>false</maven.javadoc.skip>
    </properties>
 
@@ -101,14 +98,12 @@
       <dependency>
          <groupId>io.swagger</groupId>
          <artifactId>swagger-parser</artifactId>
-         <version>1.0.52</version>
          <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
       <dependency>
          <groupId>com.github.fge</groupId>
          <artifactId>json-schema-validator</artifactId>
-         <version>2.2.6</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -387,47 +382,6 @@
             </configuration>
          </plugin>
       </plugins>
-
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <groupId>org.eclipse.m2e</groupId>
-               <artifactId>lifecycle-mapping</artifactId>
-               <configuration>
-                  <lifecycleMappingMetadata>
-                     <pluginExecutions>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>org.codehaus.mojo</groupId>
-                              <artifactId>properties-maven-plugin</artifactId>
-                              <versionRange>[1.0-alpha-2,)</versionRange>
-                              <goals>
-                                 <goal>read-project-properties</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore />
-                           </action>
-                        </pluginExecution>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>org.codehaus.mojo</groupId>
-                              <artifactId>license-maven-plugin</artifactId>
-                              <versionRange>[1.8,)</versionRange>
-                              <goals>
-                                 <goal>update-file-header</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore />
-                           </action>
-                        </pluginExecution>
-                     </pluginExecutions>
-                  </lifecycleMappingMetadata>
-               </configuration>
-            </plugin>
-         </plugins>
-      </pluginManagement>
    </build>
 
    <profiles>

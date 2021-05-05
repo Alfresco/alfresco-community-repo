@@ -20,14 +20,4 @@
          <name>LGPL 3</name>
       </license>
    </licenses>
-
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${dependency.spring.version}</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
 </project>

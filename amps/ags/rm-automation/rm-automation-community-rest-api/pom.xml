@@ -11,7 +11,6 @@
    </parent>
 
    <properties>
-      <maven.javadoc.skip>false</maven.javadoc.skip>
       <fluent.json.version>2.0.0</fluent.json.version>
       <jackson.databind.version>2.7.9.1</jackson.databind.version>
    </properties>

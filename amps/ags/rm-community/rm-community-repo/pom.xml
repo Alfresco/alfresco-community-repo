@@ -15,8 +15,6 @@
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
 
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
-
-      <maven.javadoc.skip>false</maven.javadoc.skip>
    </properties>
 
    <dependencies>
@@ -67,6 +65,7 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
+         <version>${dependency.webscripts.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
@@ -387,47 +386,6 @@
             </configuration>
          </plugin>
       </plugins>
-
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <groupId>org.eclipse.m2e</groupId>
-               <artifactId>lifecycle-mapping</artifactId>
-               <configuration>
-                  <lifecycleMappingMetadata>
-                     <pluginExecutions>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>org.codehaus.mojo</groupId>
-                              <artifactId>properties-maven-plugin</artifactId>
-                              <versionRange>[1.0-alpha-2,)</versionRange>
-                              <goals>
-                                 <goal>read-project-properties</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore />
-                           </action>
-                        </pluginExecution>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>org.codehaus.mojo</groupId>
-                              <artifactId>license-maven-plugin</artifactId>
-                              <versionRange>[1.8,)</versionRange>
-                              <goals>
-                                 <goal>update-file-header</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore />
-                           </action>
-                        </pluginExecution>
-                     </pluginExecutions>
-                  </lifecycleMappingMetadata>
-               </configuration>
-            </plugin>
-         </plugins>
-      </pluginManagement>
    </build>
 
    <profiles>

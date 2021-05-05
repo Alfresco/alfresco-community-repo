@@ -317,7 +317,7 @@ jobs:
             - ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log
             - alfresco.log
             - solr.log
-          target_paths: ${TRAVIS_BUILD_NUMBER}/${TRAVIS_JOB_NUMBER}
+          target_paths: community/${TRAVIS_BUILD_NUMBER}/${TRAVIS_JOB_NAME}
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"

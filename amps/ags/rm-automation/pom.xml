@@ -28,22 +28,6 @@
    <build>
       <plugins>
          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>default-cli</id>
-                  <configuration>
-                     <target>
-                        <echo>Stopping Alfresco...</echo>
-                        <exec executable="${basedir}/target/alf-installation/alfresco.sh" dir="target/alf-installation" failonerror="true">
-                           <arg value="stop" />
-                        </exec>
-                     </target>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <redirectTestOutputToFile>false</redirectTestOutputToFile>

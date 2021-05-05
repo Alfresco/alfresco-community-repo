@@ -352,6 +352,7 @@
             <plugin>
                <groupId>org.alfresco.maven.plugin</groupId>
                <artifactId>alfresco-maven-plugin</artifactId>
+               <version>2.1.1</version>
                <extensions>true</extensions>
             </plugin>
             <plugin>
@@ -575,6 +576,7 @@
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
                      <artifactId>alfresco-maven-plugin</artifactId>
+                     <version>2.1.1</version>
                   </dependency>
                </dependencies>
                <configuration>

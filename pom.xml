@@ -36,9 +36,9 @@
         <image.registry>quay.io</image.registry>
 
         <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.build.sourceVersion>${java.version}</maven.build.sourceVersion>
         <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
         <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
 

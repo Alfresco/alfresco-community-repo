@@ -1,7 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
    <modelVersion>4.0.0</modelVersion>
-   <groupId>org.alfresco</groupId>
    <artifactId>alfresco-governance-services-community-parent</artifactId>
    <packaging>pom</packaging>
    <name>Alfresco Governance Services Community Parent</name>
@@ -9,340 +7,13 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo-amps</artifactId>
-      <version>11.21-ags-1.0-SNAPSHOT</version>
+      <version>11.7-ags-1.0-SNAPSHOT</version>
    </parent>
 
    <modules>
       <module>rm-community</module>
       <module>rm-automation</module>
    </modules>
-
-   <profiles>
-      <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
-      <profile>
-      <id>publicapi</id>
-         <properties>
-            <docflex.version>1.6.1</docflex.version>
-         </properties>
-         <!-- Downloads the docflex license -->
-         <dependencies>
-            <dependency>
-               <groupId>com.docflex</groupId>
-               <artifactId>docflex-alfresco-license</artifactId>
-               <version>1.0</version>
-               <type>license</type>
-            </dependency>
-         </dependencies>
-         <!-- Extracts Docflex locally -->
-         <build>
-            <plugins>
-               <plugin>
-                  <artifactId>maven-dependency-plugin</artifactId>
-                  <version>3.1.1</version>
-                  <executions>
-                     <!-- Unzips the docflex/javadoc doclet -->
-                     <execution>
-                        <id>default-cli</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                           <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                           <artifactItems>
-                              <artifactItem>
-                                 <groupId>com.docflex</groupId>
-                                 <artifactId>docflex-javadoc</artifactId>
-                                 <version>${docflex.version}</version>
-                                 <type>zip</type>
-                              </artifactItem>
-                           </artifactItems>
-                           <outputDirectory>${project.build.directory}</outputDirectory>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-
-               <plugin>
-                  <artifactId>maven-javadoc-plugin</artifactId>
-                  <version>${maven.javadoc.version}</version>
-                  <configuration>
-                     <doclet>com.docflex.javadoc.Doclet</doclet>
-                     <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
-                     <doclint>none</doclint>
-                     <additionalOptions>
-
-                         -license ${settings.localRepository}/com/docflex/docflex-alfresco-license/1.0/docflex-alfresco-license-1.0.license
-                         -template ${project.build.directory}/docflex-javadoc-${docflex.version}/templates/JavadocPro/FramedDoc.tpl
-                         -nodialog
-                         -launchviewer=false
-                         -p:filter.byAnns.include.classes=org.alfresco.api.AlfrescoPublicApi
-                         -p:docTitle "${project.name} ${project.version} Public API"
-                         -p:windowTitle "${project.name} ${project.version} Public API"
-
-                     </additionalOptions>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-      <profile>
-         <id>enterprise-release</id>
-         <distributionManagement>
-            <repository>
-               <id>alfresco-internal</id>
-               <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
-            </repository>
-         </distributionManagement>
-      </profile>
-      <profile>
-         <id>hotfix-release</id>
-         <distributionManagement>
-            <repository>
-               <id>alfresco-internal</id>
-               <url>https://artifacts.alfresco.com/nexus/content/repositories/hotfix-releases/</url>
-            </repository>
-         </distributionManagement>
-      </profile>
-      <profile>
-         <id>community-release</id>
-         <distributionManagement>
-            <repository>
-               <id>alfresco-internal</id>
-               <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
-            </repository>
-         </distributionManagement>
-      </profile>
-
-      <!--
-        The following profile adds the /properties directories as resource directories in the project.
-        This means we can filter the property files in these directories.
-        The presence of this /properties directory also activates these profiles.
-        -->
-      <profile>
-         <id>enable-test-properties-filtering</id>
-         <activation>
-            <file>
-               <!-- No properties allowed here. Only hardcoded values are properly interpreted -->
-               <exists>src/test/properties</exists>
-            </file>
-         </activation>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.codehaus.mojo</groupId>
-                  <artifactId>build-helper-maven-plugin</artifactId>
-                  <version>${maven.buildhelper.version}</version>
-                  <executions>
-                     <execution>
-                        <id>add-env-test-properties</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                           <goal>add-test-resource</goal>
-                        </goals>
-                        <configuration>
-                           <resources>
-                              <resource>
-                                 <directory>${app.properties.test.folder}</directory>
-                                 <includes>
-                                    <include>${app.properties.test.include}</include>
-                                 </includes>
-                                 <filtering>${app.filtering.enabled}</filtering>
-                              </resource>
-                           </resources>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-      <!--Docker profiles-->
-      <!-- Profile used only to build docker images-->
-      <profile>
-         <id>buildDockerImage</id>
-         <build>
-            <pluginManagement>
-               <plugins>
-                  <plugin>
-                     <groupId>io.fabric8</groupId>
-                     <artifactId>docker-maven-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>build-image</id>
-                           <!-- This will still be executed if the tests are skipped. -->
-                           <phase>verify</phase>
-                           <goals>
-                              <goal>build</goal>
-                           </goals>
-                           <configuration>
-                              <images>
-                                 <image>
-                                    <name>${image.name}</name>
-                                    <build>
-                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                    </build>
-                                 </image>
-                              </images>
-                           </configuration>
-                        </execution>
-                     </executions>
-                  </plugin>
-               </plugins>
-            </pluginManagement>
-         </build>
-      </profile>
-
-
-
-      <!-- Profile used to build and push docker images with project.version tag to hub.docker when the enterprise deploy goal encounters-->
-      <profile>
-         <id>release-enterprise</id>
-         <build>
-            <pluginManagement>
-               <plugins>
-                  <plugin>
-                     <groupId>io.fabric8</groupId>
-                     <artifactId>docker-maven-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>build-push-image</id>
-                           <phase>deploy</phase>
-                           <goals>
-                              <goal>build</goal>
-                              <goal>push</goal>
-                           </goals>
-                           <configuration>
-                              <images>
-                                 <image>
-                                    <name>${image.name}:${project.version}</name>
-                                    <registry>${image.registry}</registry>
-                                    <build>
-                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                    </build>
-                                 </image>
-                              </images>
-                           </configuration>
-                        </execution>
-                     </executions>
-                  </plugin>
-               </plugins>
-            </pluginManagement>
-         </build>
-      </profile>
-
-      <!-- Profile used to build and push docker images with project.version tag to both image registries quay.io and hub.docker when
-      the community deploy goal encounters-->
-      <profile>
-         <id>release-community</id>
-         <build>
-            <pluginManagement>
-               <plugins>
-                  <plugin>
-                     <groupId>io.fabric8</groupId>
-                     <artifactId>docker-maven-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>build-push-image</id>
-                           <phase>deploy</phase>
-                           <goals>
-                              <goal>build</goal>
-                              <goal>push</goal>
-                           </goals>
-                           <configuration>
-                              <images>
-                                 <image>
-                                    <name>${image.name}:${project.version}</name>
-                                    <registry>${image.registry}</registry>
-                                    <build>
-                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                    </build>
-                                 </image>
-                                 <image>
-                                    <name>${image.name}:${project.version}</name>
-                                    <build>
-                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                    </build>
-                                 </image>
-                              </images>
-                           </configuration>
-                        </execution>
-                     </executions>
-                  </plugin>
-               </plugins>
-            </pluginManagement>
-         </build>
-      </profile>
-      <profile>
-         <id>start-db</id>
-         <activation>
-            <property>
-               <name>skip.integrationtests</name>
-               <value>false</value>
-            </property>
-         </activation>
-         <build>
-            <pluginManagement>
-               <plugins>
-                  <plugin>
-                     <groupId>io.fabric8</groupId>
-                     <artifactId>docker-maven-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>start</id>
-                           <phase>pre-integration-test</phase>
-                           <goals>
-                              <goal>stop</goal>
-                              <goal>start</goal>
-                           </goals>
-                           <configuration>
-                              <images>
-                                 <image>
-                                    <alias>test-database</alias>
-                                    <name>postgres:${postgres.version}</name>
-                                    <run>
-                                       <ports>
-                                          <port>${database.port}:${postgresql.port}</port>
-                                       </ports>
-                                       <env>
-                                          <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
-                                          <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
-                                          <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
-                                       </env>
-                                       <cmd>
-                                          <shell>-c max_connections=300</shell>
-                                       </cmd>
-                                       <wait>
-                                          <log>database system is ready to accept connections</log>
-                                          <time>20000</time>
-                                       </wait>
-                                    </run>
-                                 </image>
-                                 <image>
-                                    <name>alfresco/alfresco-activemq:${activemq.version}</name>
-                                    <run>
-                                       <ports>
-                                          <port>${activemq.port1}:${activemq.port1}</port>
-                                          <port>${activemq.port2}:${activemq.port2}</port>
-                                       </ports>
-                                    </run>
-                                 </image>
-                              </images>
-                           </configuration>
-                        </execution>
-                        <execution>
-                           <id>stop</id>
-                           <phase>post-integration-test</phase>
-                           <goals>
-                              <goal>stop</goal>
-                           </goals>
-                        </execution>
-                     </executions>
-                  </plugin>
-               </plugins>
-            </pluginManagement>
-         </build>
-      </profile>
-   </profiles>
 
    <properties>
       <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
@@ -358,8 +29,6 @@
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
 
-      <skip.integrationtests>true</skip.integrationtests>
-      <postgres.version>9.4.12</postgres.version>
       <activemq.version>5.15.8</activemq.version>
       <activemq.port1>61616</activemq.port1>
       <activemq.port2>5672</activemq.port2>
@@ -409,15 +78,18 @@
       <app.properties.test.include>**</app.properties.test.include>
       <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
 
-      <image.name>imageNameNotSet</image.name>
-      <image.tag>latest</image.tag>
-      <image.registry>quay.io</image.registry>
-
       <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
       <javax-jaxb-impl.version>3.0.0-M4</javax-jaxb-impl.version>
       <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
    </properties>
+
+   <distributionManagement>
+      <repository>
+         <id>alfresco-internal</id>
+         <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
+      </repository>
+   </distributionManagement>
 
    <dependencyManagement>
       <dependencies>
@@ -1009,13 +681,121 @@
                   </execution>
                </executions>
             </plugin>
-
-            <plugin>
-               <groupId>io.fabric8</groupId>
-               <artifactId>docker-maven-plugin</artifactId>
-               <version>${fabric8.docker.version}</version>
-            </plugin>
          </plugins>
       </pluginManagement>
    </build>
+
+   <profiles>
+      <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
+      <profile>
+         <id>publicapi</id>
+         <properties>
+            <docflex.version>1.6.1</docflex.version>
+         </properties>
+         <!-- Downloads the docflex license -->
+         <dependencies>
+            <dependency>
+               <groupId>com.docflex</groupId>
+               <artifactId>docflex-alfresco-license</artifactId>
+               <version>1.0</version>
+               <type>license</type>
+            </dependency>
+         </dependencies>
+         <!-- Extracts Docflex locally -->
+         <build>
+            <plugins>
+               <plugin>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <version>3.1.1</version>
+                  <executions>
+                     <!-- Unzips the docflex/javadoc doclet -->
+                     <execution>
+                        <id>default-cli</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                           <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                           <artifactItems>
+                              <artifactItem>
+                                 <groupId>com.docflex</groupId>
+                                 <artifactId>docflex-javadoc</artifactId>
+                                 <version>${docflex.version}</version>
+                                 <type>zip</type>
+                              </artifactItem>
+                           </artifactItems>
+                           <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+
+               <plugin>
+                  <artifactId>maven-javadoc-plugin</artifactId>
+                  <version>${maven.javadoc.version}</version>
+                  <configuration>
+                     <doclet>com.docflex.javadoc.Doclet</doclet>
+                     <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
+                     <doclint>none</doclint>
+                     <additionalOptions>
+
+                        -license ${settings.localRepository}/com/docflex/docflex-alfresco-license/1.0/docflex-alfresco-license-1.0.license
+                        -template ${project.build.directory}/docflex-javadoc-${docflex.version}/templates/JavadocPro/FramedDoc.tpl
+                        -nodialog
+                        -launchviewer=false
+                        -p:filter.byAnns.include.classes=org.alfresco.api.AlfrescoPublicApi
+                        -p:docTitle "${project.name} ${project.version} Public API"
+                        -p:windowTitle "${project.name} ${project.version} Public API"
+
+                     </additionalOptions>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
+      <!--
+        The following profile adds the /properties directories as resource directories in the project.
+        This means we can filter the property files in these directories.
+        The presence of this /properties directory also activates these profiles.
+        -->
+      <profile>
+         <id>enable-test-properties-filtering</id>
+         <activation>
+            <file>
+               <!-- No properties allowed here. Only hardcoded values are properly interpreted -->
+               <exists>src/test/properties</exists>
+            </file>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>build-helper-maven-plugin</artifactId>
+                  <version>${maven.buildhelper.version}</version>
+                  <executions>
+                     <execution>
+                        <id>add-env-test-properties</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                           <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                           <resources>
+                              <resource>
+                                 <directory>${app.properties.test.folder}</directory>
+                                 <includes>
+                                    <include>${app.properties.test.include}</include>
+                                 </includes>
+                                 <filtering>${app.filtering.enabled}</filtering>
+                              </resource>
+                           </resources>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>

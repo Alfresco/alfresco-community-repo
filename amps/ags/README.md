@@ -119,7 +119,7 @@ Technical documentation is available at [rm-community/documentation/README.md](/
 In order to execute the integration tests run the following command (unit tests will be executed every time before you start Alfresco/Share):
 
 ```
-mvn clean install -Dskip.integrationtests=false
+mvn clean install -Pstart-db
 ```
 
 ## Running UI Automation tests

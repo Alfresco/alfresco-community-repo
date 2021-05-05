@@ -646,7 +646,7 @@
        </profile>
 
        <profile>
-          <id>internal</id>
+          <id>publish-docker-images</id>
           <!-- publishes "image:latest" on Quay & DockerHub -->
           <build>
              <plugins>

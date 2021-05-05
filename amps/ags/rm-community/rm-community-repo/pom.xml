@@ -587,7 +587,7 @@
        </profile>
 
        <profile>
-          <id>publish-docker-images</id>
+          <id>push-docker-images</id>
           <!-- publishes "image:latest" on Quay & DockerHub -->
           <build>
              <plugins>

@@ -7,8 +7,8 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
 if isBranchBuild && [ "${TRAVIS_BRANCH}" = "master" ] && [ "${TRAVIS_BUILD_STAGE_NAME,,}" = "release" ] ; then
-  # update ":latest" image tags on remote repositories by using the maven *publish-docker-images* profile
-  PROFILES="-Ppublish-docker-images"
+  # update ":latest" image tags on remote repositories by using the maven *push-docker-images* profile
+  PROFILES="-Ppush-docker-images"
 else
   # build the ":latest" image tags locally with the maven *build-docker-images* profile
   PROFILES="-Pbuild-docker-images"

@@ -11,7 +11,7 @@
    </parent>
 
    <properties>
-      <jackson.databind.version>2.7.9.1</jackson.databind.version> <!-- this should not be overridden - fixes 2 tests -->
+      <dependency.jackson-databind.version>2.7.9.1</dependency.jackson-databind.version> <!-- this should not be overridden - fixes 2 tests -->
    </properties>
 
    <build>

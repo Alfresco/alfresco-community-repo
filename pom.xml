@@ -109,7 +109,7 @@
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
 
         <dependency.postgresql.version>42.2.19</dependency.postgresql.version>
-        <dependency.mysql.version>8.0.23</dependency.mysql.version>
+        <dependency.mysql.version>8.0.24</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>

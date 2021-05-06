@@ -52,11 +52,9 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
-import org.junit.rules.TemporaryFolder;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -67,7 +65,7 @@ import org.w3c.dom.Node;
 @Category({OwnJVMTestsCategory.class})
 public class SchemaBootstrapTest
 {
-    private static final String BOOTSTRAP_TEST_CONTEXT = "classpath*:alfresco/dbscripts/test-bootstrap-context.xml";
+    private static final String BOOTSTRAP_TEST_CONTEXT = "classpath*:alfresco/dbscripts/bootstrap-context-test.xml";
     private static final String MAIN_SCHEMA_REFERENCE_FILE = "classpath:alfresco/dbscripts/create/org.alfresco.repo.domain.dialect.PostgreSQLDialect/Schema-Reference-ALF.xml";
     private static final String TEST_SCHEMA_REFERENCE_FILE = "classpath:alfresco/dbscripts/create/org.alfresco.repo.domain.dialect.PostgreSQLDialect/Test-Schema-Reference-ALF.xml";
     private static final List<String> TEST_SCHEMA_REFERENCE_URLS = Arrays.asList(
@@ -81,9 +79,6 @@ public class SchemaBootstrapTest
 
     private SchemaBootstrap schemaBootstrap;
     private SchemaUpgradeScriptPatch optionalPatch;
-
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
 
     @BeforeClass
     public static void beforeClass() throws Exception

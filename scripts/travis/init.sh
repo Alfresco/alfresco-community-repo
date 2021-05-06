@@ -14,6 +14,9 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
 fi
 
+# not helpful in this script
+# export HOST_IP=$(hostname  -I | cut -f1 -d' ')
+
 popd
 set +vex
 echo "=========================== Finishing Init Script =========================="

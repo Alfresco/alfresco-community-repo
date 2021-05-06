@@ -1,9 +1,0 @@
-<webscript>
-   <shortname>rmsearch</shortname>
-   <description>Record Search Component Data Webscript</description>
-   <url>/slingshot/rmsearch/{site}?query={query?}&amp;sortby={sortby?}&amp;filters={filters?}&amp;maxitems={maxitems?}</url>
-   <format default="json">argument</format>
-   <authentication>user</authentication>
-   <transaction>required</transaction>
-  <lifecycle>internal</lifecycle>
-</webscript>

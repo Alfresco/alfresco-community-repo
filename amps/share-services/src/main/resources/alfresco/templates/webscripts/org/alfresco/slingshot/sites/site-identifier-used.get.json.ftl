@@ -1,3 +1,0 @@
-{
-   "used": ${foundMatch?c}
-}

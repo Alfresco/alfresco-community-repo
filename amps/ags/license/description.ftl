@@ -1,1 +1,0 @@
-Alfresco Records Management Module

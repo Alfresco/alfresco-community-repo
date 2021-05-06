@@ -183,6 +183,7 @@
 
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.1</version>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
                 <executions>
                     <execution>
@@ -249,4 +250,23 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <!-- Tweaks required to make the build work in Eclipse -->
+        <profile>
+            <id>m2e</id>
+            <dependencies>
+                <dependency>
+                   <groupId>commons-logging</groupId>
+                   <artifactId>commons-logging</artifactId>
+                   <!-- This is needed for Maven tomcat run -->
+                   <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </dependency>
+            </dependencies>
+       </profile>
+    </profiles>
 </project>

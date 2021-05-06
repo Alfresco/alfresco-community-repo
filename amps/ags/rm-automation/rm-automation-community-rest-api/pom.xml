@@ -81,10 +81,11 @@
          <artifactId>alfresco-testng</artifactId>
          <version>1.1</version>
       </dependency>
-      <dependency>
-         <groupId>org.apache.commons</groupId>
-         <artifactId>commons-collections4</artifactId>
-      </dependency>
+<!-- should be pulled in by alfresco-repository and org.apache.poi.poi:jar:4.1.2 -->
+<!--      <dependency>-->
+<!--         <groupId>org.apache.commons</groupId>-->
+<!--         <artifactId>commons-collections4</artifactId>-->
+<!--      </dependency>-->
       <dependency>
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>

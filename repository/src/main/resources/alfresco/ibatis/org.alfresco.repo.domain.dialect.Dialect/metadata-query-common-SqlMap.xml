@@ -8,9 +8,7 @@
         select 
             node.id             as id,
             node.version        as version,
-            store.id            as store_id,
-            store.protocol      as protocol,
-            store.identifier    as identifier,
+            node.store_id       as store_id,
             node.uuid           as uuid,
             node.type_qname_id  as type_qname_id,
             node.locale_id      as locale_id,
@@ -24,7 +22,6 @@
             node.audit_accessed as audit_accessed
         from
             alf_node node
-            join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
             <foreach item="item" index="index" collection="joins">
                 <choose>

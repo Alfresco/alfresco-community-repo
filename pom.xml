@@ -63,7 +63,7 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.18</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>3.8.0</dependency.mockito-core.version>
+        <dependency.mockito-core.version>3.9.0</dependency.mockito-core.version>
         <dependency.mockito-all.version>1.10.19</dependency.mockito-all.version>
         <dependency.org-json.version>20210307</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
@@ -114,7 +114,7 @@
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.57</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.58</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.29</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>

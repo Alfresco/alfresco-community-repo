@@ -43,6 +43,7 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
@@ -125,8 +126,7 @@ public class SchemaDifferenceHelperUnitTest
 
     private Difference createDifference()
     {
-        Difference difference = new Difference(Where.IN_BOTH_BUT_DIFFERENCE, mock(DbProperty.class), mock(DbProperty.class));
-        return difference;
+        return new Difference(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(mock(DbObject.class)), new DbProperty(mock(DbObject.class)));
     }
 
     private Index createTableIndex(String tableName)

@@ -128,7 +128,7 @@
 
     <profiles>
         <profile>
-            <id>communityDocker</id>
+            <id>build-docker-images</id>
             <!-- builds "image:latest" locally -->
             <build>
                 <plugins>
@@ -157,7 +157,7 @@
         </profile>
 
         <profile>
-            <id>internal</id>
+            <id>push-docker-images</id>
             <!-- publishes "image:latest" on Quay & DockerHub -->
             <build>
                 <plugins>

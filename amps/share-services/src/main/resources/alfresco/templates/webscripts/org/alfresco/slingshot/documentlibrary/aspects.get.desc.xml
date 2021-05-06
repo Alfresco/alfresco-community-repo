@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>aspects</shortname>
+  <description>Document List Component - aspects query</description>
+  <url>/slingshot/doclib/aspects/node/{store_type}/{store_id}/{id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

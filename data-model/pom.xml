@@ -73,43 +73,6 @@
                 </executions>
             </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.jibx</groupId>
-                                        <artifactId>
-                                            maven-jibx-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.2.5,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>bind</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <execute>
-                                            <runOnConfiguration>true</runOnConfiguration>
-                                            <runOnIncremental>true</runOnIncremental>
-                                        </execute>
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <dependencies>
@@ -245,6 +208,25 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
             <version>${dependency.tika.version}</version>
+            <exclusions>
+                <!-- Duplicates classes from jakarta -->
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
@@ -282,6 +264,19 @@
                 <exclusion>
                     <groupId>com.sun.activation</groupId>
                     <artifactId>javax.activation</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta -->
+                <exclusion>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

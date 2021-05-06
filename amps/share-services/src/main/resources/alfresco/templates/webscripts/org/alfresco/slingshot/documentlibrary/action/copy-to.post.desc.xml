@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>copy-to</shortname>
+  <description>Document List Action - Copy multiple files</description>
+  <url>/slingshot/doclib/action/copy-to/site/{site}/{container}/{path}</url>
+  <url>/slingshot/doclib/action/copy-to/site/{site}/{container}</url>
+  <url>/slingshot/doclib/action/copy-to/node/{store_type}/{store_id}/{id}/{path}</url>
+  <url>/slingshot/doclib/action/copy-to/node/{store_type}/{store_id}/{id}</url>
+  <url>/slingshot/doclib/action/copy-to/node/{store_type}/{store_id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

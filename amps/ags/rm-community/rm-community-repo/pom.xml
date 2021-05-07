@@ -12,6 +12,8 @@
    </parent>
 
    <properties>
+      <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
+
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
    </properties>
 
@@ -144,10 +146,11 @@
    <build>
       <sourceDirectory>source/java</sourceDirectory>
       <testSourceDirectory>test/java</testSourceDirectory>
+
       <resources>
          <resource>
             <directory>config</directory>
-            <filtering>${app.filtering.enabled}</filtering>
+            <filtering>true</filtering>
          </resource>
       </resources>
       <testResources>
@@ -156,6 +159,10 @@
          </testResource>
          <testResource>
             <directory>test/resources</directory>
+         </testResource>
+         <testResource>
+            <directory>src/test/properties/local</directory>
+             <filtering>true</filtering>
          </testResource>
       </testResources>
 
@@ -175,26 +182,9 @@
                      </sources>
                   </configuration>
                </execution>
-               <execution>
-                  <id>add-env-test-properties</id>
-                  <phase>generate-resources</phase>
-                  <goals>
-                     <goal>add-test-resource</goal>
-                  </goals>
-                  <configuration>
-                     <resources>
-                        <resource>
-                           <directory>${app.properties.test.folder}</directory>
-                           <includes>
-                              <include>${app.properties.test.include}</include>
-                           </includes>
-                           <filtering>${app.filtering.enabled}</filtering>
-                        </resource>
-                     </resources>
-                  </configuration>
-               </execution>
             </executions>
          </plugin>
+
          <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
@@ -210,24 +200,6 @@
                         </move>
                         <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
                      </target>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>properties-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <phase>initialize</phase>
-                  <goals>
-                     <goal>read-project-properties</goal>
-                  </goals>
-                  <configuration>
-                     <files>
-                        <file>${basedir}/src/main/resources/local.properties</file>
-                     </files>
-                     <quiet>true</quiet>
                   </configuration>
                </execution>
             </executions>
@@ -270,55 +242,7 @@
                </execution>
             </executions>
          </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>fetch-share-services-amp</id>
-                  <phase>process-test-resources</phase>
-                  <goals>
-                     <goal>copy</goal>
-                  </goals>
-                  <configuration>
-                     <artifactItems>
-                        <artifactItem>
-                           <groupId>org.alfresco</groupId>
-                           <artifactId>alfresco-share-services</artifactId>
-                           <version>${project.version}</version>
-                           <type>amp</type>
-                        </artifactItem>
-                        <artifactItem>
-                           <groupId>org.alfresco</groupId>
-                           <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
-                           <version>${project.version}</version>
-                           <type>war</type>
-                           <destFileName>gs-api-explorer-${project.version}.war</destFileName>
-                        </artifactItem>
-                     </artifactItems>
-                     <outputDirectory>${project.build.directory}</outputDirectory>
-                  </configuration>
-               </execution>
-               <execution>
-                  <id>unpack-alfresco</id>
-                  <phase>prepare-package</phase>
-                  <goals>
-                     <goal>unpack</goal>
-                  </goals>
-                  <configuration>
-                     <outputDirectory>${app.amp.client.war.folder}</outputDirectory>
-                     <artifactItems>
-                        <artifactItem>
-                           <groupId>org.alfresco</groupId>
-                           <artifactId>content-services-community</artifactId>
-                           <type>war</type>
-                           <version>${project.version}</version>
-                        </artifactItem>
-                     </artifactItems>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
+
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
@@ -334,27 +258,9 @@
                      <includeDependencies>true</includeDependencies>
                   </configuration>
                </execution>
-               <execution>
-                  <id>amps-to-war-overlay</id>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>install</goal>
-                  </goals>
-               </execution>
-               <execution>
-                  <id>install-share-services-amp</id>
-                  <goals>
-                     <goal>install</goal>
-                  </goals>
-                  <phase>prepare-package</phase>
-                  <configuration>
-                     <backup>true</backup>
-                     <ampLocation>${project.build.directory}/alfresco-share-services-${project.version}.amp</ampLocation>
-                     <warLocation>${app.amp.client.war.folder}</warLocation>
-                  </configuration>
-               </execution>
             </executions>
          </plugin>
+
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
@@ -371,6 +277,7 @@
                </excludes>
             </configuration>
          </plugin>
+
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>

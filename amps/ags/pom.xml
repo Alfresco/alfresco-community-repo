@@ -23,37 +23,9 @@
 
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
-
-      <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
-      <app.amp.folder>src/main/amp</app.amp.folder>
-      <app.amp.output.folder>../${project.build.finalName}</app.amp.output.folder>
-      <app.filtering.enabled>true</app.filtering.enabled>
-      <app.properties.include>**</app.properties.include>
-      <app.properties.folder>src/main/properties/local</app.properties.folder>
-      <app.properties.test.include>**</app.properties.test.include>
-      <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
    </properties>
 
    <build>
-      <resources>
-         <resource>
-            <directory>src/main/resources</directory>
-            <filtering>${app.filtering.enabled}</filtering>
-         </resource>
-         <resource>
-            <directory>${app.amp.folder}</directory>
-            <targetPath>${app.amp.output.folder}</targetPath>
-            <filtering>${app.filtering.enabled}</filtering>
-         </resource>
-      </resources>
-
-      <testResources>
-         <testResource>
-            <directory>src/test/resources</directory>
-            <filtering>${app.filtering.enabled}</filtering>
-         </testResource>
-      </testResources>
-
       <pluginManagement>
          <plugins>
             <plugin>
@@ -66,45 +38,35 @@
                </configuration>
             </plugin>
 
-            <!-- Disable doclint until RM-3150 is fixed -->
-            <plugin>
-               <artifactId>maven-javadoc-plugin</artifactId>
-               <configuration>
-                  <doclint>none</doclint>
-                  <source>${java.version}</source>
-               </configuration>
-            </plugin>
-
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>license-maven-plugin</artifactId>
                <version>1.16</version>
                <configuration>
-
-                   <verbose>${license.verbose}</verbose>
+                  <verbose>${license.verbose}</verbose>
                   <addSvnKeyWords>false</addSvnKeyWords>
                   <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 
-                   <!-- header configuration -->
+                  <!-- header configuration -->
                   <organizationName>Alfresco Software Limited</organizationName>
                   <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
                   <canUpdateCopyright>true</canUpdateCopyright>
                   <canUpdateDescription>true</canUpdateDescription>
 
-                   <!-- licence configuration -->
+                  <!-- licence configuration -->
                   <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
 
-                   <!-- dry run options -->
-                   <dryRun>${license.update.dryrun}</dryRun>
+                  <!-- dry run options -->
+                  <dryRun>${license.update.dryrun}</dryRun>
                   <failOnMissingHeader>true</failOnMissingHeader>
                   <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
 
-                   <!-- default root -->
+                  <!-- default root -->
                   <roots>
                      <root>src</root>
                   </roots>
 
-                   <!-- exculsions -->
+                  <!-- exculsions -->
                   <excludes>
                      <exclude>**/package-info.java</exclude>
                      <exclude>**/*.properties</exclude>
@@ -126,16 +88,10 @@
                   </execution>
                </executions>
             </plugin>
+
             <plugin>
                <artifactId>maven-resources-plugin</artifactId>
                <version>${maven.resources.version}</version>
-               <dependencies>
-                  <dependency>
-                     <groupId>org.apache.maven.shared</groupId>
-                     <artifactId>maven-filtering</artifactId>
-                     <version>${dependency.maven-filtering.version}</version>
-                  </dependency>
-               </dependencies>
                <configuration>
                   <encoding>UTF-8</encoding>
                   <nonFilteredFileExtensions>
@@ -166,30 +122,6 @@
                      <nonFilteredFileExtension>ico</nonFilteredFileExtension>
                      <nonFilteredFileExtension>psd</nonFilteredFileExtension>
                   </nonFilteredFileExtensions>
-               </configuration>
-            </plugin>
-            <plugin>
-               <artifactId>maven-war-plugin</artifactId>
-               <dependencies>
-                  <!-- Needed when creating the community and enterprise rest api wars  -->
-                  <dependency>
-                     <groupId>org.apache.commons</groupId>
-                     <artifactId>commons-compress</artifactId>
-                     <version>${dependency.apache-compress.version}</version>
-                  </dependency>
-                  <dependency>
-                     <groupId>org.alfresco.maven.plugin</groupId>
-                     <artifactId>alfresco-maven-plugin</artifactId>
-                     <version>${alfresco.maven-plugin.version}</version>
-                  </dependency>
-               </dependencies>
-               <configuration>
-                  <archiveClasses>false</archiveClasses>
-                  <archive>
-                     <manifest>
-                        <addClasspath>true</addClasspath>
-                     </manifest>
-                  </archive>
                </configuration>
             </plugin>
          </plugins>

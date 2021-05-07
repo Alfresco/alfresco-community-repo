@@ -15,26 +15,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-war-plugin</artifactId>
-            <dependencies>
-               <!-- Needed when creating the community and enterprise rest api wars  -->
-               <dependency>
-                  <groupId>org.apache.commons</groupId>
-                  <artifactId>commons-compress</artifactId>
-                  <version>${dependency.apache-compress.version}</version>
-               </dependency>
-               <dependency>
-                  <groupId>org.alfresco.maven.plugin</groupId>
-                  <artifactId>alfresco-maven-plugin</artifactId>
-                  <version>${alfresco.maven-plugin.version}</version>
-               </dependency>
-            </dependencies>
             <configuration>
-               <archiveClasses>false</archiveClasses>
-               <archive>
-                  <manifest>
-                     <addClasspath>true</addClasspath>
-                  </manifest>
-               </archive>
                <failOnMissingWebXml>false</failOnMissingWebXml>
                <overlays>
                   <overlay>

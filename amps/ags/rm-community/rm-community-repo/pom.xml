@@ -176,14 +176,21 @@
                   </configuration>
                </execution>
                <execution>
-                  <id>add-test-source</id>
+                  <id>add-env-test-properties</id>
+                  <phase>generate-resources</phase>
                   <goals>
-                     <goal>add-test-source</goal>
+                     <goal>add-test-resource</goal>
                   </goals>
                   <configuration>
-                     <sources>
-                        <source>unit-test/java</source>
-                     </sources>
+                     <resources>
+                        <resource>
+                           <directory>${app.properties.test.folder}</directory>
+                           <includes>
+                              <include>${app.properties.test.include}</include>
+                           </includes>
+                           <filtering>${app.filtering.enabled}</filtering>
+                        </resource>
+                     </resources>
                   </configuration>
                </execution>
             </executions>

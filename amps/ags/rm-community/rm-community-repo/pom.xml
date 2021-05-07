@@ -173,12 +173,25 @@
             <executions>
                <execution>
                   <id>add-source</id>
+                  <phase>generate-sources</phase>
                   <goals>
                      <goal>add-source</goal>
                   </goals>
                   <configuration>
                      <sources>
                         <source>source/compatibility</source>
+                     </sources>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>add-test-source</id>
+                  <phase>generate-test-sources</phase>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>unit-test/java</source>
                      </sources>
                   </configuration>
                </execution>
@@ -208,6 +221,8 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+               <redirectTestOutputToFile>true</redirectTestOutputToFile>
+               <runOrder>alphabetical</runOrder>
                <includes>
                   <include>**/AllUnitTestSuite.class</include>
                </includes>
@@ -238,6 +253,39 @@
                      <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.directory}/${project.build.finalName}/config</additionalClasspathElement>
                      </additionalClasspathElements>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>fetch-artefacts-for-docker-build</id>
+                  <phase>prepare-package</phase>
+                  <goals>
+                     <goal>copy</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.alfresco</groupId>
+                           <artifactId>alfresco-share-services</artifactId>
+                           <version>${project.version}</version>
+                           <type>amp</type>
+                           <outputDirectory>${project.build.directory}</outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.alfresco</groupId>
+                           <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
+                           <version>${project.version}</version>
+                           <type>war</type>
+                           <outputDirectory>${project.build.directory}</outputDirectory>
+                           <destFileName>gs-api-explorer-${project.version}.war</destFileName>
+                        </artifactItem>
+                     </artifactItems>
                   </configuration>
                </execution>
             </executions>

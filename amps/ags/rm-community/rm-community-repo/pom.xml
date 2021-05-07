@@ -12,6 +12,8 @@
    </parent>
 
    <properties>
+      <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
+
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
    </properties>
 
@@ -144,10 +146,11 @@
    <build>
       <sourceDirectory>source/java</sourceDirectory>
       <testSourceDirectory>test/java</testSourceDirectory>
+
       <resources>
          <resource>
             <directory>config</directory>
-            <filtering>${app.filtering.enabled}</filtering>
+            <filtering>true</filtering>
          </resource>
       </resources>
       <testResources>
@@ -176,14 +179,21 @@
                   </configuration>
                </execution>
                <execution>
-                  <id>add-test-source</id>
+                  <id>add-env-test-properties</id>
+                  <phase>generate-resources</phase>
                   <goals>
-                     <goal>add-test-source</goal>
+                     <goal>add-test-resource</goal>
                   </goals>
                   <configuration>
-                     <sources>
-                        <source>unit-test/java</source>
-                     </sources>
+                     <resources>
+                        <resource>
+                           <directory>src/test/properties/local</directory>
+                           <includes>
+                              <include>**</include>
+                           </includes>
+                           <filtering>true</filtering>
+                        </resource>
+                     </resources>
                   </configuration>
                </execution>
             </executions>

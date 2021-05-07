@@ -16,8 +16,6 @@
    </modules>
 
    <properties>
-      <maven.resources.version>3.1.0</maven.resources.version>
-
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -98,7 +96,6 @@
 
             <plugin>
                <artifactId>maven-resources-plugin</artifactId>
-               <version>${maven.resources.version}</version>
                <configuration>
                   <encoding>UTF-8</encoding>
                   <nonFilteredFileExtensions>

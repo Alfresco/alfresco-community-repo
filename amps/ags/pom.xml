@@ -17,8 +17,6 @@
 
    <properties>
       <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
-      <maven.compiler.version>3.8.0</maven.compiler.version>
-      <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
       <maven.resources.version>3.1.0</maven.resources.version>
 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,40 +35,9 @@
       <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
    </properties>
 
-   <dependencies>
-      <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
-      <dependency>
-         <groupId>jakarta.jws</groupId>
-         <artifactId>jakarta.jws-api</artifactId>
-         <scope>provided</scope>
-      </dependency>
-   </dependencies>
-
    <build>
       <finalName>${project.artifactId}-${project.version}</finalName>
       <plugins>
-         <plugin>
-            <artifactId>maven-enforcer-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>enforce-java</id>
-                  <goals>
-                     <goal>enforce</goal>
-                  </goals>
-                  <configuration>
-                     <rules>
-                        <requireJavaVersion>
-                           <version>[${java.version},)</version>
-                        </requireJavaVersion>
-                     </rules>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-         </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
@@ -114,18 +81,6 @@
             </configuration>
          </plugin>
          <plugin>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>3.0.1</version>
-            <executions>
-               <execution>
-                  <id>attach-sources</id>
-                  <goals>
-                     <goal>jar</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
                <doclint>none</doclint>
@@ -138,44 +93,6 @@
                   </configuration>
                   <goals>
                      <goal>jar</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <artifactId>maven-clean-plugin</artifactId>
-            <version>3.1.0</version>
-            <executions>
-               <execution>
-                  <id>default-clean</id>
-                  <phase>clean</phase>
-                  <goals>
-                     <goal>clean</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <artifactId>maven-install-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>default-install</id>
-                  <phase>install</phase>
-                  <goals>
-                     <goal>install</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <artifactId>maven-deploy-plugin</artifactId>
-            <version>2.7</version>
-            <executions>
-               <execution>
-                  <id>default-deploy</id>
-                  <phase>deploy</phase>
-                  <goals>
-                     <goal>deploy</goal>
                   </goals>
                </execution>
             </executions>
@@ -201,18 +118,6 @@
             </executions>
          </plugin>
       </plugins>
-      <extensions>
-         <extension>
-            <groupId>org.apache.maven.archetype</groupId>
-            <artifactId>archetype-packaging</artifactId>
-            <version>2.2</version>
-         </extension>
-         <extension>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-webdav-jackrabbit</artifactId>
-            <version>2.2</version>
-         </extension>
-      </extensions>
       <resources>
          <resource>
             <directory>src/main/resources</directory>
@@ -234,36 +139,6 @@
       <pluginManagement>
          <plugins>
             <plugin>
-               <artifactId>maven-compiler-plugin</artifactId>
-               <version>${maven.compiler.version}</version>
-               <configuration>
-                  <source>${maven.compiler.source}</source>
-                  <target>${maven.compiler.target}</target>
-               </configuration>
-               <executions>
-                  <execution>
-                     <id>default-testCompile</id>
-                     <phase>process-test-sources</phase>
-                     <goals>
-                        <goal>testCompile</goal>
-                     </goals>
-                     <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                     </configuration>
-                  </execution>
-               </executions>
-            </plugin>
-            <plugin>
-               <artifactId>maven-enforcer-plugin</artifactId>
-               <version>${maven.enforcer.plugin}</version>
-            </plugin>
-            <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>properties-maven-plugin</artifactId>
-               <version>1.0-alpha-2</version>
-            </plugin>
-            <plugin>
                <artifactId>maven-failsafe-plugin</artifactId>
                <version>3.0.0-M5</version>
                <configuration>
@@ -280,20 +155,6 @@
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>build-helper-maven-plugin</artifactId>
                <version>${maven.buildhelper.version}</version>
-            </plugin>
-            <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>sql-maven-plugin</artifactId>
-               <version>1.5</version>
-            </plugin>
-
-            <!-- Maven Release Plugin (Use a recent version for better Git Support) -->
-            <plugin>
-               <artifactId>maven-release-plugin</artifactId>
-               <version>2.5.3</version>
-               <configuration>
-                  <tagNameFormat>V@{project.version}</tagNameFormat>
-               </configuration>
             </plugin>
 
             <!-- Disable doclint until RM-3150 is fixed -->
@@ -423,21 +284,6 @@
                </configuration>
             </plugin>
             <plugin>
-               <artifactId>maven-clean-plugin</artifactId>
-               <version>3.1.0</version>
-            </plugin>
-            <plugin>
-               <artifactId>maven-dependency-plugin</artifactId>
-               <version>3.1.1</version>
-            </plugin>
-            <plugin>
-               <artifactId>maven-archetype-plugin</artifactId>
-               <version>2.2</version>
-               <configuration>
-                  <skip>${skipTests}</skip>
-               </configuration>
-            </plugin>
-            <plugin>
                <groupId>com.google.code.maven-replacer-plugin</groupId>
                <artifactId>replacer</artifactId>
                <version>1.5.3</version>
@@ -488,73 +334,6 @@
    </reporting>
 
    <profiles>
-      <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
-      <profile>
-         <id>publicapi</id>
-         <properties>
-            <docflex.version>1.6.1</docflex.version>
-         </properties>
-         <!-- Downloads the docflex license -->
-         <dependencies>
-            <dependency>
-               <groupId>com.docflex</groupId>
-               <artifactId>docflex-alfresco-license</artifactId>
-               <version>1.0</version>
-               <type>license</type>
-            </dependency>
-         </dependencies>
-         <!-- Extracts Docflex locally -->
-         <build>
-            <plugins>
-               <plugin>
-                  <artifactId>maven-dependency-plugin</artifactId>
-                  <version>3.1.1</version>
-                  <executions>
-                     <!-- Unzips the docflex/javadoc doclet -->
-                     <execution>
-                        <id>default-cli</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                           <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                           <artifactItems>
-                              <artifactItem>
-                                 <groupId>com.docflex</groupId>
-                                 <artifactId>docflex-javadoc</artifactId>
-                                 <version>${docflex.version}</version>
-                                 <type>zip</type>
-                              </artifactItem>
-                           </artifactItems>
-                           <outputDirectory>${project.build.directory}</outputDirectory>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-
-               <plugin>
-                  <artifactId>maven-javadoc-plugin</artifactId>
-                  <configuration>
-                     <doclet>com.docflex.javadoc.Doclet</doclet>
-                     <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
-                     <doclint>none</doclint>
-                     <additionalOptions>
-
-                        -license ${settings.localRepository}/com/docflex/docflex-alfresco-license/1.0/docflex-alfresco-license-1.0.license
-                        -template ${project.build.directory}/docflex-javadoc-${docflex.version}/templates/JavadocPro/FramedDoc.tpl
-                        -nodialog
-                        -launchviewer=false
-                        -p:filter.byAnns.include.classes=org.alfresco.api.AlfrescoPublicApi
-                        -p:docTitle "${project.name} ${project.version} Public API"
-                        -p:windowTitle "${project.name} ${project.version} Public API"
-
-                     </additionalOptions>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-
       <!--
         The following profile adds the /properties directories as resource directories in the project.
         This means we can filter the property files in these directories.

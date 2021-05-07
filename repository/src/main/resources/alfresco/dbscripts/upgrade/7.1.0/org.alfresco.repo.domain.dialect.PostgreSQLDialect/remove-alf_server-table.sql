@@ -24,3 +24,4 @@ INSERT INTO alf_applied_patch
     'patch.db-V7.1.0-remove-alf_server-table', 'Removes alf_server table and constraints',
     0, 15000, -1, 15001, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'alf_server table and constraints removed'
   );
+  

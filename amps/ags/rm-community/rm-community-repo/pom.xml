@@ -170,6 +170,11 @@
             <directory>src/test/properties/local</directory>
              <filtering>true</filtering>
          </testResource>
+         <testResource>
+            <directory>config</directory>
+            <targetPath>${project.build.testOutputDirectory}</targetPath>
+            <filtering>true</filtering>
+         </testResource>
       </testResources>
 
       <plugins>

@@ -262,17 +262,16 @@
                            <artifactId>alfresco-share-services</artifactId>
                            <version>${project.version}</version>
                            <type>amp</type>
-                           <outputDirectory>${project.build.directory}</outputDirectory>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
                            <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
                            <version>${project.version}</version>
                            <type>war</type>
-                           <outputDirectory>${project.build.directory}</outputDirectory>
                            <destFileName>gs-api-explorer-${project.version}.war</destFileName>
                         </artifactItem>
                      </artifactItems>
+                     <outputDirectory>${project.build.directory}</outputDirectory>
                   </configuration>
                </execution>
             </executions>

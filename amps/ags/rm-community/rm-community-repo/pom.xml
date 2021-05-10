@@ -282,7 +282,6 @@
             <artifactId>alfresco-maven-plugin</artifactId>
             <executions>
                <execution>
-                  <id>attach-alfresco-governance-services-jar</id>
                   <goals>
                      <goal>amp</goal>
                   </goals>
@@ -343,6 +342,7 @@
             <alfresco.db.datasource.class>org.gjt.mm.mysql.Driver</alfresco.db.datasource.class>
          </properties>
       </profile>
+
       <profile>
          <id>use-postgres</id>
          <properties>
@@ -500,8 +500,8 @@
       </profile>
 
        <profile>
-          <!-- builds "image:latest" locally -->
           <id>build-docker-images</id>
+          <!-- builds "image:latest" locally -->
           <build>
              <plugins>
                 <plugin>

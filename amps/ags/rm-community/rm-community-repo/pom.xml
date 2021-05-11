@@ -150,7 +150,6 @@
       <resources>
          <resource>
             <directory>config</directory>
-            <targetPath>../${project.build.finalName}/config</targetPath>
             <filtering>true</filtering>
          </resource>
          <resource>
@@ -169,11 +168,6 @@
          <testResource>
             <directory>src/test/properties/local</directory>
              <filtering>true</filtering>
-         </testResource>
-         <testResource>
-            <directory>config</directory>
-            <targetPath>${project.build.testOutputDirectory}</targetPath>
-            <filtering>true</filtering>
          </testResource>
       </testResources>
 
@@ -209,6 +203,24 @@
             </executions>
          </plugin>
 
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>prepare-package</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <target>
+                        <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
+                           <fileset dir="${project.build.outputDirectory}/alfresco" />
+                        </move>
+                     </target>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>

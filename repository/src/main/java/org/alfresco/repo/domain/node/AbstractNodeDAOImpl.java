@@ -2756,6 +2756,22 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         selectNodesWithAspects(qnameIds, minNodeId, maxNodeId, resultsCallback);
     }
 
+    @Override
+    public void getNodesWithAspects(
+            Set<QName> aspectQNames,
+            Long minNodeId, Long maxNodeId, boolean ordered,
+            NodeRefQueryCallback resultsCallback)
+    {
+        Set<Long> qnameIdsSet = qnameDAO.convertQNamesToIds(aspectQNames, false);
+        if (qnameIdsSet.size() == 0)
+        {
+            // No point running a query
+            return;
+        }
+        List<Long> qnameIds = new ArrayList<Long>(qnameIdsSet);
+        selectNodesWithAspects(qnameIds, minNodeId, maxNodeId, ordered, resultsCallback);
+    }
+
     /**
      * @return              Returns a writable copy of the cached aspects set
      */
@@ -4926,6 +4942,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract void selectNodesWithAspects(
             List<Long> qnameIds,
             Long minNodeId, Long maxNodeId,
+            NodeRefQueryCallback resultsCallback);
+    protected abstract void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId, boolean ordered,
             NodeRefQueryCallback resultsCallback);
     protected abstract Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId, int assocIndex);
     protected abstract int updateNodeAssoc(Long id, int assocIndex);

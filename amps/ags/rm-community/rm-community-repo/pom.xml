@@ -152,11 +152,6 @@
             <directory>config</directory>
             <filtering>true</filtering>
          </resource>
-         <resource>
-            <directory>src/main/amp</directory>
-            <targetPath>../${project.build.finalName}</targetPath>
-            <filtering>true</filtering>
-         </resource>
       </resources>
       <testResources>
          <testResource>
@@ -167,7 +162,7 @@
          </testResource>
          <testResource>
             <directory>src/test/properties/local</directory>
-             <filtering>true</filtering>
+            <filtering>true</filtering>
          </testResource>
       </testResources>
 
@@ -216,6 +211,7 @@
                         <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                            <fileset dir="${project.build.outputDirectory}/alfresco" />
                         </move>
+                        <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
                      </target>
                   </configuration>
                </execution>

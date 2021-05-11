@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
+import static org.alfresco.repo.content.transform.magick.ImageTransformationOptions.OPT_COMMAND_OPTIONS;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_ENLARGEMENT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_PDF_ENLARGEMENT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.ALPHA_REMOVE;
@@ -122,6 +123,7 @@ public class TransformationOptionsConverter implements InitializingBean
         IMAGE_OPTIONS.addAll(RESIZE_OPTIONS);
         IMAGE_OPTIONS.add(AUTO_ORIENT);
         IMAGE_OPTIONS.add(ALPHA_REMOVE);
+        IMAGE_OPTIONS.add(OPT_COMMAND_OPTIONS);
     }
 
     private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]
@@ -284,6 +286,8 @@ public class TransformationOptionsConverter implements InitializingBean
                     }
                     opts.setSourceOptionsList(sourceOptionsList);
                 }
+
+                ifSet(options, OPT_COMMAND_OPTIONS, (v) -> opts.setCommandOptions(v));
             }
         }
         else
@@ -361,13 +365,11 @@ public class TransformationOptionsConverter implements InitializingBean
             {
                 ImageTransformationOptions opts = (ImageTransformationOptions) options;
 
-                // TODO We don't support this any more for security reasons, however it might be possible to
-                // extract some of the well know values and add them to the newer ImageMagick transform options.
+                // From a security viewpoint it would be better not to support the option of passing anything to
+                // ImageMagick. It might be possible to extract some of the well know values and add them to the
+                // T-Engine engine_config.
                 String commandOptions = opts.getCommandOptions();
-                if (commandOptions != null && !commandOptions.isBlank())
-                {
-                    logger.error("ImageMagick commandOptions are no longer supported for security reasons: " + commandOptions);
-                }
+                ifSet(commandOptions != null && !commandOptions.isBlank(), map, OPT_COMMAND_OPTIONS, commandOptions);
 
                 ImageResizeOptions imageResizeOptions = opts.getResizeOptions();
                 if (imageResizeOptions != null)

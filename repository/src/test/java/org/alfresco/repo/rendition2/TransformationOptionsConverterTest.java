@@ -577,7 +577,6 @@ public class TransformationOptionsConverterTest
                         "resizeOptions=null, autoOrient=true]]",
                 "autoOrient=true " + // this is a default - so is also set when uploading a logo
                         "commandOptions=-resize 350x50> -background none -gravity center " +
-                        "timeout=-1 ",
-                true);
+                        "timeout=-1 ");
     }
 }

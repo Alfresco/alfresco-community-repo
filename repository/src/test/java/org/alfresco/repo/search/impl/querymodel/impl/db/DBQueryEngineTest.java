@@ -37,15 +37,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -63,6 +67,7 @@ public class DBQueryEngineTest
     private DBQuery dbQuery;
     private ResultContext<Node> resultContext;
     private QueryOptions options;
+    private NodeDAO nodeDAO;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -78,6 +83,10 @@ public class DBQueryEngineTest
         engine.setSqlSessionTemplate(template);
 
         engine.nodesCache = mock(EntityLookupCache.class);
+
+        nodeDAO = mock(NodeDAO.class);
+        engine.setNodeDAO(nodeDAO);
+        mockStores();
     }
     
     @Test
@@ -259,5 +268,12 @@ public class DBQueryEngineTest
         when(node.getStore()).thenReturn(store );
         
         return node;
+    }
+
+    private void mockStores()
+    {
+        Pair<Long, StoreRef> spacesStore = new Pair<>(6L, new StoreRef("workspace://SpacesStore"));
+        List<Pair<Long, StoreRef>> stores = Arrays.asList(spacesStore);
+        when(nodeDAO.getStores()).thenReturn(stores);
     }
 }

@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -46,6 +47,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -111,6 +113,8 @@ public class DBQueryEngine implements QueryEngine
     private long maxPermissionCheckTimeMillis;
 
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
+
+    private List<Pair<Long, StoreRef>> stores;
     
     AclCrudDAO aclCrudDAO;
 
@@ -313,6 +317,9 @@ public class DBQueryEngine implements QueryEngine
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
     {
+        // get list of stores from database
+        stores = nodeDAO.getStores();
+
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
         
@@ -335,6 +342,7 @@ public class DBQueryEngine implements QueryEngine
                 }
                 
                 Node node = context.getResultObject();
+                addStoreInfo(node);
                 
                 boolean shouldCache = nodes.size() >= options.getSkipCount();
                 if(shouldCache)
@@ -455,6 +463,23 @@ public class DBQueryEngine implements QueryEngine
         public NodeRef getValueKey(Node value)
         {
             return value.getNodeRef();
+        }
+    }
+
+    private void addStoreInfo(Node node)
+    {
+        StoreEntity storeEntity = node.getStore();
+        logger.debug("Adding store info for store id " + storeEntity.getId());
+        for (Pair<Long, StoreRef> storeRefPair : stores)
+        {
+            if (Objects.equals(storeEntity.getId(), storeRefPair.getFirst()))
+            {
+                StoreRef storeRef = storeRefPair.getSecond();
+                storeEntity.setIdentifier(storeRef.getIdentifier());
+                storeEntity.setProtocol(storeRef.getProtocol());
+                logger.debug("Added store info" + storeEntity.toString());
+                break;
+            }
         }
     }
 }

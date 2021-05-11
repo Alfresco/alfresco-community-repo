@@ -75,6 +75,13 @@ public interface NodeDAO extends NodeBulkLoader
     /*
      * Transaction
      */
+
+    /**
+     * @return                 the commit time of the current transaction entry or <tt>null</tt> if
+     *                         there have not been any modifications to nodes registered in the
+     *                         transaction.
+     */
+    Long getCurrentTransactionCommitTime();
     
     /**
      * @param ensureNew          <tt>true</tt> to ensure that a new transaction entry is created

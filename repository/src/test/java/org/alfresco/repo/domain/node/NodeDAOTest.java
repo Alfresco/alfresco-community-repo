@@ -92,12 +92,10 @@ public class NodeDAOTest extends TestCase
     public void testTransaction() throws Throwable
     {
         final boolean[] newTxn = new boolean[] {false};
-        RetryingTransactionCallback<Long> getTxnIdCallback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                return nodeDAO.getCurrentTransactionId(newTxn[0]);
-            }
+        RetryingTransactionCallback<Pair<Long, Long>> getTxnIdCallback = () -> {
+            Long currentTransactionId = nodeDAO.getCurrentTransactionId(newTxn[0]);
+            Long currentTransactionCommitTime = nodeDAO.getCurrentTransactionCommitTime();
+            return new Pair<>(currentTransactionId, currentTransactionCommitTime);
         };
         // No txn
         try
@@ -110,14 +108,24 @@ public class NodeDAOTest extends TestCase
             // Expected
         }
         // Read-only
-        assertNull("No Txn ID should be present in read-only txn", txnHelper.doInTransaction(getTxnIdCallback, true));
+        Pair<Long, Long> txn0 = txnHelper.doInTransaction(getTxnIdCallback);
+        Long txnId0 = txn0.getFirst();
+        Long commitTime0 = txn0.getSecond();
+        assertNull("No Txn ID should be present in read-only txn", txnId0);
+        assertNull("No Txn Commit time should be present in read-only txn", commitTime0);
         // First success
-        Long txnId1 = txnHelper.doInTransaction(getTxnIdCallback);
+        Pair<Long, Long> txn1 = txnHelper.doInTransaction(getTxnIdCallback);
+        Long txnId1 = txn1.getFirst();
+        Long commitTime1 = txn1.getSecond();
         assertNull("No Txn ID should be present in untouched txn", txnId1);
+        assertNull("No Txn Commit time should be present in untouched txn", commitTime1);
         // Second success
         newTxn[0] = true;
-        Long txnId2 = txnHelper.doInTransaction(getTxnIdCallback);
+        Pair<Long, Long> txn2 = txnHelper.doInTransaction(getTxnIdCallback);
+        Long txnId2 = txn2.getFirst();
+        Long commitTime2 = txn2.getSecond();
         assertNotNull("Txn ID should be present by forcing it", txnId2);
+        assertNotNull("Txn commit time should be present by forcing it", commitTime2);
     }
     
     public void testSelectNodePropertiesByTypes() throws Exception

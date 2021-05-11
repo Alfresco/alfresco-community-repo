@@ -27,12 +27,16 @@ package org.alfresco.repo.event2;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
@@ -92,6 +96,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private TransactionService transactionService;
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
+    protected NodeDAO nodeDAO;
 
     private EventGeneratorQueue eventGeneratorQueue;
     private NodeTypeFilter nodeTypeFilter;
@@ -111,6 +116,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
+        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "eventGeneratorQueue", eventGeneratorQueue);
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
@@ -142,6 +148,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                                            new JavaBehaviour(this, "onCreateAssociation"));
         policyComponent.bindAssociationBehaviour(BeforeDeleteAssociationPolicy.QNAME, this,
                                            new JavaBehaviour(this, "beforeDeleteAssociation"));
+    }
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -366,13 +377,20 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         return (childAssociationTypeFilter.isExcluded(childAssocType) || (userFilter.isExcluded(user)));
     }
 
-    private EventInfo getEventInfo(String user)
+    protected EventInfo getEventInfo(String user)
     {
-        return new EventInfo().setTimestamp(ZonedDateTime.now())
+        return new EventInfo().setTimestamp(getCurrentTransactionTimestamp())
                               .setId(UUID.randomUUID().toString())
                               .setTxnId(AlfrescoTransactionSupport.getTransactionId())
                               .setPrincipal(user)
                               .setSource(URI.create("/" + descriptorService.getCurrentRepositoryDescriptor().getId()));
+    }
+
+    private ZonedDateTime getCurrentTransactionTimestamp()
+    {
+        Long currentTransactionCommitTime = nodeDAO.getCurrentTransactionCommitTime();
+        Instant commitTimeMs = Instant.ofEpochMilli(currentTransactionCommitTime);
+        return ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
     }
 
     @Override
@@ -392,35 +410,38 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         @Override
         public void afterCommit()
         {
-            try
+            if(isTransactionCommitted())
             {
-                final Consolidators consolidators = getTxnConsolidators(this);
-
-                // Node events
-                for (Map.Entry<NodeRef, EventConsolidator> entry : consolidators.getNodes().entrySet())
+                try
                 {
-                    EventConsolidator eventConsolidator = entry.getValue();
-                    sendEvent(entry.getKey(), eventConsolidator);
-                }
+                    final Consolidators consolidators = getTxnConsolidators(this);
 
-                // Child assoc events
-                for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs().entrySet())
-                {
-                    ChildAssociationEventConsolidator eventConsolidator = entry.getValue();
-                    sendEvent(entry.getKey(), eventConsolidator);
-                }
+                    // Node events
+                    for (Map.Entry<NodeRef, EventConsolidator> entry : consolidators.getNodes().entrySet())
+                    {
+                        EventConsolidator eventConsolidator = entry.getValue();
+                        sendEvent(entry.getKey(), eventConsolidator);
+                    }
 
-                // Peer assoc events
-                for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs().entrySet())
-                {
-                    PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
-                    sendEvent(entry.getKey(), eventConsolidator);
+                    // Child assoc events
+                    for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs().entrySet())
+                    {
+                        ChildAssociationEventConsolidator eventConsolidator = entry.getValue();
+                        sendEvent(entry.getKey(), eventConsolidator);
+                    }
+
+                    // Peer assoc events
+                    for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs().entrySet())
+                    {
+                        PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
+                        sendEvent(entry.getKey(), eventConsolidator);
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                // Must consume the exception to protect other TransactionListeners
-                LOGGER.error("Unexpected error while sending repository events", e);
+                catch (Exception e)
+                {
+                    // Must consume the exception to protect other TransactionListeners
+                    LOGGER.error("Unexpected error while sending repository events", e);
+                }
             }
         }
 
@@ -428,6 +449,15 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         {
             EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
             eventGeneratorQueue.accept(()-> createEvent(nodeRef, consolidator, eventInfo));
+        }
+
+        /**
+         * @return true if a node transaction is not only active, but also committed with modifications.
+         * This means that a {@link TransactionEntity} object was created.
+         */
+        protected boolean isTransactionCommitted()
+        {
+            return nodeDAO.getCurrentTransactionCommitTime() != null;
         }
 
         private RepoEvent<?> createEvent(NodeRef nodeRef, EventConsolidator consolidator, EventInfo eventInfo)

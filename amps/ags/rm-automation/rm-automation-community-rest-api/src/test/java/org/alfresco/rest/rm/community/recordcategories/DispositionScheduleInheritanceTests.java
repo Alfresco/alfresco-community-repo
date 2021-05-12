@@ -65,7 +65,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Add retention schedule retain step with immediate period.");
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "immediately");
@@ -101,7 +101,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), false);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Add retention schedule retain step with immediate period.");
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "immediately");
@@ -133,7 +133,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Create a subcategory with retention schedule and apply it to records.");
         RecordCategoryChild subCategory1 = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
@@ -189,7 +189,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(subcategory1Path, false);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(subcategory1Path, "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(subcategory1Path);
 
         STEP("Create a subcategory2 with a record folder in subcategory1");
         RecordCategoryChild subCategory2 = createRecordCategory(subCategory1.getId(), getRandomName("subCategory"));
@@ -220,7 +220,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), false);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Create a subcategory with retention schedule and apply it to records.");
         RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
@@ -267,7 +267,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Create a subcategory with retention schedule and apply it to record folders.");
         RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));

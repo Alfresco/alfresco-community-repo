@@ -29,6 +29,7 @@ package org.alfresco.rest.rm.community.records;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
@@ -310,8 +311,8 @@ public class DeleteRecordTests extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(recordCategory.getName(), true);
 
         STEP("Add retention schedule cut off and destroy step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(recordCategory.getName(), "immediately");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(recordCategory.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(recordCategory.getName());
+        dispositionScheduleService.addDestroyAfterPeriodStep(recordCategory.getName(), "immediately", CUT_OFF_DATE, true);
 
         STEP("Create a record folder and file the record");
         RecordCategoryChild recFolder = createFolder(recordCategory.getId(), getRandomName("recFolder"));

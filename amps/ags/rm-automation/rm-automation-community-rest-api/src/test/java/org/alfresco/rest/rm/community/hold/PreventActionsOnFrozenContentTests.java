@@ -30,6 +30,7 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_VITAL_RECORD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_VITAL_RECORD_DEFINITION;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
 import static org.alfresco.utility.data.RandomData.getRandomName;
@@ -271,8 +272,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         RecordCategory categoryWithRS = getRestAPIFactory().getRecordCategoryAPI()
                                                            .getRecordCategory(recordFolder.getParentId());
         dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), false);
-        dispositionScheduleService.addCutOffAfterPeriodStep(categoryWithRS.getName(), "immediately");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(categoryWithRS.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(categoryWithRS.getName());
+        dispositionScheduleService.addDestroyAfterPeriodStep(categoryWithRS.getName(), "immediately", CUT_OFF_DATE, true);
 
         STEP("Check the record folder has a disposition schedule");
         RecordFolder folderWithRS = getRestAPIFactory().getRecordFolderAPI().getRecordFolder(recordFolder.getId());
@@ -297,7 +298,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         categoryWithRS = createRootCategory(getRandomName("CategoryWithRS"));
         dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), true);
         dispositionScheduleService.addRetainAfterPeriodStep(categoryWithRS.getName(), "immediately");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(categoryWithRS.getName(), "immediately");
+        dispositionScheduleService.addDestroyAfterPeriodStep(categoryWithRS.getName(), "immediately", CUT_OFF_DATE, true);
 
         STEP("Create record folder with a record.");
         RecordCategoryChild folder = createFolder(categoryWithRS.getId(), getRandomName("RecFolder"));
@@ -325,5 +326,4 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         deleteRecordCategory(recordFolder.getParentId());
         deleteRecordCategory(categoryWithRS.getId());
     }
-
 }

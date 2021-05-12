@@ -102,24 +102,39 @@ public class DispositionScheduleService extends BaseAPI
     }
 
     /**
-     * Helper method for adding a destroy step with/without ghosting after period
+     * Helper method for adding a destroy step with ghosting after period
      *
      * @param categoryName   the category in whose schedule the step will be added
      * @param period         the period that needs to pass for destroy to be available
      * @param periodProperty the property of the dispositioned item that is used to calculate the "as of" period
-     * @param retentionGhost true if metadata is kept after destruction, false otherwise
      */
-    public void addDestroyAfterPeriodStep(String categoryName, String period, RetentionPeriodProperty periodProperty, boolean retentionGhost)
+    public void addDestroyWithGhostingAfterPeriodStep(String categoryName, String period, RetentionPeriodProperty periodProperty)
+    {
+        HashMap<RETENTION_SCHEDULE, String> destroyStep = new HashMap<>();
+        destroyStep.put(RETENTION_SCHEDULE.NAME, "destroy");
+        destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
+        destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY, periodProperty.getPeriodProperty());
+        destroyStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Destroy after a period step with keep metadata");
+        destroyStep.put(RETENTION_SCHEDULE.RETENTION_GHOST, "on");
+        recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(), categoryName, destroyStep);
+    }
+
+    /**
+     * Helper method for adding a destroy step without ghosting after period
+     *
+     * @param categoryName   the category in whose schedule the step will be added
+     * @param period         the period that needs to pass for destroy to be available
+     * @param periodProperty the property of the dispositioned item that is used to calculate the "as of" period
+     */
+    public void addDestroyWithoutGhostingAfterPeriodStep(String categoryName, String period,
+                                                       RetentionPeriodProperty periodProperty)
     {
         HashMap<RETENTION_SCHEDULE, String> destroyStep = new HashMap<>();
         destroyStep.put(RETENTION_SCHEDULE.NAME, "destroy");
         destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
         destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY, periodProperty.getPeriodProperty());
         destroyStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Destroy after a period step");
-        if (retentionGhost)
-        {
-            destroyStep.put(RETENTION_SCHEDULE.RETENTION_GHOST, "on");
-        }
         recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
                 dataUser.getAdminUser().getPassword(), categoryName, destroyStep);
     }
@@ -155,7 +170,6 @@ public class DispositionScheduleService extends BaseAPI
         transferStep.put(RETENTION_SCHEDULE.RETENTION_LOCATION, location);
         transferStep.put(RETENTION_SCHEDULE.RETENTION_EVENTS, events);
         transferStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Transfer after event step");
-        transferStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, "|");
         transferStep.put(RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS, "false");
         transferStep.put(RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT, "true");
 

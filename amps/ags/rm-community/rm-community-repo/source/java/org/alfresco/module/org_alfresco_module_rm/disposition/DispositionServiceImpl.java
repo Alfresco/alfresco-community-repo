@@ -59,6 +59,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -330,18 +331,32 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         final String dispositionActionName = dsNextAction.getNextActionName();
                         final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
 
-                        // check if current transaction is a READ ONLY one and if true set the property on the node
+                        RunAsWork<Void> runAsWork = new RunAsWork<Void>()
+                        {
+                            /**
+                             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+                             */
+                            @Override
+                            public Void doWork()
+                            {
+                                nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                                return null;
+                            }
+
+                        };
+
+                        // if the current transaction is READ ONLY set the property on the node
                         // in a READ WRITE transaction
                         if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
                         {
                             transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                                getInternalNodeService().setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                                AuthenticationUtil.runAsSystem(runAsWork);
                                 return null;
                             }, false, true);
                         }
                         else
                         {
-                            getInternalNodeService().setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                            AuthenticationUtil.runAsSystem(runAsWork);
                         }
 
                         if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))

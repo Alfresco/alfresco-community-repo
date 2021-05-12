@@ -49,6 +49,7 @@
                      </execution>
                   </executions>
                   <configuration>
+                     <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
                      <path>/api-explorer</path>
                      <port>8085</port>
                   </configuration>

@@ -78,19 +78,20 @@ public class SchemaDifferenceHelper
 
     public String findPatchCausingDifference(Difference difference)
     {
-        for (SchemaUpgradeScriptPatch patch: optionalUpgradePatches)
+        String differenceText = describe(difference);
+        for (SchemaUpgradeScriptPatch patch : optionalUpgradePatches)
         {
-           if (!isPatchApplied(patch))
-           {
-               List<String> problemPatterns = getProblemsPatterns(patch);
-               for (String problemPattern: problemPatterns)
-               {
-                   if (describe(difference).matches(problemPattern))
-                   {
-                       return patch.getId();
-                   }
-               }
-           }
+            if (!isPatchApplied(patch))
+            {
+                List<String> problemPatterns = getProblemsPatterns(patch);
+                for (String problemPattern : problemPatterns)
+                {
+                    if (differenceText.matches(problemPattern))
+                    { 
+                        return patch.getId(); 
+                    }
+                }
+            }
         }
 
         return null;

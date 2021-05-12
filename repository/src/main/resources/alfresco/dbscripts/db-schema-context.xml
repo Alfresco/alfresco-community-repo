@@ -56,6 +56,7 @@
                 <ref bean="patch.db-V5.2-remove-jbpm-tables-from-db" />
                 <ref bean="patch.db-V6.0-change-set-indexes" />
                 <ref bean="patch.db-V6.3-add-indexes-node-transaction" />
+                <ref bean="patch.db-V7.1.0-remove-alf_server-table" />
             </list>
         </property>
     </bean>

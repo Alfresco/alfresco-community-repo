@@ -1409,4 +1409,22 @@
             <value>classpath:alfresco/dbscripts/upgrade/6.3/${db.script.dialect}/add-indexes-node-transaction.sql</value>
         </property>
     </bean>
-</beans>
+
+    <bean id="patch.db-V7.1.0-remove-alf_server-table" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V7.1.0-remove-alf_server-table</value></property>
+        <property name="description"><value>patch.db-V7.1.0-remove-alf_server-table.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>15000</value></property>
+        <property name="targetSchema"><value>15001</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/7.1.0/${db.script.dialect}/remove-alf_server-table.sql</value>
+        </property>
+        <property name="problemsPatternFileUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/7.1.0/remove-alf_server-table.patterns</value>
+        </property>
+        <property name="ignored"><value>${system.remove-alf_server-table-from-db.ignored}</value></property>
+    </bean>
+<!-- 
+ -->
+ 
+ </beans>

@@ -55,7 +55,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext02TestSuite"
@@ -70,7 +70,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext04TestSuite"
@@ -78,7 +78,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext05TestSuite"
@@ -97,7 +97,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContextExtraTestSuite"
@@ -105,7 +105,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - MiscContextTestSuite"
@@ -113,7 +113,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - SearchTestSuite"
@@ -205,7 +205,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContext03TestSuite"
@@ -213,7 +213,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContext04TestSuite"
@@ -221,7 +221,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.1 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.3.10
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:2.4.0
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContextExtraTestSuite"

@@ -90,8 +90,8 @@ public class PojoUtility
             mapper.addMixIn(target, mixinSource);
         }
 
-        //include only values that differ from default settings to be included
-        mapper.setSerializationInclusion(Include.NON_DEFAULT);
+        //include only non null values
+        mapper.setSerializationInclusion(Include.NON_NULL);
 
         //return the json object
         try

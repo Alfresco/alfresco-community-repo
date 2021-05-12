@@ -10,9 +10,6 @@
       <version>11.35-SNAPSHOT</version>
    </parent>
 
-   <properties>
-      <dependency.jackson-databind.version>2.7.9.1</dependency.jackson-databind.version> <!-- this should not be overridden - fixes 2 tests -->
-   </properties>
 
    <build>
       <plugins>
@@ -51,10 +48,6 @@
          <artifactId>restapi</artifactId>
          <exclusions>
             <exclusion>
-               <groupId>com.fasterxml.jackson.core</groupId>
-               <artifactId>jackson-databind</artifactId>
-            </exclusion>
-            <exclusion>
                <groupId>org.alfresco.tas</groupId>
                <artifactId>utility</artifactId>
             </exclusion>
@@ -90,10 +83,6 @@
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>
          <version>3.0.14</version>
-      </dependency>
-      <dependency>
-         <groupId>com.fasterxml.jackson.core</groupId>
-         <artifactId>jackson-databind</artifactId>
       </dependency>
    </dependencies>
 </project>

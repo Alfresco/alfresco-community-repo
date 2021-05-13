@@ -33,7 +33,7 @@ public class CheckOutTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify check out valid document")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
     public void verifyCheckOutValidDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, fileContent);

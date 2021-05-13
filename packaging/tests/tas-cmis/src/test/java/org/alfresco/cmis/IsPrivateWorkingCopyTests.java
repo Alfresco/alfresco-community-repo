@@ -41,7 +41,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to verify if checked out document is private working copy")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(managerUser).usingResource(checkedOutDoc)
@@ -51,7 +51,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify site manager is able to verify if pwc document is private working copy")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerCanVerifyIsPrivateWorkingCopyOnPwc() throws Exception
     {
         cmisApi.authenticateUser(managerUser).usingResource(checkedOutDoc)
@@ -73,7 +73,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to verify if checked out document is private working copy")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -84,7 +84,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site contributor is able to verify if checked out document is private working copy")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
@@ -95,7 +95,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site consumer is able to verify if checked out document is private working copy")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerCanVerifyIsPrivateWorkingCopy() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -106,7 +106,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify non invited user is able to verify if checked out document is private working copy in public site")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
     public void nonInvitedUserCanVerifyIsPrivateWorkingCopyInPublicSite() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -143,7 +143,7 @@ public class IsPrivateWorkingCopyTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to verify if document created with CHECKEDOUT versioning state is private working copy")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
     public void verifyIsPrivateWorkingCopyForDocumentWithCheckedOutVersioningState() throws Exception
     {
         FileModel checkedDoc = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);

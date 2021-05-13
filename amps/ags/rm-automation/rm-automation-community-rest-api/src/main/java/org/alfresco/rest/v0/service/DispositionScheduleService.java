@@ -27,6 +27,8 @@
 package org.alfresco.rest.v0.service;
 
 
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
+
 import java.util.HashMap;
 
 import org.alfresco.rest.core.v0.BaseAPI;
@@ -99,6 +101,16 @@ public class DispositionScheduleService extends BaseAPI
         cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Cut off after a period step");
         recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
                 dataUser.getAdminUser().getPassword(), categoryName, cutOffStep);
+    }
+
+    /**
+     * Helper method for adding a destroy step with ghosting immediately after CUT OFF date
+     *
+     * @param categoryName   the category in whose schedule the step will be added
+     */
+    public void addDestroyWithGhostingImmediatelyAfterCutOff(String categoryName)
+    {
+        addDestroyWithGhostingAfterPeriodStep(categoryName, "immediately", CUT_OFF_DATE);
     }
 
     /**

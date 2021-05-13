@@ -312,7 +312,7 @@ public class DeleteRecordTests extends BaseRMRestTest
 
         STEP("Add retention schedule cut off and destroy step with immediate period.");
         dispositionScheduleService.addCutOffImmediatelyStep(recordCategory.getName());
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(recordCategory.getName(), "immediately", CUT_OFF_DATE);
+        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(recordCategory.getName());
 
         STEP("Create a record folder and file the record");
         RecordCategoryChild recFolder = createFolder(recordCategory.getId(), getRandomName("recFolder"));

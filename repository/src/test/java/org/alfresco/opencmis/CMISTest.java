@@ -78,6 +78,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -107,7 +108,13 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
@@ -121,7 +128,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.alfresco.util.testing.category.PerformanceTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -213,6 +219,9 @@ public class CMISTest
     private SearchService searchService;
     private java.util.Properties globalProperties;
     private AuditComponentImpl auditComponent;
+    private PersonService personService;
+    private SiteService siteService;
+    private MutableAuthenticationService authenticationService;
 
     private AlfrescoCmisServiceFactory factory;
 	
@@ -338,6 +347,9 @@ public class CMISTest
         this.tenantService = (TenantService) ctx.getBean("tenantService");
         this.searchService = (SearchService) ctx.getBean("SearchService");
         this.auditComponent = (AuditComponentImpl) ctx.getBean("auditComponent");
+        this.personService = (PersonService) ctx.getBean("personService");
+        this.siteService = (SiteService) ctx.getBean("siteService");
+        this.authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
 
         this.globalProperties = (java.util.Properties) ctx.getBean("global-properties");
         this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
@@ -720,11 +732,16 @@ public class CMISTest
 
     private <T extends Object> T withCmisService(CmisServiceCallback<T> callback, CmisVersion cmisVersion)
     {
+        return withCmisService("admin", "admin", callback, cmisVersion);
+    }
+
+    private <T extends Object> T withCmisService(String username, String password, CmisServiceCallback<T> callback, CmisVersion cmisVersion)
+    {
         CmisService cmisService = null;
 
         try
         {
-            CallContext context = new SimpleCallContext("admin", "admin", cmisVersion);
+            CallContext context = new SimpleCallContext(username, password, cmisVersion);
             cmisService = factory.getService(context);
             T ret = callback.execute(cmisService);
             return ret;
@@ -4099,6 +4116,108 @@ public class CMISTest
         {
             executorService.shutdownNow();
         }
+    }
+
+    /**
+     * This test ensures that a non member user of a private site, can edit metadata on a document (where the non member user
+     * has "SiteCollaborator" role) placed on the site.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMNT20006() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        final String nonMemberUsername = "user" + System.currentTimeMillis();
+        final String nonMemberPassword = "pass" + System.currentTimeMillis();
+        final String siteId = "site" + System.currentTimeMillis();
+        final String originalDescription = "my description";
+
+        NodeRef fileNode;
+
+        try
+        {
+            fileNode = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    // Create user
+                    authenticationService.createAuthentication(nonMemberUsername, nonMemberPassword.toCharArray());
+                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                    String email = nonMemberUsername + "@testcmis.com";
+                    props.put(ContentModel.PROP_USERNAME, nonMemberUsername);
+                    props.put(ContentModel.PROP_FIRSTNAME, nonMemberUsername);
+                    props.put(ContentModel.PROP_LASTNAME, nonMemberUsername);
+                    props.put(ContentModel.PROP_EMAIL, email);
+                    PersonInfo personInfo = personService.getPerson(personService.createPerson(props));
+                    assertNotNull("Null person info", personInfo);
+
+                    // Create site
+                    SiteInfo siteInfo = siteService.createSite("myPreset", siteId, "myTitle", "myDescription", SiteVisibility.PRIVATE);
+                    assertNotNull("Null site info", siteInfo);
+                    NodeRef siteDocLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+                    assertNotNull("Null site doclib", siteDocLib);
+
+                    // Create node in site
+                    String nodeName = "node" + System.currentTimeMillis() + ".txt";
+                    NodeRef fileNode = nodeService.createNode(siteDocLib, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT).getChildRef();
+                    ContentWriter writer = contentService.getWriter(fileNode, ContentModel.PROP_CONTENT, true);
+                    writer.putContent("my node content");
+                    nodeService.setProperty(fileNode, ContentModel.PROP_TITLE, nodeName);
+                    nodeService.setProperty(fileNode, ContentModel.PROP_DESCRIPTION, originalDescription);
+                    assertNotNull("Null file node", fileNode);
+                    assertTrue(nodeService.exists(fileNode));
+
+                    // Sets node permissions to the user who is not member of the site and get site activities
+                    permissionService.setPermission(fileNode, nonMemberUsername, SiteModel.SITE_COLLABORATOR, true);
+
+                    return fileNode;
+                }
+            });
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+
+        // Edit metadata
+        final String newDescription = "new node description";
+
+        Boolean updated = withCmisService(nonMemberUsername, nonMemberPassword, new CmisServiceCallback<Boolean>()
+        {
+            @Override
+            public Boolean execute(CmisService cmisService)
+            {
+                Boolean updated = true;
+
+                try
+                {
+                    // Obtain repository id
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+
+                    // Id holder
+                    Holder<String> objectIdHolder = new Holder<String>(fileNode.toString());
+
+                    // New Properties
+                    PropertiesImpl newProperties = new PropertiesImpl();
+                    newProperties.addProperty(new PropertyStringImpl(PropertyIds.DESCRIPTION, newDescription));
+                    cmisService.updateProperties(repositoryId, objectIdHolder, null, newProperties, null);
+                }
+                catch (Exception e)
+                {
+                    updated = false;
+                }
+
+                return updated;
+            };
+        }, CmisVersion.CMIS_1_1);
+
+        assertTrue("Document metadata not updated", updated);
     }
 
     private NodeRef createFolder(NodeRef parentNodeRef, String folderName, QName folderType) throws IOException

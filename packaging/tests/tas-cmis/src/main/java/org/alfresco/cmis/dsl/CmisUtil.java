@@ -280,10 +280,10 @@ public class CmisUtil
 
     protected boolean isPrivateWorkingCopy()
     {
-        boolean result = false;
+        boolean result;
         try
         {
-            result = getPWCDocument().isPrivateWorkingCopy();
+            result = getPWCDocument().isVersionSeriesPrivateWorkingCopy();
         }
         catch (CmisVersioningException cmisVersioningException)
         {

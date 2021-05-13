@@ -125,6 +125,7 @@ public class RecordCategoriesAPI extends BaseAPI
         addPropertyToRequest(requestParams, "period", properties, RETENTION_SCHEDULE.RETENTION_PERIOD);
         addPropertyToRequest(requestParams, "ghostOnDestroy", properties, RETENTION_SCHEDULE.RETENTION_GHOST);
         addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
+        addPropertyToRequest(requestParams, "location", properties, RETENTION_SCHEDULE.RETENTION_LOCATION);
         String events = getPropertyValue(properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
         if(!events.equals(""))
         {

@@ -39,7 +39,6 @@ import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;

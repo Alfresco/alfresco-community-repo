@@ -64,7 +64,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
         dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRSOnRecords.getName(), true);
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(categoryWithRSOnRecords.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(categoryWithRSOnRecords.getName());
 
         STEP("Create a record folder with a record");
         RecordCategoryChild recordFolder = createRecordFolder(categoryWithRSOnRecords.getId(), getRandomName

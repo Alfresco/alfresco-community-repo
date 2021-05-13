@@ -271,8 +271,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         RecordCategory categoryWithRS = getRestAPIFactory().getRecordCategoryAPI()
                                                            .getRecordCategory(recordFolder.getParentId());
         dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), false);
-        dispositionScheduleService.addCutOffAfterPeriodStep(categoryWithRS.getName(), "immediately");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(categoryWithRS.getName(), "immediately");
+        dispositionScheduleService.addCutOffImmediatelyStep(categoryWithRS.getName());
+        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(categoryWithRS.getName());
 
         STEP("Check the record folder has a disposition schedule");
         RecordFolder folderWithRS = getRestAPIFactory().getRecordFolderAPI().getRecordFolder(recordFolder.getId());
@@ -297,7 +297,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         categoryWithRS = createRootCategory(getRandomName("CategoryWithRS"));
         dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), true);
         dispositionScheduleService.addRetainAfterPeriodStep(categoryWithRS.getName(), "immediately");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(categoryWithRS.getName(), "immediately");
+        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(categoryWithRS.getName());
 
         STEP("Create record folder with a record.");
         RecordCategoryChild folder = createFolder(categoryWithRS.getId(), getRandomName("RecFolder"));
@@ -325,5 +325,4 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         deleteRecordCategory(recordFolder.getParentId());
         deleteRecordCategory(categoryWithRS.getId());
     }
-
 }

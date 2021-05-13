@@ -299,9 +299,7 @@
                      <goal>amp</goal>
                   </goals>
                   <configuration>
-                     <attachClasses>true</attachClasses>
                      <attachConfig>true</attachConfig>
-                     <includeDependencies>true</includeDependencies>
                   </configuration>
                </execution>
             </executions>

@@ -43,6 +43,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.People;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
+import org.alfresco.rest.api.tests.client.data.ExpectedComparison;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -115,9 +116,9 @@ public class TestPeople extends AbstractBaseApiTest
     private String account2Admin;
     private String account3Admin;
     private static String account4Admin;
-    private static Person personAlice;
-    private static Person personAliceD;
-    private static Person personBen;
+    private static Person personAliceSmith;
+    private static Person personAliceDavis;
+    private static Person personBenCarson;
     private Person personBob;
     private NodeService nodeService;
     private PersonService personService;
@@ -142,36 +143,36 @@ public class TestPeople extends AbstractBaseApiTest
             account4Admin = "admin@" + account4.getId();
             
             publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
-            personAlice = new Person();
-            personAlice.setUserName("alice@" + account4.getId());
-            personAlice.setId("alice@" + account4.getId());
-            personAlice.setFirstName("Alice");
-            personAlice.setLastName("Smith");
-            personAlice.setEmail("alison.smith@example.com");
-            personAlice.setPassword("password");
-            personAlice.setEnabled(true);
-            personAlice.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
-            people.create(personAlice);
+            personAliceSmith = new Person();
+            personAliceSmith.setUserName("alice@" + account4.getId());
+            personAliceSmith.setId("alice@" + account4.getId());
+            personAliceSmith.setFirstName("Alice");
+            personAliceSmith.setLastName("Smith");
+            personAliceSmith.setEmail("alison.smith@example.com");
+            personAliceSmith.setPassword("password");
+            personAliceSmith.setEnabled(true);
+            personAliceSmith.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
+            people.create(personAliceSmith);
             
-            personAliceD = new Person();
-            personAliceD.setUserName("aliced@" + account4.getId());
-            personAliceD.setId("aliced@" + account4.getId());
-            personAliceD.setFirstName("Alice");
-            personAliceD.setLastName("Davis");
-            personAliceD.setEmail("alison.davis@example.com");
-            personAliceD.setPassword("password");
-            personAliceD.setEnabled(true);
-            people.create(personAliceD);
+            personAliceDavis = new Person();
+            personAliceDavis.setUserName("aliced@" + account4.getId());
+            personAliceDavis.setId("aliced@" + account4.getId());
+            personAliceDavis.setFirstName("Alice");
+            personAliceDavis.setLastName("Davis");
+            personAliceDavis.setEmail("alison.davis@example.com");
+            personAliceDavis.setPassword("password");
+            personAliceDavis.setEnabled(true);
+            people.create(personAliceDavis);
 
-            personBen = new Person();
-            personBen.setUserName("ben@" + account4.getId());
-            personBen.setId("ben@" + account4.getId());
-            personBen.setFirstName("Ben");
-            personBen.setLastName("Carson");
-            personBen.setEmail("ben.smythe@example.com");
-            personBen.setPassword("password");
-            personBen.setEnabled(true);
-            people.create(personBen);
+            personBenCarson = new Person();
+            personBenCarson.setUserName("ben@" + account4.getId());
+            personBenCarson.setId("ben@" + account4.getId());
+            personBenCarson.setFirstName("Ben");
+            personBenCarson.setLastName("Carson");
+            personBenCarson.setEmail("ben.smythe@example.com");
+            personBenCarson.setPassword("password");
+            personBenCarson.setEnabled(true);
+            people.create(personBenCarson);
         }
         account1Admin = "admin@" + account1.getId();
         account2Admin = "admin@" + account2.getId();
@@ -1571,11 +1572,11 @@ public class TestPeople extends AbstractBaseApiTest
         // orderBy=firstName ASC
         PublicApiClient.ListResponse<Person> resp = listPeople(paging, "firstName", true, 200);
 
-        List<Person> expectedList = new LinkedList<>();
-        expectedList.add(personAlice);
-        expectedList.add(personAliceD);
-        expectedList.add(personBen);
-
+        List<ExpectedComparison> expectedList = new LinkedList<>();
+        expectedList.add(expectedFirstName(personAliceSmith));
+        expectedList.add(expectedFirstName(personAliceDavis));
+        expectedList.add(expectedFirstName(personBenCarson));
+        
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
@@ -1599,11 +1600,11 @@ public class TestPeople extends AbstractBaseApiTest
         // orderBy=firstName DESC
         PublicApiClient.ListResponse<Person> resp = listPeople(paging, "firstName", false, 200);
 
-        List<Person> expectedList = new LinkedList<>();
-        expectedList.add((Person) personBen);
-        expectedList.add((Person) personAlice);
-        expectedList.add((Person) personAliceD);
-
+        List<ExpectedComparison> expectedList = new LinkedList<>();
+        expectedList.add(expectedFirstName(personBenCarson));
+        expectedList.add(expectedFirstName(personAliceSmith));
+        expectedList.add(expectedFirstName(personAliceDavis));
+        
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
@@ -1627,9 +1628,9 @@ public class TestPeople extends AbstractBaseApiTest
         PublicApiClient.ListResponse<Person> resp = listPeople(paging, null, false, 200);
 
         List<Person> expectedList = new LinkedList<>();
-        expectedList.add((Person) personAlice);
-        expectedList.add((Person) personAliceD);
-        expectedList.add((Person) personBen);
+        expectedList.add((Person) personAliceSmith);
+        expectedList.add((Person) personAliceDavis);
+        expectedList.add((Person) personBenCarson);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -1655,9 +1656,9 @@ public class TestPeople extends AbstractBaseApiTest
         PublicApiClient.ListResponse<Person> resp = listPeople(paging, "id", false, 200);
 
         List<Person> expectedList = new LinkedList<>();
-        expectedList.add((Person) personBen);
-        expectedList.add((Person) personAliceD);
-        expectedList.add((Person) personAlice);
+        expectedList.add((Person) personBenCarson);
+        expectedList.add((Person) personAliceDavis);
+        expectedList.add((Person) personAliceSmith);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -1704,9 +1705,9 @@ public class TestPeople extends AbstractBaseApiTest
         PublicApiClient.ListResponse<Person> resp = listPeople(paging, "lastName", true, 200);
 
         List<Person> expectedList = new LinkedList<>();
-        expectedList.add((Person) personBen);
-        expectedList.add((Person) personAliceD);
-        expectedList.add((Person) personAlice);
+        expectedList.add((Person) personBenCarson);
+        expectedList.add((Person) personAliceDavis);
+        expectedList.add((Person) personAliceSmith);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -1732,9 +1733,9 @@ public class TestPeople extends AbstractBaseApiTest
         PublicApiClient.ListResponse<Person> resp = listPeople(paging, "firstName,lastName", true, 200);
 
         List<Person> expectedList = new LinkedList<>();
-        expectedList.add((Person) personAliceD);
-        expectedList.add((Person) personAlice);
-        expectedList.add((Person) personBen);
+        expectedList.add((Person) personAliceDavis);
+        expectedList.add((Person) personAliceSmith);
+        expectedList.add((Person) personBenCarson);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -2370,5 +2371,22 @@ public class TestPeople extends AbstractBaseApiTest
     public String getScope()
     {
         return "public";
+    }
+    
+    private ExpectedComparison expectedFirstName(Person person)
+    {
+        return new ExpectedComparison()
+        {
+            @Override
+            public void expected(Object other)
+            {
+                if (other instanceof Person) {
+                    assertEquals("firstName", person.getFirstName(), ((Person)other).getFirstName());
+                } else {
+                    fail("Not a person? "+other);
+                }
+                    
+            }
+        };
     }
 }

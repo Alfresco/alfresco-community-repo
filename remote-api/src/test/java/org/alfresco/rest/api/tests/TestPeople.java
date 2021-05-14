@@ -1576,7 +1576,7 @@ public class TestPeople extends AbstractBaseApiTest
         expectedList.add(expectedFirstName(personAliceSmith));
         expectedList.add(expectedFirstName(personAliceDavis));
         expectedList.add(expectedFirstName(personBenCarson));
-        
+
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
@@ -1604,7 +1604,7 @@ public class TestPeople extends AbstractBaseApiTest
         expectedList.add(expectedFirstName(personBenCarson));
         expectedList.add(expectedFirstName(personAliceSmith));
         expectedList.add(expectedFirstName(personAliceDavis));
-        
+
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
 
@@ -2380,12 +2380,15 @@ public class TestPeople extends AbstractBaseApiTest
             @Override
             public void expected(Object other)
             {
-                if (other instanceof Person) {
-                    assertEquals("firstName", person.getFirstName(), ((Person)other).getFirstName());
-                } else {
-                    fail("Not a person? "+other);
+                if (other instanceof Person)
+                {
+                    assertEquals("firstName", person.getFirstName(), ((Person) other).getFirstName());
                 }
-                    
+                else
+                {
+                    fail("Not a person? " + other);
+                }
+
             }
         };
     }

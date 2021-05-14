@@ -100,7 +100,7 @@
         <dependency.tas-utility.version>3.0.21</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.javax.json.version>1.1.4</dependency.javax.json.version>
-        <dependency.tas-restapi.version>1.43</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.58</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.13</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>

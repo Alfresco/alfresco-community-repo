@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -247,8 +247,8 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             }
             properties.put(KEY_OPTIONS, commandOptions);
         }
-        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + 
-                getSourcePageRange(options, sourceMimetype, targetMimetype));
+        String sourcePageRange = getSourcePageRange(options, sourceMimetype, targetMimetype);
+        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + sourcePageRange);
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
         
         // execute the statement
@@ -389,6 +389,9 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         }
         else
         {
+            // The following is a somewhat flawed workaround for the fact that the "pdf" rendition in older
+            // versions of ACS used a SWFTransformationOptions object rather than a ImageTransformationOptions
+            // object. See MNT-22409.
             if (options.getPageLimit() == 1 || isSingleSourcePageRangeRequired(sourceMimetype, targetMimetype))
             {
                 startPage = "0";
@@ -644,6 +647,9 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
                 }
             }
         }
+        // The following is a somewhat flawed workaround for the fact that the "pdf" rendition in older
+        // versions of ACS used a SWFTransformationOptions object rather than a ImageTransformationOptions
+        // object. See MNT-22409.
         if (options.getPageLimit() == 1 || isSingleSourcePageRangeRequired(sourceMimetype, targetMimetype))
         {
             return "[0]";

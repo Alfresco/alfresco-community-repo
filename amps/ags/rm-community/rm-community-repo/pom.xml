@@ -293,18 +293,6 @@
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <goals>
-                     <goal>amp</goal>
-                  </goals>
-                  <configuration>
-                     <attachClasses>true</attachClasses>
-                     <attachConfig>true</attachConfig>
-                     <includeDependencies>true</includeDependencies>
-                  </configuration>
-               </execution>
-            </executions>
          </plugin>
 
          <plugin>

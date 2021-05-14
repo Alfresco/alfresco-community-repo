@@ -10,7 +10,11 @@
 	"sitePreset": "${site.sitePreset}",
 	"shortName": "${site.shortName}",
 	"title": "${site.title}",
-	"description": "${site.description}",
+	<#if site.description??>
+		"description": "${site.description}",
+	<#else>
+		"description" : "",
+	</#if>
 	<#if site.node?exists>
 	"node": "${url.serviceContext + "/api/node/" + site.node.storeType + "/" + site.node.storeId + "/" + site.node.id}",
 	"tagScope": "${url.serviceContext + "/api/tagscopes/" + site.node.storeType + "/" + site.node.storeId + "/" + site.node.id}",

@@ -139,12 +139,12 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
     }
 
-    // TODO enable the test when APPS-46 is fixed
-    @Test (enabled = false)
+
+    @Test
     public void searchWhenTotalItemsReachWithNonRM()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 0))
+                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
@@ -174,8 +174,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
-    // TODO enable the test when APPS-46 is fixed
-    @Test (enabled = false)
+
+    @Test
     public void searchWhenTotalItemsExceedNonRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
@@ -195,8 +195,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * And setting skipCount and maxItems under the number of total items
      * Then hasMoreItems will be set to true
      */
-    // TODO enable the test when APPS-46 is fixed
-    @Test (enabled = false)
+
+    @Test
     public void searchResultsUnderTotalItemsRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
@@ -210,8 +210,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
-    // TODO enable the test when APPS-46 is fixed
-    @Test (enabled = false)
+
+    @Test
     public void searchResultsUnderTotalItemsNonRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)

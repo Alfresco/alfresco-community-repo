@@ -2004,6 +2004,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             return null;
         }
 
+        if (!(result instanceof Difference))
+        {
+            return null;
+        }
+
         return differenceHelper.findPatchCausingDifference((Difference)result);
     }
 

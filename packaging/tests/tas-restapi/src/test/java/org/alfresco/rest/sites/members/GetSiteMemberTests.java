@@ -386,7 +386,7 @@ public class GetSiteMemberTests extends RestTest
     {
         restClient.authenticateUser(manager)
                 .withCoreAPI().usingSite(publicSiteModel).usingParams("properties=id").getSiteMember(consumer)
-                .assertThat().fieldsCount().is(1)
+                .assertThat().fieldsCount().is(2)
                 .and().field("id").isNotEmpty()
                 .and().field("role").isNull()
                 .and().field("person").isNull();

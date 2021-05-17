@@ -25,6 +25,11 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -32,8 +37,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-
-import java.util.Date;
 
 /**
  * Provides low-level retrieval of content
@@ -262,5 +265,63 @@ public interface ContentStore
     default boolean isDirectAccessSupported()
     {
         return false;
+    }
+
+    /**
+     * Checks whether or not the current {@link ContentStore} supports the provided {@link Set} storage classes
+     *
+     * @param storageClasses The storage classes that will be checked whether or not are supported
+     * @return true if the storage classes are supported, false otherwise.
+     */
+    default boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        return false;
+    }
+
+    /**
+     * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentStore}
+     */
+    default Set<String> getSupportedStorageClasses()
+    {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Updates the storage class for content
+     *
+     * @param contentUrl The URL of the content that will have its storage classes updated
+     * @param storageClasses The new storage classes
+     * @param parameters extra parameters
+     */
+    default void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters)
+    {
+
+    }
+
+    /**
+     * @param contentUrl the URL of the content for which the storage classes are to be requested
+     * @return Returns the current storage classes for the content found at the contentUrl
+     */
+    default Set<String> findStorageClasses(String contentUrl)
+    {
+        return Collections.emptySet();
+    }
+
+    /**
+     * @return Returns the complete collection of allowed storage classes transitions.
+     * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
+     */
+    default Map<String, Set<String>> getStorageClassesTransitions()
+    {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @param contentUrl the URL of the content for which the storage classes transitions are to be requested
+     * @return Returns the complete collection of allowed storage classes transitions for the content found at content URL
+     */
+    default Map<String, Set<String>> findStorageClassesTransitions(String contentUrl)
+    {
+        return Collections.emptyMap();
     }
 }

@@ -25,12 +25,15 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
-
-import java.util.Date;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -170,4 +173,72 @@ public interface ContentService
      */
     @Auditable(parameters = {"nodeRef", "expiresAt"})
     public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
+
+    /**
+     * Checks if the store supports the retrieving of direct access URLs.
+     *
+     * @return true if direct access URLs retrieving is supported, false otherwise
+     */
+    default boolean isDirectAccessSupported()
+    {
+        return false;
+    }
+
+    /**
+     * Checks whether or not the current {@link ContentService} supports the provided {@link Set} storage classes
+     *
+     * @param storageClasses The storage classes that will be checked whether or not are supported
+     * @return true if the storage classes are supported, false otherwise.
+     */
+    default boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        return false;
+    }
+
+    /**
+     * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentService}
+     */
+    default Set<String> getSupportedStorageClasses()
+    {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Updates the storage class for a {@link NodeRef}
+     *
+     * @param nodeRef The ref of the node that will have its storage classes updated
+     * @param storageClasses The new storage classes
+     * @param parameters extra parameters
+     */
+    default void updateStorageClasses(NodeRef nodeRef, Set<String> storageClasses, Map<String, Object> parameters)
+    {
+
+    }
+
+    /**
+     * @param nodeRef the {@link NodeRef} for which the storage classes are to be requested
+     * @return Returns the current storage classes for the given {@link NodeRef}
+     */
+    default Set<String> findStorageClasses(NodeRef nodeRef)
+    {
+        return Collections.emptySet();
+    }
+
+    /**
+     * @return Returns the complete collection of allowed storage classes transitions.
+     * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
+     */
+    default Map<String, Set<String>> getStorageClassesTransitions()
+    {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @param nodeRef the {@link NodeRef} for which the storage classes transitions are to be requested
+     * @return Returns the complete collection of allowed storage classes transitions for the content found at content URL
+     */
+    default Map<String, Set<String>> findStorageClassesTransitions(NodeRef nodeRef)
+    {
+        return Collections.emptyMap();
+    }
 }

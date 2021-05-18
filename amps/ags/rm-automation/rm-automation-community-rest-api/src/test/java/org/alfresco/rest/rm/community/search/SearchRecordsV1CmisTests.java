@@ -139,7 +139,6 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
     }
 
-
     @Test
     public void searchWhenTotalItemsReachWithNonRM()
     {
@@ -173,7 +172,6 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
-
 
     @Test
     public void searchWhenTotalItemsExceedNonRMUser()
@@ -209,7 +207,6 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
-
 
     @Test
     public void searchResultsUnderTotalItemsNonRMUser()

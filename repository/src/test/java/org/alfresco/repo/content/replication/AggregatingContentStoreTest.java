@@ -25,9 +25,23 @@
  */
 package org.alfresco.repo.content.replication;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
@@ -48,18 +62,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests read and write functionality for the aggregating store.
@@ -308,5 +310,35 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         assertNotNull(directAccessUrl);
         directAccessUrl = aggStore.getDirectAccessUrl("urlSecSupported", null);
         assertNotNull(directAccessUrl);
+    }
+
+    @Test
+    public void testIsStorageClassesSupported()
+    {
+        Set<String> sc = Set.of("a-certain-storage-class");
+        // Create the aggregating store
+        AggregatingContentStore aggStore = new AggregatingContentStore();
+        aggStore.setPrimaryStore(primaryStoreMock);
+        aggStore.setSecondaryStores(List.of(secondaryStoreMock));
+
+        // SC supported by the primary store
+        when(primaryStoreMock.isStorageClassesSupported(sc)).thenReturn(true);
+        assertTrue(aggStore.isStorageClassesSupported(sc));
+        verify(primaryStoreMock, times(1)).isStorageClassesSupported(sc);
+        verify(secondaryStoreMock, never()).isStorageClassesSupported(sc);
+
+        // SC supported by the secondary store
+        when(primaryStoreMock.isStorageClassesSupported(sc)).thenReturn(false);
+        when(secondaryStoreMock.isStorageClassesSupported(sc)).thenReturn(true);
+        assertTrue(aggStore.isStorageClassesSupported(sc));
+        verify(primaryStoreMock, times(1)).isStorageClassesSupported(sc);
+        verify(secondaryStoreMock, times(1)).isStorageClassesSupported(sc);
+
+        // SC not supported by the stores
+        when(primaryStoreMock.isStorageClassesSupported(sc)).thenReturn(false);
+        when(secondaryStoreMock.isStorageClassesSupported(sc)).thenReturn(false);
+        assertFalse(aggStore.isStorageClassesSupported(sc));
+        verify(primaryStoreMock, times(1)).isStorageClassesSupported(sc);
+        verify(secondaryStoreMock, times(1)).isStorageClassesSupported(sc);
     }
 }

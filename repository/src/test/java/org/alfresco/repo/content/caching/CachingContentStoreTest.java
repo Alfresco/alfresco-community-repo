@@ -30,21 +30,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -519,5 +521,15 @@ public class CachingContentStoreTest
     {
         when(backingStore.getDirectAccessUrl(anyString(), any())).thenReturn(new DirectAccessUrl());
         cachingStore.getDirectAccessUrl("url", null);
+    }
+
+    @Test
+    public void testBackingStoreIsCalledForSupportedStorageClasses()
+    {
+        when(backingStore.isStorageClassesSupported(anySet())).thenReturn(true);
+
+        final Set<String> storageClasses = Set.of("a-certain-storage-class");
+        assertTrue(cachingStore.isStorageClassesSupported(storageClasses));
+        verify(backingStore, times(1)).isStorageClassesSupported(storageClasses);
     }
 }

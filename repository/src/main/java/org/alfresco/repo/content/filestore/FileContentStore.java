@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -638,5 +639,11 @@ public class FileContentStore
         {
             throw new ContentIOException("Access to files outside of content store root is not allowed: " + file);
         }
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        return storageClasses != null && storageClasses.size() == 1 && storageClasses.contains(ContentStore.DEFAULT_SC);
     }
 }

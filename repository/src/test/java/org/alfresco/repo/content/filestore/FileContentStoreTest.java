@@ -25,9 +25,16 @@
  */
 package org.alfresco.repo.content.filestore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
@@ -45,12 +52,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests read and write functionality for the store.
@@ -346,6 +347,18 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         ContentReader reader = store.getReader(url);
         assertTrue(reader instanceof SpoofedTextContentReader);
         assertEquals(1024L, reader.getContentString().getBytes("UTF-8").length);
+    }
+
+    @Test
+    public void testSupportsDefaultStorageClass()
+    {
+        assertTrue(store.isStorageClassesSupported(Set.of(ContentStore.DEFAULT_SC)));
+    }
+
+    @Test
+    public void testDoesNotSupportUnknownStorageClass()
+    {
+        assertTrue(store.isStorageClassesSupported(Set.of("unknown")));
     }
     
     private void assertDirExists(File root, String dir)

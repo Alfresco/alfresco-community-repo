@@ -91,6 +91,11 @@ public interface ContentStore
      * The delimiter that must be found in all URLS, i.e <b>://</b>
      */
     public static final String PROTOCOL_DELIMITER = "://";
+
+    /**
+     * The 'default' storage class
+     */
+    public static final String DEFAULT_SC = "default";
     
     /**
      * Check if the content URL format is supported by the store.

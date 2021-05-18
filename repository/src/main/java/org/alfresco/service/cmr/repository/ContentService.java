@@ -218,7 +218,7 @@ public interface ContentService
      * @return Returns the complete collection of allowed storage classes transitions.
      * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
      */
-    default Map<String, Set<String>> getStorageClassesTransitions()
+    default Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
     {
         return Collections.emptyMap();
     }
@@ -227,7 +227,7 @@ public interface ContentService
      * @param nodeRef the {@link NodeRef} for which the storage classes transitions are to be requested
      * @return Returns the complete collection of allowed storage classes transitions for the content found at content URL
      */
-    default Map<String, Set<String>> findStorageClassesTransitions(NodeRef nodeRef)
+    default Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(NodeRef nodeRef)
     {
         return Collections.emptyMap();
     }

@@ -175,16 +175,6 @@ public interface ContentService
     public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
 
     /**
-     * Checks if the store supports the retrieving of direct access URLs.
-     *
-     * @return true if direct access URLs retrieving is supported, false otherwise
-     */
-    default boolean isDirectAccessSupported()
-    {
-        return false;
-    }
-
-    /**
      * Checks whether or not the current {@link ContentService} supports the provided {@link Set} storage classes
      *
      * @param storageClasses The storage classes that will be checked whether or not are supported

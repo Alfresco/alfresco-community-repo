@@ -193,7 +193,6 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * And setting skipCount and maxItems under the number of total items
      * Then hasMoreItems will be set to true
      */
-
     @Test
     public void searchResultsUnderTotalItemsRMUser()
     {

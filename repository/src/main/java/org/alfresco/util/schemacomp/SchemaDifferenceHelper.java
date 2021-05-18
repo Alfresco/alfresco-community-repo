@@ -42,7 +42,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class SchemaDifferenceHelper
 {
@@ -76,9 +75,9 @@ public class SchemaDifferenceHelper
         }
     }
 
-    public String findPatchCausingDifference(Difference difference)
+    public String findPatchCausingDifference(Result result)
     {
-        String differenceText = describe(difference);
+        String problemText = describe(result);
         for (SchemaUpgradeScriptPatch patch : optionalUpgradePatches)
         {
             if (!isPatchApplied(patch))
@@ -86,7 +85,7 @@ public class SchemaDifferenceHelper
                 List<String> problemPatterns = getProblemsPatterns(patch);
                 for (String problemPattern : problemPatterns)
                 {
-                    if (differenceText.matches(problemPattern))
+                    if (problemText.matches(problemPattern))
                     { 
                         return patch.getId(); 
                     }
@@ -138,34 +137,14 @@ public class SchemaDifferenceHelper
         return optionalProblems;
     }
 
-    protected String describe(Difference difference)
+    /**
+     * Retrieves the comparison result description message in the default system language.
+     *
+     * @param result The result of a differencing or validation operation.
+     * @return Comparison result description message in the default system language.
+     */
+    protected String describe(Result result)
     {
-        if (difference.getLeft() == null)
-        {
-            return I18NUtil.getMessage(
-                        "system.schema_comp.diff.target_only",
-                        ENGLISH,
-                        difference.getRight().getDbObject().getTypeName(),
-                        difference.getRight().getPath(),
-                        difference.getRight().getPropertyValue());
-        }
-        if (difference.getRight() == null)
-        {
-            return I18NUtil.getMessage(
-                        "system.schema_comp.diff.ref_only",
-                        ENGLISH,
-                        difference.getLeft().getDbObject().getTypeName(),
-                        difference.getLeft().getPath(),
-                        difference.getLeft().getPropertyValue());
-        }
-
-        return I18NUtil.getMessage(
-                    "system.schema_comp.diff",
-                    ENGLISH,
-                    difference.getLeft().getDbObject().getTypeName(),
-                    difference.getLeft().getPath(),
-                    difference.getLeft().getPropertyValue(),
-                    difference.getRight().getPath(),
-                    difference.getRight().getPropertyValue());
+        return result.describe(ENGLISH);
     }
 }

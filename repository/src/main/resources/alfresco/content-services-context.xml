@@ -115,6 +115,9 @@
       <property name="transactionService" >
          <ref bean="transactionService" />
       </property>
+      <property name="batchSize" >
+         <value>${system.content.cleanerBatchSize}</value>
+      </property>
    </bean>
 
    <bean id="eagerContentStoreCleaner" class="org.alfresco.repo.content.cleanup.EagerContentStoreCleaner" init-method="init">

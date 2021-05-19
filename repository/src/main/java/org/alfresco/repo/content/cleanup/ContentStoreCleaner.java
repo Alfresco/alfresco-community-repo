@@ -125,10 +125,12 @@ public class ContentStoreCleaner
     private ContentService contentService;
     private TransactionService transactionService;
     private int protectDays;
+    private int batchSize;
     private DeleteFailureAction deletionFailureAction;
     
     public ContentStoreCleaner()
     {
+        this.batchSize = 1000;
         this.protectDays = 7;
         this.deletionFailureAction = DeleteFailureAction.IGNORE;
     }
@@ -190,6 +192,16 @@ public class ContentStoreCleaner
     public void setProtectDays(int protectDays)
     {
         this.protectDays = protectDays;
+    }
+
+    /**
+     * Set the batch size used by the cleaning jobs. The default is 1000
+     * 
+     * @param batchSize     batch size for each cleanup job
+     */
+    public void setBatchSize(int batchSize)
+    {
+        this.batchSize = batchSize;
     }
 
     /**
@@ -329,7 +341,7 @@ public class ContentStoreCleaner
         {
             public Long execute() throws Exception
             {
-                return cleanBatch(maxOrphanTime, 1000);
+                return cleanBatch(maxOrphanTime, batchSize);
             };
         };
         while (true)

@@ -155,6 +155,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         
         ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
+        query.setMaxRecords((long) maxResults);
         List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
                                                                                       query, 
                                                                                       new RowBounds(0, maxResults));

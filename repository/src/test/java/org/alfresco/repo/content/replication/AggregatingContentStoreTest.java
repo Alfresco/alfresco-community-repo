@@ -40,6 +40,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -340,5 +341,22 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         assertFalse(aggStore.isStorageClassesSupported(sc));
         verify(primaryStoreMock, times(1)).isStorageClassesSupported(sc);
         verify(secondaryStoreMock, times(1)).isStorageClassesSupported(sc);
+    }
+
+    @Test
+    public void testGetSupportedStorageClasses()
+    {
+        Set<String> sc = Collections.emptySet();
+        // Create the aggregating store
+        AggregatingContentStore aggStore = new AggregatingContentStore();
+        aggStore.setPrimaryStore(primaryStoreMock);
+        aggStore.setSecondaryStores(List.of(secondaryStoreMock));
+
+        when(primaryStoreMock.getSupportedStorageClasses()).thenReturn(sc);
+
+        final Set<String> supportedStorageClasses = aggStore.getSupportedStorageClasses();
+        assertTrue(supportedStorageClasses.isEmpty());
+        verify(primaryStoreMock, times(1)).getSupportedStorageClasses();
+        verify(secondaryStoreMock, times(0)).getSupportedStorageClasses();
     }
 }

@@ -278,5 +278,11 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         return getTenantContentStore().isStorageClassesSupported(storageClasses);
     }
 
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return getTenantContentStore().getSupportedStorageClasses();
+    }
+
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

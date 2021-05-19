@@ -295,7 +295,7 @@ public interface ContentStore
      */
     default Set<String> getSupportedStorageClasses()
     {
-        return Collections.emptySet();
+        return Set.of(DEFAULT_SC);
     }
 
     /**

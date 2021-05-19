@@ -45,6 +45,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 
@@ -531,5 +532,13 @@ public class CachingContentStoreTest
         final Set<String> storageClasses = Set.of("a-certain-storage-class");
         assertTrue(cachingStore.isStorageClassesSupported(storageClasses));
         verify(backingStore, times(1)).isStorageClassesSupported(storageClasses);
+    }
+
+    @Test
+    public void testBackingStoreIsCalledForGetSupportedStorageClasses()
+    {
+        when(backingStore.getSupportedStorageClasses()).thenReturn(Collections.emptySet());
+        assertTrue(cachingStore.getSupportedStorageClasses().isEmpty());
+        verify(backingStore, times(1)).getSupportedStorageClasses();
     }
 }

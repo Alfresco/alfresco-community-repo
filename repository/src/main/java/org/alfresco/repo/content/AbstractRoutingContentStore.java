@@ -438,4 +438,10 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         return supported;
     }
 
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        // TODO
+        return null;
+    }
 }

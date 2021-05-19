@@ -400,4 +400,12 @@ public class AggregatingContentStore extends AbstractContentStore
 
         return isStorageClassesSupported;
     }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary
+        return primaryStore.getSupportedStorageClasses();
+    }
 }

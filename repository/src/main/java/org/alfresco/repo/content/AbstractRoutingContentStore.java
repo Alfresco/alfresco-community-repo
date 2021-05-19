@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -441,7 +442,11 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     @Override
     public Set<String> getSupportedStorageClasses()
     {
-        // TODO
-        return null;
+        Set<String> supportedStorageClasses = new HashSet<>();
+        for (ContentStore store : getAllStores())
+        {
+            supportedStorageClasses.addAll(store.getSupportedStorageClasses());
+        }
+        return supportedStorageClasses;
     }
 }

@@ -94,6 +94,11 @@ public interface ContentStore
 
     /**
      * The 'default' storage class
+     *
+     * A content is considered to have a default storage class if:
+     * the value is a Set.of("default")
+     * the value is an empty set
+     * the value is null
      */
     public static final String DEFAULT_SC = "default";
     
@@ -280,7 +285,9 @@ public interface ContentStore
      */
     default boolean isStorageClassesSupported(Set<String> storageClasses)
     {
-        return false;
+        return storageClasses == null ||
+            storageClasses.isEmpty() ||
+            (1 == storageClasses.size() && storageClasses.contains(DEFAULT_SC));
     }
 
     /**

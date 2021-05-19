@@ -421,7 +421,21 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     @Override
     public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
-        // TODO: what should we do here? check whether at least one supports it similar to isContentUrlSupported?
-        return false;
+        boolean supported = false;
+        for (ContentStore store : getAllStores())
+        {
+            if (store.isStorageClassesSupported(storageClasses))
+            {
+                supported = true;
+                break;
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("The storage classes " + storageClasses + (supported ? "are" : "are not") + " supported by at least one store.");
+        }
+        return supported;
     }
+
 }

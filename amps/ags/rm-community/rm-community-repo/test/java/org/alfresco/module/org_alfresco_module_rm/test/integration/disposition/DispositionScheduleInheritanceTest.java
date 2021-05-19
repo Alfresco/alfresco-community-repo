@@ -182,7 +182,7 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
                 assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
                 assertEquals(CutOffAction.NAME, nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
                 assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                assertNull(((List<String>) nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS)));
+                assertNull((List<String>) nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS));
                 assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOITION_INSTRUCTIONS));
                 assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOITION_AUTHORITY));
                 assertTrue((Boolean) nodeService.getProperty(record, PROP_RS_HAS_DISPOITION_SCHEDULE));

@@ -331,18 +331,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         final String dispositionActionName = dsNextAction.getNextActionName();
                         final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
 
-                        RunAsWork<Void> runAsWork = new RunAsWork<Void>()
-                        {
-                            /**
-                             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
-                             */
-                            @Override
-                            public Void doWork()
-                            {
-                                nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                                return null;
-                            }
-
+                        RunAsWork<Void> runAsWork = () -> {
+                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                            return null;
                         };
 
                         // if the current transaction is READ ONLY set the property on the node

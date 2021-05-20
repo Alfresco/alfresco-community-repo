@@ -26,6 +26,7 @@
 package org.alfresco.repo.content.caching;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -486,5 +487,17 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
     {
         return backingStore.getDirectAccessUrl(contentUrl, expiresAt);
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        return backingStore.isStorageClassesSupported(storageClasses);
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return backingStore.getSupportedStorageClasses();
     }
 }

@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -415,5 +417,36 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     "   Deleted: " + deleted);
         }
         return deleted;
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        boolean supported = false;
+        for (ContentStore store : getAllStores())
+        {
+            if (store.isStorageClassesSupported(storageClasses))
+            {
+                supported = true;
+                break;
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("The storage classes " + storageClasses + (supported ? "are" : "are not") + " supported by at least one store.");
+        }
+        return supported;
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        Set<String> supportedStorageClasses = new HashSet<>();
+        for (ContentStore store : getAllStores())
+        {
+            supportedStorageClasses.addAll(store.getSupportedStorageClasses());
+        }
+        return supportedStorageClasses;
     }
 }

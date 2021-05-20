@@ -26,6 +26,7 @@
 package org.alfresco.repo.content;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentReader;
 
@@ -49,6 +50,7 @@ public class ContentContext implements Serializable
 
     private ContentReader existingContentReader;
     private String contentUrl;
+    private Set<String> storageClasses;
     
     /**
      * Construct the instance with the content URL.
@@ -88,5 +90,22 @@ public class ContentContext implements Serializable
     {
         return contentUrl;
     }
-    
+
+    /**
+     * @return Returns the storage classes for the content- may be <tt>null</tt>
+     */
+    public Set<String> getStorageClasses()
+    {
+        return storageClasses;
+    }
+
+    /**
+     * Sets the storage classes for the content- may be <tt>null</tt>
+     *
+     * @param storageClasses
+     */
+    public void setStorageClasses(Set<String> storageClasses)
+    {
+        this.storageClasses = storageClasses;
+    }
 }

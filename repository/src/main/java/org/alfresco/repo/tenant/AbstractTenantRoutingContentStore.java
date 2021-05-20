@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -270,6 +271,18 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             return -1;
         }
     }
-    
+
+    @Override
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        return getTenantContentStore().isStorageClassesSupported(storageClasses);
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return getTenantContentStore().getSupportedStorageClasses();
+    }
+
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

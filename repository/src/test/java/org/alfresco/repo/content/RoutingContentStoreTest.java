@@ -25,6 +25,12 @@
  */
 package org.alfresco.repo.content;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,12 +47,6 @@ import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Ensures that the routing of URLs based on context is working.  A combination
@@ -155,6 +155,12 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
             assertNotNull("Null reader returned", reader);
             assertTrue("Reader should be onto live content", reader.exists());
         }
+    }
+
+    @Test
+    public void testIsStorageClassesSupported()
+    {
+        assertTrue(routingStore.isStorageClassesSupported(null));
     }
     
     /**

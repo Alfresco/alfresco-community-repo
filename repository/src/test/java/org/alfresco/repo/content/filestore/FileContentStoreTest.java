@@ -358,7 +358,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     @Test
     public void testDoesNotSupportUnknownStorageClass()
     {
-        assertTrue(store.isStorageClassesSupported(Set.of("unknown")));
+        assertFalse(store.isStorageClassesSupported(Set.of("unknown")));
     }
     
     private void assertDirExists(File root, String dir)

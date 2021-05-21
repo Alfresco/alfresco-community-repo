@@ -87,7 +87,7 @@
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.20</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
-        <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
+        <dependency.awaitility.version>4.1.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.52</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>

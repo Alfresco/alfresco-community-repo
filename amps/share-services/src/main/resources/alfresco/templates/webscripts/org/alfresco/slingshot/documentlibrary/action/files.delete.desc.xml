@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>files</shortname>
+  <description>Document List Action - Delete multiple files</description>
+  <url>/slingshot/doclib/action/files</url>
+  <url>/slingshot/doclib/action/folders</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

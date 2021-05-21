@@ -126,7 +126,6 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                 {
                     // Process batch
                     primaryId = processPrimaryTableResultSet(primaryPrepStmt, secondaryPrepStmts, deletePrepStmt, deleteIds, primaryTableName, primaryColumnName, tableColumn);
-                    connection.commit();
 
                     if (primaryId == null)
                     {

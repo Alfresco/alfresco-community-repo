@@ -1,0 +1,1046 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view  xmlns:view="http://www.alfresco.org/view/repository/1.0" 
+            xmlns:nt="http://www.jcp.org/jcr/nt/1.0" 
+            xmlns:alf="http://www.alfresco.org" 
+            xmlns:d="http://www.alfresco.org/model/dictionary/1.0" 
+            xmlns:act="http://www.alfresco.org/model/action/1.0" 
+            xmlns:wf="http://www.alfresco.org/model/workflow/1.0" 
+            xmlns:app="http://www.alfresco.org/model/application/1.0" 
+            xmlns:usr="http://www.alfresco.org/model/user/1.0" 
+            xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" 
+            xmlns:cm="http://www.alfresco.org/model/content/1.0" 
+            xmlns:sv="http://www.jcp.org/jcr/sv/1.0" 
+            xmlns:mix="http://www.jcp.org/jcr/mix/1.0" 
+            xmlns:jcr="http://www.jcp.org/jcr/1.0" 
+            xmlns:sys="http://www.alfresco.org/model/system/1.0" 
+            xmlns:rule="http://www.alfresco.org/model/rule/1.0" 
+            xmlns:fm="http://www.alfresco.org/model/forum/1.0" 
+            xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" 
+            xmlns:rma="http://www.alfresco.org/model/recordsmanagement/1.0"
+            xmlns:dod="http://www.alfresco.org/model/dod5015/1.0"
+            xmlns:custom="custom.model" 
+            xmlns="" >
+
+    <rma:recordCategory view:childName="cm:Reports">
+    
+        <view:properties>
+            <cm:name>Reports</cm:name>
+            <rma:identifier>0318</rma:identifier>
+            <cm:title>Reports</cm:title>
+            <cm:description>Record series for reports</cm:description>
+        </view:properties>
+                
+        <view:associations>
+            <cm:contains>
+                
+                <rma:recordCategory view:childName="cm:AIS Audit Records">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>     
+                                                
+                    <view:properties>
+                        <cm:name>AIS Audit Records</cm:name>
+                        <rma:identifier>0318-01</rma:identifier>
+                        <cm:title>AIS Audit Records</cm:title>
+                        <cm:description>Consisting of AIS Security Officer or Terminal Area Security Officer weekly audit records of audit actions performed on all AIS as required by applicable policy which are maintained by any JS/combatant command activity.</cm:description>
+                        <rma:reviewPeriod>week|1</rma:reviewPeriod>
+                        <rma:vitalRecordIndicator>true</rma:vitalRecordIndicator>
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>                                
+                                    <rma:dispositionAuthority>N1-218-00-4 item 023</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off monthly, hold 1 month, then destroy.</rma:dispositionInstructions>                                                             
+                                </view:properties>
+                                                                
+                                <view:associations>
+                    
+                                   <rma:dispositionActionDefinitions>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>monthend|1</rma:dispositionPeriod>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>month|1</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>
+                                                               
+                                   </rma:dispositionActionDefinitions>     
+                                </view:associations>
+                               
+                                
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule> 
+                    
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:January AIS Audit Records">
+                                <view:properties>
+                                    <cm:name>January AIS Audit Records</cm:name>
+                                    <cm:title>January AIS Audit Records</cm:title>
+                                    <rma:identifier>0318-01-01</rma:identifier>
+                                    <rma:reviewPeriod>week|1</rma:reviewPeriod>
+                                    <rma:vitalRecordIndicator>true</rma:vitalRecordIndicator>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Unit Manning Documents">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Unit Manning Documents</cm:name>
+                        <rma:identifier>0318-02</rma:identifier>
+                        <cm:title>Unit Manning Documents</cm:title>
+                        <cm:description>Consisting of manpower document and monthly strength report forwarded to OSD and other activities which are maintained by personnel office as the official record copy.</cm:description>
+                    </view:properties>  
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>          
+                                    <rma:dispositionAuthority>N1-218-89-1 item 002</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off every 3 months, hold 3 months, then destroy.</rma:dispositionInstructions>
+                                </view:properties>
+                                                                
+                                <view:associations>
+                    
+                                   <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>quarterend|1</rma:dispositionPeriod>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>month|3</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+                    
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:1st Quarter Unit Manning Documents">
+                                <view:properties>
+                                    <cm:name>1st Quarter Unit Manning Documents</cm:name>
+                                    <rma:identifier>0318-02-01</rma:identifier>
+                                    <cm:title>1st Quarter Unit Manning Documents</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Overtime Reports">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Overtime Reports</cm:name>
+                        <rma:identifier>0318-03</rma:identifier>
+                        <cm:title>Overtime reports and related documents</cm:title>
+                        <cm:description>Overtime reports and related documents which are maintained by JS/combatant controller as the official record copy.</cm:description>                       
+                    </view:properties>  
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>    
+                                    <rma:dispositionAuthority>N1-218-00-7 item 28</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off at end of FY, hold 3 years, then destroy.</rma:dispositionInstructions>       
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>fyend|1</rma:dispositionPeriod>                                    
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|3</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>                       
+                    
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:FY08 Overtime Reports">
+                                <view:properties>
+                                    <cm:name>FY08 Overtime Reports</cm:name>
+                                    <rma:identifier>0318-03-01</rma:identifier>
+                                    <cm:title>FY08 Overtime Reports</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Bi-Weekly Cost Reports">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Bi-Weekly Cost Reports</cm:name>
+                        <rma:identifier>0318-04</rma:identifier>
+                        <cm:title>Bi-Weekly Cost Reports</cm:title>
+                        <cm:description>Bi-wekly cost reports which are maintained by JS/combatant command controler as the official record copy.</cm:description>
+                    </view:properties>  
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>   
+                                    <rma:dispositionAuthority>N1-218-00-7 item 2</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off at end of CY, hold 2 years, then destroy.</rma:dispositionInstructions>       
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>yearend|1</rma:dispositionPeriod>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|2</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:CY08 Unit Manning Documents">
+                                <view:properties>
+                                    <cm:name>CY08 Unit Manning Documents</cm:name>
+                                    <rma:identifier>0318-04-01</rma:identifier>
+                                    <cm:title>CY08 Unit Manning Documents</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+            </cm:contains>
+        </view:associations>
+    
+    </rma:recordCategory> 
+
+    <rma:recordCategory view:childName="cm:Military Files">
+    
+        <view:properties>
+            <cm:name>Military Files</cm:name>
+            <rma:identifier>0412</rma:identifier>
+            <cm:title>Military Files</cm:title>
+            <cm:description>Record series for military files</cm:description>
+        </view:properties>
+        
+        <view:associations>
+            <cm:contains>
+                
+                <rma:recordCategory view:childName="cm:Military Assignment Documents">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Military Assignment Documents</cm:name>
+                        <rma:identifier>0412-01</rma:identifier>
+                        <cm:title>Military Assignment Documents</cm:title>
+                        <cm:description>Policy matters pertaining to military assignments which are maintained by any JS/combatant command activity as the official record copy.</cm:description>                  
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>     
+                                    <rma:dispositionAuthority>N1-218-00-3 item 30</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off when superseded, hold 5 years, then destroy.</rma:dispositionInstructions> 
+                                    <rma:recordLevelDisposition>true</rma:recordLevelDisposition>       
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>superseded</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|5</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+  
+                    <!--  No recordFolder here -->
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Official Military Personnel Privilege Card Applications">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Official Military Personnel Privilege Card Applications</cm:name>
+                        <rma:identifier>0412-02</rma:identifier>
+                        <cm:title>Official Military Personnel Privilege Card Applications</cm:title>
+                        <cm:description>Consisting of: documents reflecting applications for priviege cards and ration cards, including Department of Defense Forms (DD Forms) 1172 (Application for Unifomed Services Identification and Privilege Card) and similar documents which are maintained by any JS/combatant command activity.</cm:description>                       
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                           <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>                                              
+                                    <rma:dispositionAuthority>N1-218-00-3 item 20</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off when no longer needed and destroy immediately.</rma:dispositionInstructions>
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>no_longer_needed</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>immediately|0</rma:dispositionPeriod>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:COL Bob Johnson">
+                                <view:properties>
+                                    <cm:name>COL Bob Johnson</cm:name>
+                                    <rma:identifier>0412-02-01</rma:identifier>
+                                    <cm:title>COL Bob Johnson</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                            <rma:recordFolder view:childName="cm:PFC Alan Murphy">
+                                <view:properties>
+                                    <cm:name>PFC Alan Murphy</cm:name>
+                                    <rma:identifier>0412-02-02</rma:identifier>
+                                    <cm:title>PFC Alan Murphy</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Personnel Security Program Records">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Personnel Security Program Records</cm:name>
+                        <rma:identifier>0412-03</rma:identifier>
+                        <cm:title>Personnel Security Program Records</cm:title>
+                        <cm:description>Position sensitivity files including requests for information relating to the designation of sensitive and non-sensitive personnel positions in an agency and results of final actions taken consisting of approved requests which are maintained by any JS/combatant command activity</cm:description>                        
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>                                              
+                                    <rma:dispositionAuthority>N1-218-00-4 item 017</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cutoff when position is abolished, re-designated, or no longer needed, whichever is later.  Destroy immediately after cutoff.</rma:dispositionInstructions>
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>
+                                                   <view:value>abolished</view:value>
+                                                   <view:value>re_designated</view:value>
+                                                   <view:value>no_longer_needed</view:value>
+                                                </rma:dispositionEvent>                                                
+                                                <rma:dispositionEventCombination>and</rma:dispositionEventCombination>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>immediately|0</rma:dispositionPeriod>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:Commander's Administrative Assistant">
+                                <view:properties>
+                                    <cm:name>Commander's Administrative Assistant</cm:name>
+                                    <rma:identifier>0412-03-01</rma:identifier>
+                                    <cm:title>Commander's Administrative Assistant</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                            <rma:recordFolder view:childName="cm:Equal Opportunity Coordinator">
+                                <view:properties>
+                                    <cm:name>Equal Opportunity Coordinator</cm:name>
+                                    <rma:identifier>0412-03-02</rma:identifier>
+                                    <cm:title>Equal Opportunity Coordinator</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+            </cm:contains>
+        </view:associations>
+    
+    </rma:recordCategory>
+
+    <rma:recordCategory view:childName="cm:Civilian Files">
+    
+        <view:properties>
+            <cm:name>Civilian Files</cm:name>
+            <rma:identifier>0430</rma:identifier>
+            <cm:title>Civilian Files</cm:title>
+            <cm:description>Record series for civilian files</cm:description>
+        </view:properties>
+        
+        <view:associations>
+            <cm:contains>
+                
+                <rma:recordCategory view:childName="cm:Employee Performance File System Records">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Employee Performance File System Records</cm:name>
+                        <rma:identifier>0430-01</rma:identifier>
+                        <cm:title>Employee Performance File System Records</cm:title>
+                        <cm:description>Consisting of: performance records superseded through an administrative, judicial, or quasi-judicial procedure which are maintained by any JS/combatant command activity</cm:description>                          
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                       <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties> 
+                                    <rma:dispositionAuthority>GRS 1 item 23b(1)</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cutoff when superseded.  Destroy immediately after cutoff</rma:dispositionInstructions>
+                                    <rma:recordLevelDisposition>true</rma:recordLevelDisposition>          
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                        
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>superseded</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>immediately|0</rma:dispositionPeriod>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Foreign Employee Award Files">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Foreign Employee Award Files</cm:name>
+                        <rma:identifier>0430-02</rma:identifier>
+                        <cm:title>Foreign Employee Award Files</cm:title>
+                        <cm:description>Decorations to foreign nationals and US citizens not employed by the US Government consisting of: case files of recommendations,  decisions, awards announcements, board meeting minutes, and related documents which are maintained by any JS/combatant command activity</cm:description>               
+                    </view:properties>
+                    
+                    <view:associations>
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>        
+                                    <rma:dispositionAuthority>N1-218-00-3 item 18</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Permanent. Cut off on completion of case, hold 2 years, then retire to offline storage.  Transfer to federal records holding area 5 years after retirement to offline storage.  Transfer to NARA 25 years after cutoff.</rma:dispositionInstructions>  
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>case_complete</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>transfer</rma:dispositionActionName>
+                                                <rma:dispositionDescription>Retire to offline storage.</rma:dispositionDescription>
+                                                <rma:dispositionLocation>Offline Storage</rma:dispositionLocation>
+                                                <rma:dispositionPeriod>year|2</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                         
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>transfer</rma:dispositionActionName>
+                                                <rma:dispositionDescription>Transfer to federal records holding area.</rma:dispositionDescription>                   
+                                                <rma:dispositionLocation>Federal Records Holding</rma:dispositionLocation>
+                                                <rma:dispositionPeriod>year|5</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAsOf</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                         
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>accession</rma:dispositionActionName>
+                                                <rma:dispositionDescription>Transfer to NARA.</rma:dispositionDescription>
+                                                <rma:dispositionLocation>NARA</rma:dispositionLocation>
+                                                <rma:dispositionPeriod>year|25</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>                        
+                    
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:Christian Bohr">
+                                <view:properties>
+                                    <cm:name>Christian Bohr</cm:name>
+                                    <rma:identifier>0430-02-01</rma:identifier>
+                                    <cm:title>Christian Bohr</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                            <rma:recordFolder view:childName="cm:Karl Planck">
+                                <view:properties>
+                                    <cm:name>Karl Planck</cm:name>
+                                    <rma:identifier>0430-02-02</rma:identifier>
+                                    <cm:title>Karl Planck</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Case Files and Papers">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Case Files and Papers</cm:name>
+                        <rma:identifier>0430-03</rma:identifier>
+                        <cm:title>Case Files and Papers</cm:title>
+                        <cm:description>Consisting of library containing information on personnel actions which are maintained by R&amp;A Br and Deputy Chief Information Office</cm:description>
+                        <rma:dispositionAuthority>None</rma:dispositionAuthority>
+                        <rma:dispositionInstructions> Disposal not authorized. Disposition pending NARA approval.</rma:dispositionInstructions>                 
+                    </view:properties>
+                    
+                    <view:associations>
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:Gilbert Competency Hearing">
+                                <view:properties>
+                                    <cm:name>Gilbert Competency Hearing</cm:name>
+                                    <rma:identifier>0430-03-01</rma:identifier>
+                                    <cm:title>Gilbert Competency Hearing</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="Withholding of Within-Grade Increase (WGI) Records">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Withholding of Within-Grade Increase (WGI) Records</cm:name>
+                        <rma:identifier>0430-04</rma:identifier>
+                        <cm:title>Withholding of Within-Grade Increase (WGI) Records</cm:title>
+                        <cm:description>Files concerning an employee’s performance rating of record with work examples which establish less than fully successful performance, notice of withholding of WGI, employee's request for reconsideration of denied WGI, and decision concerning such a reconsideration request which are maintained by any JS/combatant command activity.</cm:description>                       
+                    </view:properties>
+                    
+                    <view:associations>
+                      
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                    
+                                <view:properties>                                                  
+                                    <rma:dispositionAuthority>N1-218-00-3 item 16</rma:dispositionAuthority>
+                                    <rma:dispositionSchedule>Cut off on completion of WGI action or on separation, whichever is earlier; hold 3 years, then destroy/delete.</rma:dispositionSchedule>
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>
+                                                   <view:value>WGI_action_complete</view:value>
+                                                   <view:value>separation</view:value>
+                                                </rma:dispositionEvent>
+                                                <rma:dispositionEventCombination>or</rma:dispositionEventCombination>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|3</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                    </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                        </rma:dispositionSchedule>                    
+                    
+                        <cm:contains>
+                            <rma:recordFolder view:childName="cm:Gilbert WGI Records">
+                                <view:properties>
+                                    <cm:name>Gilbert WGI Records</cm:name>
+                                    <rma:identifier>0430-04-01</rma:identifier>
+                                    <cm:title>Gilbert WGI Records</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="Payroll Differential and Allowances">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Payroll Differential and Allowances</cm:name>
+                        <rma:identifier>0430-05</rma:identifier>
+                        <cm:title>Payroll Differential and Allowances</cm:title>
+                        <cm:description>Consisting of: information to assist overseas civilian personnel offices to document employee eligibility for foreign post differential and foreign quarters and post allowances, including SF 1190 (Foreign Allowances Application, Grant, and Report) and similar information which are maintained by any JS/combatant command activity.</cm:description>                   
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>                                              
+                                    <rma:dispositionAuthority> N1-218-00-3 item 3</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off at end of Fiscal Year (FY) in which all allowances granted are terminated, hold 3 years, then destroy.</rma:dispositionInstructions>
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>  
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                            
+                                            <view:properties>
+                                                <rma:dispositionActionName>retain</rma:dispositionActionName>
+                                                <rma:dispositionEvent>all_allowances_granted_are_terminated</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>fyend|1</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAsOf</rma:dispositionPeriodProperty>
+                                            </view:properties>                               
+                                        </rma:dispositionActionDefinition>                                                     
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|3</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+                    
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:Martin Payroll Differential and Allowances">
+                                <view:properties>
+                                    <cm:name>Martin Payroll Differential and Allowances</cm:name>
+                                    <rma:identifier>0430-05-01</rma:identifier>
+                                    <cm:title>Martin Payroll Differential and Allowances</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+            </cm:contains>
+        </view:associations>
+    
+    </rma:recordCategory>     
+
+    <rma:recordCategory view:childName="cm:Miscellaneous Files">
+    
+        <view:properties>
+            <cm:name>Miscellaneous Files</cm:name>
+            <rma:identifier>0950</rma:identifier>
+            <cm:title>Miscellaneous Files</cm:title>
+            <cm:description>Record series for miscellaneous files</cm:description>
+        </view:properties>
+        
+        <view:associations>
+            <cm:contains>
+                
+                <rma:recordCategory view:childName="cm:Civilian Employee Training Program Records">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Civilian Employee Training Program Records</cm:name>
+                        <rma:identifier>0950-01</rma:identifier>
+                        <cm:title>Civilian Employee Training Program Records</cm:title>
+                        <cm:description>Decorations to foreign nationals and US citizens not employed by the US Government consisting of: case files of recommendations,  decisions, awards announcements, board meeting minutes, and related documents which are maintained by any JS/combatant command activity</cm:description>                    
+                    </view:properties>
+                    
+                    <view:associations>
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties> 
+                                    <rma:dispositionAuthority>GRS 1 item 29b</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off annually, hold 5 years, then destroy, or destroy when obsolete, whichever is earlier.</rma:dispositionInstructions>         
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                                                                          
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|1</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}dateFiled</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                                                      
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|5</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                                <rma:dispositionEvent>obsolete</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:Bob Prentice Training Records (2008)">
+                                <view:properties>
+                                    <cm:name>Bob Prentice Training Records (2008)</cm:name>
+                                    <rma:identifier>0950-01-01</rma:identifier>
+                                    <cm:title>Bob Prentice Training Records (2008)</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                            <rma:recordFolder view:childName="cm:Beth Tanaka Training Records (2008)">
+                                <view:properties>
+                                    <cm:name>Beth Tanaka Training Records (2008)</cm:name>
+                                    <rma:identifier>0950-01-02</rma:identifier>
+                                    <cm:title>Beth Tanaka Training Records (2008)</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                            <rma:recordFolder view:childName="cm:Chuck Stevens Training Records (2008)">
+                                <view:properties>
+                                    <cm:name>Chuck Stevens Training Records (2008)</cm:name>
+                                    <rma:identifier>0950-01-03</rma:identifier>
+                                    <cm:title>Chuck Stevens Training Records (2008)</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Purchase of Foreign Award Medals and Decorations">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Purchase of Foreign Award Medals and Decorations</cm:name>
+                        <rma:identifier>0950-02</rma:identifier>
+                        <cm:title>Purchase of Foreign Award Medals and Decorations</cm:title>
+                        <cm:description>Forms reflecting purchase of foreign award medals and decorations.  </cm:description>                   
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties> 
+                                    <rma:dispositionAuthority>N1-218-00-3 item 11</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cutoff when related record is transferred to inactive storage, hold 1 year, destroy.</rma:dispositionInstructions>
+                                    <rma:recordLevelDisposition>true</rma:recordLevelDisposition>          
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                                                       
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                            
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>related_record_trasfered_inactive_storage</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                                                                           
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|1</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Monthly Cockpit Crew Training">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Monthly Cockpit Crew Training</cm:name>
+                        <rma:identifier>0950-03</rma:identifier>
+                        <cm:title>Monthly Cockpit/Crew Training</cm:title>
+                        <cm:description>Consisting of skills training/evaluation forms, e.g., AF Form 4031.</cm:description>                 
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>   
+                                    <rma:dispositionAuthority>N1-218-00-3 item 13</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cutoff after training is complete, hold 1 year, destroy.</rma:dispositionInstructions>       
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                                                      
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                            
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>training_complete</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                                                                           
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                                <rma:dispositionPeriod>year|1</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:January Cockpit Crew Training">
+                                <view:properties>
+                                    <cm:name>January Cockpit Crew Training</cm:name>
+                                    <rma:identifier>0950-03-01</rma:identifier>
+                                    <cm:title>January Cockpit/Crew Training</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                            <rma:recordFolder view:childName="cm:February Cockpit Crew Training">
+                                <view:properties>
+                                    <cm:name>February Cockpit Crew Training</cm:name>
+                                    <rma:identifier>0950-03-02</rma:identifier>
+                                    <cm:title>February Cockpit/Crew Training</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+                
+                <rma:recordCategory view:childName="cm:Science Advisor Records">
+                         
+                    <view:aspects>
+                  		<rma:scheduled></rma:scheduled>
+               		</view:aspects>
+                
+                    <view:properties>
+                        <cm:name>Science Advisor Records</cm:name>
+                        <rma:identifier>0950-04</rma:identifier>
+                        <cm:title>Science Advisor Records</cm:title>
+                        <cm:description>Consisting of: reports, studies, tasking orders, and similar records. Reports are usually informal and unpublished. Records may be generated at all activities</cm:description>                 
+                    </view:properties>
+                    
+                    <view:associations>
+                    
+                        <rma:dispositionSchedule>
+                            <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                                
+                                <view:properties>
+                                    <rma:dispositionAuthority>N1-218-00-10 item 44</rma:dispositionAuthority>
+                                    <rma:dispositionInstructions>Cut off on completion of study, hold 5 years, then transfer to Inactive Storage. Transfer to NARA 25 years after cutoff.</rma:dispositionInstructions>
+                                </view:properties>
+                                                                
+                                <view:associations>
+                                    <rma:dispositionActionDefinitions>                                                      
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                            
+                                            <view:properties>
+                                                <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                                <rma:dispositionEvent>study_complete</rma:dispositionEvent>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                                                                           
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>transfer</rma:dispositionActionName>
+                                                <rma:dispositionDescription>Transfer to inactive storage.</rma:dispositionDescription>
+                                                <rma:dispositionLocation>Inactive Storage</rma:dispositionLocation>
+                                                <rma:dispositionPeriod>year|5</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                                                                           
+                                        <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">                              
+                                            <view:properties>
+                                                <rma:dispositionActionName>accession</rma:dispositionActionName>
+                                                <rma:dispositionDescription>Transfer to NARA.</rma:dispositionDescription>
+                                                <rma:dispositionLocation>NARA</rma:dispositionLocation>
+                                                <rma:dispositionPeriod>year|25</rma:dispositionPeriod>
+                                                <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                            </view:properties>                              
+                                        </rma:dispositionActionDefinition>                       
+                                   </rma:dispositionActionDefinitions>
+                                </view:associations>
+
+                            </rma:dispositionSchedule> 
+                       </rma:dispositionSchedule>
+
+                       <cm:contains>
+                            <rma:recordFolder view:childName="cm:Phoenix Mars Mission">
+                                <view:properties>
+                                    <cm:name>Phoenix Mars Mission</cm:name>
+                                    <rma:identifier>0950-04-01</rma:identifier>
+                                    <cm:title>Phoenix Mars Mission</cm:title>
+                                </view:properties>
+                            </rma:recordFolder>
+                        </cm:contains>
+                    </view:associations>
+                
+                </rma:recordCategory>
+            
+            </cm:contains>
+        </view:associations>
+    
+    </rma:recordCategory>
+    
+</view:view> 

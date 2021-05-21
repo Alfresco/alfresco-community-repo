@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- RM v2.3 Patches -->
+
+   <bean id="rm.recordContributorsGroupPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23RecordContributorsGroupPatch">
+      <property name="description" value="Create record contributors group."/>
+      <property name="fixesToSchema" value="1009"/>
+      <property name="targetSchema" value="1010"/>
+	  <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
+   </bean>
+   
+   <bean id="rm.versionsEventPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23VersionsEventPatch">
+      <property name="description" value="Create versions event."/>
+      <property name="fixesToSchema" value="1010"/>
+      <property name="targetSchema" value="1011"/>
+	  <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
+   </bean>
+   
+   <bean id="rm.endRetenionCapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23EndRetentionCapabilityPatch">
+      <property name="description" value="Add EndRetenion capability."/>
+      <property name="fixesToSchema" value="1011"/>
+      <property name="targetSchema" value="1012"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
+   </bean>
+
+   <bean id="rm.savedSearchPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23SavedSearchesPatch">
+      <property name="description" value="Add aspect to saved searches."/>
+      <property name="fixesToSchema" value="2700"/>
+      <property name="targetSchema" value="2701" />
+      <property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="siteService" ref="SiteService"/>
+   </bean>
+
+
+</beans>

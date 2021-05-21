@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>11.35-SNAPSHOT</version>
+    <version>11.43-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -77,7 +77,7 @@
         <dependency.gytheio.version>0.12</dependency.gytheio.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.tika.version>1.26</dependency.tika.version>
-        <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
+        <dependency.spring-security.version>5.5.0</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
@@ -115,7 +115,7 @@
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.tas-restapi.version>1.58</dependency.tas-restapi.version>
-        <dependency.tas-cmis.version>1.29</dependency.tas-cmis.version>
+        <dependency.tas-cmis.version>1.30</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>

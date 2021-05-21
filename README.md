@@ -100,14 +100,6 @@ All current source versions are held in github. Historic versions can be found i
 Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
 
 ## Setting up your development environment
-Although it is possible to work on individual github projects, we recommend working on
-the `alfresco-community-repo`, `alfresco-enterprise-repo`, `acs-packaging` and `acs-community-packaging`
-in a single Intellij IDEA project. They depend on each other and typically you 
-will want to make changes to all of them if you are changing the repository code.
-In the case of older branches, there is generally no need for the `acs-community-packaging` as you will
-not be creating a community release.
-
-
 Although it is possible to work on individual github projects, we recommend working on the `alfresco-community-repo`
 and `acs-community-packaging` in a single Intellij IDEA project. They depend on each other and typically you will
 want to make changes to both of them if you are changing the repository code.

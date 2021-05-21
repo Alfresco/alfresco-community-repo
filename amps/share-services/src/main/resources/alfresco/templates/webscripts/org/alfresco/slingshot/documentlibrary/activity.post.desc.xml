@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>activity</shortname>
+  <description>Document List Component - activity data webscript</description>
+  <url>/slingshot/doclib/activity</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

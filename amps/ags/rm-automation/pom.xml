@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
+   <packaging>pom</packaging>
+   <name>Alfresco Governance Services Automation Community</name>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-governance-services-community-parent</artifactId>
+      <version>11.44-SNAPSHOT</version>
+   </parent>
+
+   <modules>
+      <module>rm-automation-community-rest-api</module>
+   </modules>
+
+   <properties>
+      <suiteXmlFile>testng.xml</suiteXmlFile>
+      <skip.automationtests>true</skip.automationtests>
+   </properties>
+
+   <licenses>
+      <license>
+         <name>LGPL 3</name>
+      </license>
+   </licenses>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <redirectTestOutputToFile>false</redirectTestOutputToFile>
+               <suiteXmlFiles>
+                  <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
+               </suiteXmlFiles>
+               <skipTests>${skip.automationtests}</skipTests>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+</project>

@@ -18,9 +18,10 @@
             left outer join alf_content_data cd on (cd.content_url_id = cu.id)
         where
             cd.id is null and
+            cu.orphan_time is not null and
             cu.orphan_time > 0 and
-            cu.orphan_time < #{maxOrphanTimeExclusive} and
-            cu.orphan_time is not null
+            cu.orphan_time < #{maxOrphanTimeExclusive}
+        limit #{maxRecords}
         ]]>
     </select>
 

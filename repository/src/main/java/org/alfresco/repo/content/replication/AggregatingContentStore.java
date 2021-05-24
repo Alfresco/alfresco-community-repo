@@ -387,6 +387,8 @@ public class AggregatingContentStore extends AbstractContentStore
     @Override
     public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary   
         return primaryStore.isStorageClassesSupported(storageClasses);
     }
 
@@ -472,15 +474,16 @@ public class AggregatingContentStore extends AbstractContentStore
     @Override
     public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
     {
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary
         return primaryStore.getStorageClassesTransitions();
     }
     
     @Override
     public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
     {
-        // TODO review: should we look into secondaryStores as well?
-        // what should happen when `contentUrl` is for an object in a secondaryStore that needs to be
-        // moved from one state to another?
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary
         return primaryStore.findStorageClassesTransitions(contentUrl);
     }
 }

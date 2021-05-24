@@ -27,8 +27,12 @@ package org.alfresco.repo.version;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 
@@ -44,7 +48,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,8 +71,6 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
      */
     private ContentService contentService;
     private ContentStore contentStore;
-
-    @Mock
     private ContentStore mockedStore;
 
     @Before
@@ -79,6 +81,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Get the instance of the required content service
         this.contentService = (ContentService)this.applicationContext.getBean("contentService");
         this.contentStore = (ContentStore) ReflectionTestUtils.getField(contentService, "store");
+        this.mockedStore = Mockito.mock(ContentStore.class);
     }
     
     /**
@@ -185,12 +188,14 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     @Test
     public void testUpdateStorageClasses()
     {
+        NodeRef nodeRef = createNewVersionableNode();
         ReflectionTestUtils.setField(contentService, "store", mockedStore);
 
-        NodeRef nodeRef = createNewVersionableNode();
+        when(mockedStore.isStorageClassesSupported(emptySet())).thenReturn(true);
+
         contentService.updateStorageClasses(nodeRef, emptySet(), emptyMap());
         verify(mockedStore, times(1)).isStorageClassesSupported(emptySet());
-        verify(mockedStore, times(1)).updateStorageClasses("abc", emptySet(), emptyMap());
+        verify(mockedStore, times(1)).updateStorageClasses(anyString(), anySet(), anyMap());
 
     }
 }

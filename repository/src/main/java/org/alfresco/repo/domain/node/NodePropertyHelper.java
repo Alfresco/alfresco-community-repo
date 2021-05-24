@@ -463,6 +463,7 @@ public class NodePropertyHelper
             PropertyDefinition propertyDef,
             SortedMap<NodePropertyKey, NodePropertyValue> sortedPropertyValues)
     {
+    	boolean first = true;
         Serializable result = null;
         Collection<Serializable> collectionResult = null;
         // A working map. Ordering is not important for this map.
@@ -489,9 +490,10 @@ public class NodePropertyHelper
                 // We have added something to the scratch properties but the index has just changed
                 Serializable collapsedValue = collapsePropertiesWithSameQNameAndListIndex(propertyDef, scratch);
                 // Store. If there is a value already, then we must build a collection.
-                if (result == null)
+                if (result == null && first)
                 {
                     result = collapsedValue;
+                    first = false;
                 }
                 else if (collectionResult != null)
                 {

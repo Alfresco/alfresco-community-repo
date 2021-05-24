@@ -187,7 +187,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     {
         ReflectionTestUtils.setField(contentService, "store", mockedStore);
 
-        NodeRef nodeRef = new NodeRef("workspace://SpacesStore/abc");
+        NodeRef nodeRef = createNewVersionableNode();
         contentService.updateStorageClasses(nodeRef, emptySet(), emptyMap());
         verify(mockedStore, times(1)).isStorageClassesSupported(emptySet());
         verify(mockedStore, times(1)).updateStorageClasses("abc", emptySet(), emptyMap());

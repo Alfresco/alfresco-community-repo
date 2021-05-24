@@ -32,6 +32,8 @@ import org.alfresco.sync.repo.Client;
 import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
@@ -228,7 +230,7 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
     {
         if(activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
         {
-            SiteInfo siteInfo = siteService.getSite(nodeRef);
+            SiteInfo siteInfo = getSiteAsSystem(nodeRef);
             String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
             if(siteId != null && !siteId.equals(""))
             {
@@ -290,5 +292,16 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
             return null;
         }
     }
-
+    
+    private SiteInfo getSiteAsSystem(NodeRef nodeRef)
+    {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>()
+        {
+            @Override
+            public SiteInfo doWork() throws Exception
+            {
+                return siteService.getSite(nodeRef);
+            }
+        });
+    }
 }

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>container</shortname>
+  <description>Document List Component - container query</description>
+  <url>/slingshot/doclib/container/{site}/{container}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

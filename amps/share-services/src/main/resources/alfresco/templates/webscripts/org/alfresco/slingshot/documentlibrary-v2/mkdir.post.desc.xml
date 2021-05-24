@@ -1,0 +1,23 @@
+<webscript>
+   <shortname>Create Folder Paths</shortname>
+   <description><![CDATA[
+      Create folder paths under a node, ignoring existing folders and creating as needed.
+      <p>
+      Example:
+      <pre>
+      {  
+         "destination": "workspace://SpacesStore/1234567890",
+         "paths": [
+            "/My folder path/here/x/y/z",
+            "/Another folder path/here/a/b",
+            "/Another folder path/here/a/c"
+         ]
+      }
+      </pre>
+   ]]></description>
+   <url>/slingshot/doclib2/mkdir</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

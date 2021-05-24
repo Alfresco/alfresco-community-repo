@@ -1,0 +1,308 @@
+@startuml
+
+'Core ACS entities
+
+package "ACS core - content" {
+
+    class Content {
+    }
+
+    class Folder {
+    }
+
+    class File {
+    }
+
+    class Site {
+    }
+
+}
+
+package "RM Core" {
+
+    class FilePlanComponent {
+        rootNodeRef: NodeRef
+    }
+
+    class RecordsManagementContainer {
+        recordComponentIdentifier: String
+    }
+
+    class RmSite {
+    }
+
+    class FilePlan {
+    }
+
+    class RecordCategory {
+    }
+
+    class RecordFolder {
+        recordComponentIdentifier: String
+    }
+
+    class Record {
+        recordComponentIdentifier: String
+        dateFiled: Date
+        originalName: String
+        location: String
+    }
+
+    class DodRecord {
+        publicationDate: Date
+        originator: String
+        originatingOrganization: String
+        mediaType: String
+        format: String
+        dateReceived: Date
+        address: String
+        otherAddress: String
+    }
+
+    class NonElectronicRecord {
+        physicalSize: Int
+        numberOfCopies: Int
+        storageLocation: String
+        shelf: String
+        box: String
+        file: String
+    }
+
+    class EasyAccessRecord {
+    }
+
+    class UnfiledRecordContainer {
+    }
+
+    class UnfiledRecordFolder {
+    }
+
+}
+
+package "ACS core - people" {
+
+    class User {
+    }
+
+    class Group {
+    }
+}
+
+package "RM Roles and Capabilities" {
+    class Role {
+    }
+
+    class Capability {
+        name:String
+    }
+
+}
+
+package "Information Lifecycle Management" {
+
+    class TransferContainer {
+    }
+
+    class Transfer {
+        location : String
+        pdfIndicator : boolean
+    }
+
+    class RetentionSchedule {
+        authority: String
+        instructions: String
+        recordLevelDisposition: Boolean
+    }
+
+    class DispositionActionDefinition {
+        dispositionActionName: String
+        dispositionDescription: String
+        dispositionLocation: String
+        dispositionPeriod: Period
+        dispositionPeriodProperty: String
+        dispositionEvent: String
+        dispositionEventCombination: String
+        combineDispositionStepConditions: String
+    }
+
+    class DispositionEvent {
+    }
+
+    class DispositionLifecycle {
+    }
+
+    class DispositionAction {
+        dispositionActionId: String
+        dispositionAction: String
+        dispositionAsOf: Date
+        manuallySetAsOf: Date
+        dispositionEventsEligible: Boolean
+        dispositionActionStartedAt: Date
+        dispositionActionStartedBy: String
+        dispositionActionCompletedAt: Date
+        dispositionActionCompletedBy: String
+    }
+
+    class EventExecution {
+    }
+
+}
+
+note bottom of RetentionSchedule {
+    Retention is the new name for disposition.
+    Retention is the user facing name,
+    code refers to disposition
+}
+
+note bottom of Transfer {
+    A holding pen for records
+    that are being transferred
+    out of the system
+}
+
+package "Legal Holds" {
+    class HoldContainer {
+    }
+
+    class Hold {
+        holdReason: String
+    }
+
+    class Frozen {
+        frozenAt: Date
+        frozenBy: String
+    }
+
+}
+
+package "Security Controls" {
+
+    class SecurityGroup <<Enterprise>> {
+        enum groupType
+            {HIERARCHICAL,
+            USER_REQUIRES_ANY,
+            USER_REQUIRES_ALL}
+        unmarkedMark: SecurityMark
+    }
+
+    class SecurityMark <<Enterprise>> {
+    }
+
+    class SecurityClassification <<Enterprise>> {
+    }
+
+    class ClassificationReason <<Enterprise>> {
+    }
+
+    class ClassificationExemption <<Enterprise>> {
+    }
+
+    class ClassificationInfo <<Enterprise>> {
+        classification: SecurityClassification
+        reason:ClassificationReason[]
+        classifiedBy: String
+        agency:String
+    }
+
+    class SourceReference <<Enterprise>> {
+        name:String
+        originatingOrg:String
+        publicationDate:Date
+    }
+
+    class DowngradeSchedule <<Enterprise>> {
+        date:Date
+        event:String
+        instructions:String
+    }
+
+    class DeclassificationSchedule <<Enterprise>> {
+        date:Date
+        event:String
+        exemption:Exemption[]
+    }
+
+    class ClassificationGuide <<Enterprise>> {
+    }
+
+    class DeclassificationTimeframe <<Enterprise>> {
+    }
+}
+
+Content <|-- Folder
+Content <|-- File
+
+File <|-- Record
+Folder <|-- RecordFolder
+
+Site <|-- RmSite
+
+Record <|- EasyAccessRecord
+Folder "1" o-- "*" EasyAccessRecord
+
+Record <|-- DodRecord
+
+FilePlanComponent <|-- RecordsManagementContainer
+FilePlanComponent <|-- RecordFolder
+FilePlanComponent <|-- NonElectronicRecord
+FilePlanComponent <|-- Record
+RecordsManagementContainer <|-- Hold
+RecordsManagementContainer <|-- UnfiledRecordContainer
+RecordsManagementContainer <|-- HoldContainer
+RecordsManagementContainer <|-- TransferContainer
+RecordsManagementContainer <|-- FilePlan
+RecordsManagementContainer <|-- RecordCategory
+
+RecordCategory "1" *- "*" RecordFolder
+RecordCategory *- "*" RecordCategory
+
+note bottom of RecordCategory {
+	A RecordCategory may contain either RecordFolders or 
+	RecordCategories but not both. A RecordCategory may only exist
+	as the child of either another RecordCategory or the FilePlan
+}
+
+RecordFolder *- "*" Record : contains
+RecordFolder *-- "*" NonElectronicRecord : contains
+
+UnfiledRecordContainer *-- "*" UnfiledRecordFolder
+UnfiledRecordFolder *-- "*" Record
+
+FilePlan *- "*" RecordsManagementContainer
+FilePlan "1" *- "*" RecordCategory
+
+RmSite "1" *- "1" FilePlan
+
+Hold "*" o- "*" FilePlanComponent : contains
+HoldContainer *- "*" Hold
+(FilePlanComponent, Hold) .. Frozen
+
+TransferContainer *- "*" Transfer
+Transfer *- "*" Record
+
+DispositionLifecycle o- "0..1" DispositionAction: nextDispositionAction
+DispositionLifecycle o- "*" DispositionAction: dispositionActionHistory
+
+RetentionSchedule o- "*" DispositionActionDefinition
+RetentionSchedule o- "*" FilePlanComponent
+
+DispositionAction O-- "*" EventExecution
+
+Role o- "*" Capability
+User o- "*" Role
+Group o- "*" Role
+
+Content o-- "*" SecurityMark : securityControls
+User o-- "*" SecurityMark : clearance
+Group o-- "*" SecurityMark : clearance
+
+SecurityGroup "1" *- "*" SecurityMark
+SecurityMark <|-- SecurityClassification
+Content o- "0..1" SecurityClassification
+
+(Content, SecurityClassification) .. ClassificationInfo
+
+ClassificationInfo *-- "*" SourceReference
+ClassificationInfo *-- "0..1" DowngradeSchedule
+
+@enduml

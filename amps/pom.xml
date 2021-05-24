@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>alfresco-community-repo-amps</artifactId>
+    <name>AMPs</name>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-community-repo</artifactId>
+        <version>11.45-SNAPSHOT</version>
+    </parent>
+
+    <modules>
+        <module>share-services</module>
+    </modules>
+
+    <!-- When adding a new AMP, create a profile for it here to add the module. The AMPS environment variable may
+         then be used in aliases to optionally build it. The profile will however need to be added to the Travis
+         build scripts. The share-services AMP is build by default as it is very fast. -->
+    <profiles>
+        <profile>
+            <id>ags</id>
+            <modules>
+                <module>ags</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get Dispositon Lifecycle</shortname>
+  <description>Returns Disposition Lifecycle data</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/nextdispositionaction</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

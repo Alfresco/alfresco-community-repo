@@ -25,15 +25,6 @@
  */
 package org.alfresco.repo.version;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Date;
 
 import org.alfresco.model.ContentModel;
@@ -186,16 +177,17 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void testUpdateStorageClasses()
+    public void testFindStorageClasses()
     {
-        NodeRef nodeRef = createNewVersionableNode();
-        ReflectionTestUtils.setField(contentService, "store", mockedStore);
+        final NodeRef newNode = createNewNode();
+        assertTrue(contentService.findStorageClasses(newNode).isEmpty());
+    }
 
-        when(mockedStore.isStorageClassesSupported(emptySet())).thenReturn(true);
-
-        contentService.updateStorageClasses(nodeRef, emptySet(), emptyMap());
-        verify(mockedStore, times(1)).isStorageClassesSupported(emptySet());
-        verify(mockedStore, times(1)).updateStorageClasses(anyString(), anySet(), anyMap());
-
+    @Test
+    public void testFindStorageClassesTransitions()
+    {
+        final NodeRef newNode = createNewNode();
+        // TODO
+        assertTrue(true);
     }
 }

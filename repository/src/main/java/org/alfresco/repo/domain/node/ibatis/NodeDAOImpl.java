@@ -401,14 +401,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected int deleteNodesByCommitTime(long fromTxnCommitTimeMs, long toTxnCommitTimeMs)
+    protected Pair<Integer, Integer> deleteNodesByCommitTime(long fromTxnCommitTimeMs, long toTxnCommitTimeMs)
     {
         // Get the deleted nodes
         Pair<Long, QName> deletedTypePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         if (deletedTypePair == null)
         {
             // Nothing to do
-            return 0;
+//            return 0;
+            return new Pair<>(0, 0);
         }
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setTypeQNameId(deletedTypePair.getFirst());
@@ -416,9 +417,10 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         query.setMaxCommitTime(toTxnCommitTimeMs);
         // TODO: Fix ALF-16030 Use ON DELETE CASCADE for node aspects and properties 
         // First clean up properties
-        template.delete(DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME, query);
+        int propCount = template.delete(DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME, query);
         // Finally remove the nodes
-        return template.delete(DELETE_NODES_BY_TXN_COMMIT_TIME, query);
+        int nodeCount = template.delete(DELETE_NODES_BY_TXN_COMMIT_TIME, query);
+        return new Pair<>(nodeCount, propCount);
     }
 
     @Override

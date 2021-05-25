@@ -212,5 +212,5 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
      * 
      * @return      Returns the cleanup messages.
      */
-    protected abstract List<String> doCleanInternal() throws Throwable;
+    protected abstract List<String> doCleanInternal();
 }

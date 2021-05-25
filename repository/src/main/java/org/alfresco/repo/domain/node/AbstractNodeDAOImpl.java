@@ -2029,7 +2029,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     @Override
-    public int purgeNodes(long fromTxnCommitTimeMs, long toTxnCommitTimeMs)
+    public Pair<Integer, Integer> purgeNodes(long fromTxnCommitTimeMs, long toTxnCommitTimeMs)
     {
         return deleteNodesByCommitTime(fromTxnCommitTimeMs, toTxnCommitTimeMs);
     }
@@ -4925,7 +4925,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long optionalOldSharedAlcIdInAdditionToNull,
             Long newSharedAlcId);
     protected abstract int deleteNodeById(Long nodeId);
-    protected abstract int deleteNodesByCommitTime(long fromTxnCommitTimeMs, long toTxnCommitTimeMs);
+    protected abstract Pair<Integer, Integer> deleteNodesByCommitTime(long fromTxnCommitTimeMs, long toTxnCommitTimeMs);
     protected abstract NodeEntity selectNodeById(Long id);
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef);
     protected abstract List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids);

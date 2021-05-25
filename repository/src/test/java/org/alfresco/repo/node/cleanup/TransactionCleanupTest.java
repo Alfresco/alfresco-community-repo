@@ -342,7 +342,7 @@ public class TransactionCleanupTest
         assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
 
         // run the transaction cleaner
-        worker.setPurgeSize(5); // small purge size
+        worker.setPurgeSize(100); // small purge size
         // we want to clean all the transactions starting with the fromCustomCommitTime
         worker.setFromCustomCommitTime(fromCustomCommitTime);
         List<String> reports = worker.doClean();

@@ -336,7 +336,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param toTxnCommitTimeMs      to commit time
      * @return  Returns the number of deleted nodes purged
      */
-    public int purgeNodes(long fromTxnCommitTimeMs, long toTxnCommitTimeMs);
+    public Pair<Integer, Integer> purgeNodes(long fromTxnCommitTimeMs, long toTxnCommitTimeMs);
     
     /*
      * Properties

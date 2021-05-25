@@ -27,6 +27,7 @@ package org.alfresco.repo.content.replication;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -65,9 +66,10 @@ import org.apache.commons.logging.LogFactory;
  * @see CachingContentStore
  */
 public class AggregatingContentStore extends AbstractContentStore
-{    
-    private static Log logger = LogFactory.getLog(AggregatingContentStore.class);
-    
+{
+    private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
+    private static final String REPLICATING_CONTENT_STORE_NOT_INITIALISED = "ReplicatingContentStore not initialised";
+
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
     
@@ -135,7 +137,7 @@ public class AggregatingContentStore extends AbstractContentStore
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
         
         // get a read lock so that we are sure that no replication is underway
@@ -170,11 +172,12 @@ public class AggregatingContentStore extends AbstractContentStore
         }     
     }
 
+    @Override
     public boolean exists(String contentUrl)
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
 
         // get a read lock so that we are sure that no replication is underway
@@ -240,6 +243,7 @@ public class AggregatingContentStore extends AbstractContentStore
         }
     }
 
+    @Override
     public ContentWriter getWriter(ContentContext ctx)
     {
         // get the writer
@@ -254,6 +258,7 @@ public class AggregatingContentStore extends AbstractContentStore
      * 
      * @return Returns the value returned by the delete on the primary store.
      */
+    @Override
     public boolean delete(String contentUrl) throws ContentIOException
     {
         // delete on the primary store
@@ -269,6 +274,7 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * @return Returns <tt>true</tt> if at least one store supports direct access
      */
+    @Override
     public boolean isDirectAccessSupported()
     {
         // Check the primary store
@@ -293,11 +299,12 @@ public class AggregatingContentStore extends AbstractContentStore
         return isDirectAccessSupported;
     }
 
+    @Override
     public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
 
         // get a read lock so that we are sure that no replication is underway
@@ -380,25 +387,9 @@ public class AggregatingContentStore extends AbstractContentStore
     @Override
     public boolean isStorageClassesSupported(Set<String> storageClasses)
     {
-        // Check the primary store
-        boolean isStorageClassesSupported = primaryStore.isStorageClassesSupported(storageClasses);
-
-        if (!isStorageClassesSupported)
-        {
-            // Storage class is not supported by the primary store so we have to check the
-            // other stores
-            for (ContentStore store : secondaryStores)
-            {
-                isStorageClassesSupported = store.isDirectAccessSupported();
-
-                if (isStorageClassesSupported)
-                {
-                    break;
-                }
-            }
-        }
-
-        return isStorageClassesSupported;
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary   
+        return primaryStore.isStorageClassesSupported(storageClasses);
     }
 
     @Override
@@ -407,5 +398,92 @@ public class AggregatingContentStore extends AbstractContentStore
         // We only need to provide info about the primary store,
         // because the aggregating CS only allows to be written in the primary
         return primaryStore.getSupportedStorageClasses();
+    }
+
+    @Override
+    public void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters)
+    {
+        primaryStore.updateStorageClasses(contentUrl, storageClasses, parameters);
+    }
+
+    @Override
+    public Set<String> findStorageClasses(String contentUrl)
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
+        }
+
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        try
+        {
+            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+            boolean contentUrlSupported = true;
+            Set<String> storageClasses = null;
+
+            // Check the primary store
+            try
+            {
+                storageClasses = primaryStore.findStorageClasses(contentUrl);
+            }
+            catch (UnsupportedContentUrlException e)
+            {
+                // The store can't handle the content URL
+                contentUrlSupported = false;
+            }
+
+            if (storageClasses != null)
+            {
+                return storageClasses;
+            }
+
+            // the content is not in the primary store so we have to go looking for it
+            for (ContentStore store : secondaryStores)
+            {
+                try
+                {
+                    storageClasses = store.findStorageClasses(contentUrl);
+                }
+                catch (UnsupportedContentUrlException e)
+                {
+                    // The store can't handle the content URL
+                    contentUrlSupported = false;
+                }
+
+                if (storageClasses != null)
+                {
+                    break;
+                }
+            }
+
+            if (storageClasses == null && !contentUrlSupported)
+            {
+                // The content URL was not supported
+                throw new UnsupportedContentUrlException(this, contentUrl);
+            }
+            
+            return storageClasses;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    {
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary
+        return primaryStore.getStorageClassesTransitions();
+    }
+    
+    @Override
+    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
+    {
+        // We only need to provide info about the primary store,
+        // because the aggregating CS only allows to be written in the primary
+        return primaryStore.findStorageClassesTransitions(contentUrl);
     }
 }

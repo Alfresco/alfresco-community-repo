@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-packaging</artifactId>
-        <version>7.326</version>
+        <version>7.327-SNAPSHOT</version>
     </parent>
 
     <modules>

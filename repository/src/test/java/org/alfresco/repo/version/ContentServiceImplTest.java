@@ -39,7 +39,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,7 +61,6 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
      */
     private ContentService contentService;
     private ContentStore contentStore;
-    private ContentStore mockedStore;
 
     @Before
     public void before() throws Exception
@@ -72,7 +70,6 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Get the instance of the required content service
         this.contentService = (ContentService)this.applicationContext.getBean("contentService");
         this.contentStore = (ContentStore) ReflectionTestUtils.getField(contentService, "store");
-        this.mockedStore = Mockito.mock(ContentStore.class);
     }
     
     /**
@@ -187,7 +184,6 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     public void testFindStorageClassesTransitions()
     {
         final NodeRef newNode = createNewNode();
-        // TODO
-        assertTrue(true);
+        assertNotNull(contentService.findStorageClassesTransitions(newNode));
     }
 }

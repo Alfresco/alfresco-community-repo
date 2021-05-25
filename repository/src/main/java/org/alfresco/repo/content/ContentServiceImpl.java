@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
@@ -61,13 +68,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Service implementation acting as a level of indirection between the client
@@ -585,5 +585,70 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                         e);
             }
         }
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    {
+        return store.isStorageClassesSupported(storageClasses);
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return store.getSupportedStorageClasses();
+    }
+
+    @Override
+    public void updateStorageClasses(NodeRef nodeRef, Set<String> storageClasses, Map<String, Object> parameters)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        if (!isStorageClassesSupported(storageClasses))
+        {
+            throw new UnsupportedStorageClassException(store, storageClasses, "The supplied storage classes are not supported");
+        }
+
+        store.updateStorageClasses(contentData.getContentUrl(), storageClasses, parameters);
+    }
+
+    @Override
+    public Set<String> findStorageClasses(NodeRef nodeRef)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        return store.findStorageClasses(contentData.getContentUrl());
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    {
+        return store.getStorageClassesTransitions();
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(NodeRef nodeRef)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        return store.findStorageClassesTransitions(contentData.getContentUrl());
     }
 }

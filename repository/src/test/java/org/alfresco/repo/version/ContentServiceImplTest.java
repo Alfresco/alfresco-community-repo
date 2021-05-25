@@ -25,29 +25,22 @@
  */
 package org.alfresco.repo.version;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.util.Date;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.EmptyContentReader;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.MimetypeMapTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
 
 /**
  * Tests for getting content readers and writers.
@@ -178,5 +171,19 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
 
         assertEquals(null, contentService.getDirectAccessUrl(nodeRef, null));
         assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
+    }
+
+    @Test
+    public void testFindStorageClasses()
+    {
+        final NodeRef newNode = createNewNode();
+        assertTrue(contentService.findStorageClasses(newNode).isEmpty());
+    }
+
+    @Test
+    public void testFindStorageClassesTransitions()
+    {
+        final NodeRef newNode = createNewNode();
+        assertNotNull(contentService.findStorageClassesTransitions(newNode));
     }
 }

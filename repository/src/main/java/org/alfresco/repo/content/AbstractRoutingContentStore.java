@@ -456,25 +456,21 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public void updateStorageClasses(String contentUrl, Set<String> storageClasses,
         Map<String, Object> parameters)
     {
-        List<ContentStore> stores = getAllStores();
-        for (ContentStore store : stores)
+        ContentStore store = selectWriteStore(
+            new ContentContext(getReader(contentUrl), contentUrl));
+
+        if (store.isStorageClassesSupported(storageClasses))
         {
-            if (store.isStorageClassesSupported(storageClasses))
-            {
-                store.updateStorageClasses(contentUrl, storageClasses, parameters);
-            }
+            store.updateStorageClasses(contentUrl, storageClasses, parameters);
         }
     }
 
     @Override
     public Set<String> findStorageClasses(String contentUrl)
     {
-        Set<String> storageClasses = new HashSet<>();
-        for (ContentStore store : getAllStores())
-        {
-            storageClasses.addAll(store.findStorageClasses(contentUrl));
-        }
-        return storageClasses;
+        ContentStore contentStore = selectReadStore(contentUrl);
+
+        return contentStore != null ? contentStore.findStorageClasses(contentUrl) : new HashSet<>();
     }
 
     @Override
@@ -491,11 +487,10 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     @Override
     public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
     {
-        Map<Set<String>, Set<Set<String>>> supportedTransitions = new HashMap<>();
-        for (ContentStore store : getAllStores())
-        {
-            supportedTransitions.putAll(store.findStorageClassesTransitions(contentUrl));
-        }
-        return supportedTransitions;
+        ContentStore contentStore = selectReadStore(contentUrl);
+
+        return contentStore != null ?
+            contentStore.findStorageClassesTransitions(contentUrl) :
+            new HashMap<>();
     }
 }

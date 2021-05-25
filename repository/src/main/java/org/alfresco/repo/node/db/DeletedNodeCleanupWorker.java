@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.node.db;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.util.Pair;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Cleans up deleted nodes and dangling transactions that are old enough.
@@ -45,6 +46,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     private long minPurgeAgeMs;
     // used for tests, to consider only transactions after a certain commit time
     private long fromCustomCommitTime = -1;
+    private long oldestCommitTimeForDeletedNode = -1;
     
     // Unused transactions will be purged in chunks determined by commit time boundaries. 'index.tracking.purgeSize' specifies the size
     // of the chunk (in ms). Default is a couple of hours.
@@ -61,7 +63,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     /**
      * {@inheritDoc}
      */
-    protected List<String> doCleanInternal() throws Throwable
+    protected List<String> doCleanInternal()
     {
         if (minPurgeAgeMs < 0)
         {
@@ -71,7 +73,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
         List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
         
-        List<String> allResults = new ArrayList<String>(100);
+        List<String> allResults = new ArrayList<>(100);
         allResults.addAll(purgedNodes);
         allResults.addAll(purgedTxns);
         
@@ -124,17 +126,21 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         long fromCommitTime = fromCustomCommitTime;
         if (fromCommitTime <= 0L)
         {
+            logger.debug("DeletedNodeCleanupWorker: Computing start time ");
             fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+            logger.debug("DeletedNodeCleanupWorker: Starting purge at " + fromCommitTime);
+            oldestCommitTimeForDeletedNode = fromCommitTime;
         }
         if ( fromCommitTime == 0L )
         {
-              String msg = "There are no old nodes to purge.";
-              results.add(msg);
-              return results;
+            String msg = "There are no old nodes to purge.";
+            logger.debug("DeletedNodeCleanupWorker: " + msg);
+            results.add(msg);
+            return results;
         }
         
         long loopPurgeSize = purgeSize;
-        Long purgeCount = new Long(0);
+        Pair<Integer, Integer> purgeCount;
         while (true)
         {
             // Ensure we keep the lock
@@ -155,13 +161,16 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                 DeleteNodesByTransactionsCallback purgeNodesCallback = new DeleteNodesByTransactionsCallback(nodeDAO, fromCommitTime, toCommitTime);
                 purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
 
-                if (purgeCount.longValue() > 0)
+                if (purgeCount.getFirst().longValue() > 0)
                 {
                     String msg =
                         "Purged old nodes: \n" +
                         "   From commit time (ms):    " + fromCommitTime + "\n" +
                         "   To commit time (ms):      " + toCommitTime + "\n" +
-                        "   Purge count:     " + purgeCount;
+                        "   Purged properties:        " + purgeCount.getSecond() + "\n" +  
+                        "   Purge nodes:              " + purgeCount.getFirst();
+                    
+                    logger.debug("DeletedNodeCleanupWorker: " + msg);
                     results.add(msg);
                 }
 
@@ -172,6 +181,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                 if (loopPurgeSize > purgeSize)
                 {
                     loopPurgeSize = purgeSize;
+                }
+                else
+                {
+                    logger.debug("DeletedNodeCleanupWorker: loopPurgeSize doubled " + loopPurgeSize);
                 }
             }
             catch (Throwable e)
@@ -243,7 +256,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         long fromCommitTime = fromCustomCommitTime;
         if (fromCommitTime <= 0L)
         {
-            fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
+            fromCommitTime = oldestCommitTimeForDeletedNode;
+//            fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
         }
     	// delete unused transactions in batches of size 'purgeTxnBlockSize'
         while (true)
@@ -265,8 +279,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             try
             {               
                 DeleteTransactionsCallback purgeTxnsCallback = new DeleteTransactionsCallback(nodeDAO, fromCommitTime, toCommitTime);
-                long purgeCount = txnHelper.doInTransaction(purgeTxnsCallback, false, true);
-                if (purgeCount > 0)
+                Pair<Integer, Integer> purgeCount = txnHelper.doInTransaction(purgeTxnsCallback, false, true);
+                if (purgeCount.getFirst() > 0)
                 {
                     String msg =
                         "Purged old txns: \n" +
@@ -274,6 +288,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                         "   To commit time (ms):      " + toCommitTime + "\n" +
                         "   Purge count:     " + purgeCount;
                     results.add(msg);
+                    logger.debug("DeletedNodeCleanupWorker: " + msg);
                 }
             }
             catch (Throwable e)
@@ -307,7 +322,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         return results;
     }
     
-    private static abstract class DeleteByTransactionsCallback implements RetryingTransactionCallback<Long>
+    private static abstract class DeleteByTransactionsCallback implements RetryingTransactionCallback<Pair<Integer, Integer>>
     {
         protected NodeDAO nodeDAO;
         protected long fromCommitTime;
@@ -320,7 +335,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             this.toCommitTime = toCommitTime;
         }
 
-        public abstract Long execute() throws Throwable;
+        public abstract Pair<Integer, Integer> execute() throws Throwable;
     }
     
     /*
@@ -333,10 +348,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             super(nodeDAO, fromCommitTime, toCommitTime);
         }
 
-        public Long execute() throws Throwable
+        public Pair<Integer, Integer> execute() throws Throwable
         {
-            long count = nodeDAO.deleteTxnsUnused(fromCommitTime, toCommitTime);
-            return count;
+            int count = nodeDAO.deleteTxnsUnused(fromCommitTime, toCommitTime);
+            return new Pair<>(count, 0);
         }       
     }
     
@@ -350,9 +365,9 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             super(nodeDAO, fromCommitTime, toCommitTime);
         }
 
-        public Long execute() throws Throwable
+        public Pair<Integer, Integer> execute() throws Throwable
         {
-            long count = nodeDAO.purgeNodes(fromCommitTime, toCommitTime);
+            Pair<Integer, Integer> count = nodeDAO.purgeNodes(fromCommitTime, toCommitTime);
             return count;
         }       
     }

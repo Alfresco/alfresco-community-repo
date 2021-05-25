@@ -25,8 +25,10 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -448,5 +450,52 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             supportedStorageClasses.addAll(store.getSupportedStorageClasses());
         }
         return supportedStorageClasses;
+    }
+
+    @Override
+    public void updateStorageClasses(String contentUrl, Set<String> storageClasses,
+        Map<String, Object> parameters)
+    {
+        List<ContentStore> stores = getAllStores();
+        for (ContentStore store : stores)
+        {
+            if (store.isStorageClassesSupported(storageClasses))
+            {
+                store.updateStorageClasses(contentUrl, storageClasses, parameters);
+            }
+        }
+    }
+
+    @Override
+    public Set<String> findStorageClasses(String contentUrl)
+    {
+        Set<String> storageClasses = new HashSet<>();
+        for (ContentStore store : getAllStores())
+        {
+            storageClasses.addAll(store.findStorageClasses(contentUrl));
+        }
+        return storageClasses;
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    {
+        Map<Set<String>, Set<Set<String>>> supportedTransitions = new HashMap<>();
+        for (ContentStore store : getAllStores())
+        {
+            supportedTransitions.putAll(store.getStorageClassesTransitions());
+        }
+        return supportedTransitions;
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
+    {
+        Map<Set<String>, Set<Set<String>>> supportedTransitions = new HashMap<>();
+        for (ContentStore store : getAllStores())
+        {
+            supportedTransitions.putAll(store.findStorageClassesTransitions(contentUrl));
+        }
+        return supportedTransitions;
     }
 }

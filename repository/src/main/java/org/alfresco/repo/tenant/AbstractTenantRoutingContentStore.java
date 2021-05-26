@@ -284,5 +284,30 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         return getTenantContentStore().getSupportedStorageClasses();
     }
 
+    @Override
+    public void updateStorageClasses(String contentUrl, Set<String> storageClasses,
+        Map<String, Object> parameters)
+    {
+        getTenantContentStore().updateStorageClasses(contentUrl, storageClasses, parameters);
+    }
+
+    @Override
+    public Set<String> findStorageClasses(String contentUrl)
+    {
+        return getTenantContentStore().findStorageClasses(contentUrl);
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    {
+        return getTenantContentStore().getStorageClassesTransitions();
+    }
+
+    @Override
+    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
+    {
+        return getTenantContentStore().findStorageClassesTransitions(contentUrl);
+    }
+
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

@@ -26,11 +26,10 @@
 package org.alfresco.repo.tenant;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -58,6 +57,8 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * Test checking the behaviour of the MT {@link ContentStore} routing 
@@ -115,6 +116,21 @@ public class AbstractTenantRoutingContentStoreTest extends TestCase
         }
 
         assertFalse("getAllStores method returned the list with null entry", isNullEntry);
+    }
+
+    public void testIsStorageClassesSupported()
+    {
+        assertTrue(fileContentStore.isStorageClassesSupported(Collections.emptySet()));
+    }
+
+    public void testGetSupportedStorageClasses()
+    {
+        assertTrue(fileContentStore.getSupportedStorageClasses().isEmpty());
+    }
+
+    public void testGetStorageClassesTransitions()
+    {
+        assertNotNull(fileContentStore.getStorageClassesTransitions());
     }
 
     // helper methods and listener

@@ -112,6 +112,8 @@ public class DBQueryEngine implements QueryEngine
     
     private long maxPermissionCheckTimeMillis;
 
+    private boolean maxPermissionCheckEnabled;
+
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
 
     private List<Pair<Long, StoreRef>> stores;
@@ -122,7 +124,7 @@ public class DBQueryEngine implements QueryEngine
     {
         this.aclCrudDAO = aclCrudDAO;
     }
-    
+
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
         this.maxPermissionChecks = maxPermissionChecks;
@@ -131,6 +133,11 @@ public class DBQueryEngine implements QueryEngine
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
+    }
+    
+    public void setMaxPermissionCheckEnabled(boolean maxPermissionCheckEnabled)
+    {
+        this.maxPermissionCheckEnabled = maxPermissionCheckEnabled;
     }
 
     public void setTemplate(SqlSessionTemplate template)
@@ -335,16 +342,19 @@ public class DBQueryEngine implements QueryEngine
             private void doHandleResult(NodePermissionAssessor permissionAssessor, List<Node> nodes,
                                         int requiredNodes, ResultContext<? extends Node> context)
             {
-                if (nodes.size() >= requiredNodes)
+                if (!maxPermissionCheckEnabled)
                 {
-                    context.stop();
-                    return;
+                    if (nodes.size() >= requiredNodes)
+                    {
+                        context.stop();
+                        return;
+                    }
                 }
                 
                 Node node = context.getResultObject();
                 addStoreInfo(node);
                 
-                boolean shouldCache = nodes.size() >= options.getSkipCount();
+                boolean shouldCache = shouldCache(options, nodes, requiredNodes);
                 if(shouldCache)
                 {
                     logger.debug("- selected node "+nodes.size()+": "+node.getUuid()+" "+node.getId());
@@ -357,7 +367,14 @@ public class DBQueryEngine implements QueryEngine
                 
                 if (permissionAssessor.isIncluded(node))
                 {
-                    nodes.add(shouldCache ? node : null);
+                    if (nodes.size() > requiredNodes)
+                    {
+                        nodes.add(node);
+                    }
+                    else
+                    {
+                        nodes.add(shouldCache ? node : null);
+                    }
                 }
                 
                 if (permissionAssessor.shouldQuitChecks())
@@ -365,6 +382,21 @@ public class DBQueryEngine implements QueryEngine
                     context.stop();
                     return;
                 }
+            }
+
+            private boolean shouldCache(QueryOptions options, List<Node> nodes, int requiredNodes)
+            {
+                boolean result = false;
+                if (nodes.size() > requiredNodes)
+                {
+                    result = false;
+                }
+                else
+                {
+                    result = nodes.size() >= options.getSkipCount();
+                }
+
+                return result;
             }
         });
 

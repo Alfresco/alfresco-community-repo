@@ -137,6 +137,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getPagination().getSkipCount(), 15, "Expected skip count to be fifteen");
         assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
         assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
+        assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 20, "Expected total items to be twenty");
     }
 
     @Test
@@ -151,6 +152,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
         assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
         assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
+        assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 10, "Expected total items to be ten");
     }
 
     /**
@@ -171,6 +173,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getPagination().getSkipCount(), 16, "Expected skip count to be sixteen");
         assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 20, "Expected total items to be twenty");
     }
 
     @Test
@@ -185,6 +188,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getPagination().getSkipCount(), 6, "Expected skip count to be six");
         assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 10, "Expected total items to be ten");
     }
 
     /**
@@ -205,6 +209,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getPagination().getSkipCount(), 15, "Expected skip count to be fifteen");
         assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 20, "Expected total items to be twenty");
     }
 
     @Test
@@ -219,6 +224,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
         assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 10, "Expected total items to be ten");
     }
 
     @AfterClass (alwaysRun = true)

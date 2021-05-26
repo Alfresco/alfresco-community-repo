@@ -91,7 +91,7 @@ public class FixedAclUpdaterTest extends TestCase
     private ContentService contentService;
     private AuthorityService authorityService;
     private static final long MAX_TRANSACTION_TIME_DEFAULT = 10;
-    private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1 };
+    private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     private static final int[] filesPerLevelMoreFiles = { 5, 100 };
     private long maxTransactionTime;
     private static HashMap<Integer, Class<?>> errors;

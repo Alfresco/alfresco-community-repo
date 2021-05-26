@@ -459,10 +459,21 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         ContentStore store = selectWriteStore(
             new ContentContext(getReader(contentUrl), contentUrl));
 
-        if (store.isStorageClassesSupported(storageClasses))
+        if (!store.isStorageClassesSupported(storageClasses))
         {
-            store.updateStorageClasses(contentUrl, storageClasses, parameters);
+            throw new UnsupportedStorageClassException(
+                store, 
+                storageClasses,
+                "The supplied storage classes are not supported");
         }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Updating storage classes for content URL: \n" +
+                             "   Content URL: " + contentUrl + "\n" +
+                             "   Store:       " + store);
+        }
+        store.updateStorageClasses(contentUrl, storageClasses, parameters);
     }
 
     @Override
@@ -470,7 +481,22 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     {
         ContentStore contentStore = selectReadStore(contentUrl);
 
-        return contentStore != null ? contentStore.findStorageClasses(contentUrl) : new HashSet<>();
+        if (contentStore == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Storage classes not found for content URL: " + contentUrl);
+            }
+            return new HashSet<>();
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting storage classes from store: \n" +
+                             "   Content URL: " + contentUrl + "\n" +
+                             "   Store:       " + contentStore);
+        }
+        return contentStore.findStorageClasses(contentUrl);
     }
 
     @Override
@@ -489,8 +515,21 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     {
         ContentStore contentStore = selectReadStore(contentUrl);
 
-        return contentStore != null ?
-            contentStore.findStorageClassesTransitions(contentUrl) :
-            new HashMap<>();
+        if (contentStore == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Storage classes transitions not found for content URL: " + contentUrl);
+            }
+            return new HashMap<>();
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting storage classes transitions from store: \n" +
+                             "   Content URL: " + contentUrl + "\n" +
+                             "   Store:       " + contentStore);
+        }
+        return contentStore.findStorageClassesTransitions(contentUrl);
     }
 }

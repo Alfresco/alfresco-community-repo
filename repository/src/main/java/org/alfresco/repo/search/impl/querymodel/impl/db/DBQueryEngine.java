@@ -336,19 +336,10 @@ public class DBQueryEngine implements QueryEngine
             @Override
             public void handleResult(ResultContext<? extends Node> context)
             {
-                doHandleResult(permissionAssessor, nodes, requiredNodes, context);
-            }
-            
-            private void doHandleResult(NodePermissionAssessor permissionAssessor, List<Node> nodes,
-                                        int requiredNodes, ResultContext<? extends Node> context)
-            {
-                if (!maxPermissionCheckEnabled)
+                if (!maxPermissionCheckEnabled && nodes.size() >= requiredNodes)
                 {
-                    if (nodes.size() >= requiredNodes)
-                    {
-                        context.stop();
-                        return;
-                    }
+                    context.stop();
+                    return;
                 }
                 
                 Node node = context.getResultObject();
@@ -386,17 +377,14 @@ public class DBQueryEngine implements QueryEngine
 
             private boolean shouldCache(QueryOptions options, List<Node> nodes, int requiredNodes)
             {
-                boolean result = false;
                 if (nodes.size() > requiredNodes)
                 {
-                    result = false;
+                    return false;
                 }
                 else
                 {
-                    result = nodes.size() >= options.getSkipCount();
+                    return nodes.size() >= options.getSkipCount();
                 }
-
-                return result;
             }
         });
 

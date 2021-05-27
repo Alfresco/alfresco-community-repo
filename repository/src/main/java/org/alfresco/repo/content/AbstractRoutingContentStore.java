@@ -456,15 +456,62 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public void updateStorageClasses(String contentUrl, Set<String> storageClasses,
         Map<String, Object> parameters)
     {
-        ContentStore store = selectWriteStore(
-            new ContentContext(getReader(contentUrl), contentUrl));
-
-        if (!store.isStorageClassesSupported(storageClasses))
+        ContentStore store;
+        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
+        // Get the read lock
+        storesCacheReadLock.lock();
+        try
         {
-            throw new UnsupportedStorageClassException(
-                store, 
-                storageClasses,
-                "The supplied storage classes are not supported");
+            // Check if the store is in the cache
+            store = storesByContentUrl.get(cacheKey);
+        }
+        finally
+        {
+            storesCacheReadLock.unlock();
+        }
+
+        if (store == null || !store.exists(contentUrl) || !store.isWriteSupported())
+        {
+            store = selectWriteStore(new ContentContext(getReader(contentUrl), contentUrl));
+            // Check that we were given a valid store
+            if (store == null)
+            {
+                throw new NullPointerException(
+                    "Unable to find a write store.  'selectWriteStore' may not return null: \n" + 
+                        "   Router: " + this + "\n" + 
+                        "   Chose:  " + store);
+            }
+            else if (!store.isWriteSupported())
+            {
+                throw new AlfrescoRuntimeException(
+                    "A write store was chosen that doesn't support writes: \n" + 
+                        "   Router: " + this + "\n" + 
+                        "   Chose:  " + store);
+            }
+        }
+        
+        if (!store.exists(contentUrl) || !store.isStorageClassesSupported(storageClasses))
+        {
+            store = null;
+            
+            for (ContentStore storeInList : getAllStores())
+            {
+                if (storeInList.isWriteSupported() && 
+                    storeInList.exists(contentUrl) && 
+                    storeInList.isStorageClassesSupported(storageClasses))
+                {
+                    store = storeInList;
+                    break;
+                }
+            }
+        }
+
+        if (store == null)
+        {
+            throw new UnsupportedOperationException(
+                "Unable to find a write store to update the storage classes for content URL: \n" +
+                    "   Content URL:          " + contentUrl + "\n" + 
+                    "   StorageClasses:       " + storageClasses);
         }
 
         if (logger.isDebugEnabled())

@@ -85,7 +85,6 @@ import org.alfresco.util.DialectUtil;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.schemacomp.Difference;
 import org.alfresco.util.schemacomp.ExportDb;
 import org.alfresco.util.schemacomp.MultiFileDumper;
 import org.alfresco.util.schemacomp.MultiFileDumper.DbToXMLFactory;
@@ -2004,12 +2003,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             return null;
         }
 
-        if (!(result instanceof Difference))
-        {
-            return null;
-        }
-
-        return differenceHelper.findPatchCausingDifference((Difference)result);
+        return differenceHelper.findPatchCausingDifference(result);
     }
 
     /**

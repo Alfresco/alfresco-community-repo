@@ -1424,6 +1424,21 @@
         </property>
         <property name="ignored"><value>${system.remove-alf_server-table-from-db.ignored}</value></property>
     </bean>
+
+    <bean id="patch.db-V7.1.0-add-node-txid-index" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V7.1.0-add-node-txid-index</value></property>
+        <property name="description"><value>patch.db-V7.1.0-add-node-txid-index.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>15001</value></property>
+        <property name="targetSchema"><value>15002</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/7.1.0/${db.script.dialect}/add-node-txid-index.sql</value>
+        </property>
+        <property name="problemsPatternFileUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/7.1.0/add-node-txid-index.patterns</value>
+        </property>
+        <property name="ignored"><value>${system.add-node-txid-index.ignored}</value></property>
+    </bean>
 <!-- 
  -->
  

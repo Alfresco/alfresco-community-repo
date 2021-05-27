@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
@@ -73,11 +74,6 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
 
         Long primaryId = 0L;
 
-        // There are some caveats with MySQL specific fetch size limitation. You must
-        // read all of the rows in the result set (or close it) before you can issue any
-        // other queries on the connection, or an exception will be thrown.
-        Connection primaryConnection = null;
-        Connection[] secondaryConnections = null;
         PreparedStatement primaryPrepStmt = null;
         PreparedStatement[] secondaryPrepStmts = null;
         PreparedStatement deletePrepStmt = null;
@@ -85,35 +81,29 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
 
         deletedCount = 0L;
         startTime = new Date();
+
+        long defaultOffset = 0L;
         try
         {
             connection.setAutoCommit(false);
-
-            primaryConnection = dataSource.getConnection();
             
-            primaryPrepStmt = primaryConnection.prepareStatement(createPreparedSelectStatement(primaryTableName, primaryColumnName, primaryWhereClause));
-            // Note the MySQL specific fetch size limitation (Integer.MIN_VALUE). fetchSize
-            // activates result set streaming.
-            primaryPrepStmt.setFetchSize(Integer.MIN_VALUE);
+            primaryPrepStmt = connection.prepareStatement(createLimitPreparedSelectStatement(primaryTableName, primaryColumnName, primaryWhereClause));
             primaryPrepStmt.setLong(1, primaryId);
             primaryPrepStmt.setLong(2, tableUpperLimits[0]);
+            primaryPrepStmt.setInt(3, batchSize);
+            primaryPrepStmt.setLong(4, defaultOffset);
 
             boolean hasResults = primaryPrepStmt.execute();
 
             if (hasResults)
             {
-
                 secondaryPrepStmts = new PreparedStatement[tableColumn.length];
-                secondaryConnections = new Connection[tableColumn.length];
-                for (int i = 1; i < tableColumn.length; i++)
-                {
-                    secondaryConnections[i] = dataSource.getConnection();
-                    PreparedStatement secStmt = secondaryConnections[i].prepareStatement(createPreparedSelectStatement(tableColumn[i].getFirst(), tableColumn[i].getSecond(), optionalWhereClauses[i]));
-                    // Note the MySQL specific fetch size limitation (Integer.MIN_VALUE). fetchSize
-                    // activates result set streaming.
-                    secStmt.setFetchSize(Integer.MIN_VALUE);
+                for (int i = 1; i < tableColumn.length; i++) {
+                    PreparedStatement secStmt = connection.prepareStatement(createLimitPreparedSelectStatement(tableColumn[i].getFirst(), tableColumn[i].getSecond(), optionalWhereClauses[i]));
                     secStmt.setLong(1, primaryId);
                     secStmt.setLong(2, tableUpperLimits[i]);
+                    secStmt.setInt(3, batchSize);
+                    secStmt.setLong(4, defaultOffset);
 
                     secondaryPrepStmts[i] = secStmt;
                 }
@@ -122,25 +112,26 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
 
                 // Timeout is only checked at each bach start.
                 // It can be further refined by being verified at each primary row processing.
-                while (hasResults && !isTimeoutExceeded())
-                {
+                while (hasResults && !isTimeoutExceeded()) {
                     // Process batch
                     primaryId = processPrimaryTableResultSet(primaryPrepStmt, secondaryPrepStmts, deletePrepStmt, deleteIds, primaryTableName, primaryColumnName, tableColumn);
 
-                    if (primaryId == null)
-                    {
+                    if (primaryId == null) {
                         break;
                     }
 
                     // Prepare for next batch
                     primaryPrepStmt.setLong(1, primaryId);
                     primaryPrepStmt.setLong(2, tableUpperLimits[0]);
+                    primaryPrepStmt.setInt(3, batchSize);
+                    primaryPrepStmt.setLong(4, defaultOffset);
 
-                    for (int i = 1; i < tableColumn.length; i++)
-                    {
+                    for (int i = 1; i < tableColumn.length; i++) {
                         PreparedStatement secStmt = secondaryPrepStmts[i];
                         secStmt.setLong(1, primaryId);
                         secStmt.setLong(2, tableUpperLimits[i]);
+                        secStmt.setInt(3, batchSize);
+                        secStmt.setLong(4, defaultOffset);
                     }
 
                     hasResults = primaryPrepStmt.execute();
@@ -165,36 +156,117 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
             closeQuietly(deletePrepStmt);
             closeQuietly(secondaryPrepStmts);
             closeQuietly(primaryPrepStmt);
-            closeQuietly(secondaryConnections);
-            closeQuietly(primaryConnection);
 
             connection.setAutoCommit(true);
         }
     }
 
-    protected void closeQuietly(Connection connection)
+    protected Long processPrimaryTableResultSet(PreparedStatement primaryPrepStmt, PreparedStatement[] secondaryPrepStmts, PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName,
+                                                String primaryColumnName, Pair<String, String>[] tableColumn) throws SQLException
     {
-        if (connection != null)
+        int rowsProcessed = 0;
+        Long primaryId = null;
+        ResultSet[] secondaryResultSets = null;
+        try (ResultSet resultSet = primaryPrepStmt.getResultSet())
         {
-            try
+            secondaryResultSets = getSecondaryResultSets(secondaryPrepStmts);
+            Long[] secondaryIds = getSecondaryIds(secondaryResultSets, tableColumn);
+
+            // Create and populate secondary tables offsets
+            Long[] secondaryOffsets = new Long[tableColumn.length];
+            for (int i = 1; i < tableColumn.length; i++)
             {
-                connection.close();
+                secondaryOffsets[i] = 0L;
             }
-            catch (Exception e)
+
+            while (resultSet.next())
             {
-                logger.warn("Error closing DB connection: " + e.getMessage());
+                ++rowsProcessed;
+                primaryId = resultSet.getLong(primaryColumnName);
+
+                while (isLess(primaryId, secondaryIds))
+                {
+                    deleteIds.add(primaryId);
+
+                    if (deleteIds.size() == deleteBatchSize)
+                    {
+                        deleteFromPrimaryTable(deletePrepStmt, deleteIds, primaryTableName);
+                        connection.commit();
+                    }
+
+                    if (!resultSet.next())
+                    {
+                        break;
+                    }
+
+                    ++rowsProcessed;
+                    primaryId = resultSet.getLong(primaryColumnName);
+                }
+
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("RowsProcessed " + rowsProcessed + " from primary table " + primaryTableName);
+                }
+
+                updateSecondaryIds(primaryId, secondaryIds, secondaryPrepStmts, secondaryOffsets, secondaryResultSets, tableColumn);
+            }
+        }
+        finally
+        {
+            closeQuietly(secondaryResultSets);
+        }
+
+        return primaryId;
+    }
+
+    private void updateSecondaryIds(Long primaryId, Long[] secondaryIds, PreparedStatement[] secondaryPrepStmts,  Long[] secondaryOffsets, ResultSet[] secondaryResultSets, Pair<String, String>[] tableColumn) throws SQLException
+    {
+        for (int i = 1; i < tableColumn.length; i++)
+        {
+            Long secondaryId = secondaryIds[i];
+            while (secondaryId != null && primaryId >= secondaryId)
+            {
+                ResultSet resultSet = secondaryResultSets[i];
+                String columnId = tableColumn[i].getSecond();
+
+                secondaryId = getColumnValueById(resultSet, columnId);
+                
+                // Check if we reach the end of the first page
+                if (secondaryId == null)
+                {
+                    // Close the previous result set
+                    closeQuietly(resultSet);
+
+                    // Set to use the next page
+                    long offset = secondaryOffsets[i] + batchSize;
+                    secondaryOffsets[i] = offset;
+
+                    PreparedStatement secStmt = secondaryPrepStmts[i];
+                    secStmt.setLong(4, offset);
+
+                    // Check if any results were found
+                    boolean secHasResults = secStmt.execute();
+                    secondaryResultSets[i] = secHasResults ? secStmt.getResultSet() : null;
+                    
+                    // Try again to get the next secondary id
+                    secondaryId = getColumnValueById(secondaryResultSets[i], columnId);
+                }
+                
+                secondaryIds[i] = secondaryId;
             }
         }
     }
 
-    protected void closeQuietly(Connection[] connections)
+    private String createLimitPreparedSelectStatement(String tableName, String columnName, String whereClause)
     {
-        if (connections != null)
+        StringBuilder sqlBuilder = new StringBuilder("SELECT " + columnName + " FROM " + tableName + " WHERE ");
+
+        if (whereClause != null && !whereClause.isEmpty())
         {
-            for (Connection connection : connections)
-            {
-                closeQuietly(connection);
-            }
+            sqlBuilder.append(whereClause + " AND ");
         }
-    }
+
+        sqlBuilder.append(columnName + " > ? AND " + columnName + " <= ? ORDER BY " + columnName + " ASC LIMIT ? OFFSET ?");
+        return sqlBuilder.toString();
+    } 
 }

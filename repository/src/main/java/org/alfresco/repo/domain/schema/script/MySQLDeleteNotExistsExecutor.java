@@ -98,7 +98,8 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
             if (hasResults)
             {
                 secondaryPrepStmts = new PreparedStatement[tableColumn.length];
-                for (int i = 1; i < tableColumn.length; i++) {
+                for (int i = 1; i < tableColumn.length; i++)
+                {
                     PreparedStatement secStmt = connection.prepareStatement(createLimitPreparedSelectStatement(tableColumn[i].getFirst(), tableColumn[i].getSecond(), optionalWhereClauses[i]));
                     secStmt.setLong(1, primaryId);
                     secStmt.setLong(2, tableUpperLimits[i]);
@@ -112,11 +113,13 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
 
                 // Timeout is only checked at each bach start.
                 // It can be further refined by being verified at each primary row processing.
-                while (hasResults && !isTimeoutExceeded()) {
+                while (hasResults && !isTimeoutExceeded())
+                {
                     // Process batch
                     primaryId = processPrimaryTableResultSet(primaryPrepStmt, secondaryPrepStmts, deletePrepStmt, deleteIds, primaryTableName, primaryColumnName, tableColumn);
 
-                    if (primaryId == null) {
+                    if (primaryId == null)
+                    {
                         break;
                     }
 
@@ -126,7 +129,8 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                     primaryPrepStmt.setInt(3, batchSize);
                     primaryPrepStmt.setLong(4, defaultOffset);
 
-                    for (int i = 1; i < tableColumn.length; i++) {
+                    for (int i = 1; i < tableColumn.length; i++)
+                    {
                         PreparedStatement secStmt = secondaryPrepStmts[i];
                         secStmt.setLong(1, primaryId);
                         secStmt.setLong(2, tableUpperLimits[i]);
@@ -161,8 +165,8 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
         }
     }
 
-    protected Long processPrimaryTableResultSet(PreparedStatement primaryPrepStmt, PreparedStatement[] secondaryPrepStmts, PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName,
-                                                String primaryColumnName, Pair<String, String>[] tableColumn) throws SQLException
+    protected Long processPrimaryTableResultSet(PreparedStatement primaryPrepStmt, PreparedStatement[] secondaryPrepStmts, PreparedStatement deletePrepStmt, Set<Long> deleteIds,
+            String primaryTableName, String primaryColumnName, Pair<String, String>[] tableColumn) throws SQLException
     {
         int rowsProcessed = 0;
         Long primaryId = null;
@@ -219,7 +223,8 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
         return primaryId;
     }
 
-    private void updateSecondaryIds(Long primaryId, Long[] secondaryIds, PreparedStatement[] secondaryPrepStmts,  Long[] secondaryOffsets, ResultSet[] secondaryResultSets, Pair<String, String>[] tableColumn) throws SQLException
+    private void updateSecondaryIds(Long primaryId, Long[] secondaryIds, PreparedStatement[] secondaryPrepStmts, Long[] secondaryOffsets, ResultSet[] secondaryResultSets,
+            Pair<String, String>[] tableColumn) throws SQLException
     {
         for (int i = 1; i < tableColumn.length; i++)
         {
@@ -230,7 +235,7 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                 String columnId = tableColumn[i].getSecond();
 
                 secondaryId = getColumnValueById(resultSet, columnId);
-                
+
                 // Check if we reach the end of the first page
                 if (secondaryId == null)
                 {
@@ -247,11 +252,11 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                     // Check if any results were found
                     boolean secHasResults = secStmt.execute();
                     secondaryResultSets[i] = secHasResults ? secStmt.getResultSet() : null;
-                    
+
                     // Try again to get the next secondary id
                     secondaryId = getColumnValueById(secondaryResultSets[i], columnId);
                 }
-                
+
                 secondaryIds[i] = secondaryId;
             }
         }
@@ -268,5 +273,5 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
 
         sqlBuilder.append(columnName + " > ? AND " + columnName + " <= ? ORDER BY " + columnName + " ASC LIMIT ? OFFSET ?");
         return sqlBuilder.toString();
-    } 
+    }
 }

@@ -142,26 +142,31 @@ public class NodePermissionAssessor
 
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
-        this.maxPermissionChecks = maxPermissionChecks;
+        if (maxPermissionChecks == Integer.MAX_VALUE)
+        {
+            this.maxPermissionChecks = maxPermissionChecks;
+        }
+        else
+        {
+            this.maxPermissionChecks = maxPermissionChecks + 1;
+        }
     }
     
     public boolean shouldQuitChecks()
     {
-        boolean result = false;
-        
-        if (checksPerformed >= Double.valueOf(maxPermissionChecks) + 1)
+        if (checksPerformed >= maxPermissionChecks)
         {
-            result = true;
             logger.warn("Maximum permission checks exceeded (" + maxPermissionChecks + ")");
+            return true;
         }
-        
+
         if ((System.currentTimeMillis() - startTime) >= maxPermissionCheckTimeMillis)
         {
-            result = true;
             logger.warn("Maximum permission checks time exceeded (" + maxPermissionCheckTimeMillis + ")");
+            return true;
         }
-        
-        return result;
+
+        return false;
     }
 
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)

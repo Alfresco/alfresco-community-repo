@@ -127,6 +127,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         try
         {
             CompositeActionImpl compositeAction = (CompositeActionImpl) rule.getAction();
+            Pattern pattern = Pattern.compile(POSITIVE_INTEGERS_PATTERN);
             for (Action action : compositeAction.getActions())
             {
                 if (WORM_LOCK_ACTION.equals(action.getActionDefinitionName()))
@@ -134,7 +135,6 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                     String retentionPeriodParamValue = (String) action.getParameterValue(PARAM_RETENTION_PERIOD);
                     if (retentionPeriodParamValue != null)
                     {
-                        Pattern pattern = Pattern.compile(POSITIVE_INTEGERS_PATTERN);
                         Matcher matcher = pattern.matcher(retentionPeriodParamValue);
                         if (!matcher.matches())
                         {

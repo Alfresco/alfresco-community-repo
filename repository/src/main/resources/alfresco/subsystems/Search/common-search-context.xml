@@ -126,6 +126,9 @@
         <property name="maxPermissionCheckTimeMillis">
         	<value>${system.acl.maxPermissionCheckTimeMillis}</value>
         </property>
+        <property name="maxPermissionCheckEnabled">
+            <value>${system.acl.maxPermissionCheckEnabled}</value>
+        </property>
     </bean>
    
    <bean id="search.dbQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">

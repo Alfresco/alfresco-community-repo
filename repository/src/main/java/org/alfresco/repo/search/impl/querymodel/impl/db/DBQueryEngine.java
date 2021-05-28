@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -46,6 +47,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -110,7 +112,11 @@ public class DBQueryEngine implements QueryEngine
     
     private long maxPermissionCheckTimeMillis;
 
+    private boolean maxPermissionCheckEnabled;
+
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
+
+    private List<Pair<Long, StoreRef>> stores;
     
     AclCrudDAO aclCrudDAO;
 
@@ -118,7 +124,7 @@ public class DBQueryEngine implements QueryEngine
     {
         this.aclCrudDAO = aclCrudDAO;
     }
-    
+
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
         this.maxPermissionChecks = maxPermissionChecks;
@@ -127,6 +133,11 @@ public class DBQueryEngine implements QueryEngine
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
+    }
+    
+    public void setMaxPermissionCheckEnabled(boolean maxPermissionCheckEnabled)
+    {
+        this.maxPermissionCheckEnabled = maxPermissionCheckEnabled;
     }
 
     public void setTemplate(SqlSessionTemplate template)
@@ -313,6 +324,9 @@ public class DBQueryEngine implements QueryEngine
 
     FilteringResultSet acceleratedNodeSelection(QueryOptions options, DBQuery dbQuery, NodePermissionAssessor permissionAssessor)
     {
+        // get list of stores from database
+        stores = nodeDAO.getStores();
+
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
         
@@ -322,21 +336,16 @@ public class DBQueryEngine implements QueryEngine
             @Override
             public void handleResult(ResultContext<? extends Node> context)
             {
-                doHandleResult(permissionAssessor, nodes, requiredNodes, context);
-            }
-            
-            private void doHandleResult(NodePermissionAssessor permissionAssessor, List<Node> nodes,
-                                        int requiredNodes, ResultContext<? extends Node> context)
-            {
-                if (nodes.size() >= requiredNodes)
+                if (!maxPermissionCheckEnabled && nodes.size() >= requiredNodes)
                 {
                     context.stop();
                     return;
                 }
                 
                 Node node = context.getResultObject();
+                addStoreInfo(node);
                 
-                boolean shouldCache = nodes.size() >= options.getSkipCount();
+                boolean shouldCache = shouldCache(options, nodes, requiredNodes);
                 if(shouldCache)
                 {
                     logger.debug("- selected node "+nodes.size()+": "+node.getUuid()+" "+node.getId());
@@ -349,13 +358,32 @@ public class DBQueryEngine implements QueryEngine
                 
                 if (permissionAssessor.isIncluded(node))
                 {
-                    nodes.add(shouldCache ? node : null);
+                    if (nodes.size() > requiredNodes)
+                    {
+                        nodes.add(node);
+                    }
+                    else
+                    {
+                        nodes.add(shouldCache ? node : null);
+                    }
                 }
                 
                 if (permissionAssessor.shouldQuitChecks())
                 {
                     context.stop();
                     return;
+                }
+            }
+
+            private boolean shouldCache(QueryOptions options, List<Node> nodes, int requiredNodes)
+            {
+                if (nodes.size() > requiredNodes)
+                {
+                    return false;
+                }
+                else
+                {
+                    return nodes.size() >= options.getSkipCount();
                 }
             }
         });
@@ -455,6 +483,23 @@ public class DBQueryEngine implements QueryEngine
         public NodeRef getValueKey(Node value)
         {
             return value.getNodeRef();
+        }
+    }
+
+    private void addStoreInfo(Node node)
+    {
+        StoreEntity storeEntity = node.getStore();
+        logger.debug("Adding store info for store id " + storeEntity.getId());
+        for (Pair<Long, StoreRef> storeRefPair : stores)
+        {
+            if (Objects.equals(storeEntity.getId(), storeRefPair.getFirst()))
+            {
+                StoreRef storeRef = storeRefPair.getSecond();
+                storeEntity.setIdentifier(storeRef.getIdentifier());
+                storeEntity.setProtocol(storeRef.getProtocol());
+                logger.debug("Added store info" + storeEntity.toString());
+                break;
+            }
         }
     }
 }

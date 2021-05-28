@@ -158,7 +158,20 @@ public class DBQueryEngineTest
         assertNodePresent(6, result);
         assertNodePresent(7, result);
     }
-    
+
+    @Test
+    public void shouldResultSetLengthMatchTheAmountOfAllAccessibleNodesWhenMaxPermissionCheckEnabled()
+    {
+        withMaxItems(5);
+        prepareTemplate(dbQuery, createNodes(10));
+        when(assessor.isIncluded(any(Node.class))).thenReturn(true);
+
+        engine.setMaxPermissionCheckEnabled(true);
+        FilteringResultSet result = engine.acceleratedNodeSelection(options, dbQuery, assessor);
+
+        assertEquals(10, result.length());
+    }
+
     @Test
     public void shouldNotConsiderInaccessibleNodesInResultSetWhenSkippingNodes()
     {

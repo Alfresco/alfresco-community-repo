@@ -84,6 +84,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String DEFAULT_EVENT_NAME = "case_closed";
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
+    public static final String PERIOD_FIVE_DAYS = "day|5";
+    public static final String PERIOD_TEN_DAYS = "day|10";
     public static final String PERIOD_ONE_WEEK = "week|1";
     public static final String PERIOD_ONE_YEAR = "year|1";
     public static final String PERIOD_THREE_YEARS = "year|3";

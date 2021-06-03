@@ -1,3 +1,28 @@
+/*
+ * #%L
+ * Alfresco Repository
+ * %%
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 package org.alfresco.repo.content;
 
 import org.alfresco.service.cmr.repository.ContentService;
@@ -5,8 +30,8 @@ import org.alfresco.util.BaseSpringTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -15,25 +40,20 @@ import java.util.Set;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration({"classpath:alfresco/application-context.xml"})
 public class StorageClassTest extends BaseSpringTest
 {
         private static final String DEFAULT_SC = "Default1";
         @Spy
         ContentStore mockContentStore;
-        @Spy
         ContentService contentService;
-        @Spy
         ContentStore contentStore;
-
 
         @Before
         public void before() throws Exception
         {
-
+                MockitoAnnotations.initMocks(this);
                 this.contentService = (ContentService)this.applicationContext.getBean("contentService");
                 this.contentStore = (ContentStore) ReflectionTestUtils.getField(contentService, "store");
-                mockContentStore = contentStore;
         }
 
         @Test
@@ -42,7 +62,7 @@ public class StorageClassTest extends BaseSpringTest
                 ReflectionTestUtils.setField(contentService, "store",mockContentStore);
 
 
-                assertEquals("Expected DEFAULT_SC ", contentService.getSupportedStorageClasses().contains("Default1"));
+                assertTrue(contentService.getSupportedStorageClasses().contains("Default1"));
         }
 
 //        @Test

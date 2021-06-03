@@ -51,14 +51,6 @@ public class MockContentStore extends AbstractContentStore
         }
 
         /**
-         * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentStore}
-         */
-        public Set<String> getSupportedStorageClasses()
-        {
-                return Set.of(DEFAULT_SC);
-        }
-
-        /**
          * Updates the storage class for content
          *
          * @param contentUrl The URL of the content that will have its storage classes updated
@@ -77,15 +69,6 @@ public class MockContentStore extends AbstractContentStore
         public Set<String> findStorageClasses(String contentUrl)
         {
                 return Collections.emptySet();
-        }
-
-        /**
-         * @return Returns the complete collection of allowed storage classes transitions.
-         * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
-         */
-        public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
-        {
-                return Collections.emptyMap();
         }
 
         /**

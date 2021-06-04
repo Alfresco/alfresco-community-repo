@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>unzip-to</shortname>
+  <description>Document List Action - Unzip</description>
+  <url>/slingshot/doclib/action/unzip-to/site/{site}/{container}/{path}</url>
+  <url>/slingshot/doclib/action/unzip-to/site/{site}/{container}</url>
+  <url>/slingshot/doclib/action/unzip-to/node/{store_type}/{store_id}/{id}/{path}</url>
+  <url>/slingshot/doclib/action/unzip-to/node/{store_type}/{store_id}/{id}</url>
+  <url>/slingshot/doclib/action/unzip-to/node/{store_type}/{store_id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

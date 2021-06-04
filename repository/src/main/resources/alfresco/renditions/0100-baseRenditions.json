@@ -9,7 +9,9 @@
         {"name": "allowEnlargement", "value": true},
         {"name": "maintainAspectRatio", "value": true},
         {"name": "autoOrient", "value": true},
-        {"name": "thumbnail", "value": true}
+        {"name": "thumbnail", "value": true},
+        {"name": "startPage", "value": "0"},
+        {"name": "endPage", "value": "0"}
       ]
     },
     {
@@ -21,7 +23,9 @@
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
         {"name": "autoOrient", "value": true},
-        {"name": "thumbnail", "value": true}
+        {"name": "thumbnail", "value": true},
+        {"name": "startPage", "value": "0"},
+        {"name": "endPage", "value": "0"}
       ]
     },
     {
@@ -33,7 +37,9 @@
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
         {"name": "autoOrient", "value": true},
-        {"name": "thumbnail", "value": true}
+        {"name": "thumbnail", "value": true},
+        {"name": "startPage", "value": "0"},
+        {"name": "endPage", "value": "0"}
       ]
     },
     {
@@ -45,7 +51,9 @@
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
         {"name": "autoOrient", "value": true},
-        {"name": "thumbnail", "value": true}
+        {"name": "thumbnail", "value": true},
+        {"name": "startPage", "value": "0"},
+        {"name": "endPage", "value": "0"}
       ]
     },
     {
@@ -57,7 +65,9 @@
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
         {"name": "autoOrient", "value": true},
-        {"name": "thumbnail", "value": true}
+        {"name": "thumbnail", "value": true},
+        {"name": "startPage", "value": "0"},
+        {"name": "endPage", "value": "0"}
       ]
     },
     {

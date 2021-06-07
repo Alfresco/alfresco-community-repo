@@ -1048,6 +1048,9 @@ public class NodesImpl implements Nodes
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
+
+        node.getContent().setStorageClasses(contentService.findStorageClasses(nodeRef));
+
         return node;
     }
 

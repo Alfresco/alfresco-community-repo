@@ -26,10 +26,13 @@
 package org.alfresco.rest.framework.resource.content;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
+
+import org.alfresco.service.cmr.repository.ContentReader;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
  * A POJO property that is of type "Binary"
@@ -47,6 +50,7 @@ public class BinaryProperty implements ContentInfo, Serializable
     private final String encoding;
     private final long length;
     private final Locale locale;
+    private final Set<String> storageClasses;
     
     /**
      * Sets the content length to zero, Locale to null, no stream and no caching
@@ -55,11 +59,7 @@ public class BinaryProperty implements ContentInfo, Serializable
      */
     public BinaryProperty(String mimeType, String encoding)
     {
-        super();
-        this.mimeType = mimeType;
-        this.encoding = encoding;
-        this.length = 0;
-        this.locale = null;
+        this(mimeType, encoding, 0, null, null);
     }
     
     /**
@@ -73,6 +73,7 @@ public class BinaryProperty implements ContentInfo, Serializable
         this.encoding = reader.getEncoding();
         this.length = reader.getSize();
         this.locale = reader.getLocale();
+        this.storageClasses = Collections.emptySet();
     }
     
     /**
@@ -84,11 +85,17 @@ public class BinaryProperty implements ContentInfo, Serializable
      */
     public BinaryProperty(String mimeType, String encoding, long length, Locale locale)
     {
+        this(mimeType, encoding, length, locale, null);
+    }
+
+    public BinaryProperty(String mimeType, String encoding, long length, Locale locale, Set<String> storageClasses)
+    {
         super();
         this.mimeType = mimeType;
         this.encoding = encoding;
         this.length = length;
         this.locale = locale;
+        this.storageClasses = storageClasses;
     }
 
     public String getMimeType()
@@ -122,6 +129,11 @@ public class BinaryProperty implements ContentInfo, Serializable
     public Locale getLocale()
     {
         return this.locale;
+    }
+    @JsonIgnore
+    public Set<String> getStorageClasses()
+    {
+        return storageClasses;
     }
    
 }

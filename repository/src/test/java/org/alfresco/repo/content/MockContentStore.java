@@ -25,14 +25,25 @@
  */
 package org.alfresco.repo.content;
 
+import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.springframework.context.ApplicationContext;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-public class MockContentStore extends AbstractContentStore
+public class MockContentStore extends FileContentStore
 {
+        public MockContentStore(ApplicationContext context, String rootDirectoryStr)
+        {
+                super(context, rootDirectoryStr);
+        }
+
         @Override public boolean isWriteSupported()
         {
                 return true;
@@ -49,6 +60,22 @@ public class MockContentStore extends AbstractContentStore
                         storageClasses.isEmpty() ||
                         (1 == storageClasses.size() && storageClasses.contains(DEFAULT_SC));
         }
+
+//        @Override
+//        protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl)
+//        {
+//                File file = null;
+//
+//                try {
+//                        file = File.createTempFile("test-", "temp");
+//                } catch (Exception e) {
+//                        System.out.println(e.getMessage());
+//                }
+//                String contentUrl = newContentUrl;
+//                FileContentWriter writer = new FileContentWriter(file, contentUrl, existingContentReader);
+//                return writer;
+//        }
+
 
         /**
          * Updates the storage class for content

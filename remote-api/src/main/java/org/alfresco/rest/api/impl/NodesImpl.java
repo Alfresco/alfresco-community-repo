@@ -1049,7 +1049,10 @@ public class NodesImpl implements Nodes
         node.setPath(pathInfo);
 
 
-        node.getContent().setStorageClasses(contentService.findStorageClasses(nodeRef));
+        if (includeParam.contains(PARAM_INCLUDE_STORAGECLASSES))
+        {
+            node.getContent().setStorageClasses(contentService.findStorageClasses(nodeRef));
+        }
 
         return node;
     }

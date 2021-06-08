@@ -25,8 +25,9 @@
  */
 package org.alfresco.rest.framework.resource.content;
 
+import static org.alfresco.repo.content.ContentStore.DEFAULT_SC;
+
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 
@@ -73,7 +74,7 @@ public class BinaryProperty implements ContentInfo, Serializable
         this.encoding = reader.getEncoding();
         this.length = reader.getSize();
         this.locale = reader.getLocale();
-        this.storageClasses = Collections.emptySet();
+        this.storageClasses = Set.of(DEFAULT_SC);
     }
     
     /**

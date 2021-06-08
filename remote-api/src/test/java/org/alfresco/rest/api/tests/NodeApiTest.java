@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
@@ -4776,6 +4777,37 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(documentResp.getPermissions().getSettable().size() == 5);
         Set<String> expectedSettable = new HashSet<>(Arrays.asList("Coordinator", "Collaborator", "Contributor", "Consumer", "Editor"));
         assertTrue("Incorrect list of settable permissions returned!", documentResp.getPermissions().getSettable().containsAll(expectedSettable));
+    }
+
+    @Test
+    public void testRetrieveNodeStorageClasses() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder with an empty document
+        String postUrl = createFolder();
+        String docId = createDocument(postUrl);
+
+        Map params = new HashMap<>();
+        params.put("include", "storageClasses");
+
+        // Update node
+        Document dUpdate = new Document();
+        HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check if storageClasses are retrieved if 'include=permissions' is not sent in the request
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertNull("StorageClasses should not be retrieved unless included!", documentResp.getContent().getStorageClasses());
+
+        // Call again with 'include=storageClasses'
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), params, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check that all storage classes are retrieved
+        assertNotNull(documentResp.getContent().getStorageClasses());
+        assertEquals(Set.of(ContentStore.DEFAULT_SC), documentResp.getContent().getStorageClasses());
     }
 
     /**

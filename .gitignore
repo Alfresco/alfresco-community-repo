@@ -4,6 +4,8 @@
 .classpath
 .settings
 .project
+.gradle
+.history
 
 # Intellij
 .idea/
@@ -38,3 +40,16 @@ hs_err_pid*
 
 # Alfresco runtime
 alf_data
+
+# AGS
+build.local.properties
+dist
+explodedDeps
+local.properties
+rebel.xml
+rebel-remote.xml
+test-output
+
+/amps/ags/rm-automation/src/test/resources/webdriver.properties
+/amps/ags/rm-community/rm-server/config/alfresco/extension
+/amps/ags/rm-community/rm-community-rest-api-explorer/overlays

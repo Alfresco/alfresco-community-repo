@@ -2003,23 +2003,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             return;
         }
 
-        // send email to the invitee if possible - but don't fail the invitation if email cannot be sent
-        try
-        {
-            Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, invitePropNames);
+        // send email to the invitee
+        Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, invitePropNames);
 
-            String packageRef = getPackageRef(executionVariables);
-            properties.put(InviteNominatedSender.WF_PACKAGE, packageRef);
+        String packageRef = getPackageRef(executionVariables);
+        properties.put(InviteNominatedSender.WF_PACKAGE, packageRef);
 
-            properties.put(InviteNominatedSender.WF_INSTANCE_ID, inviteId);
+        properties.put(InviteNominatedSender.WF_INSTANCE_ID, inviteId);
 
-            inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
-        }
-        catch (Exception e)
-        {
-            // Swallow exception
-            logger.error("unable to send invite email", e);
-        }
+        inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
     }
     
 

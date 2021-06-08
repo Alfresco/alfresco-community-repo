@@ -16,4 +16,5 @@ rm -rf "${HOME}/.m2/repository/org/alfresco/content-services*"
 rm -rf "${HOME}/.m2/repository/org/alfresco/content-services-community"
 rm -rf "${HOME}/.m2/repository/org/alfresco/tas/alfresco-community-repo-*-test"
 rm -rf "${HOME}/.m2/repository/org/alfresco/tas/alfresco-enterprise-repo-*-test"
+rm -rf "${HOME}/.m2/repository/org/alfresco/alfresco-governance-services*"
 

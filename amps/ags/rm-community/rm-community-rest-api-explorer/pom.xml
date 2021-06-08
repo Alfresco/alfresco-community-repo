@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
+    <packaging>war</packaging>
+    <name>Alfresco Governance Services Community REST API Explorer</name>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
+        <version>11.55-SNAPSHOT</version>
+    </parent>
+
+    <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <failOnMissingWebXml>false</failOnMissingWebXml>
+               <overlays>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>api-explorer</artifactId>
+                     <excludes>
+                        <exclude>definitions/*</exclude>
+                     </excludes>
+                  </overlay>
+               </overlays>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <profiles>
+      <profile>
+         <id>start-api-explorer</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.tomcat.maven</groupId>
+                  <artifactId>tomcat7-maven-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>run-war</id>
+                        <goals>
+                           <goal>run-war</goal>
+                        </goals>
+                        <phase>verify</phase>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
+                     <path>/api-explorer</path>
+                     <port>8085</port>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>api-explorer</artifactId>
+         <version>${alfresco.api-explorer.version}</version>
+         <type>war</type>
+      </dependency>
+   </dependencies>
+</project>

@@ -53,6 +53,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 public class SchemaDifferenceHelperUnitTest
 {
@@ -71,6 +72,7 @@ public class SchemaDifferenceHelperUnitTest
     {
         dialect = mock(Dialect.class);
         patchService = mock(PatchService.class);
+        I18NUtil.registerResourceBundle("alfresco.messages.system-messages");
     }
 
     @Test
@@ -164,32 +166,8 @@ public class SchemaDifferenceHelperUnitTest
 
     private SchemaDifferenceHelper createHelper(List<SchemaUpgradeScriptPatch> upgradePatches)
     {
-        return new SchemaDifferenceHelper(dialect, patchService, upgradePatches) {
-            @Override
-            protected String describe(Difference difference)
-            {
-                if (difference.getLeft() == null)
-                {
-                    return String.format("Difference: unexpected %s found in database with path: %s",
-
-                            difference.getRight().getDbObject().getTypeName(),
-                            difference.getRight().getPath());
-                }
-                if(difference.getRight() == null)
-                {
-                    return String.format("Difference: missing %s from database, expected at path: %s",
-                            difference.getLeft().getDbObject().getTypeName(),
-                            difference.getLeft().getPath());
-                }
-
-                return String.format("Difference: expected %s %s=\"%s\", but was %s=\"%s\"",
-                        difference.getLeft().getDbObject().getTypeName(),
-                        difference.getLeft().getPath(),
-                        difference.getLeft().getPropertyValue(),
-                        difference.getRight().getPath(),
-                        difference.getRight().getPropertyValue());
-            }
-
+        return new SchemaDifferenceHelper(dialect, patchService, upgradePatches)
+        {
             @Override
             protected Resource getDialectResource(String resourceUrl)
             {

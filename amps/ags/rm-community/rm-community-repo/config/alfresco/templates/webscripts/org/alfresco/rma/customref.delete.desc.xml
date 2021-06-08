@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>Removes specified Custom Reference Instance from between the specified nodes</shortname>
+  <description><![CDATA[
+  The custom reference instance will be removed from between the specified nodes.<BR/>
+  The nodeRef encoded within the URL path is the 'fromNode' in the relationship.<BR/>
+  The nodeRef encoded within the query string is the 'toNode' in the relationship.<BR/>
+  ]]>
+  </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/customreferences/{refId}?st={toStoreType}&amp;si={toStoreId}&amp;id={toId}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

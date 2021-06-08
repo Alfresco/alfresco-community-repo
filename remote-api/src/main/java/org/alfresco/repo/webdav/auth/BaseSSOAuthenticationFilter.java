@@ -716,7 +716,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         }
         else
         {
-            if(!pathInfo.substring(0, 6).toLowerCase().equals("/cmis/") && !pathInfo.equals("/discovery"))
+            if((pathInfo.length() > 5 && !pathInfo.substring(0, 6).toLowerCase().equals("/cmis/")) && !pathInfo.equals("/discovery"))
             {
                 // remove tenant
                 int idx = pathInfo.indexOf('/', 1);

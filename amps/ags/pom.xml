@@ -1,0 +1,143 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-governance-services-community-parent</artifactId>
+   <packaging>pom</packaging>
+   <name>Alfresco Governance Services Community Parent</name>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-community-repo-amps</artifactId>
+      <version>11.55-SNAPSHOT</version>
+   </parent>
+
+   <modules>
+      <module>rm-community</module>
+      <module>rm-automation</module>
+   </modules>
+
+   <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+      <license.update.dryrun>true</license.update.dryrun>
+      <license.verbose>false</license.verbose>
+   </properties>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <configuration>
+                  <argLine>
+                     --illegal-access=permit
+                  </argLine>
+               </configuration>
+            </plugin>
+            <plugin>
+               <artifactId>maven-failsafe-plugin</artifactId>
+               <configuration>
+                  <argLine>
+                     --illegal-access=permit
+                  </argLine>
+               </configuration>
+            </plugin>
+
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>license-maven-plugin</artifactId>
+               <version>1.16</version>
+               <configuration>
+                  <verbose>${license.verbose}</verbose>
+                  <addSvnKeyWords>false</addSvnKeyWords>
+                  <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+
+                  <!-- header configuration -->
+                  <organizationName>Alfresco Software Limited</organizationName>
+                  <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                  <canUpdateCopyright>true</canUpdateCopyright>
+                  <canUpdateDescription>true</canUpdateDescription>
+
+                  <!-- licence configuration -->
+                  <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+
+                  <!-- dry run options -->
+                  <dryRun>${license.update.dryrun}</dryRun>
+                  <failOnMissingHeader>true</failOnMissingHeader>
+                  <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+
+                  <!-- default root -->
+                  <roots>
+                     <root>src</root>
+                  </roots>
+
+                  <!-- exculsions -->
+                  <excludes>
+                     <exclude>**/package-info.java</exclude>
+                     <exclude>**/*.properties</exclude>
+                     <exclude>**/*.css</exclude>
+                     <exclude>**/*.xml</exclude>
+                     <exclude>**/*.json</exclude>
+                     <exclude>**/*.txt</exclude>
+                     <exclude>**/*.html</exclude>
+                  </excludes>
+
+               </configuration>
+               <executions>
+                  <execution>
+                     <id>first</id>
+                     <goals>
+                        <goal>update-file-header</goal>
+                     </goals>
+                     <phase>process-sources</phase>
+                  </execution>
+               </executions>
+            </plugin>
+
+            <plugin>
+               <artifactId>maven-resources-plugin</artifactId>
+               <configuration>
+                  <encoding>UTF-8</encoding>
+                  <nonFilteredFileExtensions>
+                     <nonFilteredFileExtension>ftl</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>acp</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>jpg</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>png</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>gif</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>svg</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>pdf</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>doc</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>docx</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>xls</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>ppt</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>pptx</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>bin</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>lic</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>swf</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>zip</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>msg</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>jar</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>eot</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>woff</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>woff2</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>css</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>ico</nonFilteredFileExtension>
+                     <nonFilteredFileExtension>psd</nonFilteredFileExtension>
+                  </nonFilteredFileExtensions>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+   </build>
+
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </reporting>
+</project>

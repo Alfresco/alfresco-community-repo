@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>rm-link</shortname>
+  <description>Document List Action - Link records</description>
+  <url>/slingshot/doclib/action/rm-link/site/{site}/{container}/{path}</url>
+  <url>/slingshot/doclib/action/rm-link/site/{site}/{container}</url>
+  <url>/slingshot/doclib/action/rm-link/node/{store_type}/{store_id}/{id}/{path}</url>
+  <url>/slingshot/doclib/action/rm-link/node/{store_type}/{store_id}/{id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

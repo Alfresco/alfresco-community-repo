@@ -1,0 +1,58 @@
+@startuml
+
+skinparam componentArrowColor white
+
+' IG Component Breakdown
+rectangle "Information Governance" as IG {
+    
+    rectangle "Records Management" as RM {   
+                 
+        component "File Plan" as FP
+        
+        rectangle "Records" as Rec {
+            component "Filed and Unfiled Records"
+            component "Easy Access Records"
+            component "Version Records"
+            component "Physical Records"
+            component "Email Records"
+            component "Record Import and Export"
+        }
+        
+        rectangle "Retention" as Ret {
+            component "Retention Schedules and Events"
+            component "Transfer and Accession"
+            component "Destruction"
+        }
+        component "List of Values" as LOV
+    }
+    
+    rectangle "Security" as Sec {
+        component "Roles, Capabilities and Permissions"
+        component "Security Marks"
+        component "Content Classification"
+    }
+    
+    rectangle "Discovery" as Dis {
+        component "Search" 
+        component "Legal Holds"
+    }
+    
+    rectangle "Compliance" as Comp {
+        component "Audit"
+        component "DoD 5015.2"
+    }
+    
+    rectangle "Automation" as Auto {
+        component "Rules"
+    }
+}
+
+' Fomatting
+RM -[hidden]---- Sec
+RM -[hidden]---- Dis
+Dis -[hidden]- Comp
+Rec -[hidden]-- Ret
+FP -[hidden]- LOV
+Sec -[hidden]-- Auto
+
+@enduml

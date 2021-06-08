@@ -42,8 +42,9 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
 @ClassnameFilters({
-    // Execute all test classes ending with "Test"
-    ".*Test",
+    // Execute all test classes ending with "Test" in org.alfresco.module.org_alfresco_module_rm.test.integration
+    // AllTestSuitePt2 excludes this package.
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test.integration.*Test",
     // Exclude the ones ending with "UnitTest"
     "!.*UnitTest",
     // Put the test classes you want to exclude here
@@ -63,6 +64,6 @@ import org.junit.runner.RunWith;
     // Tests should not be dependant on other test classes and should run in any order without any problems.
     "!.*EmailMapScriptTest"
 })
-public class AllTestSuite
+public class AllTestSuitePt1
 {
 }

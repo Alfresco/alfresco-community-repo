@@ -26,6 +26,9 @@
 package org.alfresco.repo.search;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.http.HttpStatus;
+
+import java.util.List;
 
 /**
  * @author Andy
@@ -38,6 +41,12 @@ public class QueryParserException extends AlfrescoRuntimeException
      *
      */
     private static final long serialVersionUID = 4886993838297301968L;
+
+    // List of SOLR Exceptions that should be returning HTTP 501 status code in Remote API
+    public static final List<String> STATUS_CODE_501_EXCEPTIONS =
+        List.of("java.lang.UnsupportedOperationException");
+    // Http Status Code that should be returned by Remote API
+    private int httpStatusCode;
 
     /**
      * @param msgId
@@ -77,6 +86,28 @@ public class QueryParserException extends AlfrescoRuntimeException
     {
         super(msgId, msgParams, cause);
         // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * Extracts exception class from trace string in order to map not implemented features
+     * to Http Status Code 501
+     * @param msgId Message for the exception
+     * @param httpStatusCode Original Http Status Code returned by SOLR
+     * @param trace Original stack trace returned by SOLR in string format
+     */
+    public QueryParserException(String msgId, int httpStatusCode, String trace)
+    {
+        super(msgId);
+        this.httpStatusCode = httpStatusCode;
+        String traceException = trace.substring(0, trace.indexOf(":")).trim();
+        if (STATUS_CODE_501_EXCEPTIONS.contains(traceException)) {
+            this.httpStatusCode = HttpStatus.SC_NOT_IMPLEMENTED;
+        }
+    }
+
+    public int getHttpStatusCode()
+    {
+        return httpStatusCode;
     }
 
 }

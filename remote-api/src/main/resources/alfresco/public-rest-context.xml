@@ -134,6 +134,8 @@
     </bean>
     <bean id="webScriptExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.WebScriptExceptionResolver">
     </bean>
+    <bean id="queryParserExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.QueryParserExceptionResolver">
+    </bean>
     <bean id="simpleMappingExceptionResolverParent" abstract="true" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
         <property name="exceptionMappings">
             <map>
@@ -182,6 +184,7 @@
         <property name="resolver" ref="simpleMappingExceptionResolver" />
         <property name="webScriptExceptionResolver" ref="webScriptExceptionResolver" />
         <property name="restMetricsReporter" ref="restMetricsReporter"/>
+        <property name="queryParserExceptionResolver" ref="queryParserExceptionResolver" />
     </bean>
     
 	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor 

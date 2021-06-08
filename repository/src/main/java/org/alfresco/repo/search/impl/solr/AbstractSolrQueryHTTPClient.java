@@ -43,12 +43,17 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 public abstract class AbstractSolrQueryHTTPClient
 {
+
+    private static final Log LOGGER = LogFactory.getLog(AbstractSolrQueryHTTPClient.class);
+
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     
     // Constants copied from org.apache.solr.common.params.HighlightParams (solr-solrj:1.4.1)
@@ -105,7 +110,27 @@ public abstract class AbstractSolrQueryHTTPClient
             }
             if (post.getStatusCode() != HttpServletResponse.SC_OK)
             {
-                throw new QueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
+                String trace = null;
+                try
+                {
+                    trace = new JSONObject(post.getResponseBodyAsString()).getJSONObject("error").getString("trace");
+                }
+                catch (JSONException jsonException)
+                {
+                    LOGGER.warn("Node 'error.trace' is not present in Search Services error response: " + post.getResponseBodyAsString());
+                    LOGGER.warn("A generic error message will be provided. Check SOLR log file in order to find the root cause for this issue");
+                }
+                if (trace == null)
+                {
+                    throw new QueryParserException("Request failed " + post.getStatusCode() + " " + url);
+                }
+                else
+                {
+                    throw new QueryParserException(
+                        "Request failed " + post.getStatusCode() + " " + url,
+                        post.getStatusCode(),
+                        new JSONObject(post.getResponseBodyAsString()).getJSONObject("error").getString("trace"));
+                }
             }
 
             Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));

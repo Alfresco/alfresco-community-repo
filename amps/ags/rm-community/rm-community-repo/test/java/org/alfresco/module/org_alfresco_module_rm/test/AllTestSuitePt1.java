@@ -33,7 +33,7 @@ import org.junit.extensions.cpsuite.SuiteType;
 import org.junit.runner.RunWith;
 
 /**
- * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD TIME IS REDUCED.
+ * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD TIME IS REDUCED. 
  *
  * @author Roy Wetherall
  * @since 2.1

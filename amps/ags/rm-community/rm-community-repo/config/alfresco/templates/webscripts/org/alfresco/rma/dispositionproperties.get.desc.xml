@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Disposition Properties</shortname>
+  <description>Returns a list of the disposition properties based on the context provided.</description>
+  <url>/api/rma/dispositionproperties?recordlevel={recordlevel}&amp;dispositionaction={dispositionaction}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

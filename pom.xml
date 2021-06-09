@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>11.41-SNAPSHOT</version>
+    <version>11.56-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -18,6 +18,7 @@
         <module>repository</module>
         <module>remote-api</module>
         <module>packaging</module>
+        <module>amps</module>
     </modules>
 
     <properties>
@@ -25,6 +26,7 @@
         <acs.version.minor>1</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
+        <amp.min.version>${acs.version.major}.0.0</amp.min.version>
 
         <version.edition>Community</version.edition>
         <licenseName>community</licenseName>
@@ -34,9 +36,9 @@
         <image.registry>quay.io</image.registry>
 
         <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.build.sourceVersion>${java.version}</maven.build.sourceVersion>
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
 
@@ -55,13 +57,14 @@
 
         <dependency.spring.version>5.3.3</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
-        <dependency.jackson.version>2.12.2</dependency.jackson.version>
-        <dependency.jackson-databind.version>${dependency.jackson.version}</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.4.3</dependency.cxf.version>
+        <dependency.jackson.version>2.12.3</dependency.jackson.version>
+        <dependency.jackson-databind.version>2.12.3</dependency.jackson-databind.version>
+        <dependency.cxf.version>3.4.4</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.18</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.68</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.9.0</dependency.mockito-core.version>
+        <dependency.mockito-all.version>1.10.19</dependency.mockito-all.version>
         <dependency.org-json.version>20210307</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.8.0</dependency.commons-io.version>
@@ -74,7 +77,7 @@
         <dependency.gytheio.version>0.12</dependency.gytheio.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.tika.version>1.26</dependency.tika.version>
-        <dependency.spring-security.version>5.4.1</dependency.spring-security.version>
+        <dependency.spring-security.version>5.5.0</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
@@ -82,8 +85,12 @@
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.1</dependency.camel.version>
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
+        <dependency.apache-compress.version>1.20</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
-        <dependency.awaitility.version>4.0.3</dependency.awaitility.version>
+        <dependency.awaitility.version>4.1.0</dependency.awaitility.version>
+        <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
+        <dependency.swagger-parser.version>1.0.52</dependency.swagger-parser.version>
+        <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
 
         <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
         <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
@@ -97,10 +104,13 @@
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.2.1.3</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.4.0</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.4.0.1</alfresco.aos-module.version>
+        <alfresco.api-explorer.version>7.0.0</alfresco.api-explorer.version>
+        <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
 
-        <dependency.postgresql.version>42.2.19</dependency.postgresql.version>
-        <dependency.mysql.version>8.0.23</dependency.mysql.version>
+        <dependency.postgresql.version>42.2.20</dependency.postgresql.version>
+        <dependency.mysql.version>8.0.25</dependency.mysql.version>
+        <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
@@ -110,6 +120,22 @@
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
+
+        <!-- AGS properties shared between community and enterprise -->
+        <activemq.port1>61616</activemq.port1>
+        <activemq.port2>5672</activemq.port2>
+        <postgresql.port>5432</postgresql.port>
+        <postgresql.tests.port>5431</postgresql.tests.port>
+        <mysql.port>3306</mysql.port>
+        <mysql.tests.port>3307</mysql.tests.port>
+
+        <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
+        <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+        <alfresco.db.name>alfresco</alfresco.db.name>
+        <alfresco.db.username>alfresco</alfresco.db.username>
+        <alfresco.db.password>alfresco</alfresco.db.password>
+        <alfresco.db.host>localhost</alfresco.db.host>
+        <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
     </properties>
 
     <scm>
@@ -289,7 +315,6 @@
                 <artifactId>spring-webscripts</artifactId>
                 <version>${dependency.webscripts.version}</version>
                 <classifier>tests</classifier>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.surf</groupId>
@@ -333,6 +358,11 @@
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>1.15</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.6</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -428,7 +458,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${dependency.spring.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -467,6 +496,16 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${dependency.jackson-databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-joda</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${dependency.jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -549,8 +588,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.68</version>
-<!--                <version>${dependency.bouncycastle.version}</version>-->
+                <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
@@ -591,6 +629,11 @@
                 <artifactId>junrar</artifactId>
                 <version>7.4.0</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.fge</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>2.2.6</version>
+            </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
                 <groupId>org.jsoup</groupId>
@@ -601,7 +644,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.20</version>
+                <version>${dependency.apache-compress.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -613,68 +656,57 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${dependency.postgresql.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${dependency.mysql.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mariadb.jdbc</groupId>
                 <artifactId>mariadb-java-client</artifactId>
                 <version>${dependency.mariadb.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>utility</artifactId>
                 <version>${dependency.tas-utility.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${dependency.rest-assured.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>restapi</artifactId>
                 <version>${dependency.tas-restapi.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>cmis</artifactId>
                 <version>${dependency.tas-cmis.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>email</artifactId>
                 <version>${dependency.tas-email.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>webdav</artifactId>
                 <version>${dependency.tas-webdav.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>ftp</artifactId>
                 <version>${dependency.tas-ftp.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.test</groupId>
                 <artifactId>dataprep</artifactId>
                 <version>${dependency.tas-dataprep.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
@@ -687,27 +719,29 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>3.0.1</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- Test only dependencies, as popped up while running mvn test -->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>gunit</artifactId>
                 <version>${dependency.antlr.version}</version>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${dependency.mockito-all.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${dependency.mockito-core.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>commons-dbcp</groupId>
@@ -786,7 +820,37 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-mock</artifactId>
                 <version>${dependency.camel.version}</version>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-spec</artifactId>
+                <version>${dependency.apache.taglibs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-impl</artifactId>
+                <version>${dependency.apache.taglibs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-jstlel</artifactId>
+                <version>${dependency.apache.taglibs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>0.9.12</version>
+            </dependency>
+            <!-- swagger parser -->
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-parser</artifactId>
+                <version>${dependency.swagger-parser.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.20</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -808,13 +872,25 @@
                     <version>0.34.1</version>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.22.2</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.2.0</version>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -826,8 +902,17 @@
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.1.2</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.alfresco.maven.plugin</groupId>
+                    <artifactId>alfresco-maven-plugin</artifactId>
+                    <version>${alfresco.maven-plugin.version}</version>
+                    <extensions>true</extensions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
 </project>

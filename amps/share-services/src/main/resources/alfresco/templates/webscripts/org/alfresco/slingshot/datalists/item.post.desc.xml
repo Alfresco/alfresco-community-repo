@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>DataLists - Single item data retrieval</shortname>
+  <description>Data Lists Component - retrieve data for a single item by nodeRef</description>
+  <url>/slingshot/datalists/item/node/{store_type}/{store_id}/{id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

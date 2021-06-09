@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
+   <packaging>pom</packaging>
+   <name>Alfresco Governance Services Community</name>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-governance-services-community-parent</artifactId>
+      <version>11.56-SNAPSHOT</version>
+   </parent>
+
+   <modules>
+      <module>rm-community-rest-api-explorer</module>
+      <module>rm-community-repo</module>
+   </modules>
+
+   <licenses>
+      <license>
+         <name>LGPL 3</name>
+      </license>
+   </licenses>
+</project>

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>files</shortname>
+  <description>Data List Action - Delete single or multiple items</description>
+  <url>/slingshot/datalists/action/items</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

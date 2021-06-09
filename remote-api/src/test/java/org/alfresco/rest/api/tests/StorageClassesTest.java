@@ -33,6 +33,8 @@ import org.alfresco.rest.api.model.StorageClass;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -56,17 +58,29 @@ public class StorageClassesTest extends AbstractSingleNetworkSiteTest
 {
     private static final String STORAGE_CLASSES = "storage-classes";
     private ContentService contentService;
+    private ContentStore originalStore;
     @Mock
-    private ContentStore store;
+    private ContentStore mockStore;
+    
     
     @Override
+    @Before
     public void setup() throws Exception
     {
         super.setup();
         contentService = applicationContext.getBean("contentService", ContentService.class);
-
+        originalStore = (ContentStore) ReflectionTestUtils.getField(contentService, "store");
+        
         setRequestContext(user1);
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
+    }
+
+    @Override
+    @After
+    public void tearDown() throws Exception
+    {
+        super.tearDown();
+        ReflectionTestUtils.setField(contentService, "store", originalStore);
     }
 
     @Test
@@ -83,10 +97,10 @@ public class StorageClassesTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testGetStorageClasses() throws Exception
     {
-        ReflectionTestUtils.setField(contentService, "store", store);
+        ReflectionTestUtils.setField(contentService, "store", mockStore);
         
         Set<String> expectedStorageClasses = Set.of("default", "archive", "worm");
-        when(contentService.getSupportedStorageClasses()).thenReturn(expectedStorageClasses);
+        when(mockStore.getSupportedStorageClasses()).thenReturn(expectedStorageClasses);
 
         PublicApiClient.Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(STORAGE_CLASSES, paging, 200);

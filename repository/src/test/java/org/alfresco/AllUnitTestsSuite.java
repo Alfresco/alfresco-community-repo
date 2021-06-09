@@ -191,7 +191,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.caching.quota.StandardQuotaStrategyMockTest.class,
     org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategyTest.class,
     org.alfresco.repo.content.caching.CachingContentStoreTest.class,
-    org.alfresco.repo.content.StorageClassTest.class,
     org.alfresco.repo.version.ContentServiceImplWithMockedContentStoreTest.class,
     org.alfresco.repo.content.caching.ContentCacheImplTest.class,
     org.alfresco.repo.domain.permissions.FixedAclUpdaterUnitTest.class,

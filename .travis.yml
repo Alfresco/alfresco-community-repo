@@ -315,15 +315,15 @@ jobs:
 
     - name: "AGS Unit & Integration Tests 01 (MySQL) "
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
+      script: travis_retry travis_wait 80 mvn -B verify -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 02 (MySQL) "
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
+      script: travis_retry travis_wait 80 mvn -B verify -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 03 (MySQL) "
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
+      script: travis_retry travis_wait 80 mvn -B verify -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/

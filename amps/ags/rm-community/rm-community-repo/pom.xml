@@ -349,6 +349,7 @@
                <integrationTestSuite>**/AllTestSuitePt3.class</integrationTestSuite>
            </properties>
        </profile>
+
       <profile>
          <id>use-mysql</id>
          <properties>

@@ -24,7 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.module.org_alfresco_module_rm.test;
 
 import org.junit.extensions.cpsuite.ClasspathSuite;
@@ -44,33 +43,33 @@ import org.junit.runner.RunWith;
 @ClassnameFilters({
 
     // The following packages are run by Pt1
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\.*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\..*Test",
 
     // The following packages are run by Pt2
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\..*Test",
 
     // The following packages are run by Pt3
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*Test",
-    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
 
     // Exclude all UnitTests
     "!.*UnitTest",

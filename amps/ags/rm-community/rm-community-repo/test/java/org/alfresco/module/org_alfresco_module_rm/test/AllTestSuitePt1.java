@@ -34,7 +34,7 @@ import org.junit.extensions.cpsuite.SuiteType;
 import org.junit.runner.RunWith;
 
 /**
- * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO TWO PARTS SO THAT THE BUILD TIME IS REDUCED.
+ * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD TIME IS REDUCED.
  *
  * @author Roy Wetherall
  * @since 2.1
@@ -42,11 +42,39 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
 @ClassnameFilters({
-    // Execute all test classes ending with "Test" in org.alfresco.module.org_alfresco_module_rm.test.integration
-    // AllTestSuitePt2 excludes this package.
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test.integration.*Test",
-    // Exclude the ones ending with "UnitTest"
+
+    // The following packages are run by Pt1
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\.*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\.*Test",
+
+    // The following packages are run by Pt2
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\.*Test",
+
+    // The following packages are run by Pt3
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\.*Test",
+
+    // Exclude all UnitTests
     "!.*UnitTest",
+
     // Put the test classes you want to exclude here
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",

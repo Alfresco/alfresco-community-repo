@@ -55,22 +55,22 @@ import org.junit.runner.RunWith;
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\.*Test",
 
         // The following packages are run by Pt2
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\.*Test",
 
         // The following packages are run by Pt3
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\.*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\.*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\.*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\.*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\.*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\.*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\.*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\.*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\.*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\.*Test",
 
         // Exclude all UnitTests
         "!.*UnitTest",
@@ -92,6 +92,6 @@ import org.junit.runner.RunWith;
         // Tests should not be dependant on other test classes and should run in any order without any problems.
         "!.*EmailMapScriptTest"
 })
-public class AllTestSuitePt2
+public class AllTestSuitePt3
 {
 }

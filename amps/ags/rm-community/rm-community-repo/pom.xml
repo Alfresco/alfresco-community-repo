@@ -343,6 +343,12 @@
                <integrationTestSuite>**/AllTestSuitePt2.class</integrationTestSuite>
            </properties>
        </profile>
+       <profile>
+           <id>agsAllTestSuitePt3</id>
+           <properties>
+               <integrationTestSuite>**/AllTestSuitePt3.class</integrationTestSuite>
+           </properties>
+       </profile>
       <profile>
          <id>use-mysql</id>
          <properties>

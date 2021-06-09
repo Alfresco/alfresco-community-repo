@@ -115,7 +115,7 @@ public class StorageClassTest extends BaseSpringTest
         {
                 NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent1");
 
-                assertTrue(" ", contentService.findStorageClasses(contentNodeRef).isEmpty());
+                assertTrue("Found default storage classes: ", contentService.findStorageClasses(contentNodeRef).isEmpty());
         }
 
         @Test
@@ -131,11 +131,32 @@ public class StorageClassTest extends BaseSpringTest
         }
 
         @Test
-        public void findDefaultStorageClassesTransitions()
+        public void findDefaultStorageClassesTransitions() throws SystemException, NotSupportedException
         {
+                NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent2");
+
                 ReflectionTestUtils.setField(contentService, "store", mockContentStore);
-                //                assertTrue("Expected DEFAULT_SC ", contentService.findStorageClassesTransitions(contentURL).isEmpty());
+                assertTrue("Found default storage transition: ", contentService.findStorageClassesTransitions(contentNodeRef).isEmpty());
         }
+
+        @Test
+        public void findStorageClassesTransitions() throws NotSupportedException, SystemException
+        {
+                var key1 = Set.of("Default");
+                var key2 = Set.of("Warm");
+                var value1 = Set.of(Set.of("Archive"));
+                Map<Set<String>,Set<Set<String>>> map = new HashMap<>();
+                map.put(key1, value1);
+                map.put(key2, value1);
+
+                NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
+                String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
+
+                when(mockContentStore.findStorageClassesTransitions(contentUrl)).thenReturn(map);
+                ReflectionTestUtils.setField(contentService, "store",mockContentStore);
+
+                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsKey(key1));
+                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsValue(value1));        }
 
         private NodeRef createNode(String name, String testContent) throws SystemException, NotSupportedException
         {

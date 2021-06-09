@@ -122,9 +122,9 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void getStorageClassesTransitions()
         {
-                var key1 = Set.of("Default");
-                var key2 = Set.of("Warm");
-                var value1 = Set.of(Set.of("Archive"));
+                Set<String> key1 = Set.of("Default");
+                Set<String> key2 = Set.of("Warm");
+                Set<Set<String>> value1 = Set.of(Set.of("Archive"));
                 Map<Set<String>,Set<Set<String>>> map = new HashMap<>();
                 map.put(key1, value1);
                 map.put(key2, value1);
@@ -168,9 +168,9 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void findStorageClassesTransitions() throws NotSupportedException, SystemException
         {
-                var key1 = Set.of("Default");
-                var key2 = Set.of("Warm");
-                var value1 = Set.of(Set.of("Archive"));
+                Set<String> key1 = Set.of("Default");
+                Set<String> key2 = Set.of("Warm");
+                Set<Set<String>> value1 = Set.of(Set.of("Archive"));
                 Map<Set<String>,Set<Set<String>>> map = new HashMap<>();
                 map.put(key1, value1);
                 map.put(key2, value1);
@@ -182,7 +182,20 @@ public class StorageClassTest extends BaseSpringTest
                 ReflectionTestUtils.setField(contentService, "store",mockContentStore);
 
                 assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsKey(key1));
-                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsValue(value1));        }
+                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsValue(value1));
+        }
+
+        @Test
+        public void checkUpdateStorageClasses() throws NotSupportedException, SystemException {
+
+                final Set<String> storageClasses = Set.of("testStorageClass");
+
+                NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
+                String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
+
+                mockContentStore.updateStorageClasses(contentUrl, storageClasses, null);
+                assertTrue("Obtained" + mockContentStore.findStorageClasses(contentUrl), mockContentStore.findStorageClasses(contentUrl).contains(storageClasses));
+        }
 
         private NodeRef createNode(String name, String testContent) throws SystemException, NotSupportedException
         {

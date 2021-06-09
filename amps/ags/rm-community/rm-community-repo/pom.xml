@@ -334,13 +334,13 @@
        <profile>
            <id>agsAllTestSuitePt1</id>
            <properties>
-               <integrationTest>**/AllTestSuitePt1.class</integrationTest>
+               <integrationTestSuite>**/AllTestSuitePt1.class</integrationTestSuite>
            </properties>
        </profile>
        <profile>
            <id>agsAllTestSuitePt2</id>
            <properties>
-               <integrationTest>**/AllTestSuitePt1.class</integrationTest>
+               <integrationTestSuite>**/AllTestSuitePt2.class</integrationTestSuite>
            </properties>
        </profile>
       <profile>

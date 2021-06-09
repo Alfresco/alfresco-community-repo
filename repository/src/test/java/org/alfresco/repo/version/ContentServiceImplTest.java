@@ -26,6 +26,7 @@
 package org.alfresco.repo.version;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
@@ -177,7 +178,9 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     public void testFindStorageClasses()
     {
         final NodeRef newNode = createNewNode();
-        assertTrue(contentService.findStorageClasses(newNode).isEmpty());
+        final Set<String> storageClasses = contentService.findStorageClasses(newNode);
+        assertEquals(1, storageClasses.size());
+        assertTrue(storageClasses.contains(ContentStore.DEFAULT_SC));
     }
 
     @Test

@@ -49,11 +49,11 @@ import org.junit.runner.RunWith;
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
+
+        // The following packages are run by Pt2
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\..*Test",
-
-        // The following packages are run by Pt2
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\..*Test",
@@ -62,10 +62,10 @@ import org.junit.runner.RunWith;
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\..*Test",
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\..*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
+        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
 
         // The following packages are run by Pt3
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",

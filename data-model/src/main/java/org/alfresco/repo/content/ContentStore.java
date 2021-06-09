@@ -316,7 +316,7 @@ public interface ContentStore
      */
     default Set<String> findStorageClasses(String contentUrl)
     {
-        return Collections.emptySet();
+        return Set.of(DEFAULT_SC);
     }
 
     /**

@@ -28,6 +28,8 @@ package org.alfresco.rest.api.tests.client.data;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Set;
+
 /**
  * Representation of content info (initially for client tests for File Folder API)
  *
@@ -40,6 +42,7 @@ public class ContentInfo
     private String mimeTypeName;
     private Long sizeInBytes;
     private String encoding;
+    private Set<String> storageClasses;
 
     public ContentInfo()
     {
@@ -77,6 +80,16 @@ public class ContentInfo
         this.encoding = encoding;
     }
 
+    public Set<String> getStorageClasses()
+    {
+        return storageClasses;
+    }
+
+    public void setStorageClasses(Set<String> storageClasses)
+    {
+        this.storageClasses = storageClasses;
+    }
+
     public void expected(Object o)
     {
         assertTrue(o instanceof ContentInfo);
@@ -87,6 +100,7 @@ public class ContentInfo
         AssertUtil.assertEquals("mimeTypeName", mimeTypeName, other.getMimeTypeName());
         AssertUtil.assertEquals("sizeInBytes", sizeInBytes, other.getSizeInBytes());
         AssertUtil.assertEquals("encoding", encoding, other.getEncoding());
+        AssertUtil.assertEquals("storageClasses", storageClasses, other.storageClasses);
     }
 
     @Override
@@ -97,6 +111,7 @@ public class ContentInfo
                     .append(", mimeTypeName=").append(mimeTypeName)
                     .append(", sizeInBytes=").append(sizeInBytes)
                     .append(", encoding=").append(encoding)
+                    .append(", storageClasses=").append(storageClasses)
                     .append(']');
         return sb.toString();
     }

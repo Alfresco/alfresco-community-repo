@@ -96,6 +96,6 @@ public class ContentInfo
 	public String toString()
 	{
 		return "ContentInfo [mimeType=" + mimeType + ", mimeTypeName=" + mimeTypeName
-			+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + ",storageClasses=" + storageClasses + "]";
+			+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + ", storageClasses=" + storageClasses + "]";
 	}
 }

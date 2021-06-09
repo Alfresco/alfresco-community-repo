@@ -4796,7 +4796,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        // Check if storageClasses are retrieved if 'include=permissions' is not sent in the request
+        // Check if storageClasses are retrieved if 'include=storageClasses' is not sent in the request
         response = getSingle(NodesEntityResource.class, documentResp.getId(), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertNull("StorageClasses should not be retrieved unless included!", documentResp.getContent().getStorageClasses());

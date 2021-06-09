@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.storageclasses;
 
 import org.alfresco.rest.api.ContentStorageClasses;
+import org.alfresco.rest.api.model.StorageClass;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -37,7 +38,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * An implementation of an Entity Resource for handling storage classes.
  */
 @EntityResource(name = "storage-classes", title = "Storage Classes")
-public class StorageClassesEntityResource implements EntityResourceAction.Read<String>
+public class StorageClassesEntityResource implements EntityResourceAction.Read<StorageClass>
 {
     private ContentStorageClasses contentStorageClasses;
 
@@ -48,7 +49,7 @@ public class StorageClassesEntityResource implements EntityResourceAction.Read<S
     
     @Override
     @WebApiDescription(title = "Get List of Storage Classes", description = "Get List of Storage Classes")
-    public CollectionWithPagingInfo<String> readAll(Parameters params)
+    public CollectionWithPagingInfo<StorageClass> readAll(Parameters params)
     {
         return contentStorageClasses.getStorageClasses(params.getPaging());
     }

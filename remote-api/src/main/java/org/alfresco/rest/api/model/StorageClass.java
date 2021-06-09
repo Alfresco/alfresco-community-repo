@@ -23,20 +23,31 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-package org.alfresco.rest.api;
-
-import org.alfresco.rest.api.model.StorageClass;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
+package org.alfresco.rest.api.model;
 
 /**
- * Storage Classes API
+ *  Represents a storage class.
  */
-public interface ContentStorageClasses
+public class StorageClass
 {
-    /**
-     * Lists supported storage classes
-     */
-    CollectionWithPagingInfo<StorageClass> getStorageClasses(Paging paging);
+    private String id;
+
+    public StorageClass(String id)
+    {
+        this.id = id;
+    }
+
+    public StorageClass()
+    {
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
 }

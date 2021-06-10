@@ -29,7 +29,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,10 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
@@ -89,10 +86,9 @@ public abstract class AbstractSolrQueryHTTPClient
     /** List of SOLR Exceptions that should be returning HTTP 501 status code in Remote API. */
     private static final List<String> STATUS_CODE_501_EXCEPTIONS = List.of("java.lang.UnsupportedOperationException");
     
-    protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws UnsupportedEncodingException,
-    IOException, HttpException, URIException, JSONException
+    protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws IOException, JSONException
     {
-        PostMethod post = new PostMethod(url);
+        PostMethod post = createNewPostMethod(url);
         if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
         {
             post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
@@ -112,16 +108,17 @@ public abstract class AbstractSolrQueryHTTPClient
                     httpClient.executeMethod(post);
                 }
             }
+            String responseBodyStr = post.getResponseBodyAsString();
             if (post.getStatusCode() != HttpServletResponse.SC_OK)
             {
                 String trace = null;
                 try
                 {
-                    trace = new JSONObject(post.getResponseBodyAsString()).getJSONObject("error").getString("trace");
+                    trace = new JSONObject(responseBodyStr).getJSONObject("error").getString("trace");
                 }
                 catch (JSONException jsonException)
                 {
-                    LOGGER.warn("Node 'error.trace' is not present in Search Services error response: " + post.getResponseBodyAsString());
+                    LOGGER.warn("Node 'error.trace' is not present in Search Services error response: " + responseBodyStr);
                     LOGGER.warn("A generic error message will be provided. Check SOLR log file in order to find the root cause for this issue");
                 }
 
@@ -149,5 +146,11 @@ public abstract class AbstractSolrQueryHTTPClient
         {
             post.releaseConnection();
         }
+    }
+
+    /** Helper method that can be overridden by unit tests. */
+    protected PostMethod createNewPostMethod(String url)
+    {
+        return new PostMethod(url);
     }
 }

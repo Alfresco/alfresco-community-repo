@@ -56,14 +56,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-
 @Category(OwnJVMTestsCategory.class)
-@RunWith(SpringRunner.class)
-public class StorageClassTest extends BaseSpringTest
+@RunWith(SpringRunner.class) public class StorageClassTest extends BaseSpringTest
 {
         private static final String DEFAULT_SC = "Default1";
         private static final String TEST_NAMESPACE = "TestNameSpace";
@@ -72,8 +69,7 @@ public class StorageClassTest extends BaseSpringTest
 
         private NodeService nodeService;
         private NodeRef rootNode;
-        @Spy
-        ContentStore mockContentStore;
+        @Spy ContentStore mockContentStore;
         ContentService contentService;
         ContentStore contentStore;
 
@@ -95,7 +91,7 @@ public class StorageClassTest extends BaseSpringTest
                 this.authenticationComponent.setSystemUserAsCurrentUser();
 
                 StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "testStoreRef");
-                if(!nodeService.exists(storeRef))
+                if (!nodeService.exists(storeRef))
                 {
                         storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
                 }
@@ -105,7 +101,8 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void testDefaultGetSupportedStorageClasses()
         {
-                assertTrue("Current supported storage classes: " + contentService.getSupportedStorageClasses(), contentService.getSupportedStorageClasses().contains("Default1"));
+                assertTrue("Current supported storage classes: " + contentService.getSupportedStorageClasses(),
+                        contentService.getSupportedStorageClasses().contains("Default1"));
         }
 
         @Test
@@ -126,12 +123,12 @@ public class StorageClassTest extends BaseSpringTest
                 Set<String> key1 = Set.of("Default");
                 Set<String> key2 = Set.of("Warm");
                 Set<Set<String>> value1 = Set.of(Set.of("Archive"));
-                Map<Set<String>,Set<Set<String>>> map = new HashMap<>();
+                Map<Set<String>, Set<Set<String>>> map = new HashMap<>();
                 map.put(key1, value1);
                 map.put(key2, value1);
 
                 when(mockContentStore.getStorageClassesTransitions()).thenReturn(map);
-                ReflectionTestUtils.setField(contentService, "store",mockContentStore);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
 
                 assertTrue("Obtained" + contentService.getStorageClassesTransitions(), contentService.getStorageClassesTransitions().containsKey(key1));
                 assertTrue("Obtained" + contentService.getStorageClassesTransitions(), contentService.getStorageClassesTransitions().containsValue(value1));
@@ -152,9 +149,10 @@ public class StorageClassTest extends BaseSpringTest
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
 
                 when(mockContentStore.findStorageClasses(contentUrl)).thenReturn(Set.of("Azure"));
-                ReflectionTestUtils.setField(contentService, "store",mockContentStore);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
 
-                assertTrue("Found storage classes: " + contentService.findStorageClasses(contentNodeRef), contentService.findStorageClasses(contentNodeRef).contains("Azure"));
+                assertTrue("Found storage classes: " + contentService.findStorageClasses(contentNodeRef),
+                        contentService.findStorageClasses(contentNodeRef).contains("Azure"));
         }
 
         @Test
@@ -172,7 +170,7 @@ public class StorageClassTest extends BaseSpringTest
                 Set<String> key1 = Set.of("Default");
                 Set<String> key2 = Set.of("Warm");
                 Set<Set<String>> value1 = Set.of(Set.of("Archive"));
-                Map<Set<String>,Set<Set<String>>> map = new HashMap<>();
+                Map<Set<String>, Set<Set<String>>> map = new HashMap<>();
                 map.put(key1, value1);
                 map.put(key2, value1);
 
@@ -180,22 +178,93 @@ public class StorageClassTest extends BaseSpringTest
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
 
                 when(mockContentStore.findStorageClassesTransitions(contentUrl)).thenReturn(map);
-                ReflectionTestUtils.setField(contentService, "store",mockContentStore);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
 
-                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsKey(key1));
-                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef), contentService.findStorageClassesTransitions(contentNodeRef).containsValue(value1));
+                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef),
+                        contentService.findStorageClassesTransitions(contentNodeRef).containsKey(key1));
+                assertTrue("Obtained" + contentService.findStorageClassesTransitions(contentNodeRef),
+                        contentService.findStorageClassesTransitions(contentNodeRef).containsValue(value1));
         }
 
         @Test
-        public void checkUpdateStorageClasses() throws NotSupportedException, SystemException {
+        public void checkUpdateStorageClasses() throws NotSupportedException, SystemException
+        {
 
-                final Set<String> storageClasses = Set.of("testStorageClass");
+                final Set<String> storageClasses = Set.of("Azure");
+                final Set<String> storageClasses2 = Set.of("S3");
+                final Set<String> storageClasses3 = Set.of("test1", "test2");
 
                 NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
 
+                when(mockContentStore.isStorageClassesSupported(storageClasses)).thenReturn(true);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
+
                 mockContentStore.updateStorageClasses(contentUrl, storageClasses, null);
-                assertEquals(storageClasses, mockContentStore.findStorageClasses(contentUrl));
+                assertTrue("Storage classes not supported: ", contentService.isStorageClassesSupported(storageClasses));
+                assertFalse("Storage classes not supported: ", contentService.isStorageClassesSupported(storageClasses2));
+
+                when(mockContentStore.isStorageClassesSupported(storageClasses3)).thenReturn(true);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
+                assertTrue("Storage classes not supported: ", contentService.isStorageClassesSupported(storageClasses3));
+        }
+
+        @Test
+        public void checkUpdateStorageClassesNotSupported() throws NotSupportedException, SystemException
+        {
+
+                final Set<String> storageClasses = Set.of("test");
+
+                NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
+
+                when(mockContentStore.isStorageClassesSupported(storageClasses)).thenReturn(false);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
+
+                try
+                {
+                        contentService.updateStorageClasses(contentNodeRef, storageClasses, null);
+                        fail("The supplied storage classes are not supported");
+                }
+                catch (UnsupportedStorageClassException expectedException)
+                {
+                }
+        }
+
+        @Test
+        public void checkUpdateStorageEmptyContent() throws NotSupportedException, SystemException
+        {
+
+                final Set<String> storageClasses = Set.of("Azure");
+
+                NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "");
+                String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
+
+                when(mockContentStore.isStorageClassesSupported(storageClasses)).thenReturn(true);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
+
+                mockContentStore.updateStorageClasses(contentUrl, storageClasses, null);
+                assertTrue("Storage classes not supported: ", contentService.isStorageClassesSupported(storageClasses));
+
+        }
+
+        @Test
+        public void checkUpdateStorageClassesWithoutContent() throws NotSupportedException, SystemException
+        {
+
+                final Set<String> storageClasses = Set.of("Azure");
+
+                NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), null);
+                when(mockContentStore.isStorageClassesSupported(storageClasses)).thenReturn(true);
+                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
+
+                try
+                {
+                        contentService.updateStorageClasses(contentNodeRef, storageClasses, null);
+                        fail("The supplied nodeRef" + contentNodeRef + "has no content");
+                }
+                catch (IllegalArgumentException expectedException)
+                {
+                }
         }
 
         private NodeRef createNode(String name, String testContent) throws SystemException, NotSupportedException
@@ -214,8 +283,11 @@ public class StorageClassTest extends BaseSpringTest
                                 NodeRef contentNodeRef = assocRef.getChildRef();
 
                                 // Add the content to the node
-                                ContentWriter contentWriter = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-                                contentWriter.putContent(testContent);
+                                if (testContent != null)
+                                {
+                                        ContentWriter contentWriter = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                                        contentWriter.putContent(testContent);
+                                }
                                 return contentNodeRef;
                         }
                 };

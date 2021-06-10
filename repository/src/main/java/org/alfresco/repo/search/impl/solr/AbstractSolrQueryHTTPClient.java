@@ -49,7 +49,7 @@ import org.json.JSONTokener;
 
 public abstract class AbstractSolrQueryHTTPClient
 {
-
+    /** Logger for the class. */
     private static final Log LOGGER = LogFactory.getLog(AbstractSolrQueryHTTPClient.class);
 
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;

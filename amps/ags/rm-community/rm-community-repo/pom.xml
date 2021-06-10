@@ -248,7 +248,7 @@
                         <dir.root>${project.build.directory}/alf-data-test</dir.root>
                      </systemPropertyVariables>
                      <includes>
-                        <include>**/AllTestSuite.class</include>
+                        <include>${integrationTestSuite}</include>
                      </includes>
                      <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.directory}/${project.build.finalName}/config</additionalClasspathElement>
@@ -331,6 +331,25 @@
    </build>
 
    <profiles>
+       <profile>
+           <id>agsAllTestSuitePt1</id>
+           <properties>
+               <integrationTestSuite>**/AllTestSuitePt1.class</integrationTestSuite>
+           </properties>
+       </profile>
+       <profile>
+           <id>agsAllTestSuitePt2</id>
+           <properties>
+               <integrationTestSuite>**/AllTestSuitePt2.class</integrationTestSuite>
+           </properties>
+       </profile>
+       <profile>
+           <id>agsAllTestSuitePt3</id>
+           <properties>
+               <integrationTestSuite>**/AllTestSuitePt3.class</integrationTestSuite>
+           </properties>
+       </profile>
+
       <profile>
          <id>use-mysql</id>
          <properties>

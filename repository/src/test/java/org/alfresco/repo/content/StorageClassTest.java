@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -194,7 +195,7 @@ public class StorageClassTest extends BaseSpringTest
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
 
                 mockContentStore.updateStorageClasses(contentUrl, storageClasses, null);
-                assertTrue("Obtained" + mockContentStore.findStorageClasses(contentUrl), mockContentStore.findStorageClasses(contentUrl).contains(storageClasses));
+                assertEquals(storageClasses, mockContentStore.findStorageClasses(contentUrl));
         }
 
         private NodeRef createNode(String name, String testContent) throws SystemException, NotSupportedException

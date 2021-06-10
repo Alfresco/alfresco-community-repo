@@ -108,7 +108,7 @@
         <alfresco.api-explorer.version>7.0.0</alfresco.api-explorer.version>
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
 
-        <dependency.postgresql.version>42.2.20</dependency.postgresql.version>
+        <dependency.postgresql.version>42.2.21</dependency.postgresql.version>
         <dependency.mysql.version>8.0.25</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>

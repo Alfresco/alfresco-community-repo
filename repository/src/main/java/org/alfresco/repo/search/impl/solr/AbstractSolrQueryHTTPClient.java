@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -84,6 +85,9 @@ public abstract class AbstractSolrQueryHTTPClient
     public static final String HIGHLIGHT_PARAMS_SLOP = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_REGEX + ".slop";
     public static final String HIGHLIGHT_PARAMS_PATTERN = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_REGEX + ".pattern";
     public static final String HIGHLIGHT_PARAMS_MAX_RE_CHARS = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_REGEX + ".maxAnalyzedChars";
+
+    /** List of SOLR Exceptions that should be returning HTTP 501 status code in Remote API. */
+    private static final List<String> STATUS_CODE_501_EXCEPTIONS = List.of("java.lang.UnsupportedOperationException");
     
     protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws UnsupportedEncodingException,
     IOException, HttpException, URIException, JSONException
@@ -120,17 +124,20 @@ public abstract class AbstractSolrQueryHTTPClient
                     LOGGER.warn("Node 'error.trace' is not present in Search Services error response: " + post.getResponseBodyAsString());
                     LOGGER.warn("A generic error message will be provided. Check SOLR log file in order to find the root cause for this issue");
                 }
-                if (trace == null)
+
+                int httpStatusCode = post.getStatusCode();
+                String message = "Solr request failed with " + httpStatusCode + " " + url;
+
+                // Override the status code for certain exceptions with 501.
+                if (trace != null)
                 {
-                    throw new QueryParserException("Request failed " + post.getStatusCode() + " " + url);
+                    String traceException = trace.substring(0, trace.indexOf(":")).trim();
+                    if (STATUS_CODE_501_EXCEPTIONS.contains(traceException))
+                    {
+                        httpStatusCode = org.apache.http.HttpStatus.SC_NOT_IMPLEMENTED;
+                    }
                 }
-                else
-                {
-                    throw new QueryParserException(
-                        "Request failed " + post.getStatusCode() + " " + url,
-                        post.getStatusCode(),
-                        new JSONObject(post.getResponseBodyAsString()).getJSONObject("error").getString("trace"));
-                }
+                throw new QueryParserException(message, httpStatusCode);
             }
 
             Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));

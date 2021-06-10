@@ -36,16 +36,9 @@ import java.util.List;
  */
 public class QueryParserException extends AlfrescoRuntimeException
 {
-
-    /**
-     *
-     */
+    /** Serial version UUID. */
     private static final long serialVersionUID = 4886993838297301968L;
-
-    // List of SOLR Exceptions that should be returning HTTP 501 status code in Remote API
-    public static final List<String> STATUS_CODE_501_EXCEPTIONS =
-        List.of("java.lang.UnsupportedOperationException");
-    // Http Status Code that should be returned by Remote API
+    /** Http Status Code that should be returned by Remote API. */
     private int httpStatusCode;
 
     /**
@@ -54,7 +47,6 @@ public class QueryParserException extends AlfrescoRuntimeException
     public QueryParserException(String msgId)
     {
         super(msgId);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -64,7 +56,6 @@ public class QueryParserException extends AlfrescoRuntimeException
     public QueryParserException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -74,7 +65,6 @@ public class QueryParserException extends AlfrescoRuntimeException
     public QueryParserException(String msgId, Throwable cause)
     {
         super(msgId, cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -85,29 +75,22 @@ public class QueryParserException extends AlfrescoRuntimeException
     public QueryParserException(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
-     * Extracts exception class from trace string in order to map not implemented features
-     * to Http Status Code 501
+     * Constructor for exception that allows setting an HTTP status code.
+     *
      * @param msgId Message for the exception
-     * @param httpStatusCode Original Http Status Code returned by SOLR
-     * @param trace Original stack trace returned by SOLR in string format
+     * @param httpStatusCode Status code to return for exception
      */
-    public QueryParserException(String msgId, int httpStatusCode, String trace)
+    public QueryParserException(String msgId, int httpStatusCode)
     {
         super(msgId);
         this.httpStatusCode = httpStatusCode;
-        String traceException = trace.substring(0, trace.indexOf(":")).trim();
-        if (STATUS_CODE_501_EXCEPTIONS.contains(traceException)) {
-            this.httpStatusCode = HttpStatus.SC_NOT_IMPLEMENTED;
-        }
     }
 
     public int getHttpStatusCode()
     {
         return httpStatusCode;
     }
-
 }

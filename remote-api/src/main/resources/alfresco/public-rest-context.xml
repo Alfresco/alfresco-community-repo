@@ -795,6 +795,24 @@
             </list>
         </property>
     </bean>
+
+    <bean id="contentStorageClasses" class="org.alfresco.rest.api.impl.ContentStorageClassesImpl">
+        <property name="contentService" ref="ContentService" />
+    </bean>
+
+    <bean id="ContentStorageClasses" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.ContentStorageClasses</value>
+        </property>
+        <property name="target">
+            <ref bean="contentStorageClasses" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
     
     <bean id="tags" class="org.alfresco.rest.api.impl.TagsImpl">
         <property name="nodes" ref="nodes" />
@@ -984,6 +1002,10 @@
         <property name="actions" ref="Actions"/>
     </bean>
 
+    <bean class="org.alfresco.rest.api.storageclasses.StorageClassesEntityResource">
+        <property name="contentStorageClasses" ref="ContentStorageClasses" />
+    </bean>
+    
     <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">
         <property name="deletedNodes" ref="DeletedNodes" />
     </bean>

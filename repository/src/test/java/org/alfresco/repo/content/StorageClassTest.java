@@ -41,6 +41,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -74,7 +75,7 @@ import static org.mockito.Mockito.when;
         ContentStore contentStore;
 
         @Before
-        public void before() throws Exception
+        public void before()
         {
                 nodeService = (NodeService) applicationContext.getBean("NodeService");
                 transactionService = (TransactionService) applicationContext.getBean("TransactionService");
@@ -98,22 +99,30 @@ import static org.mockito.Mockito.when;
                 rootNode = nodeService.getRootNode(storeRef);
         }
 
+        @After
+        public void afterTestMethod()
+        {
+                ReflectionTestUtils.setField(contentService, "store", contentStore);
+        }
+
         @Test
         public void testDefaultGetSupportedStorageClasses()
         {
+                ReflectionTestUtils.setField(contentService, "store", contentStore);
                 assertTrue("Current supported storage classes: " + contentService.getSupportedStorageClasses(),
-                        contentService.getSupportedStorageClasses().contains("Default1"));
+                        contentService.getSupportedStorageClasses().contains("default"));
         }
 
         @Test
         public void testGetSupportedStorageClasses()
         {
-                assertTrue("Expected DEFAULT_SC ", contentService.getSupportedStorageClasses().contains(DEFAULT_SC));
+                assertTrue("Currently supported storage classes:" + contentService.getSupportedStorageClasses()  , contentService.getSupportedStorageClasses().contains(DEFAULT_SC));
         }
 
         @Test
         public void getDefaultStorageClassesTransition()
         {
+                ReflectionTestUtils.setField(contentService, "store", contentStore);
                 assertTrue("Expected DEFAULT_SC ", contentService.getStorageClassesTransitions().isEmpty());
         }
 
@@ -137,6 +146,7 @@ import static org.mockito.Mockito.when;
         @Test
         public void findDefaultStorageClasses() throws SystemException, NotSupportedException
         {
+                ReflectionTestUtils.setField(contentService, "store", contentStore);
                 NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent1");
 
                 assertTrue("Found default storage classes: ", contentService.findStorageClasses(contentNodeRef).isEmpty());
@@ -160,7 +170,7 @@ import static org.mockito.Mockito.when;
         {
                 NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent2");
 
-                ReflectionTestUtils.setField(contentService, "store", mockContentStore);
+                ReflectionTestUtils.setField(contentService, "store", contentStore);
                 assertTrue("Found default storage transition: ", contentService.findStorageClassesTransitions(contentNodeRef).isEmpty());
         }
 

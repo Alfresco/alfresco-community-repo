@@ -62,6 +62,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     /** batching properties */
     private int batchSize;
+    public static final int DEFAULT_BATCH_SIZE = 500;
 
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
@@ -175,6 +176,20 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             {
                 boolean hasMore = true;
                 int skipCount = 0;
+
+                if (batchSize < 1)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
+                    }
+                    batchSize = DEFAULT_BATCH_SIZE;
+                }
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Using batch size of " + batchSize);
+                }
+
                 while (hasMore)
                 {
                     SearchParameters params = new SearchParameters();

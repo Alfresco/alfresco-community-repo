@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Set;
+
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -57,6 +59,29 @@ public class NodeContentContext extends ContentContext
             QName propertyQName)
     {
         super(existingContentReader, contentUrl);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("propertyQName", propertyQName);
+        this.nodeRef = nodeRef;
+        this.propertyQName = propertyQName;
+    }
+
+    /**
+     * Construct the instance with the content URL.
+     *
+     * @param   existingContentReader   content with which to seed the new writer - may be <tt>null</tt>
+     * @param   contentUrl              the content URL - may be <tt>null</tt>
+     * @param   nodeRef                 the node holding the content metadata - may not be <tt>null</tt>
+     * @param   propertyQName           the property holding the content metadata  - may not be <tt>null</tt>
+     * @param   storageClasses          the storage classes specific to the provided content URL - may be <tt>null</tt>
+     */
+    public NodeContentContext(
+        ContentReader existingContentReader,
+        String contentUrl,
+        NodeRef nodeRef,
+        QName propertyQName, 
+        Set<String> storageClasses)
+    {
+        super(existingContentReader, contentUrl, storageClasses);
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("propertyQName", propertyQName);
         this.nodeRef = nodeRef;

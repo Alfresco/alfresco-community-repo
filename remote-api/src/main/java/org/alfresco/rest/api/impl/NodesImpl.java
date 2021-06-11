@@ -105,6 +105,7 @@ import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeExceptio
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -2773,7 +2774,8 @@ public class NodesImpl implements Nodes
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
         {
-            writeContent(nodeRef, fileName, stream, true);
+            writeContent(nodeRef, fileName, stream, true,
+                         ((ContentInfo) contentInfo).getStorageClasses());
 
             if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
             {
@@ -2813,9 +2815,16 @@ public class NodesImpl implements Nodes
 
     private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
     {
+        writeContent(nodeRef, fileName, stream, guessEncoding, null);
+    }
+
+    
+    private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding, Set<String> storageClasses)
+    {
         try
         {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            ContentWriter writer = contentService
+                .getWriter(nodeRef, ContentModel.PROP_CONTENT, true, storageClasses);
 
             String mimeType = mimetypeService.guessMimetype(fileName);
             if ((mimeType != null) && (!mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
@@ -3074,8 +3083,19 @@ public class NodesImpl implements Nodes
                 else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
                 {
                     // overwrite existing (versionable) file
-                    BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(), content.getEncoding(), -1, null);
-                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo, content.getInputStream(), parameters, versionMajor, versionComment);
+                    Set<String> storageClasses = null;
+                    if (parameters != null && parameters.getContentInfo() instanceof ContentInfo
+                        && ((ContentInfo) parameters.getContentInfo()).getStorageClasses() != null)
+                    {
+                        storageClasses = ((ContentInfo) parameters.getContentInfo())
+                            .getStorageClasses();
+                    }
+                    BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(),
+                                                                       content.getEncoding(), -1,
+                                                                       null, storageClasses);
+                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo,
+                                              content.getInputStream(), parameters, versionMajor,
+                                              versionComment);
                 }
                 else
                 {
@@ -3130,8 +3150,16 @@ public class NodesImpl implements Nodes
         }
         else
         {
+            Set<String> storageClasses = null;
+            if (params != null && 
+                params.getContentInfo() instanceof ContentInfo && 
+                ((ContentInfo) params.getContentInfo()).getStorageClasses() != null)
+            {
+                storageClasses = ((ContentInfo) params.getContentInfo()).getStorageClasses();
+            }
+
             // Write content
-            writeContent(nodeRef, fileName, content.getInputStream(), true);
+            writeContent(nodeRef, fileName, content.getInputStream(), true, storageClasses);
         }
         
         if ((versionMajor != null) || (versionComment != null))

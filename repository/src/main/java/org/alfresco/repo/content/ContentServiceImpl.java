@@ -449,9 +449,21 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
     {
+        return getWriter(nodeRef,propertyQName, update, null);
+    }
+    
+    public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update,
+        Set<String> storageClasses)
+    {
+        if (!isStorageClassesSupported(storageClasses))
+        {
+            throw new UnsupportedStorageClassException(store, storageClasses,
+                                                       "The supplied storage classes are not supported");
+        }
+        
         if (nodeRef == null)
         {
-            ContentContext ctx = new ContentContext(null, null);
+            ContentContext ctx = new ContentContext(null, null, storageClasses);
             // for this case, we just give back a valid URL into the content store
             ContentWriter writer = store.getWriter(ctx);
             // Register the new URL for rollback cleanup
@@ -465,7 +477,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.
-        ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef, propertyQName);
+        // Even if there is an existing content for the nodeRef, we don't need to worry about 
+        // storage classes transitions - the new content will be stored as a new object
+        ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef,
+                                                    propertyQName, storageClasses);
         ContentWriter writer = store.getWriter(ctx);
         // Register the new URL for rollback cleanup
         eagerContentStoreCleaner.registerNewContentUrl(writer.getContentUrl());

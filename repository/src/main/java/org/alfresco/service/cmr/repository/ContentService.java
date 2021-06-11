@@ -150,6 +150,40 @@ public interface ContentService
                 throws InvalidNodeRefException, InvalidTypeException;
 
     /**
+     * Get a content writer for the given node property, choosing to optionally have
+     * the node property updated automatically when the content stream closes.
+     * <p>
+     * If the update flag is off, then the state of the node property will remain unchanged
+     * regardless of the state of the written binary data.  If the flag is on, then the node
+     * property will be updated on the same thread as the code that closed the write
+     * channel.
+     * <p>
+     * If no node is supplied, then the writer will provide a stream into the backing content
+     * store, but will not be associated with any new or previous content.
+     * <p/>
+     * <b>NOTE: </b>The content URL provided will be registered for automatic cleanup in the event
+     * that the transaction, in which this method was called, rolls back.  If the transaction
+     * is successful, the writer may still be open and available for use but the underlying binary
+     * will not be cleaned up subsequently.  The recommended pattern is to group calls to retrieve
+     * the writer in the same transaction as the calls to subsequently update and close the
+     * write stream - including setting of the related content properties.
+     *
+     * @param nodeRef a reference to a node having a content property, or <tt>null</tt>
+     *      to just get a valid writer into a backing content store.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param update true if the property must be updated atomically when the content write
+     *      stream is closed (attaches a listener to the stream); false if the client code
+     *      will perform the updates itself.
+     * @param storageClasses storage classes for the content associated with the node property
+     * @return Returns a writer for the content associated with the node property
+     * @throws InvalidNodeRefException if the node doesn't exist
+     * @throws InvalidTypeException if the node property is not of type <b>content</b>
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "update", "storageClasses"})
+    public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update,
+        Set<String> storageClasses) throws InvalidNodeRefException, InvalidTypeException;
+
+    /**
      * Gets a writer to a temporary location.  The longevity of the stored
      * temporary content is determined by the system.
      * 

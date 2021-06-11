@@ -63,7 +63,20 @@ public class ContentContext implements Serializable
         this.existingContentReader = existingContentReader;
         this.contentUrl = contentUrl;
     }
-    
+
+    /**
+     * Construct the instance with the content URL.
+     *
+     * @param   existingContentReader   content with which to seed the new writer - may be <tt>null</tt>
+     * @param   contentUrl              the content URL - may be <tt>null</tt>
+     * @param   storageClasses          the storage classes specific to the provided content URL - may be <tt>null</tt>
+     */
+    public ContentContext(ContentReader existingContentReader, String contentUrl, Set<String> storageClasses)
+    {
+        this(existingContentReader, contentUrl);
+        this.storageClasses = storageClasses;
+    }
+
     @Override
     public String toString()
     {

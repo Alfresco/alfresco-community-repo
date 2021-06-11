@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,27 +25,24 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import javax.servlet.http.HttpServletResponse;
+import org.alfresco.repo.search.QueryParserException;
 
 /**
- * Default exception resolver for cases when no other exception resolver will do.
- *
- * @author Gethin James
+ * QueryParserException is related with search requests to Search Services.
  */
-public class DefaultExceptionResolver implements ExceptionResolver<Exception>
+public class QueryParserExceptionResolver implements ExceptionResolver<QueryParserException>
 {
-    public static final String STACK_MESSAGE_ID = "framework.no.stacktrace";
-    public static final String ERROR_URL = "https://api-explorer.alfresco.com";
-    public static final String DEFAULT_MESSAGE_ID = "framework.exception.ApiDefault";
-    
+
     @Override
-    public ErrorResponse resolveException(Exception ex)
+    public ErrorResponse resolveException(QueryParserException ex)
     {
-        return new ErrorResponse(DEFAULT_MESSAGE_ID,
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                ex.getLocalizedMessage(),
-                ex.getStackTrace(),
-                null);
+        return new ErrorResponse(
+            DefaultExceptionResolver.DEFAULT_MESSAGE_ID,
+            // Mapping the original HTTP Status code returned by Search Services
+            ex.getHttpStatusCode(),
+            ex.getLocalizedMessage(),
+            ex.getStackTrace(),
+            null);
     }
 
 }

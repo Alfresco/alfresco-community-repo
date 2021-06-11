@@ -26,10 +26,12 @@
 package org.alfresco.rest.framework.tools;
 
 import org.alfresco.metrics.rest.RestMetricsReporter;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
 import org.alfresco.rest.framework.core.exceptions.ExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.QueryParserExceptionResolver;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +50,7 @@ public class ApiAssistant {
 
     private ExceptionResolver<Exception> defaultResolver = new DefaultExceptionResolver();
     private ExceptionResolver<WebScriptException> webScriptExceptionResolver;
+    private ExceptionResolver<QueryParserException> queryParserExceptionResolver;
     private ExceptionResolver<Exception> resolver;
     private JacksonHelper jsonHelper;
     private RestMetricsReporter restMetricsReporter;
@@ -77,6 +80,10 @@ public class ApiAssistant {
         {
             error = webScriptExceptionResolver.resolveException((WebScriptException) ex);
         }
+        else if (ex instanceof QueryParserException)
+        {
+            error = queryParserExceptionResolver.resolveException((QueryParserException) ex);
+        }
         else
         {
             error = resolver.resolveException(ex);
@@ -98,6 +105,11 @@ public class ApiAssistant {
 
     public void setWebScriptExceptionResolver(ExceptionResolver<WebScriptException> webScriptExceptionResolver) {
         this.webScriptExceptionResolver = webScriptExceptionResolver;
+    }
+
+    public void setQueryParserExceptionResolver(ExceptionResolver<QueryParserException> queryParserExceptionResolver)
+    {
+        this.queryParserExceptionResolver = queryParserExceptionResolver;
     }
 
     public void setResolver(ExceptionResolver<Exception> resolver) {

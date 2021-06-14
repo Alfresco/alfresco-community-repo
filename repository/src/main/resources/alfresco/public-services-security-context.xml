@@ -481,7 +481,7 @@
     <!-- =========================== -->
 
     <!-- Reading requires the permission to read content                                 -->
-    <!-- Writing required the permission to write conent                                 -->
+    <!-- Writing required the permission to write content                                 -->
 
     <bean id="ContentService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
@@ -490,12 +490,16 @@
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.repository.ContentService.getStoreTotalSpace=ACL_ALLOW
-               org.alfresco.service.cmr.repository.ContentService.getStoreFreeSpace=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentService.getStoreFreeSpace=ACL_ALLOW 
+               org.alfresco.service.cmr.repository.ContentService.getSupportedStorageClasses=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentService.isStorageClassesSupported=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentService.getStorageClassesTransitions=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getRawReader=ACL_METHOD.ROLE_ADMINISTRATOR
                org.alfresco.service.cmr.repository.ContentService.getReader=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.repository.ContentService.getWriter=ACL_NODE.0.sys:base.WriteContent
                org.alfresco.service.cmr.repository.ContentService.getDirectAccessUrl=ACL_NODE.0.sys:base.ReadContent 
                org.alfresco.service.cmr.repository.ContentService.getTempWriter=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentService.findStorageClasses=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.repository.ContentService.*=ACL_DENY
             </value>
         </property>

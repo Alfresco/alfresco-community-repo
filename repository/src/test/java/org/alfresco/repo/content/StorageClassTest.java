@@ -147,9 +147,10 @@ import static org.mockito.Mockito.when;
         public void findDefaultStorageClasses() throws SystemException, NotSupportedException
         {
                 ReflectionTestUtils.setField(contentService, "store", contentStore);
+
                 NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent1");
 
-                assertTrue("Found default storage classes: ", contentService.findStorageClasses(contentNodeRef).isEmpty());
+                assertTrue("Found default storage classes: " + contentService.findStorageClasses(contentNodeRef), contentService.findStorageClasses(contentNodeRef).isEmpty());
         }
 
         @Test
@@ -168,6 +169,7 @@ import static org.mockito.Mockito.when;
         @Test
         public void findDefaultStorageClassesTransitions() throws SystemException, NotSupportedException
         {
+                ReflectionTestUtils.setField(contentService, "store", contentStore);
                 NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent2");
 
                 ReflectionTestUtils.setField(contentService, "store", contentStore);

@@ -64,6 +64,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class) public class StorageClassTest extends BaseSpringTest
 {
         private static final String DEFAULT_SC = "Default1";
+        private static final String DEFAULT_VALUE = "default";
         private static final String TEST_NAMESPACE = "TestNameSpace";
         private TransactionService transactionService;
         private AuthenticationComponent authenticationComponent;
@@ -110,7 +111,7 @@ import static org.mockito.Mockito.when;
         {
                 ReflectionTestUtils.setField(contentService, "store", contentStore);
                 assertTrue("Current supported storage classes: " + contentService.getSupportedStorageClasses(),
-                        contentService.getSupportedStorageClasses().contains("default"));
+                        contentService.getSupportedStorageClasses().contains(DEFAULT_VALUE));
         }
 
         @Test
@@ -150,7 +151,8 @@ import static org.mockito.Mockito.when;
 
                 NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent1");
 
-                assertTrue("Found default storage classes: " + contentService.findStorageClasses(contentNodeRef), contentService.findStorageClasses(contentNodeRef).isEmpty());
+                assertTrue("Found default storage classes: " + contentService.findStorageClasses(contentNodeRef), contentService.findStorageClasses(contentNodeRef).contains(
+                        DEFAULT_VALUE));
         }
 
         @Test

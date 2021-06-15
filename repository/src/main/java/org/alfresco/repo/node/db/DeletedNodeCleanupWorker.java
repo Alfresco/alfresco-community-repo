@@ -28,6 +28,7 @@ package org.alfresco.repo.node.db;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
@@ -68,14 +69,24 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             return Collections.singletonList("Minimum purge age is negative; purge disabled");
         }
         long fromCommitTime = fromCustomCommitTime;
+        long startTime = System.currentTimeMillis();
         if (fromCommitTime <= 0L)
         {
             fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
         }
-        logger.debug("DeletedNodeCleanupWorker: Computing start time " + fromCommitTime);
+
+        logger.debug("DeletedNodeCleanupWorker: nodeDAO.getMinTxnCommitTimeForDeletedNodes - execution time:"+ getFormattedExecutionTime(startTime));
+
+        logger.debug("DeletedNodeCleanupWorker: About to execute the clean up nodes ");
+        startTime = System.currentTimeMillis();
         List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs, fromCommitTime);
+        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes - total Time:"+ getFormattedExecutionTime(startTime));
+
+        logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
+        startTime = System.currentTimeMillis();
         List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);
-        
+        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:"+ getFormattedExecutionTime(startTime));
+
         List<String> allResults = new ArrayList<String>(100);
         allResults.addAll(purgedNodes);
         allResults.addAll(purgedTxns);
@@ -357,5 +368,22 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             long count = nodeDAO.purgeNodes(fromCommitTime, toCommitTime);
             return count;
         }       
+    }
+
+    private String getFormattedExecutionTime(long startTimeInMillis)
+    {
+        long endTime = System.currentTimeMillis();
+        long totalTimeInMillis = endTime - startTimeInMillis;
+        final long hr = TimeUnit.MILLISECONDS.toHours(totalTimeInMillis)
+                    - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(totalTimeInMillis));
+        final long min = TimeUnit.MILLISECONDS.toMinutes(totalTimeInMillis)
+                    - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalTimeInMillis));
+        final long sec = TimeUnit.MILLISECONDS.toSeconds(totalTimeInMillis)
+                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeInMillis));
+        final long ms = TimeUnit.MILLISECONDS.toMillis(totalTimeInMillis)
+                    - TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(totalTimeInMillis));
+
+        return String.format("%d Hours %d Minutes %d Seconds %d Milliseconds", hr, min, sec, ms);
+
     }
 }

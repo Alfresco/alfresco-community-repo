@@ -56,7 +56,6 @@ import org.junit.runners.Suite;
     // This test opens, closes and again opens the alfresco application context.
     org.alfresco.repo.dictionary.CustomModelRepoRestartTest.class,
 
-    org.alfresco.repo.rendition.executer.HTMLRenderingEngineTest.class,
     org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class,
     org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class,
     org.alfresco.repo.replication.ReplicationServiceIntegrationTest.class,

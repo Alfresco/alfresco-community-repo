@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.rendition;
 
-import org.alfresco.repo.rendition.executer.HTMLRenderingEngineTest;
 import org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest;
 import org.alfresco.repo.thumbnail.ThumbnailServiceImplTest;
 import org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluatorTest;
@@ -49,7 +48,6 @@ import org.junit.runners.Suite;
         RenditionServiceIntegrationTest.class,
         RenditionServicePermissionsTest.class,
         RenditionNodeManagerTest.class,
-        HTMLRenderingEngineTest.class,
         MultiUserRenditionTest.class
 })
 public class AllRenditionTests

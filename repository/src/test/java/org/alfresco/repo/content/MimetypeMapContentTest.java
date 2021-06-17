@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,8 +36,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.DataModelTestApplicationContextHelper;
-import org.alfresco.util.testing.category.NeverRunsTests;
+import org.alfresco.util.ApplicationContextHelper;
 import org.apache.poi.util.IOUtils;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
@@ -51,8 +50,8 @@ import org.springframework.context.ApplicationContext;
 @Category({OwnJVMTestsCategory.class})
 public class MimetypeMapContentTest extends TestCase
 {
-    private static ApplicationContext ctx = DataModelTestApplicationContextHelper.getApplicationContext();
-    
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+
     private MimetypeService mimetypeService;
     
     @Override

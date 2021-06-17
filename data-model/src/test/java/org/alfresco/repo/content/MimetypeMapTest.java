@@ -249,6 +249,15 @@ public class MimetypeMapTest extends TestCase
         assertEquals(MimetypeMap.MIMETYPE_APPLICATION_PS,  mimetypeService.guessMimetype("file.ps",  reader.getContentInputStream()));
     }
 
+    public void testTypeBasedOnDetectedType() throws Exception
+    {
+        ContentReader reader = new DummyContentReader(MimetypeMap.MIMETYPE_PDF, "%PDF\r");
+        assertEquals(MimetypeMap.MIMETYPE_PDF,                     mimetypeService.guessMimetype(null, reader.getContentInputStream()));
+
+        reader = new DummyContentReader(MimetypeMap.MIMETYPE_APPLICATION_PS, "%!PS");
+        assertEquals(MimetypeMap.MIMETYPE_APPLICATION_PS,  mimetypeService.guessMimetype(null,  reader.getContentInputStream()));
+    }
+
     public void testDuplicates() throws Exception
     {
         setConfigService(

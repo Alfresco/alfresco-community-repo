@@ -39,7 +39,9 @@ import org.junit.runners.Suite;
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
-    
+
+    org.alfresco.repo.content.MimetypeMapContentTest.class,
+
     // there is a test that runs for 184s and another one that runs for 40s
     org.alfresco.repo.attributes.AttributeServiceTest.class,
 

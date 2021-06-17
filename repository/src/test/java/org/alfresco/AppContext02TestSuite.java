@@ -40,8 +40,6 @@ import org.junit.runners.Suite;
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
 
-    org.alfresco.repo.content.MimetypeMapContentTest.class,
-
     // there is a test that runs for 184s and another one that runs for 40s
     org.alfresco.repo.attributes.AttributeServiceTest.class,
 
@@ -68,7 +66,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.RoutingContentStoreTest.class,
 
     org.alfresco.encryption.EncryptionTests.class,
-    org.alfresco.encryption.KeyStoreTests.class
+    org.alfresco.encryption.KeyStoreTests.class,
+
+    org.alfresco.repo.content.MimetypeMapContentTest.class
 
     // TODO REPO-2791 org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest.class,
 })

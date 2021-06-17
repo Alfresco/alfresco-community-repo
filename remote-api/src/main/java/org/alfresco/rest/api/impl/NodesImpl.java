@@ -1884,7 +1884,8 @@ public class NodesImpl implements Nodes
         if (isContent)
         {
             // create empty file node - note: currently will be set to default encoding only (UTF-8)
-            nodeRef = createNewFile(parentNodeRef, nodeName, nodeTypeQName, null, props, assocTypeQName, parameters, versionMajor, versionComment);
+            nodeRef = createNewFile(parentNodeRef, nodeName, nodeTypeQName, null, null, props,
+                                    assocTypeQName, parameters, versionMajor, versionComment);
         }
         else
         {
@@ -2951,6 +2952,7 @@ public class NodesImpl implements Nodes
         String relativePath = null;
         String renditionNames = null;
         boolean versioningEnabled = true;
+        String storageClassesParam = null;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
@@ -2988,6 +2990,10 @@ public class NodesImpl implements Nodes
                     }
                     break;
 
+                case "storageclasses":
+                    storageClassesParam = getStringOrNull(field.getValue());
+                    break;
+                        
                 case "overwrite":
                     overwrite = Boolean.valueOf(field.getValue());
                     break;
@@ -3055,8 +3061,14 @@ public class NodesImpl implements Nodes
         // if requested, make (get or create) path
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
-        final Set<String> renditions = getRequestedRenditions(renditionNames);
+        final Set<String> renditions = getRequestedParams(renditionNames);
 
+        Set<String> storageClasses = getRequestedParams(storageClassesParam);
+        if(!contentService.isStorageClassesSupported(storageClasses))
+        {
+            storageClasses = null;
+        }
+        
         validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
         try
         {
@@ -3083,13 +3095,7 @@ public class NodesImpl implements Nodes
                 else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
                 {
                     // overwrite existing (versionable) file
-                    Set<String> storageClasses = null;
-                    if (parameters != null && parameters.getContentInfo() instanceof ContentInfo
-                        && ((ContentInfo) parameters.getContentInfo()).getStorageClasses() != null)
-                    {
-                        storageClasses = ((ContentInfo) parameters.getContentInfo())
-                            .getStorageClasses();
-                    }
+
                     BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(),
                                                                        content.getEncoding(), -1,
                                                                        null, storageClasses);
@@ -3113,7 +3119,9 @@ public class NodesImpl implements Nodes
             versionMajor = versioningEnabled ? versionMajor : null;
 
             // Create a new file.
-            NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+            NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content,
+                                            storageClasses, properties, assocTypeQName, parameters,
+                                            versionMajor, versionComment);
             
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
@@ -3138,8 +3146,9 @@ public class NodesImpl implements Nodes
          */
     }
 
-    private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
-                                  Boolean versionMajor, String versionComment)
+    private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType,
+        Content content, Set<String> storageClasses, Map<QName, Serializable> props,
+        QName assocTypeQName, Parameters params, Boolean versionMajor, String versionComment)
     {
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
         
@@ -3150,12 +3159,9 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            Set<String> storageClasses = null;
-            if (params != null && 
-                params.getContentInfo() instanceof ContentInfo && 
-                ((ContentInfo) params.getContentInfo()).getStorageClasses() != null)
+            if (!contentService.isStorageClassesSupported(storageClasses))
             {
-                storageClasses = ((ContentInfo) params.getContentInfo()).getStorageClasses();
+                storageClasses = null;
             }
 
             // Write content
@@ -3216,14 +3222,14 @@ public class NodesImpl implements Nodes
         }
     }
 
-    static Set<String> getRequestedRenditions(String renditionsParam)
+    static Set<String> getRequestedParams(String stringParams)
     {
-        if (renditionsParam == null)
+        if (stringParams == null)
         {
             return null;
         }
 
-        String[] renditionNames = renditionsParam.split(",");
+        String[] renditionNames = stringParams.split(",");
 
         Set<String> renditions = new LinkedHashSet<>(renditionNames.length);
         for (String name : renditionNames)

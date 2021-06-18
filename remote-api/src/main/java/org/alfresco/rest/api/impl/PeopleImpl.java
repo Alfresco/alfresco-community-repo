@@ -31,10 +31,6 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.authentication.ResetPasswordService;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowException;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowInvalidUserException;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
@@ -122,7 +118,6 @@ public class PeopleImpl implements People
     protected ContentUsageService contentUsageService;
     protected ContentService contentService;
     protected ThumbnailService thumbnailService;
-    protected ResetPasswordService resetPasswordService;
     protected UserRegistrySynchronizer userRegistrySynchronizer;
     protected Renditions renditions;
 
@@ -186,11 +181,6 @@ public class PeopleImpl implements People
     {
 		this.thumbnailService = thumbnailService;
 	}
-
-    public void setResetPasswordService(ResetPasswordService resetPasswordService)
-    {
-        this.resetPasswordService = resetPasswordService;
-    }
 
     public void setRenditions(Renditions renditions)
     {
@@ -864,75 +854,6 @@ public class PeopleImpl implements People
     private boolean isAdminAuthority(String authorityName)
     {
         return authorityService.isAdminAuthority(authorityName);
-    }
-
-    @Override
-    public void requestPasswordReset(String userId, String client)
-    {
-        // Validate the userId and the client
-        checkRequiredField("userId", userId);
-        checkRequiredField("client", client);
-
-        // This is an un-authenticated API call so we wrap it to run as System
-        AuthenticationUtil.runAsSystem(() -> {
-            try
-            {
-                resetPasswordService.requestReset(userId, client);
-            }
-            catch (ResetPasswordWorkflowInvalidUserException ex)
-            {
-                // we don't throw an exception.
-                // For security reason (prevent the attackers to determine that userId exists in the system or not),
-                // the endpoint returns a 202 response if the userId does not exist or
-                // if the user is disabled by an Administrator.
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("Invalid user. " + ex.getMessage());
-                }
-            }
-
-            return null;
-        });
-    }
-
-    @Override
-    public void resetPassword(String personId, final PasswordReset passwordReset)
-    {
-        checkResetPasswordData(passwordReset);
-        checkRequiredField("personId", personId);
-
-        ResetPasswordDetails resetDetails = new ResetPasswordDetails()
-                    .setUserId(personId)
-                    .setPassword(passwordReset.getPassword())
-                    .setWorkflowId(passwordReset.getId())
-                    .setWorkflowKey(passwordReset.getKey());
-        try
-        {
-            // This is an un-authenticated API call so we wrap it to run as System
-            AuthenticationUtil.runAsSystem(() -> {
-                resetPasswordService.initiateResetPassword(resetDetails);
-
-                return null;
-            });
-
-        }
-        catch (ResetPasswordWorkflowException ex)
-        {
-            // we don't throw an exception.
-            // For security reason, the endpoint returns a 202 response
-            // See APPSREPO-35 acceptance criteria
-            if (LOGGER.isWarnEnabled())
-            {
-                LOGGER.warn(ex.getMessage());
-            }
-        }
-    }
-
-    private void checkResetPasswordData(PasswordReset data)
-    {
-        checkRequiredField("password", data.getPassword());
-        checkRequiredField("id", data.getId());
-        checkRequiredField("key", data.getKey());
     }
 
     private boolean isGuestAuthority(String authorityName)

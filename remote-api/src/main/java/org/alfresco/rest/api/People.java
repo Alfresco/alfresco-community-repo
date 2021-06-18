@@ -90,22 +90,7 @@ public interface People
      * @return CollectionWithPagingInfo<Person>
      */
     CollectionWithPagingInfo<Person> getPeople(Parameters parameters);
-
-    /**
-     * Request password reset (an email will be sent to the registered email of the given {@code userId}).
-     * The API returns a 202 response for a valid, as well as the invalid (does not exist or disabled) userId
-     *
-     * @param userId     the user id of the person requesting the password reset
-     * @param client the client name which is registered to send emails
-     */
-    void requestPasswordReset(String userId, String client);
-
-    /**
-     * Performs password reset
-     *
-     * @param passwordReset the password reset details
-     */
-    void resetPassword(String personId, PasswordReset passwordReset);
+    
 
     /**
      *

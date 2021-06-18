@@ -53,7 +53,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.preference.PreferenceServiceImplTest.class,
     org.alfresco.repo.rule.MiscellaneousRulesTest.class,
     org.alfresco.repo.rule.RuleServiceIntegrationTest.class,
-    org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest.class,
     org.alfresco.repo.subscriptions.SubscriptionServiceActivitiesTest.class,
     org.alfresco.util.test.junitrules.AlfrescoPersonTest.class,
 

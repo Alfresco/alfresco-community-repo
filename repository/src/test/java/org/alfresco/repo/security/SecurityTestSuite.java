@@ -33,7 +33,6 @@ import org.alfresco.repo.security.authentication.AuthenticationTest;
 import org.alfresco.repo.security.authentication.AuthorizationTest;
 import org.alfresco.repo.security.authentication.ChainingAuthenticationServiceTest;
 import org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest;
 import org.alfresco.repo.security.authentication.UpgradePasswordHashTest;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest;
 import org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest;
@@ -107,7 +106,6 @@ public class SecurityTestSuite extends TestSuite
 		suite.addTestSuite(SubsystemChainingFtpAuthenticatorTest.class);
 		suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
 
-        suite.addTest(new JUnit4TestAdapter(ResetPasswordServiceImplTest.class));
         return suite;
     }
 }

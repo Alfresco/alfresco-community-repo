@@ -163,23 +163,6 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         return people.getPeople(params);
     }
 
-    @Operation("request-password-reset")
-    @WebApiDescription(title = "Request Password Reset", description = "Request password reset",
-                       successStatus = HttpServletResponse.SC_ACCEPTED)
-    @WebApiNoAuth
-    public void requestPasswordReset(String personId, Client client, Parameters parameters, WithResponse withResponse)
-    {
-        people.requestPasswordReset(personId, client.getClient());
-    }
-
-    @Operation("reset-password")
-    @WebApiDescription(title = "Reset Password", description = "Performs password reset", successStatus = HttpServletResponse.SC_ACCEPTED)
-    @WebApiNoAuth
-    public void resetPassword(String personId, PasswordReset passwordReset, Parameters parameters, WithResponse withResponse)
-    {
-        people.resetPassword(personId, passwordReset);
-    }
-
     /**
      * Download avatar image content
      *

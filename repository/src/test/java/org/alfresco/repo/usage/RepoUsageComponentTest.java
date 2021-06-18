@@ -25,9 +25,9 @@
  */
 package org.alfresco.repo.usage;
 
-import javax.transaction.UserTransaction;
+import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.cmr.admin.RepoUsageStatus;
+import org.alfresco.service.cmr.admin.RepoUsageStatus.RepoUsageLevel;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
@@ -47,6 +48,8 @@ import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * Tests {@link RepoUsageComponent}
@@ -234,6 +237,64 @@ public class RepoUsageComponentTest extends TestCase
         // Get the usage
         @SuppressWarnings("unused")
         RepoUsage usage = getUsage();
+    }
+    
+    public void testLicenceHoursBeforeExpiration() throws Exception
+    {
+        // Update usage
+        updateUsage(UsageType.USAGE_ALL);
+
+        // Set the restrictions for license to expire in 6 hours
+        RepoUsage restrictions = new RepoUsage(
+                System.currentTimeMillis(),
+                5000L,
+                100000L,
+                LicenseMode.TEAM,
+                System.currentTimeMillis() + TimeUnit.HOURS.toMillis(6),
+                false);
+        repoUsageComponent.setRestrictions(restrictions);
+        
+        // Update use
+        updateUsage(UsageType.USAGE_ALL);
+
+        // Get the usage
+        RepoUsage usage = getUsage();        
+        
+        // Check        
+        assertFalse("Usage is in read-only mode",usage.isReadOnly());
+        assertTrue("System is in read-only mode",transactionService.getAllowWrite());
+        
+        RepoUsageStatus status = repoUsageComponent.getUsageStatus();
+        assertEquals("System is not at Warning All Level",status.getLevel(),RepoUsageLevel.WARN_ALL);
+    }
+    
+    public void testLicenceMinutesAfterExpiration() throws Exception
+    {
+        // Update usage
+        updateUsage(UsageType.USAGE_ALL);
+
+        // Set the restrictions for license to expire in 6 hours
+        RepoUsage restrictions = new RepoUsage(
+                System.currentTimeMillis(),
+                5000L,
+                100000L,
+                LicenseMode.TEAM,
+                System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1),
+                false);
+        repoUsageComponent.setRestrictions(restrictions);
+        
+        // Update use
+        updateUsage(UsageType.USAGE_ALL);
+
+        // Get the usage
+        RepoUsage usage = getUsage();        
+        
+        // Check we are in read-only mode
+        assertTrue("Usage is not in read-only mode",usage.isReadOnly());
+        assertFalse("System is not in read-only mode",transactionService.getAllowWrite());
+        
+        RepoUsageStatus status = repoUsageComponent.getUsageStatus();
+        assertEquals("System is not at Locked Level",status.getLevel(),RepoUsageLevel.LOCKED_DOWN);        
     }
     
     /**

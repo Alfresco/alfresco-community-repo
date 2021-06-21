@@ -327,6 +327,35 @@ public class RepoUsageComponentTest extends TestCase
         assertEquals("System is not at OK Level",status.getLevel(),RepoUsageLevel.OK);
     }
     
+    public void testLicenceDaysAfterExpiration() throws Exception
+    {
+        // Update usage
+        updateUsage(UsageType.USAGE_ALL);
+
+        // Set the restrictions for license expired 5 days ago
+        RepoUsage restrictions = new RepoUsage(
+                System.currentTimeMillis(),
+                5000L,
+                100000L,
+                LicenseMode.TEAM,
+                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5),
+                false);
+        repoUsageComponent.setRestrictions(restrictions);
+        
+        // Update use
+        updateUsage(UsageType.USAGE_ALL);
+
+        // Get the usage
+        RepoUsage usage = getUsage();        
+        
+        // Check we are in read-only mode
+        assertTrue("Usage is not in read-only mode",usage.isReadOnly());
+        assertFalse("System is not in read-only mode",transactionService.getAllowWrite());
+        
+        RepoUsageStatus status = repoUsageComponent.getUsageStatus();
+        assertEquals("System is not at Locked Level",status.getLevel(),RepoUsageLevel.LOCKED_DOWN);   
+    }
+    
     /**
      * Check that concurrent updates are prevented
      *

@@ -469,7 +469,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
                 remainingMills = DateUtil.calculateMs(System.currentTimeMillis(), licenseExpiryDate);
             }
             
-            if (remainingDays <= 0 && remainingMills < 0)
+            if (remainingDays < 0 || remainingMills < 0)
             {
                 errors.add(I18NUtil.getMessage("system.usage.err.limit_license_expired"));
                 level = RepoUsageLevel.LOCKED_DOWN;

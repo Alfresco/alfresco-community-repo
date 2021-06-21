@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -174,7 +174,7 @@ public class VirtualQueryImpl implements VirtualQuery
     private PagingResults<Reference> asPagingResults(ActualEnvironment environment, PagingRequest pagingRequest,
                 ResultSet result, Reference parentReference) throws ActualEnvironmentException
     {
-        final List<Reference> page = new LinkedList<Reference>();
+        final List<Reference> page = new LinkedList<>();
 
         for (ResultSetRow row : result)
         {
@@ -183,11 +183,10 @@ public class VirtualQueryImpl implements VirtualQuery
         }
 
         final boolean hasMore = result.hasMore();
-        final int totalFirst = (int) result.getNumberFound();
-        int start;
+        int skipCount;
         try
         {
-            start = result.getStart();
+            skipCount = result.getStart();
         }
         catch (UnsupportedOperationException e)
         {
@@ -195,18 +194,11 @@ public class VirtualQueryImpl implements VirtualQuery
             {
                 logger.debug("Unsupported ResultSet.getStart() when trying to create query paging result");
             }
-            if (pagingRequest != null)
-            {
-                start = pagingRequest.getSkipCount();
-            }
-            else
-            {
-                start = 0;
-            }
+            skipCount = pagingRequest != null ? pagingRequest.getSkipCount() : 0;
         }
-        final int totlaSecond = !hasMore ? (int) result.getNumberFound() : (int) (start + result.getNumberFound() + 1);
-        final Pair<Integer, Integer> total = new Pair<Integer, Integer>(totalFirst,
-                                                                        totlaSecond);
+        final int totalFirst = skipCount + (int) result.length();
+        final Pair<Integer, Integer> total = new Pair<>(totalFirst, totalFirst);
+
         return new PagingResults<Reference>()
         {
 

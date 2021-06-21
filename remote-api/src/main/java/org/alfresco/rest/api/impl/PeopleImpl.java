@@ -37,7 +37,6 @@ import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;

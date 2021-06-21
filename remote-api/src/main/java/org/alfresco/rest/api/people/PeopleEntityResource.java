@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Client;
-import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;

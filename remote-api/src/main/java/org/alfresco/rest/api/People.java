@@ -28,7 +28,6 @@ package org.alfresco.rest.api;
 import java.io.InputStream;
 import java.util.List;
 
-import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;

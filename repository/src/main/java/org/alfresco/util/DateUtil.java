@@ -80,12 +80,12 @@ public class DateUtil
      * @param endMs   end date in milliseconds
      * @return number milliseconds between
      */
-    public static long calculateMs(long startMs, long endMs)
+    public static int calculateMs(long startMs, long endMs)
     {
         DateTime startDateTime = new DateTime(startMs);
         DateTime endDateTime = new DateTime(endMs);
 
-        long milliseconds;
+        int milliseconds;
         if (endDateTime.isBefore(startDateTime))
         {
             Interval interval = new Interval(endDateTime, startDateTime);

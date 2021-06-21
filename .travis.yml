@@ -23,6 +23,7 @@ branches:
     - /release\/.*/
     - /feature\/.*/
     - /fix\/.*/
+    - ACS-1681_remove_reset_password_api
 
 env:
   global:

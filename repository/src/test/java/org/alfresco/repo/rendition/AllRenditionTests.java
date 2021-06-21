@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.rendition;
 
-import org.alfresco.repo.rendition.executer.HTMLRenderingEngineTest;
 import org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest;
 import org.alfresco.repo.thumbnail.ThumbnailServiceImplTest;
 import org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluatorTest;
@@ -49,7 +48,6 @@ import org.junit.runners.Suite;
         RenditionServiceIntegrationTest.class,
         RenditionServicePermissionsTest.class,
         RenditionNodeManagerTest.class,
-        HTMLRenderingEngineTest.class,
         MultiUserRenditionTest.class
 })
 public class AllRenditionTests

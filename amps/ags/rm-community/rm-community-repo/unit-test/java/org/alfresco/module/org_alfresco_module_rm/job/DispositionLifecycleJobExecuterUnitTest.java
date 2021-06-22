@@ -73,6 +73,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     private static final String CUTOFF = "cutoff";
     private static final String RETAIN = "retain";
     private static final String DESTROY = "destroy";
+    private static final int BATCH_SIZE = 1;
 
     /** test query snippet */
     private static final String QUERY = "\"" + CUTOFF + "\" OR \"" + RETAIN + "\"";
@@ -102,7 +103,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // setup data
         List<String> dispositionActions = buildList(CUTOFF, RETAIN);
         executer.setDispositionActions(dispositionActions);
-        executer.setBatchSize(1);
+        executer.setBatchSize(BATCH_SIZE);
 
         // setup interactions
         doReturn(mockedResultSet).when(mockedSearchService).query(any(SearchParameters.class));
@@ -332,5 +333,23 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         verify(mockedNodeService).exists(node3);
         verify(mockedNodeService).exists(node4);
         verify(mockedSearchService, times(2)).query(any(SearchParameters.class));
+    }
+
+    /**
+     * Given a batch size < 1
+     * Then the executer use default value instead
+     */
+    @Test
+    public void testInvalidBatchSize()
+    {
+        executer.setBatchSize(0);
+        executer.executeImpl();
+
+        ArgumentCaptor<SearchParameters> paramsCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());;
+        assertEquals(executer.DEFAULT_BATCH_SIZE, paramsCaptor.getValue().getMaxItems());
+        verify(mockedResultSet, times(1)).close();
+
+        executer.setBatchSize(BATCH_SIZE);
     }
 }

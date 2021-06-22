@@ -27,6 +27,7 @@ package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.Nodes.PATH_MY;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
+import static org.alfresco.rest.api.tests.util.RestApiUtil.parseRestApiEntries;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -190,7 +191,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(getNodeChildrenUrl(f0Id), paging, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        List<Node> nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size()); // forum is part of the default ignored types
         // Paging
         ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
@@ -202,7 +203,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Order by folders and modified date first
         Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertTrue(nodes.get(0).getIsFolder());
@@ -220,7 +221,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Order by folders last and modified date first
         orderBy = Collections.singletonMap("orderBy", "isFolder ASC,modifiedAt DESC");
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size());
         assertEquals(content2, nodes.get(0).getName());
         assertEquals(content1, nodes.get(1).getName());
@@ -230,7 +231,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Order by folders and modified date last
         orderBy = Collections.singletonMap("orderBy", "isFolder,modifiedAt");
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size());
         assertEquals(content1, nodes.get(0).getName());
         assertEquals(content2, nodes.get(1).getName());
@@ -243,7 +244,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // SkipCount=0,MaxItems=2
         paging = getPaging(0, 2);
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertEquals(folder1, nodes.get(1).getName());
@@ -256,7 +257,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // SkipCount=null,MaxItems=2
         paging = getPaging(null, 2);
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertEquals(folder1, nodes.get(1).getName());
@@ -269,7 +270,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // SkipCount=2,MaxItems=4
         paging = getPaging(2, 4);
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertEquals(content2, nodes.get(0).getName());
         assertEquals(content1, nodes.get(1).getName());
@@ -283,7 +284,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // SkipCount=2,MaxItems=null
         paging = getPaging(2, null);
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertEquals(content2, nodes.get(0).getName());
         assertEquals(content1, nodes.get(1).getName());
@@ -362,13 +363,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(childrenUrl, paging, 200);
-        List<Document> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        List<Document> nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
 
         // Order by folders and modified date first
         Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(childrenUrl, paging, orderBy, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertEquals(folder1, nodes.get(1).getName());
@@ -390,7 +391,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // request without "include"
         Map<String, String> params = new HashMap<>();
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
             assertNull("There shouldn't be a 'properties' object in the response.", n.getProperties());
@@ -403,7 +404,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params = new HashMap<>();
         params.put("include", "isLink");
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
             assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
@@ -427,7 +428,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("include", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(0).getProperties());
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(1).getProperties());
@@ -443,7 +444,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params = new HashMap<>();
         params.put("where", "("+Nodes.PARAM_ISFOLDER+"=true)");
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(2, nodes.size());
 
         assertTrue(nodes.get(0).getIsFolder());
@@ -458,7 +459,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params = new HashMap<>();
         params.put("where", "("+Nodes.PARAM_ISFILE+"=true)");
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
         assertFalse(nodes.get(0).getIsFolder());
         assertTrue(nodes.get(0).getIsFile());
@@ -469,7 +470,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1);
         response = getAll(childrenUrl, paging, params, 200);
         JSONObject jsonResponse = response.getJsonResponse();
-        nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
+        nodes = parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF1_Id, nodes.get(0).getId());
 
@@ -481,7 +482,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder0Name + "/" + folder2);
         response = getAll(rootChildrenUrl, paging, params, 200);
         jsonResponse = response.getJsonResponse();
-        nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
+        nodes = parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF2_Id, nodes.get(0).getId());
 
@@ -499,7 +500,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("fields", "id");
         response = getAll(rootChildrenUrl, paging, params, 200);
         jsonResponse = response.getJsonResponse();
-        nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
+        nodes = parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         Document doc = nodes.get(0);
         assertEquals(contentF2_Id, doc.getId());
@@ -2177,7 +2178,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             put(URL_NODES, fId, toJsonAsStringNonNull(nodeUpdate), null, 200);
 
             HttpResponse response = getAll(getNodeChildrenUrl(fId), null, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            List<Node> nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             Node obj = new Node();
@@ -2191,7 +2192,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(fId, nodeResp.getParentId());
 
             response = getAll(getNodeChildrenUrl(fId), null, null, 200);
-            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
             obj = new Node();
@@ -2208,14 +2209,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(fId, nodeResp.getParentId());
 
             response = getAll(getNodeChildrenUrl(fId), null, null, 200);
-            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
             Map<String, String> params = new HashMap<>();
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
             params.put("include", "association");
             response = getAll(getNodeChildrenUrl(fId), null, params, 200);
-            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(c1Id, nodes.get(0).getId());
             assertTrue(nodes.get(0).getAssociation().getIsPrimary());
@@ -2224,7 +2225,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
             params.put("include", "association");
             response = getAll(getNodeChildrenUrl(fId), null, params, 200);
-            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(c2Id, nodes.get(0).getId());
             assertTrue(nodes.get(0).getAssociation().getIsPrimary());
@@ -2344,7 +2345,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // no filtering
 
         HttpResponse response = getAll(childrenUrl, paging, null, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        List<Node> nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, allIds);
 
         // filtering, via where clause - folders
@@ -2353,21 +2354,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("where", "(nodeType='"+TYPE_CM_FOLDER+"')");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, folderIds);
 
         params = new HashMap<>();
         params.put("where", "(isFolder=true)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, folderIds);
 
         params = new HashMap<>();
         params.put("where", "(isFolder=true AND isFile=false)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, folderIds);
 
         // filtering, via where clause - files
@@ -2376,21 +2377,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("where", "(nodeType='"+TYPE_CM_CONTENT+"')");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, fileIds);
 
         params = new HashMap<>();
         params.put("where", "(isFile=true)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, fileIds);
 
         params = new HashMap<>();
         params.put("where", "(isFile=true AND isFolder=false)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, fileIds);
 
         // filtering, via where clause - non-folders / non-files
@@ -2399,21 +2400,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("where", "(nodeType='"+TYPE_CM_OBJECT+"')");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, objIds);
 
         params = new HashMap<>();
         params.put("where", "(nodeType='cm:cmobject INCLUDESUBTYPES')");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, allIds);
 
         params = new HashMap<>();
         params.put("where", "(isFile=false AND isFolder=false)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, objIds);
 
         // filtering, via where clause - not files
@@ -2421,7 +2422,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("where", "(isFile=false)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, notFileIds);
 
         // filtering, via where clause - not folders
@@ -2429,7 +2430,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put("where", "(isFolder=false)");
 
         response = getAll(childrenUrl, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, notFolderIds);
 
         // -ve - node cannot be both a file and a folder
@@ -2565,7 +2566,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Paging paging = getPaging(0, Integer.MAX_VALUE);
 
         response = getAll(getNodeChildrenUrl(f2Id), paging, params, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        List<Node> nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(0, nodes.size());
 
         // filter by including sub-types - note: includesubtypes is case-insensitive
@@ -2576,7 +2577,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         paging = getPaging(0, Integer.MAX_VALUE);
 
         response = getAll(getNodeChildrenUrl(f2Id), paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(linkIds.size(), nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
@@ -2587,7 +2588,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         paging = getPaging(0, Integer.MAX_VALUE);
 
         response = getAll(getNodeChildrenUrl(f2Id), paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(linkIds.size(), nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
@@ -2802,7 +2803,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testCreateNodeWithStorageClasses() throws Exception
+    public void testUploadFileWithStorageClasses() throws Exception
     {
         setRequestContext(networkOne.getId(), user1, null);
         
@@ -2817,6 +2818,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document document = createTextFile(PATH_MY, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps);
 
         assertTrue(Set.of("default").containsAll(document.getContent().getStorageClasses()));
+        
+        HttpResponse response = getAll(getNodeChildrenUrl(PATH_MY), getPaging(0, 100), Map.of("include", "storageClasses"), 200);
+        List<Node> children = parseRestApiEntries(response.getJsonResponse(), Node.class);
+
+        assertEquals(1, children.size());
+        assertTrue(Set.of("default").containsAll(children.get(0).getContent().getStorageClasses()));
     }
 
     @Test
@@ -4950,7 +4957,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // call get with relativePathParam
         HttpResponse response = getAll(getNodeChildrenUrl(site1DocLibNodeId), null, params, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        List<Node> nodes = parseRestApiEntries(response.getJsonResponse(), Node.class);
 
         assertEquals(1, nodes.size());
         assertEquals("/" + folderA + "/" + folderB + "/" + folderC, ((Node) (nodes.get(0))).getPath().getRelativePath());

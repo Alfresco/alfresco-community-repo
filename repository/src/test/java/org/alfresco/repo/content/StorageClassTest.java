@@ -61,7 +61,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @Category(OwnJVMTestsCategory.class)
-@RunWith(SpringRunner.class) public class StorageClassTest extends BaseSpringTest
+@RunWith(SpringRunner.class)
+public class StorageClassTest extends BaseSpringTest
 {
         private static final String DEFAULT_SC = "Default1";
         private static final String DEFAULT_VALUE = "default";
@@ -71,7 +72,8 @@ import static org.mockito.Mockito.when;
 
         private NodeService nodeService;
         private NodeRef rootNode;
-        @Spy ContentStore mockContentStore;
+        @Spy
+        ContentStore mockContentStore;
         ContentService contentService;
         ContentStore contentStore;
 
@@ -106,18 +108,11 @@ import static org.mockito.Mockito.when;
                 ReflectionTestUtils.setField(contentService, "store", contentStore);
         }
 
-        @Test
-        public void testDefaultGetSupportedStorageClasses()
-        {
-                ReflectionTestUtils.setField(contentService, "store", contentStore);
-                assertTrue("Current supported storage classes: " + contentService.getSupportedStorageClasses(),
-                        contentService.getSupportedStorageClasses().contains(DEFAULT_VALUE));
-        }
 
         @Test
         public void testGetSupportedStorageClasses()
         {
-                assertTrue("Currently supported storage classes:" + contentService.getSupportedStorageClasses()  , contentService.getSupportedStorageClasses().contains(DEFAULT_SC));
+                assertTrue("Currently supported storage classes:" + contentService.getSupportedStorageClasses(), contentService.getSupportedStorageClasses().contains(DEFAULT_SC));
         }
 
         @Test
@@ -131,7 +126,7 @@ import static org.mockito.Mockito.when;
         public void getStorageClassesTransitions()
         {
                 Set<String> key1 = Set.of("Default");
-                Set<String> key2 = Set.of("Warm");
+                Set<String> key2 = Set.of("WORM");
                 Set<Set<String>> value1 = Set.of(Set.of("Archive"));
                 Map<Set<String>, Set<Set<String>>> map = new HashMap<>();
                 map.put(key1, value1);
@@ -142,17 +137,6 @@ import static org.mockito.Mockito.when;
 
                 assertTrue("Obtained" + contentService.getStorageClassesTransitions(), contentService.getStorageClassesTransitions().containsKey(key1));
                 assertTrue("Obtained" + contentService.getStorageClassesTransitions(), contentService.getStorageClassesTransitions().containsValue(value1));
-        }
-
-        @Test
-        public void findDefaultStorageClasses() throws SystemException, NotSupportedException
-        {
-                ReflectionTestUtils.setField(contentService, "store", contentStore);
-
-                NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent1");
-
-                assertTrue("Found default storage classes: " + contentService.findStorageClasses(contentNodeRef), contentService.findStorageClasses(contentNodeRef).contains(
-                        DEFAULT_VALUE));
         }
 
         @Test
@@ -182,7 +166,7 @@ import static org.mockito.Mockito.when;
         public void findStorageClassesTransitions() throws NotSupportedException, SystemException
         {
                 Set<String> key1 = Set.of("Default");
-                Set<String> key2 = Set.of("Warm");
+                Set<String> key2 = Set.of("WORM");
                 Set<Set<String>> value1 = Set.of(Set.of("Archive"));
                 Map<Set<String>, Set<Set<String>>> map = new HashMap<>();
                 map.put(key1, value1);

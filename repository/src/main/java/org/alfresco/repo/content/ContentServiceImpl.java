@@ -475,23 +475,30 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         // check for an existing URL - the get of the reader will perform type checking
         ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
 
-        if (existingContentReader != null && 
-            existingContentReader.getContentData() != null && 
+        if (existingContentReader != null &&
+            existingContentReader.getContentData() != null &&
             existingContentReader.getContentData().getContentUrl() != null)
         {
             Set<String> currentStorageClasses = findStorageClasses(nodeRef);
-            Set<Set<String>> possibleTransitions = findStorageClassesTransitions(nodeRef)
-                .get(currentStorageClasses);
-            if (storageClasses != null && 
-                !currentStorageClasses.equals(storageClasses) && 
-                !possibleTransitions.contains(storageClasses))
+            if (currentStorageClasses != null &&
+                !currentStorageClasses.equals(storageClasses))
             {
-                throw new UnsupportedStorageClassException(store, storageClasses, "Transition from "
-                    + currentStorageClasses + " storage classes to " + storageClasses
-                    + " is not supported");
+                Set<Set<String>> possibleTransitions = findStorageClassesTransitions(nodeRef)
+                    .get(currentStorageClasses);
+
+                if (possibleTransitions == null
+                    || !possibleTransitions.contains(storageClasses))
+                {
+                    throw new UnsupportedStorageClassException(store, storageClasses,
+                                                               "Transition from "
+                                                                   + currentStorageClasses
+                                                                   + " storage classes to "
+                                                                   + storageClasses
+                                                                   + " is not supported");
+                }
             }
         }
-        
+
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.
         ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef,

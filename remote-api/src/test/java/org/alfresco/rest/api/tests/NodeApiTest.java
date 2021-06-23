@@ -2814,7 +2814,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         docProps.put("storageClasses", "unsupported-storage-classes");
         docProps.put("include", "storageClasses");
         String contentName = "content " + RUNID + ".txt";
-        // Upload text content
+        
+        // Upload text with unsupported storage classes
+        createTextFile(PATH_MY, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps, 400);
+
+        // Upload text content with "default" storage classes
+        docProps.put("storageClasses", "default");
         Document document = createTextFile(PATH_MY, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps);
 
         assertTrue(Set.of("default").containsAll(document.getContent().getStorageClasses()));

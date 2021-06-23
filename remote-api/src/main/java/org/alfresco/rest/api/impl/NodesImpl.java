@@ -56,6 +56,7 @@ import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.UnsupportedStorageClassException;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
@@ -3062,13 +3063,8 @@ public class NodesImpl implements Nodes
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedParams(renditionNames);
-
         Set<String> storageClasses = getRequestedParams(storageClassesParam);
-        if(!contentService.isStorageClassesSupported(storageClasses))
-        {
-            storageClasses = null;
-        }
-        
+
         validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
         try
         {
@@ -3137,6 +3133,10 @@ public class NodesImpl implements Nodes
         catch (AccessDeniedException ade)
         {
             throw new PermissionDeniedException(ade.getMessage());
+        }
+        catch (UnsupportedStorageClassException usce)
+        {
+            throw new InvalidArgumentException(usce.getMessage());
         }
 
         /*

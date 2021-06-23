@@ -1,6 +1,9 @@
 package org.alfresco.rest.nodes;
 
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -18,12 +21,15 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import io.restassured.RestAssured;
@@ -33,6 +39,20 @@ import io.restassured.RestAssured;
  */
 public class NodesTests extends RestTest
 {
+    private UserModel user1;
+    private SiteModel site1;
+    private FolderModel folder1;
+    private FileModel file1;
+
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        user1 = dataUser.createRandomTestUser();
+        site1 = dataSite.usingUser(user1).createPublicRandomSite();
+        folder1 = dataContent.usingUser(user1).usingSite(site1).createFolder();
+        file1 = dataContent.usingUser(user1).usingResource(folder1).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+    }
+
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify files can be moved from one folder to another")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY}) 
@@ -126,4 +146,47 @@ public class NodesTests extends RestTest
         logger.info("CMIS API call response status code is: " + cmisApiStatusCode);
         assertEquals(HttpStatus.FORBIDDEN.value(), cmisApiStatusCode);
     }
+
+    @TestRail(section = { TestGroup.SANITY }, executionType = ExecutionType.SANITY,
+            description = "Check that the default node storage classes are retrieved - GET /nodes/{nodeId}.")
+    @Test(groups = { TestGroup.SANITY })
+    public void getNodeStorageClass() throws Exception
+    {
+        STEP("1. Get storage classes for a node with content.");
+        RestNodeModel restResponse = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=storageClasses").getNode();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertTrue(restResponse.getContent().getStorageClasses().contains("default"));
+
+        STEP("2. Check that storage classes for a node with content are not displayed by default.");
+        restResponse = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).getNode();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertNull(restResponse.getContent().getStorageClasses());
+
+        STEP("3. Get storage classes for a node without content (e.g folder).");
+        restClient.authenticateUser(user1).withCoreAPI().usingNode(folder1).usingParams("include=storageClasses").getNode();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+    }
+
+    @TestRail(section = { TestGroup.SANITY }, executionType = ExecutionType.SANITY,
+            description = "Check that the storage classes default behavior of PUT /nodes/{nodeId}.")
+    @Test(groups = { TestGroup.SANITY })
+    public void updateNodeStorageClass() throws Exception
+    {
+        STEP("1. Update storage classes for a node with existing storage class.");
+        JsonObject updateStorageClass = Json.createObjectBuilder().add("content",
+                Json.createObjectBuilder().add("storageClasses", Json.createArrayBuilder().add("default")))
+                .build();
+        RestNodeModel restResponse = restClient.authenticateUser(user1).withCoreAPI()
+                .usingNode(file1).usingParams("include=storageClasses").updateNode(updateStorageClass.toString());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertTrue(restResponse.getContent().getStorageClasses().contains("default"));
+
+        STEP("2. Update storage classes for a node and check that storageClass is not displayed by default.");
+        // Use existing update body
+        restResponse = restClient.authenticateUser(user1).withCoreAPI()
+                .usingNode(file1).updateNode(updateStorageClass.toString());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertNull(restResponse.getContent().getStorageClasses());
+    }
+
 }

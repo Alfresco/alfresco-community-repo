@@ -3159,11 +3159,6 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            if (!contentService.isStorageClassesSupported(storageClasses))
-            {
-                storageClasses = null;
-            }
-
             // Write content
             writeContent(nodeRef, fileName, content.getInputStream(), true, storageClasses);
         }

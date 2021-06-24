@@ -37,9 +37,9 @@ import java.util.HashSet;
  */
 public class StorageClass extends HashSet<String>
 {
-    public StorageClass(String... storageClasses)
+    public StorageClass(String... storageClassLabels)
     {
         super();
-        Collections.addAll(this, storageClasses);
+        Collections.addAll(this, storageClassLabels);
     }
 }

@@ -184,9 +184,6 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         String contentUrl = writer.getContentUrl();
         final StorageClass storageClass = new StorageClass("a-storage-class");
 
-        // Empty storage classes before update
-        assertTrue(routingStore.findStorageClass(contentUrl).isEmpty());
-
         // Update storage classes
         routingStore.updateStorageClass(contentUrl, storageClass, null);
 

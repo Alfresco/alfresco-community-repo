@@ -289,7 +289,7 @@ public interface ContentStore
     {
         return storageClass == null ||
             storageClass.isEmpty() ||
-            (1 == storageClass.size() && storageClass.contains(DEFAULT_SC));
+            (1 == storageClass.size() && storageClass.equals(DEFAULT_SC));
     }
 
     /**

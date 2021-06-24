@@ -108,6 +108,6 @@ public class StorageClassesTest extends AbstractSingleNetworkSiteTest
         List<StorageClass> nodes = parseRestApiEntries(response.getJsonResponse(), StorageClass.class);
 
         assertNotNull(nodes);
-        assertEquals(3, nodes.size());
+        assertEquals(2, nodes.size());
     }
 }

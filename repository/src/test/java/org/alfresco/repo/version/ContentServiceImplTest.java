@@ -180,7 +180,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         final NodeRef newNode = createNewNode();
         final Set<String> storageClasses = contentService.findStorageClass(newNode);
         assertEquals(1, storageClasses.size());
-        assertTrue(storageClasses.contains(ContentStore.DEFAULT_SC));
+        assertEquals(storageClasses, ContentStore.DEFAULT_SC);
     }
 
     @Test

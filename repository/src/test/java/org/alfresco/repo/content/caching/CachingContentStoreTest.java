@@ -527,7 +527,7 @@ public class CachingContentStoreTest
     @Test
     public void testBackingStoreIsCalledForSupportedStorageClasses()
     {
-        when(backingStore.isStorageClassSupported(null)).thenReturn(true);
+        when(backingStore.isStorageClassSupported(new StorageClass("a-certain-storage-class"))).thenReturn(true);
 
         final StorageClass storageClass = new StorageClass("a-certain-storage-class");
         assertTrue(cachingStore.isStorageClassSupported(storageClass));

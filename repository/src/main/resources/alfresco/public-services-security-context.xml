@@ -492,7 +492,7 @@
                org.alfresco.service.cmr.repository.ContentService.getStoreTotalSpace=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getStoreFreeSpace=ACL_ALLOW 
                org.alfresco.service.cmr.repository.ContentService.getSupportedStorageClasses=ACL_ALLOW
-               org.alfresco.service.cmr.repository.ContentService.isStorageClassesSupported=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentService.isStorageClassSupported=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getStorageClassesTransitions=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getRawReader=ACL_METHOD.ROLE_ADMINISTRATOR
                org.alfresco.service.cmr.repository.ContentService.getReader=ACL_NODE.0.sys:base.ReadContent

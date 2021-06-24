@@ -3063,7 +3063,7 @@ public class NodesImpl implements Nodes
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedParams(renditionNames);
-        Set<String> storageClasses = getRequestedParams(storageClassesParam);
+        final Set<String> storageClasses = getRequestedParams(storageClassesParam);
 
         validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
         try

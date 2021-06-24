@@ -26,15 +26,14 @@
 
 package org.alfresco.rest.api.impl;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.rest.api.ContentStorageClasses;
 import org.alfresco.rest.api.model.StorageClass;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.ContentService;
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Centralises access to storage classes functionality
@@ -51,7 +50,12 @@ public class ContentStorageClassesImpl implements ContentStorageClasses
     @Override
     public CollectionWithPagingInfo<StorageClass> getStorageClasses(Paging paging)
     {
-        Set<String> storageClasses = contentService.getSupportedStorageClasses();
-        return CollectionWithPagingInfo.asPaged(paging, storageClasses.stream().map(StorageClass::new).collect(Collectors.toList()));
+        final Set<org.alfresco.repo.content.StorageClass> supportedStorageClasses = contentService
+            .getSupportedStorageClasses();
+        return CollectionWithPagingInfo.asPaged(paging,
+            supportedStorageClasses.stream()
+                // TODO: update this - map the repo SC to a REST SC
+            .map(sc -> new StorageClass(sc.toString())).collect(Collectors.toList()));
+
     }
 }

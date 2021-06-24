@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
@@ -48,10 +47,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Set;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClass;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
@@ -528,11 +527,11 @@ public class CachingContentStoreTest
     @Test
     public void testBackingStoreIsCalledForSupportedStorageClasses()
     {
-        when(backingStore.isStorageClassesSupported(anySet())).thenReturn(true);
+        when(backingStore.isStorageClassSupported(null)).thenReturn(true);
 
-        final Set<String> storageClasses = Set.of("a-certain-storage-class");
-        assertTrue(cachingStore.isStorageClassesSupported(storageClasses));
-        verify(backingStore, times(1)).isStorageClassesSupported(storageClasses);
+        final StorageClass storageClass = new StorageClass("a-certain-storage-class");
+        assertTrue(cachingStore.isStorageClassSupported(storageClass));
+        verify(backingStore, times(1)).isStorageClassSupported(storageClass);
     }
 
     @Test
@@ -547,20 +546,21 @@ public class CachingContentStoreTest
     public void testUpdateStorageClassesForGivenContentUrl()
     {
         String contentUrl = "contentUrl";
-        final Set<String> storageClasses = Set.of("a-certain-storage-class");
+        final StorageClass storageClass = new StorageClass("a-certain-storage-class");
         
-        cachingStore.updateStorageClasses(contentUrl, storageClasses, null);
+        cachingStore.updateStorageClass(contentUrl, storageClass, null);
 
-        verify(backingStore, times(1)).updateStorageClasses(contentUrl, storageClasses, null);
+        verify(backingStore, times(1)).updateStorageClass(contentUrl, storageClass, null);
     }
 
     @Test
     public void testFindStorageClassesForGivenContentUrl()
     {
-        when(backingStore.findStorageClasses(anyString())).thenReturn(emptySet());
+        final StorageClass storageClass = new StorageClass();
+        when(backingStore.findStorageClass(anyString())).thenReturn(storageClass);
 
-        assertTrue(cachingStore.findStorageClasses("a-contentUrl").isEmpty());
-        verify(backingStore, times(1)).findStorageClasses("a-contentUrl");
+        assertTrue(cachingStore.findStorageClass("a-contentUrl").isEmpty());
+        verify(backingStore, times(1)).findStorageClass("a-contentUrl");
     }
 
     @Test

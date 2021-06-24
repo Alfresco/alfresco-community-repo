@@ -422,12 +422,12 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     @Override
-    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    public boolean isStorageClassSupported(StorageClass storageClass)
     {
         boolean supported = false;
         for (ContentStore store : getAllStores())
         {
-            if (store.isStorageClassesSupported(storageClasses))
+            if (store.isStorageClassSupported(storageClass))
             {
                 supported = true;
                 break;
@@ -436,15 +436,15 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("The storage classes " + storageClasses + (supported ? "are" : "are not") + " supported by at least one store.");
+            logger.debug("The storage classes " + storageClass + (supported ? "are" : "are not") + " supported by at least one store.");
         }
         return supported;
     }
 
     @Override
-    public Set<String> getSupportedStorageClasses()
+    public Set<StorageClass> getSupportedStorageClasses()
     {
-        Set<String> supportedStorageClasses = new HashSet<>();
+        Set<StorageClass> supportedStorageClasses = new HashSet<>();
         for (ContentStore store : getAllStores())
         {
             supportedStorageClasses.addAll(store.getSupportedStorageClasses());
@@ -453,7 +453,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     @Override
-    public void updateStorageClasses(String contentUrl, Set<String> storageClasses,
+    public void updateStorageClass(String contentUrl, StorageClass storageClass,
         Map<String, Object> parameters)
     {
         ContentStore store;
@@ -490,7 +490,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             }
         }
         
-        if (!store.exists(contentUrl) || !store.isStorageClassesSupported(storageClasses))
+        if (!store.exists(contentUrl) || !store.isStorageClassSupported(storageClass))
         {
             store = null;
             
@@ -498,7 +498,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 if (storeInList.isWriteSupported() && 
                     storeInList.exists(contentUrl) && 
-                    storeInList.isStorageClassesSupported(storageClasses))
+                    storeInList.isStorageClassSupported(storageClass))
                 {
                     store = storeInList;
                     break;
@@ -511,7 +511,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             throw new UnsupportedOperationException(
                 "Unable to find a write store to update the storage classes for content URL: \n" +
                     "   Content URL:          " + contentUrl + "\n" + 
-                    "   StorageClasses:       " + storageClasses);
+                    "   StorageClasses:       " + storageClass);
         }
 
         if (logger.isDebugEnabled())
@@ -520,11 +520,11 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                              "   Content URL: " + contentUrl + "\n" +
                              "   Store:       " + store);
         }
-        store.updateStorageClasses(contentUrl, storageClasses, parameters);
+        store.updateStorageClass(contentUrl, storageClass, parameters);
     }
 
     @Override
-    public Set<String> findStorageClasses(String contentUrl)
+    public StorageClass findStorageClass(String contentUrl)
     {
         ContentStore contentStore = selectReadStore(contentUrl);
 
@@ -534,7 +534,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 logger.debug("Storage classes not found for content URL: " + contentUrl);
             }
-            return new HashSet<>();
+            return new StorageClass();
         }
 
         if (logger.isDebugEnabled())
@@ -543,13 +543,13 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                              "   Content URL: " + contentUrl + "\n" +
                              "   Store:       " + contentStore);
         }
-        return contentStore.findStorageClasses(contentUrl);
+        return contentStore.findStorageClass(contentUrl);
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    public Map<StorageClass, Set<StorageClass>> getStorageClassesTransitions()
     {
-        Map<Set<String>, Set<Set<String>>> supportedTransitions = new HashMap<>();
+        Map<StorageClass, Set<StorageClass>> supportedTransitions = new HashMap<>();
         for (ContentStore store : getAllStores())
         {
             supportedTransitions.putAll(store.getStorageClassesTransitions());
@@ -558,7 +558,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
+    public Map<StorageClass, Set<StorageClass>> findStorageClassesTransitions(String contentUrl)
     {
         ContentStore contentStore = selectReadStore(contentUrl);
 

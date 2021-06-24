@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.alfresco.repo.content.AbstractRoutingContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClass;
 import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -273,38 +274,38 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     }
 
     @Override
-    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    public boolean isStorageClassSupported(StorageClass storageClass)
     {
-        return getTenantContentStore().isStorageClassesSupported(storageClasses);
+        return getTenantContentStore().isStorageClassSupported(storageClass);
     }
 
     @Override
-    public Set<String> getSupportedStorageClasses()
+    public Set<StorageClass> getSupportedStorageClasses()
     {
         return getTenantContentStore().getSupportedStorageClasses();
     }
 
     @Override
-    public void updateStorageClasses(String contentUrl, Set<String> storageClasses,
+    public void updateStorageClass(String contentUrl, StorageClass storageClass,
         Map<String, Object> parameters)
     {
-        getTenantContentStore().updateStorageClasses(contentUrl, storageClasses, parameters);
+        getTenantContentStore().updateStorageClass(contentUrl, storageClass, parameters);
     }
 
     @Override
-    public Set<String> findStorageClasses(String contentUrl)
+    public StorageClass findStorageClass(String contentUrl)
     {
-        return getTenantContentStore().findStorageClasses(contentUrl);
+        return getTenantContentStore().findStorageClass(contentUrl);
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    public Map<StorageClass, Set<StorageClass>> getStorageClassesTransitions()
     {
         return getTenantContentStore().getStorageClassesTransitions();
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
+    public Map<StorageClass, Set<StorageClass>> findStorageClassesTransitions(String contentUrl)
     {
         return getTenantContentStore().findStorageClassesTransitions(contentUrl);
     }

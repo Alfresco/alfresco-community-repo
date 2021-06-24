@@ -168,7 +168,7 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
     @Test
     public void testIsStorageClassesSupported()
     {
-        assertTrue(routingStore.isStorageClassesSupported(null));
+        assertTrue(routingStore.isStorageClassSupported(null));
     }
 
     @Test
@@ -182,15 +182,15 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         writer.putContent(content);
         
         String contentUrl = writer.getContentUrl();
-        final Set<String> storageClasses = Set.of("a-storage-class");
+        final StorageClass storageClass = new StorageClass("a-storage-class");
 
         // Empty storage classes before update
-        assertTrue(routingStore.findStorageClasses(contentUrl).isEmpty());
+        assertTrue(routingStore.findStorageClass(contentUrl).isEmpty());
 
         // Update storage classes
-        routingStore.updateStorageClasses(contentUrl, storageClasses, null);
+        routingStore.updateStorageClass(contentUrl, storageClass, null);
 
-        assertEquals(storageClasses, routingStore.findStorageClasses(contentUrl));
+        assertEquals(storageClass, routingStore.findStorageClass(contentUrl));
     }
     
     /**

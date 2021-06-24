@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import org.alfresco.repo.content.ContentServiceImpl;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClass;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,9 +66,10 @@ public class ContentServiceImplWithMockedContentStoreTest
     @Test
     public void testStoreIsCalledForIsStorageClassesSupported()
     {
-        when(store.isStorageClassesSupported(emptySet())).thenReturn(true);
-        assertTrue(contentService.isStorageClassesSupported(emptySet()));
-        verify(store, times(1)).isStorageClassesSupported(emptySet());
+        final StorageClass sc = new StorageClass();
+        when(store.isStorageClassSupported(sc)).thenReturn(true);
+        assertTrue(contentService.isStorageClassSupported(sc));
+        verify(store, times(1)).isStorageClassSupported(sc);
     }
 
     @Test

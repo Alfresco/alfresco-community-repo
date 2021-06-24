@@ -1051,7 +1051,7 @@ public class NodesImpl implements Nodes
 
         if (includeParam.contains(PARAM_INCLUDE_STORAGECLASSES))
         {
-            node.getContent().setStorageClasses(contentService.findStorageClasses(nodeRef));
+            node.getContent().setStorageClasses(contentService.findStorageClass(nodeRef));
         }
 
         return node;

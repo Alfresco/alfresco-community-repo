@@ -3224,18 +3224,18 @@ public class NodesImpl implements Nodes
             return null;
         }
 
-        String[] renditionNames = stringParams.split(",");
+        String[] paramNames = stringParams.split(",");
 
-        Set<String> renditions = new LinkedHashSet<>(renditionNames.length);
-        for (String name : renditionNames)
+        Set<String> params = new LinkedHashSet<>(paramNames.length);
+        for (String name : paramNames)
         {
             name = name.trim();
             if (!name.isEmpty())
             {
-                renditions.add(name.trim());
+                params.add(name.trim());
             }
         }
-        return renditions;
+        return params;
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)

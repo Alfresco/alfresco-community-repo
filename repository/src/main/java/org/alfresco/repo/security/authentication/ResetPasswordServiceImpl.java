@@ -74,11 +74,14 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
+ * @deprecated from 7.1.0
+ * *
  * Reset password implementation based on workflow.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
+@Deprecated
 public class ResetPasswordServiceImpl implements ResetPasswordService
 {
     private static final Log LOGGER = LogFactory.getLog(ResetPasswordServiceImpl.class);

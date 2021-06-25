@@ -1050,8 +1050,8 @@ public class NodesImpl implements Nodes
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
-
-        if (includeParam.contains(PARAM_INCLUDE_STORAGECLASSES))
+        if (includeParam.contains(PARAM_INCLUDE_STORAGECLASSES) && node.getIsFile()
+            && node.getContent().getSizeInBytes() > 0)
         {
             node.getContent().setStorageClasses(contentService.findStorageClasses(nodeRef));
         }

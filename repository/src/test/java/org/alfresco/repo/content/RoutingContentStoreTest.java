@@ -182,12 +182,11 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         writer.putContent(content);
         
         String contentUrl = writer.getContentUrl();
-        final StorageClass storageClass = new StorageClass("a-storage-class");
 
         // Update storage classes
-        routingStore.updateStorageClass(contentUrl, storageClass, null);
+        routingStore.updateStorageClass(contentUrl, ContentStore.DEFAULT_SC, null);
 
-        assertEquals(storageClass, routingStore.findStorageClass(contentUrl));
+        assertEquals(ContentStore.DEFAULT_SC, routingStore.findStorageClass(contentUrl));
     }
     
     /**

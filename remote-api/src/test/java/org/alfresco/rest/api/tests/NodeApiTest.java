@@ -4858,16 +4858,15 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         setRequestContext(user1);
 
-        // Create folder with an empty document
-        String postUrl = createFolder();
-        String docId = createDocument(postUrl);
+        Document document = createTextFile(Nodes.PATH_MY, "file.txt",
+                                           "The quick brown fox jumps over the lazy dog.");
 
         Map params = new HashMap<>();
         params.put("include", "storageClasses");
 
         // Update node
         Document dUpdate = new Document();
-        HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        HttpResponse response = put(URL_NODES, document.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // Check if storageClasses are retrieved if 'include=storageClasses' is not sent in the request

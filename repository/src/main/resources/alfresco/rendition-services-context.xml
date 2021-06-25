@@ -178,14 +178,6 @@
       </property>
    </bean>
 
-   <bean id="htmlRenderingEngine"
-      class="org.alfresco.repo.rendition.executer.HTMLRenderingEngine"
-      parent="baseRenderingAction">
-      <property name="tikaConfig">
-         <ref bean="tikaConfig"/>
-      </property>
-   </bean>
-
    <bean id="compositeRenderingEngine"
       class="org.alfresco.repo.rendition.executer.CompositeRenderingEngine"
       parent="baseRenderingAction">

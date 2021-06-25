@@ -134,6 +134,8 @@
     </bean>
     <bean id="webScriptExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.WebScriptExceptionResolver">
     </bean>
+    <bean id="queryParserExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.QueryParserExceptionResolver">
+    </bean>
     <bean id="simpleMappingExceptionResolverParent" abstract="true" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
         <property name="exceptionMappings">
             <map>
@@ -182,6 +184,7 @@
         <property name="resolver" ref="simpleMappingExceptionResolver" />
         <property name="webScriptExceptionResolver" ref="webScriptExceptionResolver" />
         <property name="restMetricsReporter" ref="restMetricsReporter"/>
+        <property name="queryParserExceptionResolver" ref="queryParserExceptionResolver" />
     </bean>
     
 	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor 
@@ -795,6 +798,24 @@
             </list>
         </property>
     </bean>
+
+    <bean id="contentStorageClasses" class="org.alfresco.rest.api.impl.ContentStorageClassesImpl">
+        <property name="contentService" ref="ContentService" />
+    </bean>
+
+    <bean id="ContentStorageClasses" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.ContentStorageClasses</value>
+        </property>
+        <property name="target">
+            <ref bean="contentStorageClasses" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
     
     <bean id="tags" class="org.alfresco.rest.api.impl.TagsImpl">
         <property name="nodes" ref="nodes" />
@@ -984,6 +1005,10 @@
         <property name="actions" ref="Actions"/>
     </bean>
 
+    <bean class="org.alfresco.rest.api.storageclasses.StorageClassesEntityResource">
+        <property name="contentStorageClasses" ref="ContentStorageClasses" />
+    </bean>
+    
     <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">
         <property name="deletedNodes" ref="DeletedNodes" />
     </bean>

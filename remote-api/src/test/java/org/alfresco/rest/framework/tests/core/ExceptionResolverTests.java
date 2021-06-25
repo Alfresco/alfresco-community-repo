@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNull;
 
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
@@ -121,5 +122,14 @@ public class ExceptionResolverTests
         response = assistant.resolveException(new IntegrityException(null));
         assertEquals(422, response.getStatusCode());
         
+    }
+
+    /** Check that the status code from SS is passed back to the caller. */
+    @Test
+    public void testQueryParserException()
+    {
+        ErrorResponse response = assistant.resolveException(new QueryParserException("Endpoint not found", 404));
+        assertNotNull(response);
+        assertEquals("Expected status code to be passed through from query parser.", 404, response.getStatusCode());
     }
 }

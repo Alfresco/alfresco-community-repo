@@ -78,7 +78,8 @@ import org.junit.runners.Suite;
     TestPublicApi128.class,
     TestPublicApiCaching.class,
     TestDownloads.class,
-    AuditAppTest.class,
+    AuditAppTest.class, 
+    StorageClassesTest.class,
     TempOutputStreamTest.class,
     BufferedResponseTest.class
 })

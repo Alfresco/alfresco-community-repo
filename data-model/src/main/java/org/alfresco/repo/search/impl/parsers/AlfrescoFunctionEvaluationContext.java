@@ -59,7 +59,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
 
     //The field names in the two collections below are fixed in getLuceneFieldName in order to allow users to use case insensitive field name
     private static Set<String> CASE_INSENSITIVE_FIELDS_UPPERCASE = Set.of(QueryConstants.FIELD_TEXT);
-    private static Set<String> CASE_INSENSITIVE_FIELDS_LOWERCASE = Set.of("content", "name", "description", "score");
+    private static Set<String> CASE_INSENSITIVE_FIELDS_LOWERCASE = Set.of("content", "name", "description", "score", "title");
 
     private NamespacePrefixResolver namespacePrefixResolver;
 

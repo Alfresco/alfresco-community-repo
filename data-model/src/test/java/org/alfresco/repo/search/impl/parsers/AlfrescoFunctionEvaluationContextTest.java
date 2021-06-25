@@ -37,6 +37,7 @@ public class AlfrescoFunctionEvaluationContextTest
         assertEquals("name", alfrescoFunctionEvaluationContext.getLuceneFieldName("name"));
         assertEquals("description", alfrescoFunctionEvaluationContext.getLuceneFieldName("description"));
         assertEquals("score", alfrescoFunctionEvaluationContext.getLuceneFieldName("score"));
+        assertEquals("title", alfrescoFunctionEvaluationContext.getLuceneFieldName("title"));
     }
 
     @Test
@@ -47,6 +48,7 @@ public class AlfrescoFunctionEvaluationContextTest
         assertEquals("name", alfrescoFunctionEvaluationContext.getLuceneFieldName("NAME"));
         assertEquals("description", alfrescoFunctionEvaluationContext.getLuceneFieldName("DESCRIPTION"));
         assertEquals("score", alfrescoFunctionEvaluationContext.getLuceneFieldName("SCORE"));
+        assertEquals("title", alfrescoFunctionEvaluationContext.getLuceneFieldName("TITLE"));
     }
 
     @Test
@@ -57,6 +59,7 @@ public class AlfrescoFunctionEvaluationContextTest
         assertEquals("name", alfrescoFunctionEvaluationContext.getLuceneFieldName("NaMe"));
         assertEquals("description", alfrescoFunctionEvaluationContext.getLuceneFieldName("DeScRiPtIoN"));
         assertEquals("score", alfrescoFunctionEvaluationContext.getLuceneFieldName("sCoRe"));
+        assertEquals("title", alfrescoFunctionEvaluationContext.getLuceneFieldName("TiTlE"));
     }
 
 }

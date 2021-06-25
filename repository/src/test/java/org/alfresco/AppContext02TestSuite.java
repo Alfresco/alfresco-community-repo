@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -39,7 +39,7 @@ import org.junit.runners.Suite;
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
-    
+
     // there is a test that runs for 184s and another one that runs for 40s
     org.alfresco.repo.attributes.AttributeServiceTest.class,
 
@@ -66,7 +66,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.RoutingContentStoreTest.class,
 
     org.alfresco.encryption.EncryptionTests.class,
-    org.alfresco.encryption.KeyStoreTests.class
+    org.alfresco.encryption.KeyStoreTests.class,
+
+    org.alfresco.repo.content.MimetypeMapContentTest.class
 
     // TODO REPO-2791 org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest.class,
 })

@@ -1,28 +1,75 @@
 <#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
+<#assign maxDepth=1000 />
 <#macro printPropertyValue p>
-   <#if p.value??>
-      <#if p.value?is_date>
+   <#attempt>
+      <#if p.value??>
+        <#if p.value?is_date>
          "<@dateFormat p.value />"
-      <#elseif p.value?is_boolean>
+        <#elseif p.value?is_boolean>
          ${p.value?string}
-      <#elseif p.value?is_number>
+        <#elseif p.value?is_number>
          ${p.value?c}
-      <#elseif p.value?is_string>
+        <#elseif p.value?is_string>
          "${p.value}"
-      <#elseif p.value?is_hash>
-         <#assign result = "{"/>
+        <#elseif p.value?is_hash || p.value?is_enumerable>
+            <#assign val>
+               <@convertToJSON p.value />
+            </#assign>
+            "${val}"
+        </#if>
+   	  <#else>
+   	     null
+      </#if>
+   <#recover>
+      "${.error}"
+   </#attempt>
+</#macro>
+<#macro convertToJSON v>
+   <#if v??>
+      <#if v?is_date>
+         "<@dateFormat v />"
+      <#elseif v?is_boolean>
+         ${v?string}
+      <#elseif v?is_number>
+         ${v?c}
+      <#elseif v?is_string>
+         "${v?string}"
+      <#elseif v?is_hash>
+         <#if v?keys?size gt maxDepth >
+            <#stop "Max depth of object achieved">
+         </#if>
+         <@compress single_line=true>
+            {
+            <#assign first = true />
+            <#list v?keys as key>
+               <#if first = false>,</#if>
+               "${key}":
+               <#if v[key]??>
+                  <@convertToJSON v[key] />
+               <#else>
+                  null
+               </#if>
+               <#assign first = false/>
+            </#list>
+            }
+         </@compress>
+      <#elseif v?is_enumerable>
+         <#if v?size gt maxDepth>
+            <#stop "Max depth of object achieved" >
+         </#if>
          <#assign first = true />
-         <#list p.value?keys as key>
-            <#if first = false>
-               <#assign result = result + ", "/>
-            </#if>
-            <#assign result = result + "${key} = ${p.value[key]}" />
-            <#assign first = false/>
-         </#list>
-         <#assign result = result + "}"/>
-         <#-- output the result -->
-         "${result}"
+            <@compress single_line=true>
+               [
+               <#list v as item>
+                  <#if first = false>,</#if>
+                  <@convertToJSON item />
+                  <#assign first = false/>
+               </#list>
+               ]
+            </@compress>
+      <#else>
+         ${v}
       </#if>
    <#else>
       null
@@ -70,7 +117,8 @@
                "isContent": ${val.content?string},
                "isNodeRef": ${val.nodeRef?string},
                "isNullValue": ${val.nullValue?string}
-            }<#if val_has_next>,</#if>
+            }
+            <#if val_has_next>,</#if>
             </#list>
          ],
          "type": {

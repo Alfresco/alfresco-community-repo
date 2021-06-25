@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
+import java.util.Set;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
@@ -54,7 +55,11 @@ import org.alfresco.service.namespace.QName;
 @SuppressWarnings("deprecation")
 public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationContext
 {
-    private static HashSet<String> EXPOSED_FIELDS = new HashSet<String>();
+    private static Set<String> EXPOSED_FIELDS = new HashSet<>();
+
+    //The field names in the two collections below are fixed in getLuceneFieldName in order to allow users to use case insensitive field name
+    private static Set<String> CASE_INSENSITIVE_FIELDS_UPPERCASE = Set.of(QueryConstants.FIELD_TEXT);
+    private static Set<String> CASE_INSENSITIVE_FIELDS_LOWERCASE = Set.of("content", "name", "description", "score");
 
     private NamespacePrefixResolver namespacePrefixResolver;
 
@@ -233,7 +238,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
                 if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
                 {
                     throw new FTSQueryException("Order on content properties is not curently supported");
-                }
+                } 
                 else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
                 {
                     if(propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
@@ -327,7 +332,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             QName propertyQName = stripSuffixes(fullQName);
             if (dictionaryService.getProperty(propertyQName) != null)
             {
-                return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
+                return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName;
             }
             else if(dictionaryService.getDataType(fullQName) != null)
             {
@@ -335,7 +340,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             }
             else
             {
-                throw new FTSQueryException("Unknown property: " + fullQName.toString());
+                throw new FTSQueryException("Unknown property: " + fullQName);
             }
         }
 
@@ -347,7 +352,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             QName propertyQName = stripSuffixes(fullQName);
             if (dictionaryService.getProperty(propertyQName) != null)
             {
-                return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
+                return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName;
             }
             else if(dictionaryService.getDataType(fullQName) != null)
             {
@@ -355,7 +360,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             }
             else
             {
-                throw new FTSQueryException("Unknown property: " + fullQName.toString());
+                throw new FTSQueryException("Unknown property: " + fullQName);
             }
         }
 
@@ -369,11 +374,11 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
                 QName propertyQName = stripSuffixes(fullQName);
                 if (dictionaryService.getProperty(propertyQName) != null)
                 {
-                    return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
+                    return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName;
                 }
                 else
                 {
-                    throw new FTSQueryException("Unknown property: " + fullQName.toString());
+                    throw new FTSQueryException("Unknown property: " + fullQName);
                 }
             }
         }
@@ -387,7 +392,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         QName propertyQName = stripSuffixes(fullQName);
         if (dictionaryService.getProperty(propertyQName) != null)
         {
-            return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName.toString();
+            return QueryConstants.PROPERTY_FIELD_PREFIX + fullQName;
         }
         else if(dictionaryService.getDataType(fullQName) != null)
         {
@@ -395,12 +400,18 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         }
         else
         {
-            if(propertyName.equalsIgnoreCase("Score"))
+
+            if (CASE_INSENSITIVE_FIELDS_LOWERCASE.contains(propertyName.toLowerCase()))
             {
                 return propertyName.toLowerCase();
             }
+
+            if (CASE_INSENSITIVE_FIELDS_UPPERCASE.contains(propertyName.toUpperCase()))
+            {
+                return propertyName.toUpperCase();
+            }
                     
-            throw new FTSQueryException("Unknown property: " + fullQName.toString());
+            throw new FTSQueryException("Unknown property: " + fullQName);
         }
 
     }

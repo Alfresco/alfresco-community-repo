@@ -319,7 +319,7 @@ public class CombinedConfig
                 {
                     combinedTransformers.remove(indexToRemove);
                     // this may also require the current index i to be changed so we don't skip one.
-                    if (i <= indexToRemove)
+                    if (i >= indexToRemove)
                     {
                         i--;
                     }

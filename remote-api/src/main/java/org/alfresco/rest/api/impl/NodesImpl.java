@@ -2776,8 +2776,13 @@ public class NodesImpl implements Nodes
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
         {
-            writeContent(nodeRef, fileName, stream, true,
-                         ((ContentInfo) contentInfo).getStorageClasses());
+            writeContent(nodeRef,
+                         fileName,
+                         stream,
+                         true,
+                         contentInfo instanceof ContentInfo ?
+                             ((ContentInfo) contentInfo).getStorageClasses() :
+                             null);
 
             if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
             {

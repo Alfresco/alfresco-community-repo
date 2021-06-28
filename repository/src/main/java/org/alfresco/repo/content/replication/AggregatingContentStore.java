@@ -37,7 +37,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.StorageClass;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.content.caching.CachingContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -386,15 +386,15 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     @Override
-    public boolean isStorageClassSupported(StorageClass storageClasses)
+    public boolean isStorageClassesSupported(StorageClassSet storageClassesSet)
     {
         // We only need to provide info about the primary store,
         // because the aggregating CS only allows to be written in the primary   
-        return primaryStore.isStorageClassSupported(storageClasses);
+        return primaryStore.isStorageClassesSupported(storageClassesSet);
     }
 
     @Override
-    public Set<StorageClass> getSupportedStorageClasses()
+    public Set<String> getSupportedStorageClasses()
     {
         // We only need to provide info about the primary store,
         // because the aggregating CS only allows to be written in the primary
@@ -402,13 +402,13 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     @Override
-    public void updateStorageClass(String contentUrl, StorageClass storageClass, Map<String, Object> parameters)
+    public void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
-        primaryStore.updateStorageClass(contentUrl, storageClass, parameters);
+        primaryStore.updateStorageClasses(contentUrl, storageClassSet, parameters);
     }
 
     @Override
-    public StorageClass findStorageClass(String contentUrl)
+    public StorageClassSet findStorageClasses(String contentUrl)
     {
         if (primaryStore == null)
         {
@@ -421,12 +421,12 @@ public class AggregatingContentStore extends AbstractContentStore
         {
             // Keep track of the unsupported state of the content URL - it might be a rubbish URL
             boolean contentUrlSupported = true;
-            StorageClass storageClasses = null;
+            StorageClassSet storageClassesSet = null;
 
             // Check the primary store
             try
             {
-                storageClasses = primaryStore.findStorageClass(contentUrl);
+                storageClassesSet = primaryStore.findStorageClasses(contentUrl);
             }
             catch (UnsupportedContentUrlException e)
             {
@@ -434,9 +434,9 @@ public class AggregatingContentStore extends AbstractContentStore
                 contentUrlSupported = false;
             }
 
-            if (storageClasses != null)
+            if (storageClassesSet != null)
             {
-                return storageClasses;
+                return storageClassesSet;
             }
 
             // the content is not in the primary store so we have to go looking for it
@@ -444,7 +444,7 @@ public class AggregatingContentStore extends AbstractContentStore
             {
                 try
                 {
-                    storageClasses = store.findStorageClass(contentUrl);
+                    storageClassesSet = store.findStorageClasses(contentUrl);
                 }
                 catch (UnsupportedContentUrlException e)
                 {
@@ -452,19 +452,19 @@ public class AggregatingContentStore extends AbstractContentStore
                     contentUrlSupported = false;
                 }
 
-                if (storageClasses != null)
+                if (storageClassesSet != null)
                 {
                     break;
                 }
             }
 
-            if (storageClasses == null && !contentUrlSupported)
+            if (storageClassesSet == null && !contentUrlSupported)
             {
                 // The content URL was not supported
                 throw new UnsupportedContentUrlException(this, contentUrl);
             }
             
-            return storageClasses;
+            return storageClassesSet;
         }
         finally
         {
@@ -473,7 +473,7 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     @Override
-    public Map<StorageClass, Set<StorageClass>> getStorageClassesTransitions()
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
     {
         // We only need to provide info about the primary store,
         // because the aggregating CS only allows to be written in the primary
@@ -481,7 +481,7 @@ public class AggregatingContentStore extends AbstractContentStore
     }
     
     @Override
-    public Map<StorageClass, Set<StorageClass>> findStorageClassesTransitions(String contentUrl)
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
     {
         // We only need to provide info about the primary store,
         // because the aggregating CS only allows to be written in the primary

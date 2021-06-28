@@ -92,6 +92,10 @@ public interface ContentStore
      */
     public static final String PROTOCOL_DELIMITER = "://";
 
+    public static final String STORAGE_CLASS_DEFAULT = "default";
+    public static final String STORAGE_CLASS_ARCHIVE = "archive";
+    public static final String STORAGE_CLASS_WORM = "worm";
+
     /**
      * The 'default' storage class
      *
@@ -100,9 +104,9 @@ public interface ContentStore
      * the value is an empty set
      * the value is null
      */
-    public static final StorageClass DEFAULT_SC = new StorageClass("default");
-    public static final StorageClass ARCHIVE_SC = new StorageClass("archive");
-    public static final StorageClass WORM_SC = new StorageClass("worm");
+    public static final StorageClassSet SCS_DEFAULT = new StorageClassSet(STORAGE_CLASS_DEFAULT);
+    public static final StorageClassSet SCS_ARCHIVE = new StorageClassSet(STORAGE_CLASS_ARCHIVE);
+    public static final StorageClassSet SCS_WORM = new StorageClassSet(STORAGE_CLASS_WORM);
 
     /**
      * Check if the content URL format is supported by the store.
@@ -282,22 +286,22 @@ public interface ContentStore
     /**
      * Checks whether or not the current {@link ContentStore} supports the provided {@link Set} storage classes
      *
-     * @param storageClass The storage classes that will be checked whether or not are supported
+     * @param storageClassSet The storage classes that will be checked whether or not are supported
      * @return true if the storage classes are supported, false otherwise.
      */
-    default boolean isStorageClassSupported(StorageClass storageClass)
+    default boolean isStorageClassesSupported(StorageClassSet storageClassSet)
     {
-        return storageClass == null ||
-            storageClass.isEmpty() ||
-            (1 == storageClass.size() && storageClass.equals(DEFAULT_SC));
+        return storageClassSet == null ||
+            storageClassSet.isEmpty() ||
+            (1 == storageClassSet.size() && storageClassSet.equals(SCS_DEFAULT));
     }
 
     /**
      * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentStore}
      */
-    default Set<StorageClass> getSupportedStorageClasses()
+    default Set<String> getSupportedStorageClasses()
     {
-        return Set.of(DEFAULT_SC);
+        return Set.of(ContentStore.STORAGE_CLASS_DEFAULT);
     }
 
 
@@ -305,10 +309,10 @@ public interface ContentStore
      * Updates the storage class for content
      *
      * @param contentUrl The URL of the content that will have its storage classes updated
-     * @param storageClass The new storage class
+     * @param storageClassSet The new storage class
      * @param parameters extra parameters
      */
-    default void updateStorageClass(String contentUrl, StorageClass storageClass, Map<String, Object> parameters)
+    default void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
 
     }
@@ -317,16 +321,16 @@ public interface ContentStore
      * @param contentUrl the URL of the content for which the storage classes are to be requested
      * @return Returns the current storage classes for the content found at the contentUrl
      */
-    default StorageClass findStorageClass(String contentUrl)
+    default StorageClassSet findStorageClasses(String contentUrl)
     {
-        return DEFAULT_SC;
+        return SCS_DEFAULT;
     }
 
     /**
      * @return Returns the complete collection of allowed storage classes transitions.
      * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
      */
-    default Map<StorageClass, Set<StorageClass>> getStorageClassesTransitions()
+    default Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
     {
         return Collections.emptyMap();
     }
@@ -335,7 +339,7 @@ public interface ContentStore
      * @param contentUrl the URL of the content for which the storage classes transitions are to be requested
      * @return Returns the complete collection of allowed storage classes transitions for the content found at content URL
      */
-    default Map<StorageClass, Set<StorageClass>> findStorageClassesTransitions(String contentUrl)
+    default Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
     {
         return Collections.emptyMap();
     }

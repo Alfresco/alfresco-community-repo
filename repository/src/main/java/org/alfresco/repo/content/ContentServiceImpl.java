@@ -588,19 +588,19 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
 
     @Override
-    public boolean isStorageClassSupported(StorageClass storageClass)
+    public boolean isStorageClassesSupported(StorageClassSet storageClassSet)
     {
-        return store.isStorageClassSupported(storageClass);
+        return store.isStorageClassesSupported(storageClassSet);
     }
 
     @Override
-    public Set<StorageClass> getSupportedStorageClasses()
+    public Set<String> getSupportedStorageClasses()
     {
         return store.getSupportedStorageClasses();
     }
 
     @Override
-    public void updateStorageClass(NodeRef nodeRef, StorageClass storageClass, Map<String, Object> parameters)
+    public void updateStorageClasses(NodeRef nodeRef, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -610,16 +610,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
         }
 
-        if (!isStorageClassSupported(storageClass))
+        if (!isStorageClassesSupported(storageClassSet))
         {
-            throw new UnsupportedStorageClassException(store, storageClass, "The supplied storage classes are not supported");
+            throw new UnsupportedStorageClassException(store, storageClassSet, "The supplied storage classes are not supported");
         }
 
-        store.updateStorageClass(contentData.getContentUrl(), storageClass, parameters);
+        store.updateStorageClasses(contentData.getContentUrl(), storageClassSet, parameters);
     }
 
     @Override
-    public StorageClass findStorageClass(NodeRef nodeRef)
+    public StorageClassSet findStorageClasses(NodeRef nodeRef)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -629,17 +629,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
         }
 
-        return store.findStorageClass(contentData.getContentUrl());
+        return store.findStorageClasses(contentData.getContentUrl());
     }
 
     @Override
-    public Map<StorageClass, Set<StorageClass>> getStorageClassesTransitions()
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
     {
         return store.getStorageClassesTransitions();
     }
 
     @Override
-    public Map<StorageClass, Set<StorageClass>> findStorageClassesTransitions(NodeRef nodeRef)
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(NodeRef nodeRef)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 

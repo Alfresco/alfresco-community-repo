@@ -48,7 +48,7 @@ import java.util.List;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.StorageClass;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -319,22 +319,22 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     @Test
     public void testIsStorageClassesSupported()
     {
-        final StorageClass sc = new StorageClass("a-certain-storage-class");
-        when(primaryStoreMock.isStorageClassSupported(sc)).thenReturn(true);
+        final StorageClassSet sc = new StorageClassSet("a-certain-storage-class");
+        when(primaryStoreMock.isStorageClassesSupported(sc)).thenReturn(true);
         
-        assertTrue(aggregatingContentStoreMock.isStorageClassSupported(sc));
-        verify(primaryStoreMock, times(1)).isStorageClassSupported(sc);
+        assertTrue(aggregatingContentStoreMock.isStorageClassesSupported(sc));
+        verify(primaryStoreMock, times(1)).isStorageClassesSupported(sc);
         verifyNoInteractions(secondaryStoreMock);
     }
 
     @Test
     public void testStorageClassesIsNotSupported()
     {
-        final StorageClass sc = new StorageClass("a-certain-storage-class");
-        when(primaryStoreMock.isStorageClassSupported(sc)).thenReturn(false);
+        final StorageClassSet sc = new StorageClassSet("a-certain-storage-class");
+        when(primaryStoreMock.isStorageClassesSupported(sc)).thenReturn(false);
         
-        assertFalse(aggregatingContentStoreMock.isStorageClassSupported(sc));
-        verify(primaryStoreMock, times(1)).isStorageClassSupported(sc);
+        assertFalse(aggregatingContentStoreMock.isStorageClassesSupported(sc));
+        verify(primaryStoreMock, times(1)).isStorageClassesSupported(sc);
         verifyNoInteractions(secondaryStoreMock);
     }
 
@@ -352,52 +352,52 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     public void testUpdateStorageClassesForGivenContentUrl()
     {
         String contentUrl = "contentUrl";
-        final StorageClass sc = new StorageClass("a-certain-storage-class");
+        final StorageClassSet sc = new StorageClassSet("a-certain-storage-class");
 
-        aggregatingContentStoreMock.updateStorageClass(contentUrl, sc, null);
+        aggregatingContentStoreMock.updateStorageClasses(contentUrl, sc, null);
 
-        verify(primaryStoreMock, times(1)).updateStorageClass(contentUrl, sc, null);
+        verify(primaryStoreMock, times(1)).updateStorageClasses(contentUrl, sc, null);
         verifyNoInteractions(secondaryStoreMock);
     }
 
     @Test
     public void testFindStorageClassesForGivenContentUrlInPrimaryStore()
     {
-        final StorageClass sc = new StorageClass();
-        when(primaryStoreMock.findStorageClass(anyString())).thenReturn(sc);
+        final StorageClassSet sc = new StorageClassSet();
+        when(primaryStoreMock.findStorageClasses(anyString())).thenReturn(sc);
 
-        assertTrue(aggregatingContentStoreMock.findStorageClass("a-contentUrl").isEmpty());
-        verify(primaryStoreMock, times(1)).findStorageClass("a-contentUrl");
+        assertTrue(aggregatingContentStoreMock.findStorageClasses("a-contentUrl").isEmpty());
+        verify(primaryStoreMock, times(1)).findStorageClasses("a-contentUrl");
         verifyNoInteractions(secondaryStoreMock);
     }
 
     @Test
     public void testFindStorageClassesForGivenContentUrlInSecondaryStore()
     {
-        final StorageClass sc = new StorageClass();
+        final StorageClassSet sc = new StorageClassSet();
         UnsupportedContentUrlException unsupportedContentUrlExc = new UnsupportedContentUrlException(
             aggregatingContentStoreMock, "");
 
-        when(primaryStoreMock.findStorageClass(anyString())).thenThrow(unsupportedContentUrlExc);
-        when(secondaryStoreMock.findStorageClass(anyString())).thenReturn(sc);
+        when(primaryStoreMock.findStorageClasses(anyString())).thenThrow(unsupportedContentUrlExc);
+        when(secondaryStoreMock.findStorageClasses(anyString())).thenReturn(sc);
 
-        assertTrue(aggregatingContentStoreMock.findStorageClass("a-contentUrl").isEmpty());
-        verify(primaryStoreMock, times(1)).findStorageClass("a-contentUrl");
-        verify(secondaryStoreMock, times(1)).findStorageClass("a-contentUrl");
+        assertTrue(aggregatingContentStoreMock.findStorageClasses("a-contentUrl").isEmpty());
+        verify(primaryStoreMock, times(1)).findStorageClasses("a-contentUrl");
+        verify(secondaryStoreMock, times(1)).findStorageClasses("a-contentUrl");
     }
 
     @Test(expected = UnsupportedContentUrlException.class)
     public void testFindStorageClassesForInvalidContentUrl()
     {
-        when(primaryStoreMock.findStorageClass(anyString()))
+        when(primaryStoreMock.findStorageClasses(anyString()))
             .thenThrow(new UnsupportedContentUrlException(aggregatingContentStoreMock, ""));
-        when(secondaryStoreMock.findStorageClass(anyString()))
+        when(secondaryStoreMock.findStorageClasses(anyString()))
             .thenThrow(new UnsupportedContentUrlException(aggregatingContentStoreMock, ""));
 
-        aggregatingContentStoreMock.findStorageClass("a-contentUrl");
+        aggregatingContentStoreMock.findStorageClasses("a-contentUrl");
 
-        verify(primaryStoreMock, times(1)).findStorageClass("a-contentUrl");
-        verify(secondaryStoreMock, times(1)).findStorageClass("a-contentUrl");
+        verify(primaryStoreMock, times(1)).findStorageClasses("a-contentUrl");
+        verify(secondaryStoreMock, times(1)).findStorageClasses("a-contentUrl");
     }
 
     @Test

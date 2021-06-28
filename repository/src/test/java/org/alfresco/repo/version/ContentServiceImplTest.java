@@ -178,9 +178,9 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     public void testFindStorageClasses()
     {
         final NodeRef newNode = createNewNode();
-        final Set<String> storageClasses = contentService.findStorageClass(newNode);
+        final Set<String> storageClasses = contentService.findStorageClasses(newNode);
         assertEquals(1, storageClasses.size());
-        assertEquals(storageClasses, ContentStore.DEFAULT_SC);
+        assertEquals(storageClasses, ContentStore.SCS_DEFAULT);
     }
 
     @Test

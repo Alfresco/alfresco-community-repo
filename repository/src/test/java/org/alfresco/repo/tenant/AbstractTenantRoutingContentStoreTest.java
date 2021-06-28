@@ -34,7 +34,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.StorageClass;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -120,7 +120,7 @@ public class AbstractTenantRoutingContentStoreTest extends TestCase
 
     public void testIsStorageClassesSupported()
     {
-        assertTrue(fileContentStore.isStorageClassSupported(new StorageClass()));
+        assertTrue(fileContentStore.isStorageClassesSupported(new StorageClassSet()));
     }
 
     public void testGetSupportedStorageClasses()

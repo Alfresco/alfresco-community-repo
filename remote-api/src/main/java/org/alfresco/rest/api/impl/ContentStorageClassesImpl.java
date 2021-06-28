@@ -50,12 +50,7 @@ public class ContentStorageClassesImpl implements ContentStorageClasses
     @Override
     public CollectionWithPagingInfo<StorageClass> getStorageClasses(Paging paging)
     {
-        final Set<org.alfresco.repo.content.StorageClass> supportedStorageClasses = contentService
-            .getSupportedStorageClasses();
-        return CollectionWithPagingInfo.asPaged(paging,
-            supportedStorageClasses.stream()
-                // TODO: update this - map the repo SC to a REST SC
-            .map(sc -> new StorageClass(sc.toString())).collect(Collectors.toList()));
-
+        Set<String> storageClasses = contentService.getSupportedStorageClasses();
+        return CollectionWithPagingInfo.asPaged(paging, storageClasses.stream().map(StorageClass::new).collect(Collectors.toList()));
     }
 }

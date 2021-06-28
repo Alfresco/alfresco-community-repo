@@ -32,7 +32,7 @@ import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.StorageClass;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
@@ -179,10 +179,10 @@ public interface ContentService
     /**
      * Checks whether or not the current {@link ContentService} supports the provided {@link Set} storage classes
      *
-     * @param storageClass The storage classes that will be checked whether or not are supported
+     * @param storageClassSet The storage classes that will be checked whether or not are supported
      * @return true if the storage classes are supported, false otherwise.
      */
-    default boolean isStorageClassSupported(StorageClass storageClass)
+    default boolean isStorageClassesSupported(StorageClassSet storageClassSet)
     {
         return false;
     }
@@ -190,7 +190,7 @@ public interface ContentService
     /**
      * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentService}
      */
-    default Set<StorageClass> getSupportedStorageClasses()
+    default Set<String> getSupportedStorageClasses()
     {
         return Collections.emptySet();
     }
@@ -199,10 +199,10 @@ public interface ContentService
      * Updates the storage class for a {@link NodeRef}
      *
      * @param nodeRef The ref of the node that will have its storage classes updated
-     * @param storageClass The new storage classes
+     * @param storageClassSet The new storage classes
      * @param parameters extra parameters
      */
-    default void updateStorageClass(NodeRef nodeRef, StorageClass storageClass, Map<String, Object> parameters)
+    default void updateStorageClasses(NodeRef nodeRef, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
 
     }
@@ -211,16 +211,16 @@ public interface ContentService
      * @param nodeRef the {@link NodeRef} for which the storage classes are to be requested
      * @return Returns the current storage classes for the given {@link NodeRef}
      */
-    default StorageClass findStorageClass(NodeRef nodeRef)
+    default StorageClassSet findStorageClasses(NodeRef nodeRef)
     {
-        return ContentStore.DEFAULT_SC;
+        return ContentStore.SCS_DEFAULT;
     }
 
     /**
      * @return Returns the complete collection of allowed storage classes transitions.
      * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
      */
-    default Map<StorageClass, Set<StorageClass>> getStorageClassesTransitions()
+    default Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
     {
         return Collections.emptyMap();
     }
@@ -229,7 +229,7 @@ public interface ContentService
      * @param nodeRef the {@link NodeRef} for which the storage classes transitions are to be requested
      * @return Returns the complete collection of allowed storage classes transitions for the content found at content URL
      */
-    default Map<StorageClass, Set<StorageClass>> findStorageClassesTransitions(NodeRef nodeRef)
+    default Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(NodeRef nodeRef)
     {
         return Collections.emptyMap();
     }

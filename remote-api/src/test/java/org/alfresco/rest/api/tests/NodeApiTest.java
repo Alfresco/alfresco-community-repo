@@ -4807,8 +4807,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Check that all storage classes are retrieved
         assertNotNull(documentResp.getContent().getStorageClasses());
-        assertEquals(ContentStore.DEFAULT_SC, documentResp.getContent().getStorageClasses());
+        assertEquals(ContentStore.SCS_DEFAULT, documentResp.getContent().getStorageClasses());
     }
+
+    /**
+     * option 1, 4 storage classes: default, archive, worm. encrypted
+     * option 2:
+     *     - default
+     *     - archive, encrypted
+     *     -
+     */
 
     /**
      * Tests set permissions on a new node

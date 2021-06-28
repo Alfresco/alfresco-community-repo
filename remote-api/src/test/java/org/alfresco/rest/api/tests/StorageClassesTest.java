@@ -99,9 +99,9 @@ public class StorageClassesTest extends AbstractSingleNetworkSiteTest
     {
         ReflectionTestUtils.setField(contentService, "store", mockStore);
         
-        Set<org.alfresco.repo.content.StorageClass> expectedStorageClasses =
-            Set.of(ContentStore.DEFAULT_SC, new org.alfresco.repo.content.StorageClass("archive", "and-a-2nd-class"));
-        when(mockStore.getSupportedStorageClasses()).thenReturn(expectedStorageClasses);
+        Set<String> expectedStorageClass =
+            Set.of(ContentStore.STORAGE_CLASS_DEFAULT, ContentStore.STORAGE_CLASS_ARCHIVE);
+        when(mockStore.getSupportedStorageClasses()).thenReturn(expectedStorageClass);
 
         PublicApiClient.Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(STORAGE_CLASSES, paging, 200);

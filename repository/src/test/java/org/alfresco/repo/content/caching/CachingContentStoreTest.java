@@ -50,7 +50,7 @@ import java.util.Locale;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.StorageClass;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
@@ -527,11 +527,11 @@ public class CachingContentStoreTest
     @Test
     public void testBackingStoreIsCalledForSupportedStorageClasses()
     {
-        when(backingStore.isStorageClassSupported(new StorageClass("a-certain-storage-class"))).thenReturn(true);
+        when(backingStore.isStorageClassesSupported(new StorageClassSet("a-certain-storage-class"))).thenReturn(true);
 
-        final StorageClass storageClass = new StorageClass("a-certain-storage-class");
-        assertTrue(cachingStore.isStorageClassSupported(storageClass));
-        verify(backingStore, times(1)).isStorageClassSupported(storageClass);
+        final StorageClassSet storageClassSet = new StorageClassSet("a-certain-storage-class");
+        assertTrue(cachingStore.isStorageClassesSupported(storageClassSet));
+        verify(backingStore, times(1)).isStorageClassesSupported(storageClassSet);
     }
 
     @Test
@@ -546,21 +546,21 @@ public class CachingContentStoreTest
     public void testUpdateStorageClassesForGivenContentUrl()
     {
         String contentUrl = "contentUrl";
-        final StorageClass storageClass = new StorageClass("a-certain-storage-class");
+        final StorageClassSet storageClassSet = new StorageClassSet("a-certain-storage-class");
         
-        cachingStore.updateStorageClass(contentUrl, storageClass, null);
+        cachingStore.updateStorageClasses(contentUrl, storageClassSet, null);
 
-        verify(backingStore, times(1)).updateStorageClass(contentUrl, storageClass, null);
+        verify(backingStore, times(1)).updateStorageClasses(contentUrl, storageClassSet, null);
     }
 
     @Test
     public void testFindStorageClassesForGivenContentUrl()
     {
-        final StorageClass storageClass = new StorageClass();
-        when(backingStore.findStorageClass(anyString())).thenReturn(storageClass);
+        final StorageClassSet storageClassSet = new StorageClassSet();
+        when(backingStore.findStorageClasses(anyString())).thenReturn(storageClassSet);
 
-        assertTrue(cachingStore.findStorageClass("a-contentUrl").isEmpty());
-        verify(backingStore, times(1)).findStorageClass("a-contentUrl");
+        assertTrue(cachingStore.findStorageClasses("a-contentUrl").isEmpty());
+        verify(backingStore, times(1)).findStorageClasses("a-contentUrl");
     }
 
     @Test

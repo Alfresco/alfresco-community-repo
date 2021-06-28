@@ -42,7 +42,7 @@ import org.alfresco.repo.content.ContentLimitProvider;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.StorageClass;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -352,13 +352,13 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     @Test
     public void testSupportsDefaultStorageClass()
     {
-        assertTrue(store.isStorageClassSupported(ContentStore.DEFAULT_SC));
+        assertTrue(store.isStorageClassesSupported(ContentStore.SCS_DEFAULT));
     }
 
     @Test
     public void testDoesNotSupportUnknownStorageClass()
     {
-        assertFalse(store.isStorageClassSupported(new StorageClass("unknown")));
+        assertFalse(store.isStorageClassesSupported(new StorageClassSet("unknown")));
     }
     
     private void assertDirExists(File root, String dir)

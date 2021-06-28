@@ -30,16 +30,16 @@ import java.util.HashSet;
 
 /**
  * Represents the state of the content and it is internally represented as a set.
- * It can have none, one, or multiple labels to specify the state
+ * It can have none, one, or multiple storage classes to specify the state
  * e.g. [default], [archive], [archive, encrypted]
  *
  * @author Lucian Tuca
  */
 public class StorageClassSet extends HashSet<String>
 {
-    public StorageClassSet(String... storageClassLabels)
+    public StorageClassSet(String... storageClasses)
     {
         super();
-        Collections.addAll(this, storageClassLabels);
+        Collections.addAll(this, storageClasses);
     }
 }

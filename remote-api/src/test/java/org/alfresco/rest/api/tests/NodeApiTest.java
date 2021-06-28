@@ -4811,14 +4811,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * option 1, 4 storage classes: default, archive, worm. encrypted
-     * option 2:
-     *     - default
-     *     - archive, encrypted
-     *     -
-     */
-
-    /**
      * Tests set permissions on a new node
      *
      * @throws Exception

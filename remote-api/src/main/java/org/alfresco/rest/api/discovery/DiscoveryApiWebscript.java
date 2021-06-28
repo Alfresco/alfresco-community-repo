@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -67,6 +68,7 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
     private ModuleService moduleService;
     private ApiAssistant assistant;
     private ThumbnailService thumbnailService;
+    private MutableAuthenticationService authenticationService;
 
     private boolean enabled = true;
     private final static String DISABLED = "Not Implemented";
@@ -106,6 +108,12 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         this.thumbnailService = thumbnailService;
     }
 
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -116,6 +124,7 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         PropertyCheck.mandatory(this, "moduleService", moduleService);
         PropertyCheck.mandatory(this, "assistant", assistant);
         PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
+        PropertyCheck.mandatory(this, "authenticationService", authenticationService);
     }
 
     @Override
@@ -154,7 +163,9 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
                                 .setReadOnly(repoAdminService.getUsage().isReadOnly())
                                 .setAuditEnabled(auditService.isAuditEnabled())
                                 .setQuickShareEnabled(quickShareService.isQuickShareEnabled())
-                                .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled()));
+                                .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled())
+                                .setUserCreationEnabled(authenticationService.isAuthenticationCreationAllowed())
+                    );
     }
 
     private List<ModulePackage> getModules()

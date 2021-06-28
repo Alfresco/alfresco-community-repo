@@ -416,6 +416,7 @@ public class RepositoryInfo
         private boolean isAuditEnabled;
         private boolean isQuickShareEnabled;
         private boolean isThumbnailGenerationEnabled;
+        private boolean isUserCreationEnabled;
 
         public StatusInfo()
         {
@@ -465,6 +466,17 @@ public class RepositoryInfo
             return this;
         }
 
+        public boolean getIsUserCreationEnabled() 
+        {
+            return isUserCreationEnabled;
+        }
+
+        public StatusInfo setUserCreationEnabled(boolean userCreationEnabled) 
+        {
+            this.isUserCreationEnabled = userCreationEnabled;
+            return this;
+        }
+
         @Override
         public String toString()
         {
@@ -473,6 +485,7 @@ public class RepositoryInfo
                         .append(", isAuditEnabled=").append(isAuditEnabled)
                         .append(", isQuickShareEnabled=").append(isQuickShareEnabled)
                         .append(", isThumbnailGenerationEnabled=").append(isThumbnailGenerationEnabled)
+                        .append(", isUserCreationEnabled=").append(isUserCreationEnabled)
                         .append(']');
             return sb.toString();
         }

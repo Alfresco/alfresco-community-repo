@@ -2371,7 +2371,12 @@ public class NodesImpl implements Nodes
         }
 
         processNodePermissions(nodeRef, nodeInfo);
-        
+
+        if (nodeInfo.getContent() != null && nodeInfo.getContent().getStorageClasses() != null)
+        {
+            contentService.updateStorageClasses(nodeRef, nodeInfo.getContent().getStorageClasses(), null);
+        }
+
         return nodeRef;
     }
 

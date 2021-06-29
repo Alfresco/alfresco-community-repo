@@ -108,7 +108,7 @@ public class DBQueryEngineTest
                 
         FilteringResultSet result = engine.acceleratedNodeSelection(options, dbQuery, assessor);
         
-        assertEquals(6, result.length());
+        assertEquals(5, result.length());
         assertNodePresent(0, result);
         assertNodePresent(1, result);
         assertNodePresent(2, result);
@@ -126,7 +126,7 @@ public class DBQueryEngineTest
         FilteringResultSet result = engine.acceleratedNodeSelection(options, dbQuery, assessor);
 
         verify(resultContext).stop();
-        assertEquals(6, result.length());
+        assertEquals(5, result.length());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class DBQueryEngineTest
                 
         FilteringResultSet result = engine.acceleratedNodeSelection(options, dbQuery, assessor);
         
-        assertEquals(6, result.length());
+        assertEquals(5, result.length());
         assertNodePresent(10, result);
         assertNodePresent(11, result);
         assertNodePresent(12, result);
@@ -160,7 +160,7 @@ public class DBQueryEngineTest
         
         FilteringResultSet result = engine.acceleratedNodeSelection(options, dbQuery, assessor);
         
-        assertEquals(6, result.length());
+        assertEquals(5, result.length());
         assertNodePresent(3, result);
         assertNodePresent(4, result);
         assertNodePresent(5, result);

@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -491,9 +492,9 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     }
 
     @Override
-    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    public boolean isStorageClassesSupported(StorageClassSet storageClassSet)
     {
-        return backingStore.isStorageClassesSupported(storageClasses);
+        return backingStore.isStorageClassesSupported(storageClassSet);
     }
 
     @Override
@@ -503,25 +504,25 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     }
     
     @Override
-    public void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters)
+    public void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
-        backingStore.updateStorageClasses(contentUrl, storageClasses, parameters);
+        backingStore.updateStorageClasses(contentUrl, storageClassSet, parameters);
     }
     
     @Override
-    public Set<String> findStorageClasses(String contentUrl)
+    public StorageClassSet findStorageClasses(String contentUrl)
     {
         return backingStore.findStorageClasses(contentUrl);
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
     {
         return backingStore.getStorageClassesTransitions();
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(String contentUrl)
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
     {
         return backingStore.findStorageClassesTransitions(contentUrl);
     }

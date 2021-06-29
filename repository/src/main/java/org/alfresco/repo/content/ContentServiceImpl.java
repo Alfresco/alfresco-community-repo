@@ -453,17 +453,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
     
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update,
-        Set<String> storageClasses)
+        StorageClassSet storageClassSet)
     {
-        if (!isStorageClassesSupported(storageClasses))
+        if (!isStorageClassesSupported(storageClassSet))
         {
-            throw new UnsupportedStorageClassException(store, storageClasses,
+            throw new UnsupportedStorageClassException(store, storageClassSet,
                                                        "The supplied storage classes are not supported");
         }
         
         if (nodeRef == null)
         {
-            ContentContext ctx = new ContentContext(null, null, storageClasses);
+            ContentContext ctx = new ContentContext(null, null, storageClassSet);
             // for this case, we just give back a valid URL into the content store
             ContentWriter writer = store.getWriter(ctx);
             // Register the new URL for rollback cleanup
@@ -475,7 +475,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         // check for an existing URL - the get of the reader will perform type checking
         ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
 
-        if (storageClasses != null)
+        if (storageClassSet != null)
         {
             if (existingContentReader != null && 
                 existingContentReader.getContentData() != null && 
@@ -483,19 +483,19 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             {
                 Set<String> currentStorageClasses = findStorageClasses(nodeRef);
                 if (currentStorageClasses != null && 
-                    !currentStorageClasses.equals(storageClasses))
+                    !currentStorageClasses.equals(storageClassSet))
                 {
-                    Set<Set<String>> possibleTransitions = findStorageClassesTransitions(nodeRef)
+                    Set<StorageClassSet> possibleTransitions = findStorageClassesTransitions(nodeRef)
                         .get(currentStorageClasses);
 
                     if (possibleTransitions == null || 
-                        !possibleTransitions.contains(storageClasses))
+                        !possibleTransitions.contains(storageClassSet))
                     {
-                        throw new UnsupportedStorageClassException(store, storageClasses,
+                        throw new UnsupportedStorageClassException(store, storageClassSet,
                                                                    "Transition from "
                                                                        + currentStorageClasses
                                                                        + " storage classes to "
-                                                                       + storageClasses
+                                                                       + storageClassSet
                                                                        + " is not supported");
                     }
                 }
@@ -505,7 +505,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.
         ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef,
-                                                    propertyQName, storageClasses);
+                                                    propertyQName, storageClassSet);
         ContentWriter writer = store.getWriter(ctx);
         // Register the new URL for rollback cleanup
         eagerContentStoreCleaner.registerNewContentUrl(writer.getContentUrl());

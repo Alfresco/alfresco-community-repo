@@ -56,6 +56,7 @@ import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.UnsupportedStorageClassException;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.lock.mem.Lifetime;
@@ -2830,13 +2831,13 @@ public class NodesImpl implements Nodes
         writeContent(nodeRef, fileName, stream, guessEncoding, null);
     }
 
-    
-    private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding, Set<String> storageClasses)
+    private void writeContent(NodeRef nodeRef, String fileName, InputStream stream,
+        boolean guessEncoding, StorageClassSet storageClassSet)
     {
         try
         {
             ContentWriter writer = contentService
-                .getWriter(nodeRef, ContentModel.PROP_CONTENT, true, storageClasses);
+                .getWriter(nodeRef, ContentModel.PROP_CONTENT, true, storageClassSet);
 
             String mimeType = mimetypeService.guessMimetype(fileName);
             if ((mimeType != null) && (!mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
@@ -3073,9 +3074,9 @@ public class NodesImpl implements Nodes
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedParams(renditionNames);
-        final Set<String> storageClasses = getRequestedParams(storageClassesParam);
+        final StorageClassSet storageClasses = (StorageClassSet) getRequestedParams(storageClassesParam);
 
-        validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
+        validateProperties(qnameStrProps, EXCLUDED_NS, Collections.emptyList());
         try
         {
             // Map the given properties, if any.
@@ -3157,7 +3158,7 @@ public class NodesImpl implements Nodes
     }
 
     private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType,
-        Content content, Set<String> storageClasses, Map<QName, Serializable> props,
+        Content content, StorageClassSet storageClassSet, Map<QName, Serializable> props,
         QName assocTypeQName, Parameters params, Boolean versionMajor, String versionComment)
     {
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
@@ -3170,7 +3171,7 @@ public class NodesImpl implements Nodes
         else
         {
             // Write content
-            writeContent(nodeRef, fileName, content.getInputStream(), true, storageClasses);
+            writeContent(nodeRef, fileName, content.getInputStream(), true, storageClassSet);
         }
         
         if ((versionMajor != null) || (versionComment != null))

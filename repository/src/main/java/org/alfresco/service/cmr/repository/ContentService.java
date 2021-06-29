@@ -176,14 +176,14 @@ public interface ContentService
      * @param update true if the property must be updated atomically when the content write
      *      stream is closed (attaches a listener to the stream); false if the client code
      *      will perform the updates itself.
-     * @param storageClasses storage classes for the content associated with the node property
+     * @param storageClassSet storage classes for the content associated with the node property
      * @return Returns a writer for the content associated with the node property
      * @throws InvalidNodeRefException if the node doesn't exist
      * @throws InvalidTypeException if the node property is not of type <b>content</b>
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "update", "storageClasses"})
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update,
-        Set<String> storageClasses) throws InvalidNodeRefException, InvalidTypeException;
+        StorageClassSet storageClassSet) throws InvalidNodeRefException, InvalidTypeException;
 
     /**
      * Gets a writer to a temporary location.  The longevity of the stored

@@ -34,7 +34,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -182,15 +181,11 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         writer.putContent(content);
         
         String contentUrl = writer.getContentUrl();
-        final Set<String> storageClasses = Set.of("a-storage-class");
-
-        // Empty storage classes before update
-        assertTrue(routingStore.findStorageClasses(contentUrl).isEmpty());
 
         // Update storage classes
-        routingStore.updateStorageClasses(contentUrl, storageClasses, null);
+        routingStore.updateStorageClasses(contentUrl, ContentStore.SCS_DEFAULT, null);
 
-        assertEquals(storageClasses, routingStore.findStorageClasses(contentUrl));
+        assertEquals(ContentStore.SCS_DEFAULT, routingStore.findStorageClasses(contentUrl));
     }
     
     /**
@@ -247,7 +242,7 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
     private static class AnyStorageClassesSupportedStore extends AbstractContentStore
     {
         FileContentStore fileStore;
-        Set<String> storageClasses = new HashSet<>();
+        StorageClassSet storageClasses = new StorageClassSet();
         
         public AnyStorageClassesSupportedStore(FileContentStore fileStore)
         {
@@ -280,12 +275,12 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
             return true;
         }
         
-        public void updateStorageClasses(String contentUrl, Set<String> storageClasses, Map<String, Object> parameters)
+        public void updateStorageClasses(String contentUrl, StorageClassSet storageClasses, Map<String, Object> parameters)
         {
             this.storageClasses = storageClasses;
         }
 
-        public Set<String> findStorageClasses(String contentUrl)
+        public StorageClassSet findStorageClasses(String contentUrl)
         {
             return this.storageClasses;
         }

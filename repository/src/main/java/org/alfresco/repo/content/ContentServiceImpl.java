@@ -588,9 +588,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
 
     @Override
-    public boolean isStorageClassesSupported(Set<String> storageClasses)
+    public boolean isStorageClassesSupported(StorageClassSet storageClassSet)
     {
-        return store.isStorageClassesSupported(storageClasses);
+        return store.isStorageClassesSupported(storageClassSet);
     }
 
     @Override
@@ -600,7 +600,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
 
     @Override
-    public void updateStorageClasses(NodeRef nodeRef, Set<String> storageClasses, Map<String, Object> parameters)
+    public void updateStorageClasses(NodeRef nodeRef, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -610,16 +610,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
         }
 
-        if (!isStorageClassesSupported(storageClasses))
+        if (!isStorageClassesSupported(storageClassSet))
         {
-            throw new UnsupportedStorageClassException(store, storageClasses, "The supplied storage classes are not supported");
+            throw new UnsupportedStorageClassException(store, storageClassSet, "The supplied storage classes are not supported");
         }
 
-        store.updateStorageClasses(contentData.getContentUrl(), storageClasses, parameters);
+        store.updateStorageClasses(contentData.getContentUrl(), storageClassSet, parameters);
     }
 
     @Override
-    public Set<String> findStorageClasses(NodeRef nodeRef)
+    public StorageClassSet findStorageClasses(NodeRef nodeRef)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -633,13 +633,13 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> getStorageClassesTransitions()
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
     {
         return store.getStorageClassesTransitions();
     }
 
     @Override
-    public Map<Set<String>, Set<Set<String>>> findStorageClassesTransitions(NodeRef nodeRef)
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(NodeRef nodeRef)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 

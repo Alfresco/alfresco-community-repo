@@ -3073,8 +3073,8 @@ public class NodesImpl implements Nodes
         // if requested, make (get or create) path
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
-        final Set<String> renditions = getRequestedParams(renditionNames);
-        final StorageClassSet storageClasses = (StorageClassSet) getRequestedParams(storageClassesParam);
+        final Set<String> renditions = getRequestedRenditions(renditionNames);
+        final StorageClassSet storageClasses = getRequestedStorageClasses(storageClassesParam);
 
         validateProperties(qnameStrProps, EXCLUDED_NS, Collections.emptyList());
         try
@@ -3228,25 +3228,40 @@ public class NodesImpl implements Nodes
         }
     }
 
-    static Set<String> getRequestedParams(String stringParams)
+    static Set<String> getRequestedRenditions(String renditionsParam)
     {
-        if (stringParams == null)
+        if (renditionsParam == null)
         {
             return null;
         }
 
-        String[] paramNames = stringParams.split(",");
+        String[] renditionNames = renditionsParam.split(",");
 
-        Set<String> params = new LinkedHashSet<>(paramNames.length);
-        for (String name : paramNames)
+        Set<String> renditions = new LinkedHashSet<>(renditionNames.length);
+        for (String name : renditionNames)
         {
             name = name.trim();
             if (!name.isEmpty())
             {
-                params.add(name.trim());
+                renditions.add(name.trim());
             }
         }
-        return params;
+        return renditions;
+    }
+
+    static StorageClassSet getRequestedStorageClasses(String storageClassesParam)
+    {
+        if (storageClassesParam == null)
+        {
+            return null;
+        }
+
+        String[] storageClasses = Arrays.stream(storageClassesParam.split(","))
+            .map(String::trim)
+            .filter(sc -> !sc.isEmpty())
+            .toArray(String[]::new);
+        
+        return new StorageClassSet(storageClasses);
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)

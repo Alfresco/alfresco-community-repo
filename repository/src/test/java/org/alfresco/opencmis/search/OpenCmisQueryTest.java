@@ -119,8 +119,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/cmis-query-test";
 
-    
-    
     QName typeThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "type-that-requires-encoding");
     
     QName aspectThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "aspect-that-requires-encoding");
@@ -3154,6 +3152,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:document WHERE cmis:name IS NULL", 0, false, "cmis:objectId", new String(), false);
     }
 
+
     public void testQueryableProperties() throws Exception
     {
         testQuery("SELECT * FROM cmis:document WHERE cmis:description LIKE '%Alfresco%'", 1, true, "cmis:name", new String(), false);
@@ -5660,6 +5659,47 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testOrderBy("SELECT " + propertyQueryName + " FROM test:extendedContent ORDER BY " + propertyQueryName + " DESC", 13, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
                 propertyQueryName);
     }
+
+    public void testSameContent() throws Exception
+    {
+        NodeRef folder = nodeService.createNode(base, ContentModel.ASSOC_CONTAINS, QName.createQName("cm", "Folder Same Name", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
+        nodeService.setProperty(folder, ContentModel.PROP_NAME, "Folder Same Name");
+
+        //GIVEN: add 20 documents with the same name
+        for (int i = 0; i < 20; i++)
+        {
+            Map<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
+            MLText desc = new MLText();
+            desc.addValue(Locale.ENGLISH, "Same description");
+            desc.addValue(Locale.US, "Same description");
+            properties1.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
+            properties1.put(ContentModel.PROP_DESCRIPTION, desc);
+            properties1.put(ContentModel.PROP_TITLE, desc);
+            properties1.put(ContentModel.PROP_NAME, "SameName " + i);
+            properties1.put(ContentModel.PROP_CREATED, new Date());
+            NodeRef c = nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS, QName.createQName("cm", "Same description", namespaceService), ContentModel.TYPE_CONTENT, properties1).getChildRef();
+            ContentWriter writer1 = contentService.getWriter(c, ContentModel.PROP_CONTENT, true);
+            writer1.setEncoding("UTF-8");
+            writer1.putContent("One Zebra Apple");
+            nodeService.addAspect(c, ContentModel.ASPECT_TITLED, null);
+
+        }
+
+        //WHEN: perform a like query with max items
+        String query = "select * from cmis:document WHERE cmis:name LIKE 'SameName%'";
+        CMISQueryOptions options = new CMISQueryOptions(query, rootNodeRef.getStoreRef());
+        options.setQueryMode(CMISQueryMode.CMS_STRICT);
+        options.setIncludeInTransactionData(true);
+        options.setMaxItems(12);
+
+        //THEN
+        CMISResultSet rs = cmisQueryService.query(options);
+        assertEquals(12, rs.length());
+        assertEquals(12, rs.getNumberFound());
+
+    }
+
+
 
     private void addTypeTestDataModel()
     {

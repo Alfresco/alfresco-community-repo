@@ -414,7 +414,7 @@ public class DBQueryEngine implements QueryEngine
             return Integer.MAX_VALUE;
         }
         
-        return maxItems + options.getSkipCount() + 1;
+        return maxItems + options.getSkipCount();
     }
 
     private BitSet formInclusionMask(List<Node> nodes)

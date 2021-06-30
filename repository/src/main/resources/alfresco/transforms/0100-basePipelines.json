@@ -185,7 +185,7 @@
         {"sourceMediaType": "application/vnd.oasis.opendocument.graphics", "maxSourceSizeBytes": 26214400,  "priority": 150, "targetMediaType": "text/plain"},
         {"sourceMediaType": "application/vnd.oasis.opendocument.graphics",                                  "priority": 150, "targetMediaType": "application/xhtml+xml"},
         {"sourceMediaType": "application/vnd.oasis.opendocument.graphics",                                  "priority": 150, "targetMediaType": "text/xml"},
-        
+
         {"sourceMediaType": "application/vnd.sun.xml.calc.template",                                        "priority": 150, "targetMediaType": "text/csv"},
         {"sourceMediaType": "application/vnd.sun.xml.calc.template",                                        "priority": 150, "targetMediaType": "text/html"},
         {"sourceMediaType": "application/vnd.sun.xml.calc.template",       "maxSourceSizeBytes": 26214400,  "priority": 150, "targetMediaType": "text/plain"},

@@ -28,11 +28,13 @@ package org.alfresco.rest.framework.resource.content;
 import java.util.Locale;
 import java.util.Set;
 
+import org.alfresco.repo.content.StorageClassSet;
+
 /**
  * Basic information about content.  Typically used with HTTPServletResponse
  */
 public interface ContentInfo extends BasicContentInfo{
     public long getLength();
     public Locale getLocale();
-    public Set<String> getStorageClasses();
+    public StorageClassSet getStorageClasses();
 }

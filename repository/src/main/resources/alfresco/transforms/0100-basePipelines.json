@@ -175,7 +175,6 @@
     },
     {
       "transformerName": "libreofficeToPdf",
-      "transformerFailover" : [ "libreoffice" ],
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/vnd.oasis.opendocument.graphics", "priority": 150, "targetMediaType": "application/pdf" },
         {"sourceMediaType": "application/vnd.sun.xml.calc.template",       "priority": 150, "targetMediaType": "application/pdf" },

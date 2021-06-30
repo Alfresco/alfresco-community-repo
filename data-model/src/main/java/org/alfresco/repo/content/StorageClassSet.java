@@ -37,6 +37,11 @@ import java.util.HashSet;
  */
 public class StorageClassSet extends HashSet<String>
 {
+    public StorageClassSet()
+    {
+        super();
+    }
+    
     public StorageClassSet(String... storageClasses)
     {
         super();

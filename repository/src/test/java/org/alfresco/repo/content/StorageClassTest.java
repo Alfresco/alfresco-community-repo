@@ -125,10 +125,10 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void getStorageClassesTransitions()
         {
-                Set<String> key1 = Set.of("Default");
-                Set<String> key2 = Set.of("WORM");
-                Set<Set<String>> value1 = Set.of(Set.of("Archive"));
-                Map<Set<String>, Set<Set<String>>> map = new HashMap<>();
+                StorageClassSet key1 = new StorageClassSet("Default");
+                StorageClassSet key2 = new StorageClassSet("WORM");
+                Set<StorageClassSet> value1 = Set.of(new StorageClassSet("Archive"));
+                Map<StorageClassSet, Set<StorageClassSet>> map = new HashMap<>();
                 map.put(key1, value1);
                 map.put(key2, value1);
 
@@ -145,7 +145,7 @@ public class StorageClassTest extends BaseSpringTest
                 NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
 
-                when(mockContentStore.findStorageClasses(contentUrl)).thenReturn(Set.of("Azure"));
+                when(mockContentStore.findStorageClasses(contentUrl)).thenReturn(new StorageClassSet("Azure"));
                 ReflectionTestUtils.setField(contentService, "store", mockContentStore);
 
                 assertTrue("Found storage classes: " + contentService.findStorageClasses(contentNodeRef),
@@ -165,10 +165,10 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void findStorageClassesTransitions() throws NotSupportedException, SystemException
         {
-                Set<String> key1 = Set.of("Default");
-                Set<String> key2 = Set.of("WORM");
-                Set<Set<String>> value1 = Set.of(Set.of("Archive"));
-                Map<Set<String>, Set<Set<String>>> map = new HashMap<>();
+                StorageClassSet key1 = new StorageClassSet("Default");
+                StorageClassSet key2 = new StorageClassSet("WORM");
+                Set<StorageClassSet> value1 = Set.of(new StorageClassSet("Archive"));
+                Map<StorageClassSet, Set<StorageClassSet>> map = new HashMap<>();
                 map.put(key1, value1);
                 map.put(key2, value1);
 
@@ -187,10 +187,9 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void checkUpdateStorageClasses() throws NotSupportedException, SystemException
         {
-
-                final Set<String> storageClasses = Set.of("Azure");
-                final Set<String> storageClasses2 = Set.of("S3");
-                final Set<String> storageClasses3 = Set.of("test1", "test2");
+                final StorageClassSet storageClasses = new StorageClassSet("Azure");
+                final StorageClassSet storageClasses2 = new StorageClassSet("S3");
+                final StorageClassSet storageClasses3 = new StorageClassSet("test1", "test2");
 
                 NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
@@ -211,7 +210,7 @@ public class StorageClassTest extends BaseSpringTest
         public void checkUpdateStorageClassesNotSupported() throws NotSupportedException, SystemException
         {
 
-                final Set<String> storageClasses = Set.of("test");
+                final StorageClassSet storageClasses = new StorageClassSet("test");
 
                 NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "testContent");
 
@@ -231,8 +230,7 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void checkUpdateStorageEmptyContent() throws NotSupportedException, SystemException
         {
-
-                final Set<String> storageClasses = Set.of("Azure");
+                final StorageClassSet storageClasses = new StorageClassSet("Azure");
 
                 NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), "");
                 String contentUrl = contentService.getReader(contentNodeRef, ContentModel.TYPE_CONTENT).getContentUrl();
@@ -248,8 +246,7 @@ public class StorageClassTest extends BaseSpringTest
         @Test
         public void checkUpdateStorageClassesWithoutContent() throws NotSupportedException, SystemException
         {
-
-                final Set<String> storageClasses = Set.of("Azure");
+                final StorageClassSet storageClasses = new StorageClassSet("Azure");
 
                 NodeRef contentNodeRef = createNode("testNode" + GUID.generate(), null);
                 when(mockContentStore.isStorageClassesSupported(storageClasses)).thenReturn(true);

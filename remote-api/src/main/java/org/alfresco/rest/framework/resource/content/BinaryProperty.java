@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.framework.resource.content;
 
-import static org.alfresco.repo.content.ContentStore.DEFAULT_SC;
+import static org.alfresco.repo.content.ContentStore.SCS_DEFAULT;
 
 import java.io.Serializable;
 import java.util.Locale;
-import java.util.Set;
 
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.service.cmr.repository.ContentReader;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -51,7 +51,7 @@ public class BinaryProperty implements ContentInfo, Serializable
     private final String encoding;
     private final long length;
     private final Locale locale;
-    private final Set<String> storageClasses;
+    private final StorageClassSet storageClassSet;
     
     /**
      * Sets the content length to zero, Locale to null, no stream and no caching
@@ -74,7 +74,7 @@ public class BinaryProperty implements ContentInfo, Serializable
         this.encoding = reader.getEncoding();
         this.length = reader.getSize();
         this.locale = reader.getLocale();
-        this.storageClasses = Set.of(DEFAULT_SC);
+        this.storageClassSet = SCS_DEFAULT;
     }
     
     /**
@@ -89,14 +89,14 @@ public class BinaryProperty implements ContentInfo, Serializable
         this(mimeType, encoding, length, locale, null);
     }
 
-    public BinaryProperty(String mimeType, String encoding, long length, Locale locale, Set<String> storageClasses)
+    public BinaryProperty(String mimeType, String encoding, long length, Locale locale, StorageClassSet storageClassSet)
     {
         super();
         this.mimeType = mimeType;
         this.encoding = encoding;
         this.length = length;
         this.locale = locale;
-        this.storageClasses = storageClasses;
+        this.storageClassSet = storageClassSet;
     }
 
     public String getMimeType()
@@ -132,9 +132,9 @@ public class BinaryProperty implements ContentInfo, Serializable
         return this.locale;
     }
     @JsonIgnore
-    public Set<String> getStorageClasses()
+    public StorageClassSet getStorageClasses()
     {
-        return storageClasses;
+        return storageClassSet;
     }
    
 }

@@ -26,6 +26,14 @@
 
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.parseRestApiEntries;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
@@ -38,14 +46,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.List;
-import java.util.Set;
-
-import static org.alfresco.rest.api.tests.util.RestApiUtil.parseRestApiEntries;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.when;
 
 /**
  * V1 REST API tests for Storage Classes
@@ -99,14 +99,15 @@ public class StorageClassesTest extends AbstractSingleNetworkSiteTest
     {
         ReflectionTestUtils.setField(contentService, "store", mockStore);
         
-        Set<String> expectedStorageClasses = Set.of("default", "archive", "worm");
-        when(mockStore.getSupportedStorageClasses()).thenReturn(expectedStorageClasses);
+        Set<String> expectedStorageClass =
+            Set.of(ContentStore.STORAGE_CLASS_DEFAULT, ContentStore.STORAGE_CLASS_ARCHIVE);
+        when(mockStore.getSupportedStorageClasses()).thenReturn(expectedStorageClass);
 
         PublicApiClient.Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(STORAGE_CLASSES, paging, 200);
         List<StorageClass> nodes = parseRestApiEntries(response.getJsonResponse(), StorageClass.class);
 
         assertNotNull(nodes);
-        assertEquals(3, nodes.size());
+        assertEquals(2, nodes.size());
     }
 }

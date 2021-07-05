@@ -456,12 +456,20 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
             }
         }
         
-        // Check the license expiry
+        // Check the license expiration
         Long licenseExpiryDate = restrictions.getLicenseExpiryDate();
         if (licenseExpiryDate != null)
         {
+            //For informational purposes, get the remaining number of days, counting from the beginning of the day of each date (now and expiration date)
             int remainingDays = DateUtil.calculateDays(System.currentTimeMillis(), licenseExpiryDate);
-            if (remainingDays <= 0)
+            int remainingMills = 0;
+            if (remainingDays == 0)
+            {
+                //Get exact number of milliseconds between license expiration time and now to see if is expired
+                remainingMills = DateUtil.calculateMs(System.currentTimeMillis(), licenseExpiryDate);
+            }
+            
+            if (remainingDays < 0 || remainingMills < 0)
             {
                 errors.add(I18NUtil.getMessage("system.usage.err.limit_license_expired"));
                 level = RepoUsageLevel.LOCKED_DOWN;

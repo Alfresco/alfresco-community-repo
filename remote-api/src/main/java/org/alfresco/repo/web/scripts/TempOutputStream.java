@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
+import java.util.function.Supplier;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -88,13 +89,12 @@ public class TempOutputStream extends OutputStream
     private final File tempDir;
     private final int memoryThreshold;
     private final long maxContentSize;
-    private boolean encrypt;
-    private boolean deleteTempFileOnClose;
+    private final boolean encrypt;
+    private final boolean deleteTempFileOnClose;
 
     private long length = 0;
     private OutputStream outputStream;
     private File tempFile;
-    private TempByteArrayOutputStream tempStream;
 
     private Key symKey;
     private byte[] iv;
@@ -126,44 +126,41 @@ public class TempOutputStream extends OutputStream
         this.encrypt = encrypt;
         this.deleteTempFileOnClose = deleteTempFileOnClose;
 
-        this.tempStream = new TempByteArrayOutputStream();
-        this.outputStream = this.tempStream;
+        this.outputStream = new ByteArrayOutputStream();
     }
 
     /**
      * Returns the data as an InputStream
      */
-    public InputStream getInputStream() throws IOException
+    public InputStream toNewInputStream() throws IOException
     {
-        if (tempFile != null)
+        closeOutputStream();
+
+        if (tempFile == null)
         {
-            if (encrypt)
-            {
-                final Cipher cipher;
-                try
-                {
-                    cipher = Cipher.getInstance(TRANSFORMATION);
-                    cipher.init(Cipher.DECRYPT_MODE, symKey, new IvParameterSpec(iv));
-                }
-                catch (Exception e)
-                {
-                    destroy();
-
-                    if (logger.isErrorEnabled())
-                    {
-                        logger.error("Cannot initialize decryption cipher", e);
-                    }
-
-                    throw new IOException("Cannot initialize decryption cipher", e);
-                }
-
-                return new BufferedInputStream(new CipherInputStream(new FileInputStream(tempFile), cipher));
-            }
+            return new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
+        }
+        if (!encrypt)
+        {
             return new BufferedInputStream(new FileInputStream(tempFile));
         }
-        else
+        try
         {
-            return new ByteArrayInputStream(tempStream.getBuffer(), 0, tempStream.getCount());
+            final Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.DECRYPT_MODE, symKey, new IvParameterSpec(iv));
+
+            return new BufferedInputStream(new CipherInputStream(new FileInputStream(tempFile), cipher));
+        }
+        catch (Exception e)
+        {
+            destroy();
+
+            if (logger.isErrorEnabled())
+            {
+                logger.error("Cannot initialize decryption cipher", e);
+            }
+
+            throw new IOException("Cannot initialize decryption cipher", e);
         }
     }
 
@@ -190,7 +187,12 @@ public class TempOutputStream extends OutputStream
     @Override
     public void close() throws IOException
     {
-        close(deleteTempFileOnClose);
+        closeOutputStream();
+
+        if (deleteTempFileOnClose)
+        {
+            deleteTempFile();
+        }
     }
 
     /**
@@ -215,7 +217,9 @@ public class TempOutputStream extends OutputStream
      */
     public void destroy() throws IOException
     {
-        close(true);
+        closeOutputStream();
+
+        deleteTempFile();
     }
 
     public long getLength()
@@ -282,102 +286,101 @@ public class TempOutputStream extends OutputStream
         }
     }
 
-    private void close(boolean deleteTempFileOnClose)
+    private BufferedOutputStream createFileOutputStream(final File file) throws IOException
     {
-        closeOutputStream();
-
-        if (deleteTempFileOnClose)
+        if (!encrypt)
         {
-            deleteTempFile();
+            return new BufferedOutputStream(new FileOutputStream(file));
         }
-    }
-
-    private BufferedOutputStream createOutputStream(File file) throws IOException
-    {
-        BufferedOutputStream fileOutputStream;
-        if (encrypt)
+        try
         {
-            try
+            // Generate a symmetric key
+            final KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
+            keyGen.init(KEY_SIZE);
+            symKey = keyGen.generateKey();
+
+            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.ENCRYPT_MODE, symKey);
+
+            iv = cipher.getIV();
+
+            return new BufferedOutputStream(new CipherOutputStream(new FileOutputStream(file), cipher));
+        }
+        catch (Exception e)
+        {
+            if (logger.isErrorEnabled())
             {
-                // Generate a symmetric key
-                final KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
-                keyGen.init(KEY_SIZE);
-                symKey = keyGen.generateKey();
-
-                Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-                cipher.init(Cipher.ENCRYPT_MODE, symKey);
-
-                iv = cipher.getIV();
-
-                fileOutputStream = new BufferedOutputStream(new CipherOutputStream(new FileOutputStream(file), cipher));
+                logger.error("Cannot initialize encryption cipher", e);
             }
-            catch (Exception e)
-            {
-                if (logger.isErrorEnabled())
-                {
-                    logger.error("Cannot initialize encryption cipher", e);
-                }
 
-                throw new IOException("Cannot initialize encryption cipher", e);
-            }
+            throw new IOException("Cannot initialize encryption cipher", e);
         }
-        else
-        {
-            fileOutputStream = new BufferedOutputStream(new FileOutputStream(file));
-        }
-
-        return fileOutputStream;
     }
 
     private void update(int len) throws IOException
     {
-        if (maxContentSize > -1 && length + len > maxContentSize)
+        if (surpassesMaxContentSize(len))
         {
             destroy();
             throw new ContentLimitViolationException("Content size violation, limit = " + maxContentSize);
         }
 
-        if (tempFile == null && (tempStream.getCount() + len) > memoryThreshold)
+        if (surpassesThreshold(len))
         {
-            File file = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ".bin", tempDir);
+            tempFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ".bin", tempDir);
 
-            BufferedOutputStream fileOutputStream = createOutputStream(file);
-            fileOutputStream.write(this.tempStream.getBuffer(), 0, this.tempStream.getCount());
+            final BufferedOutputStream fileOutputStream = createFileOutputStream(tempFile);
+            fileOutputStream.write(((ByteArrayOutputStream) outputStream).toByteArray());
             fileOutputStream.flush();
 
             try
             {
-                tempStream.close();
+                outputStream.close();
             }
-            catch (IOException e)
+            catch (IOException ignore)
             {
                 // Ignore exception
             }
-            tempStream = null;
 
-            tempFile = file;
             outputStream = fileOutputStream;
         }
 
         length += len;
     }
 
-    private static class TempByteArrayOutputStream extends ByteArrayOutputStream
+    private boolean surpassesMaxContentSize(final int len)
     {
-        /**
-         * @return The internal buffer where data is stored
-         */
-        public byte[] getBuffer()
-        {
-            return buf;
-        }
+        return maxContentSize >= 0 && length + len > maxContentSize;
+    }
 
-        /**
-         * @return The number of valid bytes in the buffer.
-         */
-        public int getCount()
-        {
-            return count;
-        }
+    private boolean surpassesThreshold(final int len)
+    {
+        return tempFile == null && length + len > memoryThreshold;
+    }
+
+    /**
+     * Creates a {@link TempOutputStream} factory/supplier.
+     *
+     * @param tempDir
+     *            the temporary directory, i.e. <code>isDir == true</code>, that
+     *            will be used as * parent directory for creating temp file backed
+     *            streams
+     * @param memoryThreshold
+     *            the memory threshold in B
+     * @param maxContentSize
+     *            the max content size in B
+     * @param encrypt
+     *            true if temp files should be encrypted
+     * @param deleteTempFileOnClose
+     *            true if temp files should be deleted on output stream close
+     *            (useful if we need to cache the content for further reads). If
+     *            this is false then we need to make sure we call
+     *            {@link TempOutputStream}.destroy to clean up properly.
+     */
+    public static Supplier<TempOutputStream> factory(final File tempDir, final int memoryThreshold,
+        final long maxContentSize, final boolean encrypt, final boolean deleteTempFileOnClose)
+    {
+        return () -> new TempOutputStream(tempDir, memoryThreshold, maxContentSize, encrypt,
+            deleteTempFileOnClose);
     }
 }

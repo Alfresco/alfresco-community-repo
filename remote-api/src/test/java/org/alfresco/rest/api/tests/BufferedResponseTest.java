@@ -28,7 +28,6 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.web.scripts.BufferedResponse;
 import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.repo.web.scripts.TempOutputStreamFactory;
 import org.alfresco.util.TempFileProvider;
 import org.junit.After;
 import org.junit.Assert;
@@ -41,6 +40,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -82,7 +82,7 @@ public class BufferedResponseTest
     public void testOutputStream() throws IOException
     {
         File bufferTempDirectory = TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME);
-        TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false,true);
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false,true);
         BufferedResponse response = new BufferedResponse(null, 0, streamFactory);
 
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX );

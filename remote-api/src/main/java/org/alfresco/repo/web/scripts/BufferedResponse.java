@@ -28,6 +28,7 @@ package org.alfresco.repo.web.scripts;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.function.Supplier;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
@@ -42,25 +43,24 @@ import org.springframework.util.FileCopyUtils;
 /**
  * Transactional Buffered Response
  */
-public class BufferedResponse implements WrappingWebScriptResponse
+public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseable
 {
     // Logger
     protected static final Log logger = LogFactory.getLog(BufferedResponse.class);
 
-    private TempOutputStreamFactory streamFactory;
-    private WebScriptResponse res;
-    private int bufferSize;
-    private TempOutputStream outputStream = null;
-    private StringBuilderWriter outputWriter = null;
-    
+    private final Supplier<TempOutputStream> streamFactory;
+    private final WebScriptResponse res;
+    private final int bufferSize;
+    private TempOutputStream outputStream;
+    private StringBuilderWriter outputWriter;
 
     /**
      * Construct
-     * 
-     * @param res WebScriptResponse
+     *
+     * @param res        WebScriptResponse
      * @param bufferSize int
      */
-    public BufferedResponse(WebScriptResponse res, int bufferSize, TempOutputStreamFactory streamFactory)
+    public BufferedResponse(WebScriptResponse res, int bufferSize, Supplier<TempOutputStream> streamFactory)
     {
         this.res = res;
         this.bufferSize = bufferSize;
@@ -71,6 +71,7 @@ public class BufferedResponse implements WrappingWebScriptResponse
      * (non-Javadoc)
      * @see org.alfresco.web.scripts.WrappingWebScriptResponse#getNext()
      */
+    @Override
     public WebScriptResponse getNext()
     {
         return res;
@@ -123,16 +124,18 @@ public class BufferedResponse implements WrappingWebScriptResponse
      * (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream()
      */
+    @Override
     public OutputStream getOutputStream() throws IOException
     {
-        if (outputStream == null)
+        if (outputStream != null)
         {
-            if (outputWriter != null)
-            {
-                throw new AlfrescoRuntimeException("Already buffering output writer");
-            }
-            outputStream = streamFactory.createOutputStream();
+            return outputStream;
         }
+        if (outputWriter != null)
+        {
+            throw new AlfrescoRuntimeException("Already buffering output writer");
+        }
+        outputStream = streamFactory.get();
         return outputStream;
     }
 
@@ -151,14 +154,15 @@ public class BufferedResponse implements WrappingWebScriptResponse
      */
     public Writer getWriter() throws IOException
     {
-        if (outputWriter == null)
+        if (outputWriter != null)
         {
-            if (outputStream != null)
-            {
-                throw new AlfrescoRuntimeException("Already buffering output stream");
-            }
-            outputWriter = new StringBuilderWriter(bufferSize);
+            return outputWriter;
         }
+        if (outputStream != null)
+        {
+            throw new AlfrescoRuntimeException("Already buffering output stream");
+        }
+        outputWriter = new StringBuilderWriter(bufferSize);
         return outputWriter;
     }
 
@@ -262,20 +266,28 @@ public class BufferedResponse implements WrappingWebScriptResponse
                 if (logger.isDebugEnabled())
                     logger.debug("Writing Transactional response: size=" + outputStream.getLength());
 
-                try
-                {
-                    outputStream.flush();
-                    FileCopyUtils.copy(outputStream.getInputStream(), res.getOutputStream());
-                }
-                finally
-                {
-                    outputStream.destroy();
-                }
+                FileCopyUtils.copy(outputStream.toNewInputStream(), res.getOutputStream());
             }
         }
         catch (IOException e)
         {
             throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
+        }
+    }
+
+    @Override
+    public void close()
+    {
+        if (outputStream != null)
+        {
+            try
+            {
+                outputStream.destroy();
+            }
+            catch (Exception ignore)
+            {
+            }
+            outputStream = null;
         }
     }
 }

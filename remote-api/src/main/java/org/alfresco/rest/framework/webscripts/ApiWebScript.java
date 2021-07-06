@@ -28,10 +28,11 @@ package org.alfresco.rest.framework.webscripts;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.repo.web.scripts.BufferedResponse;
-import org.alfresco.repo.web.scripts.TempOutputStreamFactory;
+import org.alfresco.repo.web.scripts.TempOutputStream;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.service.transaction.TransactionService;
@@ -56,7 +57,7 @@ public abstract class ApiWebScript extends AbstractWebScript
     protected String tempDirectoryName = null;
     protected int memoryThreshold = 4 * 1024 * 1024; // 4mb
     protected long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
-    protected TempOutputStreamFactory streamFactory = null;
+    protected Supplier<TempOutputStream> streamFactory = null;
     protected TransactionService transactionService;
 
     public void setTransactionService(TransactionService transactionService)
@@ -88,7 +89,7 @@ public abstract class ApiWebScript extends AbstractWebScript
         this.maxContentSize = maxContentSize;
     }
 
-    public void setStreamFactory(TempOutputStreamFactory streamFactory)
+    public void setStreamFactory(Supplier<TempOutputStream> streamFactory)
     {
         this.streamFactory = streamFactory;
     }
@@ -96,50 +97,38 @@ public abstract class ApiWebScript extends AbstractWebScript
     public void init()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
-        this.streamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, false, false);
+        streamFactory = TempOutputStream.factory(tempDirectory, memoryThreshold, maxContentSize, false, false);
     }
 
     @Override
     public void execute(final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
-		Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-		Api api = assistant.determineApi(templateVars);
-		
-		final BufferedRequest bufferedReq = getRequest(req);
-		final BufferedResponse bufferedRes = getResponse(res);
+        final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        final Api api = ApiAssistant.determineApi(templateVars);
 
-		try
-		{
-		    execute(api, bufferedReq, bufferedRes);
-		}
-		finally
-		{
-            // Get rid of any temporary files
-            if (bufferedReq != null)
-            {
-                bufferedReq.close();
-            }
-		}
-
-        // Ensure a response is always flushed after successful execution
-        if (bufferedRes != null)
+        try (final BufferedRequest bufferedReq = getRequest(req);
+             final BufferedResponse bufferedRes = getResponse(res))
         {
-            bufferedRes.writeResponse();
+            execute(api, bufferedReq, bufferedRes);
+
+            // Ensure a response is always flushed after successful execution
+            if (bufferedRes != null)
+            {
+                bufferedRes.writeResponse();
+            }
         }
     }
 
     protected BufferedRequest getRequest(final WebScriptRequest req)
     {
         // create buffered request and response that allow transaction retrying
-        final BufferedRequest bufferedReq = new BufferedRequest(req, streamFactory);
-        return bufferedReq;
+        return new BufferedRequest(req, streamFactory);
     }
 
     protected BufferedResponse getResponse(final WebScriptResponse resp)
     {
         // create buffered request and response that allow transaction retrying
-        final BufferedResponse bufferedRes = new BufferedResponse(resp, memoryThreshold, streamFactory);
-        return bufferedRes;
+        return new BufferedResponse(resp, memoryThreshold, streamFactory);
     }
 
     public abstract void execute(final Api api, WebScriptRequest req, WebScriptResponse res) throws IOException;

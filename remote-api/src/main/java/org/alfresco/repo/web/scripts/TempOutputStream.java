@@ -90,7 +90,6 @@ public class TempOutputStream extends OutputStream
     private final int memoryThreshold;
     private final long maxContentSize;
     private final boolean encrypt;
-    private final boolean deleteTempFileOnClose;
 
     private long length = 0;
     private OutputStream outputStream;
@@ -112,19 +111,13 @@ public class TempOutputStream extends OutputStream
      *            the max content size in B
      * @param encrypt
      *            true if temp files should be encrypted
-     * @param deleteTempFileOnClose
-     *            true if temp files should be deleted on output stream close
-     *            (useful if we need to cache the content for further reads). If
-     *            this is false then we need to make sure we call
-     *            {@link TempOutputStream}.destroy to clean up properly.
      */
-    public TempOutputStream(File tempDir, int memoryThreshold, long maxContentSize, boolean encrypt, boolean deleteTempFileOnClose)
+    public TempOutputStream(File tempDir, int memoryThreshold, long maxContentSize, boolean encrypt)
     {
         this.tempDir = tempDir;
         this.memoryThreshold = (memoryThreshold < 0) ? DEFAULT_MEMORY_THRESHOLD : memoryThreshold;
         this.maxContentSize = maxContentSize;
         this.encrypt = encrypt;
-        this.deleteTempFileOnClose = deleteTempFileOnClose;
 
         this.outputStream = new ByteArrayOutputStream();
     }
@@ -188,11 +181,6 @@ public class TempOutputStream extends OutputStream
     public void close() throws IOException
     {
         closeOutputStream();
-
-        if (deleteTempFileOnClose)
-        {
-            deleteTempFile();
-        }
     }
 
     /**
@@ -371,16 +359,10 @@ public class TempOutputStream extends OutputStream
      *            the max content size in B
      * @param encrypt
      *            true if temp files should be encrypted
-     * @param deleteTempFileOnClose
-     *            true if temp files should be deleted on output stream close
-     *            (useful if we need to cache the content for further reads). If
-     *            this is false then we need to make sure we call
-     *            {@link TempOutputStream}.destroy to clean up properly.
      */
     public static Supplier<TempOutputStream> factory(final File tempDir, final int memoryThreshold,
-        final long maxContentSize, final boolean encrypt, final boolean deleteTempFileOnClose)
+        final long maxContentSize, final boolean encrypt)
     {
-        return () -> new TempOutputStream(tempDir, memoryThreshold, maxContentSize, encrypt,
-            deleteTempFileOnClose);
+        return () -> new TempOutputStream(tempDir, memoryThreshold, maxContentSize, encrypt);
     }
 }

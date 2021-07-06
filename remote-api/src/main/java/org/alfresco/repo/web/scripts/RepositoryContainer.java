@@ -107,8 +107,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     {
         streamFactory = TempOutputStream.factory(
             TempFileProvider.getTempDir(tempDirectoryName),
-            memoryThreshold, maxContentSize, encryptTempFiles,
-            false);
+            memoryThreshold, maxContentSize, encryptTempFiles);
     }
 
     public void setEncryptTempFiles(Boolean encryptTempFiles)

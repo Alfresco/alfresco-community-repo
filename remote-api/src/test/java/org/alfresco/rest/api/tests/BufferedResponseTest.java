@@ -26,14 +26,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.web.scripts.BufferedResponse;
-import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.util.TempFileProvider;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,6 +34,14 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import org.alfresco.repo.web.scripts.BufferedResponse;
+import org.alfresco.repo.web.scripts.TempOutputStream;
+import org.alfresco.util.TempFileProvider;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test that BufferedResponse uses a temp file instead of buffering the entire output stream in memory
@@ -82,17 +82,25 @@ public class BufferedResponseTest
     public void testOutputStream() throws IOException
     {
         File bufferTempDirectory = TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME);
-        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false,true);
-        BufferedResponse response = new BufferedResponse(null, 0, streamFactory);
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory,
+            MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
-        long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX );
-        copyFileToOutputStream(response);
-        long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
-        
-        response.getOutputStream().close();
+        final long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
-        Assert.assertEquals(countBefore + 1, countAfter);
+        try (BufferedResponse response = new BufferedResponse(null, 0, streamFactory))
+        {
+            copyFileToOutputStream(response);
+            final long countBeforeClose = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
+            response.getOutputStream().close();
+            final long countAfterClose = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
+
+            Assert.assertEquals(countBefore + 1, countBeforeClose);
+            Assert.assertEquals(countBefore + 1, countAfterClose);
+        }
+
+        final long countAfterDestroy = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
+        Assert.assertEquals(countBefore, countAfterDestroy);
     }
 
     private void copyFileToOutputStream(BufferedResponse response) throws IOException

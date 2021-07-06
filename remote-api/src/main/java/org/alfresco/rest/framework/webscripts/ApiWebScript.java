@@ -97,7 +97,7 @@ public abstract class ApiWebScript extends AbstractWebScript
     public void init()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
-        streamFactory = TempOutputStream.factory(tempDirectory, memoryThreshold, maxContentSize, false, false);
+        streamFactory = TempOutputStream.factory(tempDirectory, memoryThreshold, maxContentSize, false);
     }
 
     @Override

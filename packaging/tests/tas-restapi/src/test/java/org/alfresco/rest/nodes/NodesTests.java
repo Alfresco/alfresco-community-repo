@@ -189,4 +189,18 @@ public class NodesTests extends RestTest
         assertNull(restResponse.getContent().getStorageClasses());
     }
 
+    @Bug(id = "ACS-1775")
+    @TestRail(section = { TestGroup.SANITY }, executionType = ExecutionType.SANITY,
+            description = "Verify that the BAD_REQUEST is returned when updating storage classes for a node with an invalid storage class")
+    @Test(groups = { TestGroup.SANITY })
+    public void updateNodeStorageClass() throws Exception
+    {
+        STEP("1. Update storage classes for a node with an unexisting storage class.");
+        JsonObject updateStorageClass = Json.createObjectBuilder().add("content",
+                Json.createObjectBuilder().add("storageClasses", Json.createArrayBuilder().add("test")))
+                .build();
+        RestNodeModel restResponse = restClient.authenticateUser(user1).withCoreAPI()
+                .usingNode(file1).usingParams("include=storageClasses").updateNode(updateStorageClass.toString());
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+    }
 }

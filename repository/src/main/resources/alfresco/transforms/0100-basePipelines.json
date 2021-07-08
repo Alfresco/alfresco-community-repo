@@ -252,6 +252,18 @@
       ]
     },
     {
+      "transformerName": "outlookMsgToLibreofficeViaText",
+      "transformerPipeline" : [
+        {"transformerName": "OutlookMsg",                              "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "tikaOptions"
+      ]
+    },
+    {
       "transformerName": "htmlToPdfViaTXT",
       "transformerPipeline" : [
         {"transformerName": "string", "targetMediaType": "text/plain"},

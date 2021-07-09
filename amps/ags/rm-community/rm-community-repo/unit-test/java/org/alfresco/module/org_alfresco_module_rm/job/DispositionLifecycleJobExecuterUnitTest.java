@@ -235,6 +235,9 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         doReturn(CUTOFF).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(RETAIN).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(any(NodeRef.class));
+        doReturn(false).when(mockedRecordFolderService).isRecordFolder(parentAssoc.getParentRef());
+        doReturn(true).when(mockedRecordService).isRecord(parentAssoc.getParentRef());
+        doReturn(false).when(mockedFreezeService).isFrozen(parentAssoc.getParentRef());
 
         when(mockedResultSet.getNodeRefs())
             .thenReturn(buildList(node1))

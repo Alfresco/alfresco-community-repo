@@ -65,7 +65,6 @@ import static org.mockito.Mockito.when;
 public class StorageClassTest extends BaseSpringTest
 {
         private static final String DEFAULT_SC = "Default1";
-        private static final String DEFAULT_VALUE = "default";
         private static final String TEST_NAMESPACE = "TestNameSpace";
         private TransactionService transactionService;
         private AuthenticationComponent authenticationComponent;
@@ -108,7 +107,6 @@ public class StorageClassTest extends BaseSpringTest
                 ReflectionTestUtils.setField(contentService, "store", contentStore);
         }
 
-
         @Test
         public void testGetSupportedStorageClasses()
         {
@@ -116,10 +114,14 @@ public class StorageClassTest extends BaseSpringTest
         }
 
         @Test
-        public void getDefaultStorageClassesTransition()
+        public void checkDefaultStorageClassTransitions() throws NotSupportedException, SystemException
         {
                 ReflectionTestUtils.setField(contentService, "store", contentStore);
+                NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent2");
+
+                // Check default storage classes transition
                 assertTrue("Expected DEFAULT_SC ", contentService.getStorageClassesTransitions().isEmpty());
+                assertTrue("Found default storage transition: ", contentService.findStorageClassesTransitions(contentNodeRef).isEmpty());
         }
 
         @Test
@@ -150,16 +152,6 @@ public class StorageClassTest extends BaseSpringTest
 
                 assertTrue("Found storage classes: " + contentService.findStorageClasses(contentNodeRef),
                         contentService.findStorageClasses(contentNodeRef).contains("Azure"));
-        }
-
-        @Test
-        public void findDefaultStorageClassesTransitions() throws SystemException, NotSupportedException
-        {
-                ReflectionTestUtils.setField(contentService, "store", contentStore);
-                NodeRef contentNodeRef = createNode("testNode1" + GUID.generate(), "testContent2");
-
-                ReflectionTestUtils.setField(contentService, "store", contentStore);
-                assertTrue("Found default storage transition: ", contentService.findStorageClassesTransitions(contentNodeRef).isEmpty());
         }
 
         @Test
@@ -240,7 +232,6 @@ public class StorageClassTest extends BaseSpringTest
 
                 mockContentStore.updateStorageClasses(contentUrl, storageClasses, null);
                 assertTrue("Storage classes not supported: ", contentService.isStorageClassesSupported(storageClasses));
-
         }
 
         @Test

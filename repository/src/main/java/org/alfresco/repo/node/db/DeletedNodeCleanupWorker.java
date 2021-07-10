@@ -28,6 +28,7 @@ package org.alfresco.repo.node.db;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
@@ -67,10 +68,25 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         {
             return Collections.singletonList("Minimum purge age is negative; purge disabled");
         }
-        
-        List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
-        List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
-        
+        long fromCommitTime = fromCustomCommitTime;
+        long startTime = System.currentTimeMillis();
+        if (fromCommitTime <= 0L)
+        {
+            fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+        }
+
+        logger.debug("DeletedNodeCleanupWorker: nodeDAO.getMinTxnCommitTimeForDeletedNodes - execution time:"+ getFormattedExecutionTime(startTime));
+
+        logger.debug("DeletedNodeCleanupWorker: About to execute the clean up nodes ");
+        startTime = System.currentTimeMillis();
+        List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs, fromCommitTime);
+        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes - total Time:"+ getFormattedExecutionTime(startTime));
+
+        logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
+        startTime = System.currentTimeMillis();
+        List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);
+        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:"+ getFormattedExecutionTime(startTime));
+
         List<String> allResults = new ArrayList<String>(100);
         allResults.addAll(purgedNodes);
         allResults.addAll(purgedTxns);
@@ -114,18 +130,15 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
      * Cleans up deleted nodes that are older than the given minimum age.
      * 
      * @param minAge        the minimum age of a transaction or deleted node
+     * @param fromCommitTime  the minimum commit time for deleted nodes
      * @return              Returns log message results
      */
-    private List<String> purgeOldDeletedNodes(long minAge)
+    private List<String> purgeOldDeletedNodes(long minAge, long fromCommitTime)
     {
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
-        long fromCommitTime = fromCustomCommitTime;
-        if (fromCommitTime <= 0L)
-        {
-            fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
-        }
+
         if ( fromCommitTime == 0L )
         {
               String msg = "There are no old nodes to purge.";
@@ -134,7 +147,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }
         
         long loopPurgeSize = purgeSize;
-        Long purgeCount = new Long(0);
+        Long purgeCount = 0l;
+        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes started ");
         while (true)
         {
             // Ensure we keep the lock
@@ -220,7 +234,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                 break;
             }
         }
-            
+
+        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes finished ");
         // Done
         return results;
     }
@@ -229,9 +244,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
      * Cleans up unused transactions that are older than the given minimum age.
      * 
      * @param minAge        the minimum age of a transaction or deleted node
+     * @param fromCommitTime the commit time of the oldest unused transaction of deleted node
      * @return              Returns log message results
      */
-    private List<String> purgeOldEmptyTransactions(long minAge)
+    private List<String> purgeOldEmptyTransactions(long minAge, long fromCommitTime)
     {
         if (minAge < 0)
         {
@@ -240,11 +256,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
-        long fromCommitTime = fromCustomCommitTime;
-        if (fromCommitTime <= 0L)
-        {
-            fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
-        }
+        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions started ");
     	// delete unused transactions in batches of size 'purgeTxnBlockSize'
         while (true)
         {
@@ -303,6 +315,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             	break;
             }
         }
+        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions finished ");
         // Done
         return results;
     }
@@ -355,5 +368,22 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             long count = nodeDAO.purgeNodes(fromCommitTime, toCommitTime);
             return count;
         }       
+    }
+
+    private String getFormattedExecutionTime(long startTimeInMillis)
+    {
+        long endTime = System.currentTimeMillis();
+        long totalTimeInMillis = endTime - startTimeInMillis;
+        final long hr = TimeUnit.MILLISECONDS.toHours(totalTimeInMillis)
+                    - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(totalTimeInMillis));
+        final long min = TimeUnit.MILLISECONDS.toMinutes(totalTimeInMillis)
+                    - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalTimeInMillis));
+        final long sec = TimeUnit.MILLISECONDS.toSeconds(totalTimeInMillis)
+                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeInMillis));
+        final long ms = TimeUnit.MILLISECONDS.toMillis(totalTimeInMillis)
+                    - TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(totalTimeInMillis));
+
+        return String.format("%d Hours %d Minutes %d Seconds %d Milliseconds", hr, min, sec, ms);
+
     }
 }

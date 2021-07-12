@@ -35,6 +35,9 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.ScriptAction;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -126,6 +129,10 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
         if (nodeService.exists(actionedUponNodeRef))
         {
             NodeRef scriptRef = (NodeRef)action.getParameterValue(PARAM_SCRIPTREF);
+            if(!isValidScriptRef(action))
+            {
+                throw new IllegalStateException("Invalid script ref path: " + scriptRef);
+            }
             NodeRef spaceRef = this.serviceRegistry.getRuleService().getOwningNodeRef(action);
             if (spaceRef == null)
             {
@@ -221,5 +228,20 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
         companyHomeRef = refs.get(0);
 
         return companyHomeRef;
+    }
+    
+    private boolean isValidScriptRef(Action action)
+    {
+        NodeRef scriptRef = (NodeRef) action.getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF);
+        ActionService actionService = this.serviceRegistry.getActionService();
+        ActionDefinition actDef = actionService.getActionDefinition(action.getActionDefinitionName());
+        ParameterDefinition parameterDef = actDef.getParameterDefintion(PARAM_SCRIPTREF);
+        String paramConstraintName = parameterDef.getParameterConstraintName();
+        if (paramConstraintName != null)
+        {
+            ParameterConstraint paramConstraint = actionService.getParameterConstraint(paramConstraintName);
+            return paramConstraint.isValidValue(scriptRef.toString());
+        }
+        return true;
     }
 }

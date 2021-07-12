@@ -60,12 +60,15 @@ public abstract class ConfigScheduler<Data>
         // Synchronized has little effect in normal operation, but on laptops that are suspended, there can be a number
         // of Threads calling execute concurrently without it, resulting in errors in the log. Theoretically possible in
         // production but not very likely.
-        public synchronized void execute(JobExecutionContext context) throws JobExecutionException
+        public void execute(JobExecutionContext context) throws JobExecutionException
         {
             JobDataMap dataMap = context.getJobDetail().getJobDataMap();
             ConfigScheduler configScheduler = (ConfigScheduler)dataMap.get(CONFIG_SCHEDULER);
-            boolean successReadingConfig = configScheduler.readConfigAndReplace(true);
-            configScheduler.changeScheduleOnStateChange(successReadingConfig);
+            synchronized (configScheduler)
+            {
+                boolean successReadingConfig = configScheduler.readConfigAndReplace(true);
+                configScheduler.changeScheduleOnStateChange(successReadingConfig);
+            }
         }
     }
 

@@ -51,6 +51,12 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     // of the chunk (in ms). Default is a couple of hours.
     private int purgeSize = 7200000; // ms
 
+    //to determine if we need a time based window deletion of nodes or in fixed size batches.
+    private  String algorithm;
+
+    DeletedNodeBatchCleanup deletedNodeBatchCleanup;
+    private static final String NODE_TABLE_CLEANER_ALG_V2 = "V2";
+
     /**
      * Default constructor
      */
@@ -67,6 +73,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         if (minPurgeAgeMs < 0)
         {
             return Collections.singletonList("Minimum purge age is negative; purge disabled");
+        }
+        if(NODE_TABLE_CLEANER_ALG_V2 ==  algorithm)
+        {
+            return deletedNodeBatchCleanup.execute();
         }
         long fromCommitTime = fromCustomCommitTime;
         long startTime = System.currentTimeMillis();
@@ -126,7 +136,17 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         this.purgeSize = purgeSize;
     }
 
-	/**
+    public void setAlgorithm(String algorithm)
+    {
+        this.algorithm = algorithm;
+    }
+
+    public void setDeletedNodeBatchCleanup(DeletedNodeBatchCleanup deletedNodeBatchCleanup)
+    {
+        this.deletedNodeBatchCleanup = deletedNodeBatchCleanup;
+    }
+
+    /**
      * Cleans up deleted nodes that are older than the given minimum age.
      * 
      * @param minAge        the minimum age of a transaction or deleted node

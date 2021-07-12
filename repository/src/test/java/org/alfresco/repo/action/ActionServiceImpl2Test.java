@@ -317,7 +317,7 @@ public class ActionServiceImpl2Test
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         NodeRef sharedFolderRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
                 "Shared");
-        final NodeRef invalidScriptToBeExecuted = addTempScript("changeFileNameTest.js",
+        final NodeRef invalidScriptRef = addTempScript("changeFileNameTest.js",
                 "document.properties.name = \"Invalid_Change.pdf\";\ndocument.save();",sharedFolderRef);
         assertNotNull("Failed to add the test script.", scriptToBeExecuted);
         transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
@@ -326,7 +326,7 @@ public class ActionServiceImpl2Test
             {
                 // Create the action
                 Action action = actionService.createAction(ScriptActionExecuter.NAME);
-                action.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, invalidScriptToBeExecuted);
+                action.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, invalidScriptRef);
 
                 try
                 {
@@ -436,7 +436,7 @@ public class ActionServiceImpl2Test
             }
         });
     }
-    
+
     private NodeRef addTempScript(final String scriptFileName, final String javaScript, final NodeRef parentRef)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());

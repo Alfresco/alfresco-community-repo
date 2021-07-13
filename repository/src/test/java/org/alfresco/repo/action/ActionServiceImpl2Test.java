@@ -260,7 +260,7 @@ public class ActionServiceImpl2Test
     public void testExecuteScript() throws Exception
     {
         final NodeRef scriptToBeExecuted = addTempScript("changeFileNameTest.js",
-                "document.properties.name = \"Changed\" + \"_\" + document.properties.name;\ndocument.save();");
+                "document.properties.name = \"Changed_\" + document.properties.name;\ndocument.save();");
         assertNotNull("Failed to add the test script.", scriptToBeExecuted);
 
         // add a test file to the Site in order to change its name

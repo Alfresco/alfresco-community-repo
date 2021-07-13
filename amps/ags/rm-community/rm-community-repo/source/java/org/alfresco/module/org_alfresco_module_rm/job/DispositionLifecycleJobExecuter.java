@@ -211,6 +211,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             if (dispositionActions == null || dispositionActions.isEmpty())
             {
+                logger.debug("Job Finished as disposition action is empty");
                 return;
             }
 
@@ -300,6 +301,10 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 if (isFrozenOrHasFrozenChildren(parent.getParentRef()))
                 {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("unable to perform action " + dispAction +
+                                " because node is frozen or has frozen children");
+                    }
                     continue;
                 }
 

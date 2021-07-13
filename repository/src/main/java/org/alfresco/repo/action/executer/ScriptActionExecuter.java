@@ -232,7 +232,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     
     private boolean isValidScriptRef(Action action)
     {
-        NodeRef scriptRef = (NodeRef) action.getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF);
+        NodeRef scriptRef = (NodeRef) action.getParameterValue(PARAM_SCRIPTREF);
         ActionService actionService = this.serviceRegistry.getActionService();
         ActionDefinition actDef = actionService.getActionDefinition(action.getActionDefinitionName());
         ParameterDefinition parameterDef = actDef.getParameterDefintion(PARAM_SCRIPTREF);

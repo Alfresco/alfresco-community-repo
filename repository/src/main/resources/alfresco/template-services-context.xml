@@ -171,5 +171,10 @@
             <value>urldecode</value>
         </property>
     </bean>
-    
+
+    <bean id="sanitizeHtmlExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.SanitizeHTMLMethod">
+        <property name="extensionName">
+            <value>sanitizeHTML</value>
+        </property>
+    </bean>
 </beans>

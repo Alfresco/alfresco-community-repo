@@ -59,6 +59,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class TemplateServiceImplTest extends BaseSpringTest
 {
     private static final String TEMPLATE_1 = "org/alfresco/repo/template/test_template1.ftl";
+    private static final String TEMPLATE_XSS = "org/alfresco/repo/template/test_template_xss.ftl";
     private NodeRef root_node;
 
     private TemplateService templateService;
@@ -219,4 +220,32 @@ public class TemplateServiceImplTest extends BaseSpringTest
         }
     }
 
+    @Test
+    public void testTemplateSanitizeHTML()
+    {
+        StringWriter writer = new StringWriter();
+
+        String HTML1 = "<p><img src=a onerror=\"alert('XSS 1')\"></p>";
+        String HTML2 = "<p><img src=a a\"\"/onerror=\"alert('XSS 2')\"></p>";
+        String HTML3 = "<p><img src=a a/onerror=\"alert('XSS 3')\"></p>";
+        String HTML4 = "<p>&lt;iframe&gt;&lt;textarea&gt;&lt;/iframe&gt;&lt;img src=\"\" onerror=\"alert('XSS 4');\"&gt;</p>";
+        String HTML5 = "<p>&lt;iframe&gt;&lt;textarea&gt;&lt;/iframe&gt;&lt;img src=\"\" a/onerror=\"alert('XSS 5');\"&gt;</p>";
+        String HTML6 = "<p><iframe><textarea></iframe><img src=\"\" onerror=\"alert('XSS 6');\"></p>";
+
+        Map model = new HashMap();
+        model.put("html1", HTML1);
+        model.put("html2", HTML2);
+        model.put("html3", HTML3);
+        model.put("html4", HTML4);
+        model.put("html5", HTML5);
+        model.put("html6", HTML6);
+
+        templateService.processTemplate(TEMPLATE_XSS, model, writer);
+
+        String output = writer.toString();
+
+        assertFalse("The output shouldn't contain onerror", output.contains("onerror"));
+        assertFalse("The output shouldn't contain alert", output.contains("alert"));
+        assertFalse("The output shouldn't contain XSS message", output.contains("XSS"));
+    }
 }

@@ -18,7 +18,7 @@
 
 <#macro addContent post>
 <#escape x as jsonUtils.encodeJSONString(x)>
-   <#assign safecontent=stringUtils.stripUnsafeHTML(post.content)>
+   <#assign safecontent=sanitizeHTML(post.content)>
 	<#if (contentLength?? && contentLength > -1 && (safecontent?length > contentLength))>
 		"content": "${safecontent?substring(0, contentLength)}",
 	<#else>

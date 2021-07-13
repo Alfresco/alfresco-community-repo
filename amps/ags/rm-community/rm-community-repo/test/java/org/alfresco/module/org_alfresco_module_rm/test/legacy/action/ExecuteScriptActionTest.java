@@ -40,77 +40,67 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Execute RM Script Unit test
+ * RM Action Execute Script Unit test
  *
  * @author Eva Vasques
  */
 public class ExecuteScriptActionTest extends BaseRMTestCase
 {
-    
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
 
-    @Override
-    protected boolean isCollaborationSiteTest()
+    public void testExecuteScript()
     {
-        return true;
-    }
 
-    public void testExecuteScript() {
-        
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         String fileOriginalName = (String) nodeService.getProperty(dmDocument, ContentModel.PROP_NAME);
-        
-                
-        //Valid Script
+
+        // Valid Script
         NodeRef validScriptRef = addTempScript("valid-rm-script.js",
                 "document.properties.name = \"Valid_\" + document.properties.name;\ndocument.save();");
-        
-        //Invalid Script
+
+        // Invalid Script
         NodeRef invalidScriptRef = addTempScript("invalid-rm-script.js",
-                "document.properties.name = \"Invalid_\" + document.properties.name;\ndocument.save();",dmFolder);
-        
-        doTestInTransaction(new FailureTest("Script outside proper Data Dictionary folder should not be executed", IllegalStateException.class)
+                "document.properties.name = \"Invalid_\" + document.properties.name;\ndocument.save();", dmFolder);
+
+        // Attempt to execute a script not in RM Scripts folder should fail
+        doTestInTransaction(new FailureTest("Script outside proper Data Dictionary folder should not be executed",
+                IllegalStateException.class)
         {
             public void run() throws Exception
             {
-                executeAction(invalidScriptRef,dmDocument);
+                executeAction(invalidScriptRef, dmDocument);
             }
-        },
-        dmCollaborator);
-        
+        }, dmCollaborator);
 
+        // Scripts in correct data dictionary folder should be executed
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run() throws Exception
             {
-                executeAction(validScriptRef,dmDocument);
+                executeAction(validScriptRef, dmDocument);
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
             {
+                // Assert the script was executed and the document was renamed
                 String currentName = (String) nodeService.getProperty(dmDocument, ContentModel.PROP_NAME);
-                assertEquals(currentName, "Valid_"+fileOriginalName);   
+                assertEquals(currentName, "Valid_" + fileOriginalName);
             }
-        },
-        dmCollaborator);
-        
+        }, dmCollaborator);
+
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
+                // Set the name back to what it was
                 nodeService.setProperty(dmDocument, ContentModel.PROP_NAME, fileOriginalName);
                 return null;
             }
         });
     }
-    
+
     private NodeRef addTempScript(final String scriptFileName, final String javaScript, final NodeRef parentRef)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -154,7 +144,7 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
                 // get the Data Dictionary
                 NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
                         "Data Dictionary");
-                // get the Scripts
+                // get the Scripts Folder
                 NodeRef rmFolder = nodeService.getChildByName(dataDictionaryRef, ContentModel.ASSOC_CONTAINS,
                         "Records Management");
                 NodeRef scriptsRef = nodeService.getChildByName(rmFolder, ContentModel.ASSOC_CONTAINS,
@@ -164,13 +154,12 @@ public class ExecuteScriptActionTest extends BaseRMTestCase
             }
         });
     }
-    
+
     private void executeAction(NodeRef scriptRef, NodeRef nodeRef)
     {
         Action action = actionService.createAction("rmscript");
         action.setParameterValue(ExecuteScriptAction.PARAM_SCRIPTREF, scriptRef);
         actionService.executeAction(action, nodeRef);
     }
-    
-   
+
 }

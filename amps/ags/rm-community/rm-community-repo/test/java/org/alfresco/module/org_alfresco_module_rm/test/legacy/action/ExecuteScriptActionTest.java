@@ -46,7 +46,13 @@ import org.alfresco.service.namespace.QName;
  */
 public class ExecuteScriptActionTest extends BaseRMTestCase
 {
-
+    
+    @Override
+    protected boolean isCollaborationSiteTest()
+    {
+        return true;
+    }
+    
     public void testExecuteScript()
     {
 

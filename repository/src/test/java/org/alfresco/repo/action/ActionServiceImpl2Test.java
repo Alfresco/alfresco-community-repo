@@ -27,6 +27,7 @@
 package org.alfresco.repo.action;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.action.executer.CounterIncrementActionExecuter;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
@@ -258,7 +260,7 @@ public class ActionServiceImpl2Test
     public void testExecuteScript() throws Exception
     {
         final NodeRef scriptToBeExecuted = addTempScript("changeFileNameTest.js",
-                "document.properties.name = \"Changed\" + \"_\" + document.properties.name;\ndocument.save();");
+                "document.properties.name = \"Changed_\" + document.properties.name;\ndocument.save();");
         assertNotNull("Failed to add the test script.", scriptToBeExecuted);
 
         // add a test file to the Site in order to change its name
@@ -305,6 +307,73 @@ public class ActionServiceImpl2Test
                 actionService.executeAction(action, testNode);
 
                 assertEquals("Changed_quick.pdf", nodeService.getProperty(testNode, ContentModel.PROP_NAME));
+
+                return null;
+            }
+        });
+        
+        //Execute script not in Data Dictionary > Scripts
+        AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
+        NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
+        NodeRef sharedFolderRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
+                "Shared");
+        final NodeRef invalidScriptRef = addTempScript("changeFileNameTest.js",
+                "document.properties.name = \"Invalid_Change.pdf\";\ndocument.save();",sharedFolderRef);
+        assertNotNull("Failed to add the test script.", scriptToBeExecuted);
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Create the action
+                Action action = actionService.createAction(ScriptActionExecuter.NAME);
+                action.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, invalidScriptRef);
+
+                try
+                {
+                    // Execute the action
+                    actionService.executeAction(action, testNode);
+                }
+                catch (Throwable th)
+                {
+                    // do nothing
+                }
+                assertFalse("Scripts outside of Data Dictionary Scripts folder should not be executed",
+                        ("Invalid_Change.pdf".equals(nodeService.getProperty(testNode, ContentModel.PROP_NAME))));
+
+                return null;
+            }
+        });
+    }
+    
+    @Test
+    public void testActionResult() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    // Create the script node reference
+                    NodeRef script = addTempScript("test-action-result-script.js", "\"VALUE\";");
+
+                    // Create the action
+                    Action action = actionService.createAction(ScriptActionExecuter.NAME);
+                    action.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, script);
+
+                    // Execute the action
+                    actionService.executeAction(action, testNode);
+
+                    // Get the result
+                    String result = (String) action.getParameterValue(ActionExecuter.PARAM_RESULT);
+                    assertNotNull(result);
+                    assertEquals("VALUE", result);
+                }
+                finally
+                {
+                    AuthenticationUtil.clearCurrentSecurityContext();
+                }
 
                 return null;
             }
@@ -359,6 +428,32 @@ public class ActionServiceImpl2Test
         });
     }
 
+    private NodeRef addTempScript(final String scriptFileName, final String javaScript, final NodeRef parentRef)
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+
+                // Create the script node reference
+                NodeRef script = nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, scriptFileName),
+                        ContentModel.TYPE_CONTENT).getChildRef();
+
+                nodeService.setProperty(script, ContentModel.PROP_NAME, scriptFileName);
+
+                ContentWriter contentWriter = contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_JAVASCRIPT);
+                contentWriter.setEncoding("UTF-8");
+                contentWriter.putContent(javaScript);
+
+                tempNodes.addNodeRef(script);              
+                return script;
+            }
+        });
+    }
+
     private NodeRef addTempScript(final String scriptFileName, final String javaScript)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -376,20 +471,7 @@ public class ActionServiceImpl2Test
                 NodeRef scriptsRef = nodeService.getChildByName(dataDictionaryRef, ContentModel.ASSOC_CONTAINS,
                         "Scripts");
 
-                // Create the script node reference
-                NodeRef script = nodeService.createNode(scriptsRef, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, scriptFileName),
-                        ContentModel.TYPE_CONTENT).getChildRef();
-
-                nodeService.setProperty(script, ContentModel.PROP_NAME, scriptFileName);
-
-                ContentWriter contentWriter = contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
-                contentWriter.setMimetype(MimetypeMap.MIMETYPE_JAVASCRIPT);
-                contentWriter.setEncoding("UTF-8");
-                contentWriter.putContent(javaScript);
-
-                tempNodes.addNodeRef(script);              
-                return script;
+                return addTempScript(scriptFileName, javaScript, scriptsRef);
             }
         });
     }

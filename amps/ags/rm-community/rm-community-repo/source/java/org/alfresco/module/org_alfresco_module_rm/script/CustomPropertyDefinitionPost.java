@@ -140,9 +140,8 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         for (Iterator iter = json.keys(); iter.hasNext(); )
         {
             String nextKeyString = (String)iter.next();
-            String nextValueString = json.getString(nextKeyString);
-
-            params.put(nextKeyString, nextValueString);
+            Serializable nextValue = (Serializable) json.get(nextKeyString);
+            params.put(nextKeyString, nextValue);
         }
 
         return params;

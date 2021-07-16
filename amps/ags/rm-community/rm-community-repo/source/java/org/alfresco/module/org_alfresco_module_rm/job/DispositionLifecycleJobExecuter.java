@@ -61,7 +61,7 @@ import org.apache.commons.logging.LogFactory;
 public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecuter
 {
     /** logger */
-    private static final Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
+    private static Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
 
     /** batching properties */
     private int batchSize;
@@ -82,7 +82,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** search service */
     private SearchService searchService;
 
-    /*** person service */
+    /** person service */
     private PersonService personService;
 
     /** freeze service */
@@ -233,7 +233,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             while (hasMore)
             {
-                final SearchParameters params = new SearchParameters();
+                SearchParameters params = new SearchParameters();
                 params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                 params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
                 params.setQuery(getQuery());
@@ -241,8 +241,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 params.setMaxItems(batchSize);
 
                 // execute search
-                final ResultSet results = searchService.query(params);
-                final List<NodeRef> resultNodes = results.getNodeRefs();
+                ResultSet results = searchService.query(params);
+                List<NodeRef> resultNodes = results.getNodeRefs();
                 hasMore = results.hasMore();
                 skipCount += resultNodes.size(); // increase by page size
                 results.close();
@@ -292,12 +292,12 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     continue;
                 }
 
-                final ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
+                ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
                 if (!parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
                 {
                     continue;
                 }
-                final Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
+                Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
 
                 if (isFrozenOrHasFrozenChildren(parent.getParentRef()))
                 {

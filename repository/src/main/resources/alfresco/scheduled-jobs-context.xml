@@ -35,7 +35,7 @@
         <property name="cronExpression" value="0 30 * * * ?" /> <!-- Repeat hourly on the half hour -->
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.util.TempFileProvider$TempFileCleanerJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -51,7 +51,7 @@
         <property name="cronExpression" value="0 0 * * * ?" /> <!-- Repeat hourly on the start hour -->
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="webscripts.tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.util.TempFileProvider$TempFileCleanerJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -68,7 +68,7 @@
         <property name="cronExpression" value="${system.content.orphanCleanup.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="contentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.content.cleanup.ContentStoreCleanupJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -82,7 +82,7 @@
         <property name="cronExpression" value="${system.patch.sharedFolder.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="patchSharedFolderJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.admin.patch.impl.SharedFolderPatch$SharedFolderPatchJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -96,7 +96,7 @@
         <property name="cronExpression" value="${system.maximumStringLength.jobCronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="maxStringLengthJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.node.db.NodeStringLengthWorker$NodeStringLengthJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -110,7 +110,7 @@
         <property name="cronExpression" value="0 0 21 * * ?"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.node.cleanup.NodeCleanupJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -124,7 +124,7 @@
         <property name="cronExpression" value="0 0/5 * * * ?"/> <!-- run every 5 minutes -->
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="userUsageTrackingJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.usage.UserUsageCollapseJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -140,7 +140,7 @@
         <property name="repeatInterval" value="3600000"/> <!-- 60 minutes -->
         <property name="startDelay" value="120"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="taggingStartupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.tagging.UpdateTagScopesQuartzJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -157,7 +157,7 @@
         <property name="cronExpression" value="${ticket.cleanup.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="ticketCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.security.authentication.TicketCleanupJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -171,7 +171,7 @@
         <property name="cronExpression" value="${system.patch.surfConfigFolder.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="patchSurfConfigFolderJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -186,7 +186,7 @@
         <property name="cronExpression" value="${system.upgradePasswordHash.jobCronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="upgradePasswordHashJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -201,7 +201,7 @@
         <property name="cronExpression" value="${system.patch.addUnmovableAspect.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="patchAddUnmovableAspectJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
                 <property name="jobDataAsMap">
                     <map>
@@ -216,7 +216,7 @@
         <property name="cronExpression" value="${system.fixedACLsUpdater.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="fixedAclUpdaterJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.domain.permissions.FixedAclUpdaterJob"/>
                 <property name="jobDataAsMap">
                     <map>

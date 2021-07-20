@@ -28,7 +28,7 @@ package org.alfresco.repo.node;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

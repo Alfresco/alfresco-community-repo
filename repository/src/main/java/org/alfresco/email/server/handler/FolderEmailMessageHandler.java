@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;

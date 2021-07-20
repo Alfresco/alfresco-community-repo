@@ -34,9 +34,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;

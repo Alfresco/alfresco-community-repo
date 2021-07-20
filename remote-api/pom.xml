@@ -36,8 +36,8 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -125,7 +125,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
-                    <artifactId>javax.servlet</artifactId>
+                    <artifactId>jakarta.servlet</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -157,10 +157,10 @@
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
               </exclusion>
-              <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+              <!-- MNT-20557: Excluding jakarta.annotation:jakarta.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
               <exclusion>
-                  <groupId>javax.annotation</groupId>
-                  <artifactId>javax.annotation-api</artifactId>
+                  <groupId>jakarta.annotation</groupId>
+                  <artifactId>jakarta.annotation-api</artifactId>
               </exclusion>
             </exclusions>
         </dependency>

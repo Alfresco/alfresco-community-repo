@@ -37,11 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 
-import javax.mail.Flags;
-import javax.mail.Flags.Flag;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.search.SearchTerm;
+import jakarta.mail.Flags;
+import jakarta.mail.Flags.Flag;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.search.SearchTerm;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
@@ -512,7 +512,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Marks all messages in the folder as deleted using {@link javax.mail.Flags.Flag#DELETED} flag.
+     * Marks all messages in the folder as deleted using {@link jakarta.mail.Flags.Flag#DELETED} flag.
      */
     @Override
     public void deleteAllMessagesInternal() throws FolderException
@@ -531,7 +531,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
+     * Deletes messages marked with {@link jakarta.mail.Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
      */
     @Override
     protected void expungeInternal() throws FolderException
@@ -548,7 +548,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
     
     /**
-     * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes the message with current uid
+     * Deletes messages marked with {@link jakarta.mail.Flags.Flag#DELETED}. Note that this message deletes the message with current uid
      */
     @Override
     protected void expungeInternal(long uid) throws Exception
@@ -706,7 +706,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Returns the list of messages that have no {@link javax.mail.Flags.Flag#DELETED} flag set for current user.
+     * Returns the list of messages that have no {@link jakarta.mail.Flags.Flag#DELETED} flag set for current user.
      * 
      * @return the list of non-deleted messages.
      */
@@ -747,11 +747,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Returns count of messages with {@link javax.mail.Flags.Flag#RECENT} flag.
-     * If {@code reset} parameter is {@code true} - removes {@link javax.mail.Flags.Flag#RECENT} flag from
+     * Returns count of messages with {@link jakarta.mail.Flags.Flag#RECENT} flag.
+     * If {@code reset} parameter is {@code true} - removes {@link jakarta.mail.Flags.Flag#RECENT} flag from
      * the message for current user.
      * 
-     * @param reset - if true the {@link javax.mail.Flags.Flag#RECENT} will be deleted for current user if exists.
+     * @param reset - if true the {@link jakarta.mail.Flags.Flag#RECENT} will be deleted for current user if exists.
      * @return returns count of recent messages.
      */
     @Override
@@ -814,7 +814,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Returns count of the messages with {@link javax.mail.Flags.Flag#SEEN} in the folder for the current user.
+     * Returns count of the messages with {@link jakarta.mail.Flags.Flag#SEEN} in the folder for the current user.
      * 
      * @return Count of the unseen messages for current user.
      */

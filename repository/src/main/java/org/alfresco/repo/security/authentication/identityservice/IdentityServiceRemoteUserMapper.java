@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -99,7 +99,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(javax.servlet.http.HttpServletRequest)
+     * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(jakarta.servlet.http.HttpServletRequest)
      */
     public String getRemoteUser(HttpServletRequest request)
     {

@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.replication;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;

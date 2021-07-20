@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.AbstractChainedSubsystemTest;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;

@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.transaction.UserTransaction;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

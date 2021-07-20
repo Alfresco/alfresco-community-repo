@@ -27,7 +27,7 @@ package org.alfresco.repo.usage;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

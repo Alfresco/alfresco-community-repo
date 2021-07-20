@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
 import org.alfresco.service.cmr.repository.NodeRef;

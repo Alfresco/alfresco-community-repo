@@ -34,7 +34,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;

@@ -29,7 +29,7 @@
                 </exclusion>
                 <!-- SHA-2432 -->
                 <exclusion>
-                    <groupId>javax.servlet</groupId>
+                    <groupId>jakarta.servlet</groupId>
                     <artifactId>jstl</artifactId>
                 </exclusion>
                 <exclusion>
@@ -99,7 +99,7 @@
                 </exclusion>
                 <!-- SHA-2432 -->
                 <exclusion>
-                    <groupId>javax.servlet</groupId>
+                    <groupId>jakarta.servlet</groupId>
                     <artifactId>jstl</artifactId>
                 </exclusion>
                 <exclusion>
@@ -134,8 +134,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 

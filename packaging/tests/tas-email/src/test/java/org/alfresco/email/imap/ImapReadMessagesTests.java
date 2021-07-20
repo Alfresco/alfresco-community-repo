@@ -10,8 +10,8 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.mail.Flags;
-import javax.mail.MessagingException;
+import jakarta.mail.Flags;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 
 public class ImapReadMessagesTests extends EmailTest

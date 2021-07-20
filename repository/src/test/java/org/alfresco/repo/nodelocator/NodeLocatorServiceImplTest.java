@@ -30,7 +30,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.when;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.site.SiteServiceInternal;

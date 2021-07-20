@@ -10,7 +10,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.mail.FolderNotFoundException;
+import jakarta.mail.FolderNotFoundException;
 
 public class ImapDeleteFolderTests extends EmailTest
 {

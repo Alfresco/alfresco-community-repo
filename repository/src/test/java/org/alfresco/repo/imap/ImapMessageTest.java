@@ -38,17 +38,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.mail.Address;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
-import javax.transaction.UserTransaction;
+import jakarta.mail.Address;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimeUtility;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
@@ -507,7 +507,7 @@ public class ImapMessageTest extends TestCase
         // Following method returns the address with quoted personal aka <["�?р�?ений Ковальчук"] <ars.kov@gmail.com>>
         // NOTE! This should be coincided with RFC822MetadataExtracter. Would 'addresses' be quoted or not? 
         // String decodedAddress = address.toUnicodeString();
-        // Starting from javax.mail 1.5.6 the address is folded at linear whitespace so that each line is no longer than 76 characters, if possible.
+        // Starting from jakarta.mail 1.5.6 the address is folded at linear whitespace so that each line is no longer than 76 characters, if possible.
         String decodedAddress = MimeUtility.decodeText(MimeUtility.fold(6, address.toString()));
         
         // InternetAddress.toString(new Address[] {address}) - is used in the RFC822MetadataExtracter

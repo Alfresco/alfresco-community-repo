@@ -59,7 +59,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.EmptyStackException;

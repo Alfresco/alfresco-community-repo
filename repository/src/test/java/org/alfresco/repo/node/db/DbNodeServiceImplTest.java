@@ -34,7 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;

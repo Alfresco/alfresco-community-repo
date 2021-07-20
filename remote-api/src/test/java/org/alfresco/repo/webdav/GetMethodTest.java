@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;

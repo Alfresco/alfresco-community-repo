@@ -48,7 +48,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.Base64;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Jamal Kaabi-Mofrad

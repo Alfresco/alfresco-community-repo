@@ -30,7 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -130,7 +130,7 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(javax.servlet.http.HttpServletRequest)
+     * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(jakarta.servlet.http.HttpServletRequest)
      */
     public String getRemoteUser(HttpServletRequest request)
     {
@@ -162,7 +162,7 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
             String normalizedUserId = null;
             // Try to extract the remote user from SSL certificate
             // MNT-13989
-            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("jakarta.servlet.request.X509Certificate");
             if (request.getScheme().toLowerCase().equals("https") && certs != null && certs.length > 0)
             {
                 if (logger.isTraceEnabled())

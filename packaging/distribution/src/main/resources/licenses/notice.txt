@@ -150,7 +150,7 @@ PostgreSQL JDBC Driver  http://www.postgresql.org/
 
 === CDDL 1.0 ===
 activation  http://www.oracle.com/technetwork/java/javase/jaf-135115.html
-javax.mail  http://glassfish.java.net/javaee5/mail/ 
+jakarta.mail  http://glassfish.java.net/javaee5/mail/ 
 jaxrpc  http://java.net/projects/jax-rpc/
 jhighlight  https://www.openhub.net/p/jhighlight
 mail    http://glassfish.java.net/javaee5/mail/ 

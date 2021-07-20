@@ -28,7 +28,7 @@ package org.alfresco.repo.ownable.impl;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

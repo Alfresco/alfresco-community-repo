@@ -5,7 +5,7 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestErrorModel;

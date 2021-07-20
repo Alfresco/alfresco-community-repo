@@ -21,9 +21,9 @@ package org.alfresco.util.transaction;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

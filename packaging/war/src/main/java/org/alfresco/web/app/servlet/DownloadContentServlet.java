@@ -30,9 +30,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -66,7 +66,7 @@ public class DownloadContentServlet extends HttpServlet
    private static final String URL_DIRECT_LONG = "direct";
 
    /**
-    * @see javax.servlet.http.HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
+    * @see jakarta.servlet.http.HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
     */
    protected void doGet(final HttpServletRequest req, final HttpServletResponse res)
       throws IOException

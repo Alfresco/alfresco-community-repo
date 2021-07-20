@@ -91,7 +91,7 @@ public class PublicApiJettyComponent extends AbstractJettyComponent
 //	    }
 //
 //	    /* (non-Javadoc)
-//	     * @see javax.servlet.Filter#destroy()
+//	     * @see jakarta.servlet.Filter#destroy()
 //	     */
 //	    public void destroy()
 //	    {
@@ -99,7 +99,7 @@ public class PublicApiJettyComponent extends AbstractJettyComponent
 //	    }
 //
 //	    /* (non-Javadoc)
-//	     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+//	     * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
 //	     */
 //	    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
 //	            ServletException

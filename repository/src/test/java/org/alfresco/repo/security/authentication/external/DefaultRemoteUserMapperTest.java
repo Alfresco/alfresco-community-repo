@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import javax.security.auth.x500.X500Principal;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.AbstractChainedSubsystemTest;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -153,7 +153,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         // Mock a request with a header and a cert
         when(mockRequest.getRemoteUser()).thenReturn(null);
         when(mockRequest.getScheme()).thenReturn("https");
-        when(mockRequest.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(certs);
+        when(mockRequest.getAttribute("jakarta.servlet.request.X509Certificate")).thenReturn(certs);
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("admin");
         assertEquals("admin", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
                 "remoteUserMapper")).getRemoteUser(mockRequest));
@@ -161,7 +161,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         // Mock a request with a cert and no header
         when(mockRequest.getRemoteUser()).thenReturn(null);
         when(mockRequest.getScheme()).thenReturn("https");
-        when(mockRequest.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(certs);
+        when(mockRequest.getAttribute("jakarta.servlet.request.X509Certificate")).thenReturn(certs);
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn(null);
         assertEquals("CN=alfresco-system", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
                 "remoteUserMapper")).getRemoteUser(mockRequest));
@@ -169,7 +169,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         // Mock a request with no cert and a header
         when(mockRequest.getRemoteUser()).thenReturn(null);
         when(mockRequest.getScheme()).thenReturn("http");
-        when(mockRequest.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(null);
+        when(mockRequest.getAttribute("jakarta.servlet.request.X509Certificate")).thenReturn(null);
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("admin");
         assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
                 "remoteUserMapper")).getRemoteUser(mockRequest));

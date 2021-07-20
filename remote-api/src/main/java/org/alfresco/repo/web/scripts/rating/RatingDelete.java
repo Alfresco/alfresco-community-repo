@@ -28,7 +28,7 @@ package org.alfresco.repo.web.scripts.rating;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.repository.NodeRef;

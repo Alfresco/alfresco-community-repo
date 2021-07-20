@@ -44,7 +44,7 @@
                 <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
                     <groupId>com.sun.mail</groupId>
-                    <artifactId>javax.mail</artifactId>
+                    <artifactId>jakarta.mail</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -178,7 +178,7 @@
             <exclusions>
                 <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
-                    <groupId>javax.mail</groupId>
+                    <groupId>jakarta.mail</groupId>
                     <artifactId>mail</artifactId>
                 </exclusion>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
@@ -318,8 +318,8 @@
             <version>${dependency.poi.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -371,7 +371,7 @@
                 <groupId>org.codehaus.woodstox</groupId>
                 <artifactId>woodstox-core-asl</artifactId>
               </exclusion>
-              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
+              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes jakarta.transaction -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-jta_1.1_spec</artifactId>
@@ -448,7 +448,7 @@
                 </exclusion>
                 <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
-                    <groupId>javax.mail</groupId>
+                    <groupId>jakarta.mail</groupId>
                     <artifactId>mail</artifactId>
                 </exclusion>
                 <exclusion>
@@ -478,10 +478,10 @@
                     <groupId>org.glassfish.corba</groupId>
                     <artifactId>glassfish-corba-omgapi</artifactId>
                 </exclusion>
-                <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+                <!-- MNT-20557: Excluding jakarta.annotation:jakarta.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>
@@ -491,7 +491,7 @@
                 <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
                     <groupId>com.sun.mail</groupId>
-                    <artifactId>javax.mail</artifactId>
+                    <artifactId>jakarta.mail</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>javax.xml.ws</groupId>
@@ -555,10 +555,10 @@
                     <groupId>org.glassfish.corba</groupId>
                     <artifactId>glassfish-corba-omgapi</artifactId>
                 </exclusion>
-                <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+                <!-- MNT-20557: Excluding jakarta.annotation:jakarta.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>
@@ -831,7 +831,7 @@
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
               </exclusion>
-              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
+              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes jakarta.transaction -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-jta_1.1_spec</artifactId>

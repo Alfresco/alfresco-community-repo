@@ -33,7 +33,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.mail.Header;
+import jakarta.mail.Header;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;

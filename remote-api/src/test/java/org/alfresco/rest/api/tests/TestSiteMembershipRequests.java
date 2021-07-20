@@ -67,7 +67,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("unused")
 public class TestSiteMembershipRequests extends EnterpriseTestApi

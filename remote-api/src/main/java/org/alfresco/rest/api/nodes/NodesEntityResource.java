@@ -27,7 +27,7 @@ package org.alfresco.rest.api.nodes;
 
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.LockInfo;

@@ -29,7 +29,7 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.web.scripts.servlet.X509ServletFilterBase;

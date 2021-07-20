@@ -28,7 +28,7 @@ package org.alfresco.rest.core;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import lombok.Getter;
 import lombok.Setter;

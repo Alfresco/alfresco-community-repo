@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.imap;
 
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage;
 
 import com.icegreen.greenmail.mail.MovingMessage;
 import com.icegreen.greenmail.user.GreenMailUser;

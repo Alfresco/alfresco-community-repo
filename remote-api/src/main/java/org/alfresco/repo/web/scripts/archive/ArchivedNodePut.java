@@ -28,7 +28,7 @@ package org.alfresco.repo.web.scripts.archive;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

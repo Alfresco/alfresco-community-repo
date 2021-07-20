@@ -29,7 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getTemplateVars;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;

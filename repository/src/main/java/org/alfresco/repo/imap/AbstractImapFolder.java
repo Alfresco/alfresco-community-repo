@@ -29,9 +29,9 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.mail.Flags;
-import javax.mail.internet.MimeMessage;
-import javax.mail.search.SearchTerm;
+import jakarta.mail.Flags;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.search.SearchTerm;
 
 import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -134,7 +134,7 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Marks all messages in the folder as deleted using {@link javax.mail.Flags.Flag#DELETED} flag.
+     * Marks all messages in the folder as deleted using {@link jakarta.mail.Flags.Flag#DELETED} flag.
      */
     public void deleteAllMessages() throws FolderException
     {
@@ -152,7 +152,7 @@ public abstract class AbstractImapFolder implements MailFolder
     
 
     /**
-     * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
+     * Deletes messages marked with {@link jakarta.mail.Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
      */
     public void expunge() throws FolderException
     {
@@ -172,7 +172,7 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes the messages with current uid
+     * Deletes messages marked with {@link jakarta.mail.Flags.Flag#DELETED}. Note that this message deletes the messages with current uid
      */
     public void expunge(final long uid) throws FolderException
     {
@@ -245,7 +245,7 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Returns the list of messages that have no {@link javax.mail.Flags.Flag#DELETED} flag set for current user.
+     * Returns the list of messages that have no {@link jakarta.mail.Flags.Flag#DELETED} flag set for current user.
      * 
      * @return the list of non-deleted messages.
      */

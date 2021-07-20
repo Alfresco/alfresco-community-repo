@@ -28,7 +28,7 @@ package org.alfresco.opencmis;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.chemistry.opencmis.commons.server.CallContext;

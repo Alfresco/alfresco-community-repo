@@ -25,7 +25,7 @@
  */
 package org.alfresco.opencmis;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Generates an OpenCMIS base url based on the request, repository id and binding. The url scheme, host and port

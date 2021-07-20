@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMessage.RecipientType;
+import jakarta.mail.Address;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage.RecipientType;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
@@ -645,7 +645,7 @@ public abstract class AbstractMailActionExecuterTest
             Assert.assertNotNull(message);
             Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
             Assert.assertEquals(1, message.getAllRecipients().length);
-            javax.mail.internet.InternetAddress address = (InternetAddress) message.getAllRecipients()[0];
+            jakarta.mail.internet.InternetAddress address = (InternetAddress) message.getAllRecipients()[0];
             Assert.assertEquals(USER_1_EMAIL, address.getAddress());
         }
         finally

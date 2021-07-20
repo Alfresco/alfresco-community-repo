@@ -26,7 +26,7 @@
 
 package org.alfresco.rest.api.trashcan;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.model.Node;

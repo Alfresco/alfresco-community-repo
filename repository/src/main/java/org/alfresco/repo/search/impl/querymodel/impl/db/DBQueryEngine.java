@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import jakarta.annotation.concurrent.NotThreadSafe;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean;

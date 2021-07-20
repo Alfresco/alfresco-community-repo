@@ -1,6 +1,6 @@
 package org.alfresco.email.imap;
 
-import javax.mail.FolderNotFoundException;
+import jakarta.mail.FolderNotFoundException;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.EmailTest;

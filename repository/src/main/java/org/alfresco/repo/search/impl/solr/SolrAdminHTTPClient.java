@@ -32,7 +32,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.search.QueryParserException;

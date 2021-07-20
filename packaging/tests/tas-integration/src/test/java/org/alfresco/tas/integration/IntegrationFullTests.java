@@ -8,8 +8,8 @@ import io.restassured.RestAssured;
 import java.io.File;
 
 import javax.json.JsonObject;
-import javax.mail.Flags;
-import javax.mail.MessagingException;
+import jakarta.mail.Flags;
+import jakarta.mail.MessagingException;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.SiteService.Visibility;

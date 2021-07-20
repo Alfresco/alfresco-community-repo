@@ -28,7 +28,7 @@ package org.alfresco.repo.web.scripts;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.service.cmr.repository.FileTypeImageSize;

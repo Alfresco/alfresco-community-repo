@@ -41,7 +41,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;

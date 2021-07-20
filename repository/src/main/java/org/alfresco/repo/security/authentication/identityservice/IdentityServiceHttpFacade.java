@@ -28,7 +28,7 @@ package org.alfresco.repo.security.authentication.identityservice;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.keycloak.adapters.servlet.ServletHttpFacade;
 

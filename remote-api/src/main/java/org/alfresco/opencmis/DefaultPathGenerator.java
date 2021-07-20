@@ -25,7 +25,7 @@
  */
 package org.alfresco.opencmis;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.repo.tenant.TenantUtil;

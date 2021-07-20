@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.external;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * An interface for objects capable of extracting an externally authenticated user ID from an HTTP request.

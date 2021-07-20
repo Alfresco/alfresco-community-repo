@@ -28,7 +28,7 @@ package org.alfresco.email.server;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 
 import org.alfresco.email.server.handler.EmailMessageHandler;
 import org.alfresco.error.AlfrescoRuntimeException;

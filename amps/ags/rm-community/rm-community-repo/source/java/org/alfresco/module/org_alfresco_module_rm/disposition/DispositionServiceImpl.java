@@ -117,9 +117,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** Record Service */
     private RecordService recordService;
 
-    /** Freeze Service */
-    private FreezeService freezeService;
-
     /** Transaction service */
     private TransactionService transactionService;
 
@@ -190,14 +187,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void setRecordService(RecordService recordService)
     {
         this.recordService =  recordService;
-    }
-
-    /**
-     * @param freezeService     freeze service
-     */
-    public void setFreezeService(FreezeService freezeService)
-    {
-        this.freezeService = freezeService;
     }
 
     /**
@@ -1191,7 +1180,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (FilePlanComponentKind.RECORD_FOLDER.equals(filePlanService.getFilePlanComponentKind(nodeRef)) ||
             FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
         {
-            if (!isDisposableItemCutoff(nodeRef) && !isFrozenOrHasFrozenChildren(nodeRef))
+            if (!isDisposableItemCutoff(nodeRef))
             {
                 if (recordFolderService.isRecordFolder(nodeRef))
                 {
@@ -1281,32 +1270,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 });
             }
         }
-    }
-
-    /**
-     * Helper method to determine if a node is frozen or has frozen children
-     *
-     * @param nodeRef Node to be checked
-     * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
-     */
-    private boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
-    {
-        boolean result = false;
-
-        if (recordFolderService.isRecordFolder(nodeRef))
-        {
-            result = freezeService.isFrozen(nodeRef) || freezeService.hasFrozenChildren(nodeRef);
-        }
-        else if (recordService.isRecord(nodeRef))
-        {
-            result = freezeService.isFrozen(nodeRef);
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("The nodeRef '" + nodeRef + "' is neither a record nor a record folder.");
-        }
-
-        return result;
     }
 
     /**

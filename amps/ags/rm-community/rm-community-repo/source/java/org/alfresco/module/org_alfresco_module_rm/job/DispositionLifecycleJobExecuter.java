@@ -27,15 +27,18 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -82,6 +85,15 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** person service */
     private PersonService personService;
 
+    /** freeze service */
+    private FreezeService freezeService;
+
+    /** record service */
+    private RecordService recordService;
+
+    /** record folder service */
+    private RecordFolderService recordFolderService;
+
     /**
      * List of disposition actions to automatically execute when eligible.
      *
@@ -119,6 +131,30 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+
+    /**
+     * @param freezeService freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
+
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+
+    /**
+     * @param recordFolderService record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -166,56 +202,60 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
+    @Override
     public void executeImpl()
     {
         try
         {
             logger.debug("Job Starting");
 
-            if (dispositionActions != null && !dispositionActions.isEmpty())
+            if (dispositionActions == null || dispositionActions.isEmpty())
             {
-                boolean hasMore = true;
-                int skipCount = 0;
+                logger.debug("Job Finished as disposition action is empty");
+                return;
+            }
 
-                if (batchSize < 1)
+            boolean hasMore = true;
+            int skipCount = 0;
+
+            if (batchSize < 1)
+            {
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
-                    }
-                    batchSize = DEFAULT_BATCH_SIZE;
+                    logger.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
                 }
-                if (logger.isTraceEnabled())
+                batchSize = DEFAULT_BATCH_SIZE;
+            }
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Using batch size of " + batchSize);
+            }
+
+            while (hasMore)
+            {
+                SearchParameters params = new SearchParameters();
+                params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                params.setQuery(getQuery());
+                params.setSkipCount(skipCount);
+                params.setMaxItems(batchSize);
+
+                // execute search
+                ResultSet results = searchService.query(params);
+                List<NodeRef> resultNodes = results.getNodeRefs();
+                hasMore = results.hasMore();
+                skipCount += resultNodes.size(); // increase by page size
+                results.close();
+
+                if (logger.isDebugEnabled())
                 {
-                    logger.trace("Using batch size of " + batchSize);
+                    logger.debug("Processing " + resultNodes.size() + " nodes");
                 }
 
-                while (hasMore)
+                // process search results
+                if (!resultNodes.isEmpty())
                 {
-                    SearchParameters params = new SearchParameters();
-                    params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                    params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                    params.setQuery(getQuery());
-                    params.setSkipCount(skipCount);
-                    params.setMaxItems(batchSize);
-
-                    // execute search
-                    ResultSet results = searchService.query(params);
-                    List<NodeRef> resultNodes = results.getNodeRefs();
-                    hasMore = results.hasMore();
-                    skipCount += resultNodes.size(); // increase by page size
-                    results.close();
-
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Processing " + resultNodes.size() + " nodes");
-                    }
-
-                    // process search results
-                    if (!resultNodes.isEmpty())
-                    {
-                        executeAction(resultNodes);
-                    }
+                    executeAction(resultNodes);
                 }
             }
             logger.debug("Job Finished");
@@ -239,45 +279,76 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         RetryingTransactionCallback<Boolean> processTranCB = () -> {
             for (NodeRef actionNode : actionNodes)
             {
-                if (nodeService.exists(actionNode))
+                if (!nodeService.exists(actionNode))
                 {
-                    final String dispAction = (String) nodeService
-                        .getProperty(actionNode, RecordsManagementModel.PROP_DISPOSITION_ACTION);
+                    continue;
+                }
 
-                    // Run disposition action
-                    if (dispAction != null && dispositionActions.contains(dispAction))
+                final String dispAction = (String) nodeService.getProperty(actionNode, PROP_DISPOSITION_ACTION);
+
+                // Run disposition action
+                if (dispAction == null || !dispositionActions.contains(dispAction))
+                {
+                    continue;
+                }
+
+                ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
+                if (!parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
+                {
+                    continue;
+                }
+                Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
+
+                if (isFrozenOrHasFrozenChildren(parent.getParentRef()))
+                {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("unable to perform action " + dispAction +
+                                " because node is frozen or has frozen children");
+                    }
+                    continue;
+                }
+
+                try
+                {
+                    // execute disposition action
+                    recordsManagementActionService
+                        .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+
+                    if (logger.isDebugEnabled())
                     {
-                        ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
-                        if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
-                        {
-                            Map<String, Serializable> props = new HashMap<>(1);
-                            props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
-
-                            try
-                            {
-                                // execute disposition action
-                                recordsManagementActionService
-                                    .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
-
-                                if (logger.isDebugEnabled())
-                                {
-                                    logger.debug("Processed action: " + dispAction + "on" + parent);
-                                }
-                            }
-                            catch (AlfrescoRuntimeException exception)
-                            {
-                                if (logger.isDebugEnabled())
-                                {
-                                    logger.debug(exception);
-                                }
-                            }
-                        }
+                        logger.debug("Processed action: " + dispAction + "on" + parent);
+                    }
+                }
+                catch (AlfrescoRuntimeException exception)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(exception);
                     }
                 }
             }
             return Boolean.TRUE;
         };
         retryingTransactionHelper.doInTransaction(processTranCB, false, true);
+    }
+
+    /**
+     * Helper method to determine if a node is frozen or has frozen children
+     *
+     * @param nodeRef Node to be checked
+     * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
+     */
+    private boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
+    {
+        if (recordFolderService.isRecordFolder(nodeRef))
+        {
+            return freezeService.isFrozen(nodeRef) || freezeService.hasFrozenChildren(nodeRef);
+        }
+        if (recordService.isRecord(nodeRef))
+        {
+            return freezeService.isFrozen(nodeRef);
+        }
+        throw new AlfrescoRuntimeException("The nodeRef '" + nodeRef + "' is neither a record nor a record folder.");
     }
 
     public PersonService getPersonService()

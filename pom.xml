@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>11.87-SNAPSHOT</version>
+    <version>11.93-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -58,7 +58,7 @@
         <dependency.spring.version>5.3.3</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.12.3</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.12.3</dependency.jackson-databind.version>
+        <dependency.jackson-databind.version>2.12.4</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.4</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.19</dependency.webscripts.version>
@@ -76,13 +76,13 @@
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
         <dependency.gytheio.version>0.12</dependency.gytheio.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
-        <dependency.tika.version>1.26</dependency.tika.version>
+        <dependency.tika.version>1.27</dependency.tika.version>
         <dependency.spring-security.version>5.5.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>13.0.1</dependency.keycloak.version>
-        <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
+        <dependency.jboss.logging.version>3.4.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.4</dependency.camel.version>
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.20</dependency.apache-compress.version>

@@ -69,15 +69,9 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
         // jobs not allowed to execute unless bootstrap is complete
         if (!repositoryState.isBootstrapping())
         {
-            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute()
-                {
-                    executeImpl();
-
-                    return null;
-                }
+            retryingTransactionHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                executeImpl();
+                return null;
             }, false, true);
         }
     }

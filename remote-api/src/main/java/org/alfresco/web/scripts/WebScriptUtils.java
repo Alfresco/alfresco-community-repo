@@ -83,7 +83,7 @@ public class WebScriptUtils extends ScriptUtils
             }
         }
         
-        return values.toArray(new Object[values.size()]);
+        return values.toArray(new Object[0]);
     }
     
     public String getHostAddress()

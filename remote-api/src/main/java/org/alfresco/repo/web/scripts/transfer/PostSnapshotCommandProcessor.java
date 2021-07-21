@@ -125,16 +125,15 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
           
             logger.debug("success");
             resp.setStatus(Status.STATUS_OK);
-            
-            OutputStream out = resp.getOutputStream();
-            resp.setContentType("text/xml");
-            resp.setContentEncoding("utf-8");
-   
-            receiver.generateRequsite(transferId, out);
-            
-            out.close();
-                        
-        } 
+
+            try (OutputStream out = resp.getOutputStream())
+            {
+                resp.setContentType("text/xml");
+                resp.setContentEncoding("utf-8");
+
+                receiver.generateRequsite(transferId, out);
+            }
+        }
         catch (Exception ex) 
         {
             logger.debug("exception caught", ex);

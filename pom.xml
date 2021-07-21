@@ -718,7 +718,7 @@
             <dependency>
                 <groupId>jakarta.servlet</groupId>
                 <artifactId>jakarta.servlet-api</artifactId>
-                <version>3.0.1</version>
+                <version>5.0.0</version>
             </dependency>
 
             <!-- Test only dependencies, as popped up while running mvn test -->

@@ -27,7 +27,7 @@
    <!-- that inherit from that type. Permissions defined against aspects apply to all     -->
    <!-- objects or only objects that have the aspect applied. For example, the permission -->
    <!-- to lock an object could apply to any object but the permission to unlock an       -->
-   <!-- object woujld only apply to objects that have the lockable aspect.                -->
+   <!-- object would only apply to objects that have the lockable aspect.                -->
    <!--                                                                                   -->
     
    <!-- =============================================== -->
@@ -42,7 +42,7 @@
       
       <!--                                                                                -->
       <!-- Permission groups are convenient groups of permissions. They may be used in    -->
-      <!-- thier own right or as the effective set of permissions. If an authority has    -->
+      <!-- their own right or as the effective set of permissions. If an authority has    -->
       <!-- all the permissions that make up a permission group they also have that        -->
       <!-- permission group even though it has not been explicitly granted.               -->
       <!--                                                                                -->
@@ -153,7 +153,7 @@
       <!-- The permission to delete a node                                               -->
       <!--                                                                               -->
       <!-- A node can only be deleted if there is delete permission on the node, if the  -->
-      <!-- node is accesible via its parent, and if the node can be deleted from its     -->
+      <!-- node is accessible via its parent, and if the node can be deleted from its     -->
       <!-- parent. Currently, there is no check that all the children can be deleted.    -->
       <!-- This check can be added but requires more work so the UI is not checking this -->
       <!-- permission just to show the delete icon.                                      -->
@@ -229,7 +229,7 @@
          -->
       </permission>
      
-     <!-- The permission to delte associations between nodes (not children)              -->
+     <!-- The permission to delete associations between nodes (not children)              -->
      
       <permission name="_DeleteAssociations" expose="false" >
         <grantedToGroup permissionGroup="DeleteAssociations" />
@@ -456,7 +456,7 @@
    <!-- They can not be denied by the permissions set on any node.                       -->
    <!--                                                                                  --> 
       
-   <!-- Admin can do anything to any ndoe                                                -->
+   <!-- Admin can do anything to any node                                                -->
    <globalPermission permission="FullControl" authority="ROLE_ADMINISTRATOR"/>
    
    <!-- For now, owners can always see, find and manipulate their stuff                  -->
@@ -468,7 +468,7 @@
    <!-- Check in is granted to the lock owner                                            -->
    <globalPermission permission="CheckIn" authority="ROLE_LOCK_OWNER"/>
    
-   <!-- Cancel check out is granted to the locak owner                                   -->
+   <!-- Cancel check out is granted to the lock owner                                   -->
    <globalPermission permission="CancelCheckOut" authority="ROLE_LOCK_OWNER"/>
    
 </permissions>

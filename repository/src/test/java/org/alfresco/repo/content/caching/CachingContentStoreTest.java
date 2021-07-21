@@ -26,11 +26,12 @@
 package org.alfresco.repo.content.caching;
 
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +50,7 @@ import java.util.Locale;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
@@ -519,5 +522,62 @@ public class CachingContentStoreTest
     {
         when(backingStore.getDirectAccessUrl(anyString(), any())).thenReturn(new DirectAccessUrl());
         cachingStore.getDirectAccessUrl("url", null);
+    }
+
+    @Test
+    public void testBackingStoreIsCalledForSupportedStorageClasses()
+    {
+        when(backingStore.isStorageClassesSupported(new StorageClassSet("a-certain-storage-class"))).thenReturn(true);
+
+        final StorageClassSet storageClassSet = new StorageClassSet("a-certain-storage-class");
+        assertTrue(cachingStore.isStorageClassesSupported(storageClassSet));
+        verify(backingStore, times(1)).isStorageClassesSupported(storageClassSet);
+    }
+
+    @Test
+    public void testBackingStoreIsCalledForGetSupportedStorageClasses()
+    {
+        when(backingStore.getSupportedStorageClasses()).thenReturn(emptySet());
+        assertTrue(cachingStore.getSupportedStorageClasses().isEmpty());
+        verify(backingStore, times(1)).getSupportedStorageClasses();
+    }
+
+    @Test
+    public void testUpdateStorageClassesForGivenContentUrl()
+    {
+        String contentUrl = "contentUrl";
+        final StorageClassSet storageClassSet = new StorageClassSet("a-certain-storage-class");
+        
+        cachingStore.updateStorageClasses(contentUrl, storageClassSet, null);
+
+        verify(backingStore, times(1)).updateStorageClasses(contentUrl, storageClassSet, null);
+    }
+
+    @Test
+    public void testFindStorageClassesForGivenContentUrl()
+    {
+        final StorageClassSet storageClassSet = new StorageClassSet();
+        when(backingStore.findStorageClasses(anyString())).thenReturn(storageClassSet);
+
+        assertTrue(cachingStore.findStorageClasses("a-contentUrl").isEmpty());
+        verify(backingStore, times(1)).findStorageClasses("a-contentUrl");
+    }
+
+    @Test
+    public void testGetStorageClassesTransitions()
+    {
+        when(backingStore.getStorageClassesTransitions()).thenReturn(emptyMap());
+
+        assertTrue(cachingStore.getStorageClassesTransitions().isEmpty());
+        verify(backingStore, times(1)).getStorageClassesTransitions();
+    }
+
+    @Test
+    public void testFindStorageClassesTransitionsForGivenContentUrl()
+    {
+        when(backingStore.findStorageClassesTransitions(anyString())).thenReturn(emptyMap());
+
+        assertTrue(cachingStore.findStorageClassesTransitions("contentUrl").isEmpty());
+        verify(backingStore, times(1)).findStorageClassesTransitions("contentUrl");
     }
 }

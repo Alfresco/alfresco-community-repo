@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
@@ -2800,6 +2801,80 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    public void testUploadFileWithStorageClasses() throws Exception
+    {
+        setRequestContext(networkOne.getId(), user1, null);
+        
+        String title = "test title";
+        Map<String,String> docProps = new HashMap<>();
+        docProps.put("cm:title", title);
+        docProps.put("cm:owner", user1);
+        docProps.put("storageClasses", "unsupported-storage-classes");
+        docProps.put("include", "storageClasses");
+        String contentName = "content " + RUNID + ".txt";
+        
+        // Upload text with unsupported storage classes
+        createTextFile(Nodes.PATH_MY, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps, 400);
+
+        // Upload text content with "default" storage classes
+        docProps.put("storageClasses", "default");
+        Document document = createTextFile(Nodes.PATH_MY, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps);
+
+        assertTrue(Set.of("default").containsAll(document.getContent().getStorageClasses()));
+
+        // Upload new version with "default" storage classes
+        docProps.put("overwrite", "true");
+        createTextFile(Nodes.PATH_MY, contentName, "New content - The quick brown fox jumps over the lazy dog.", "UTF-8", docProps);
+
+        HttpResponse response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), getPaging(0, 100), Map.of("include", "storageClasses"), 200);
+        List<Node> children = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+
+        assertEquals(1, children.size());
+        assertTrue(Set.of("default").containsAll(children.get(0).getContent().getStorageClasses()));
+    }
+
+    @Test
+    public void testGetChildrenWithNoStorageClasses() throws Exception
+    {
+        setRequestContext(networkOne.getId(), user1, null);
+
+        // Create folder
+        createFolder(Nodes.PATH_MY, "testFolder");
+
+        Map params = new HashMap<>();
+        params.put("storageClasses", "default");
+        params.put("include", "storageClasses");
+
+        // Create empty file
+        Document emptyTextFile = createEmptyTextFile(Nodes.PATH_MY, "empty-file.txt", params, 201);
+
+        assertNotNull(emptyTextFile.getContent());
+        assertNull(
+            emptyTextFile.getContent().getStorageClasses()); // no storage classes for empty files
+
+        // Create file with content - default storage classes
+        Document fileWithContent = createTextFile(Nodes.PATH_MY, "file-with-content.txt",
+                                                  "The quick brown fox jumps over the lazy dog.",
+                                                  "UTF-8", params);
+
+        assertNotNull(fileWithContent.getContent());
+        assertTrue(Set.of("default").containsAll(fileWithContent.getContent().getStorageClasses()));
+
+        HttpResponse response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), getPaging(0, 100),
+                                       Map.of("include", "storageClasses"), 200);
+        List<Node> children = RestApiUtil
+            .parseRestApiEntries(response.getJsonResponse(), Node.class);
+
+        assertEquals(3, children.size());
+        long childrenWithStorageClasses = children
+            .stream()
+            .filter(child -> child.getContent() != null && 
+                child.getContent().getStorageClasses() != null)
+            .count();
+        assertEquals(1, childrenWithStorageClasses);
+    }
+    
+    @Test
     public void testUpdateNodeConcurrentlyUsingInMemoryBacked() throws Exception
     {
         // Less than its memory threshold ( 4 MB )
@@ -4776,6 +4851,36 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(documentResp.getPermissions().getSettable().size() == 5);
         Set<String> expectedSettable = new HashSet<>(Arrays.asList("Coordinator", "Collaborator", "Contributor", "Consumer", "Editor"));
         assertTrue("Incorrect list of settable permissions returned!", documentResp.getPermissions().getSettable().containsAll(expectedSettable));
+    }
+
+    @Test
+    public void testRetrieveNodeStorageClasses() throws Exception
+    {
+        setRequestContext(user1);
+
+        Document document = createTextFile(Nodes.PATH_MY, "file.txt",
+                                           "The quick brown fox jumps over the lazy dog.");
+
+        Map params = new HashMap<>();
+        params.put("include", "storageClasses");
+
+        // Update node
+        Document dUpdate = new Document();
+        HttpResponse response = put(URL_NODES, document.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check if storageClasses are retrieved if 'include=storageClasses' is not sent in the request
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertNull("StorageClasses should not be retrieved unless included!", documentResp.getContent().getStorageClasses());
+
+        // Call again with 'include=storageClasses'
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), params, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check that all storage classes are retrieved
+        assertNotNull(documentResp.getContent().getStorageClasses());
+        assertEquals(ContentStore.SCS_DEFAULT, documentResp.getContent().getStorageClasses());
     }
 
     /**

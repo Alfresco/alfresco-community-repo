@@ -25,12 +25,17 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
-
-import java.util.Date;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -147,6 +152,40 @@ public interface ContentService
                 throws InvalidNodeRefException, InvalidTypeException;
 
     /**
+     * Get a content writer for the given node property, choosing to optionally have
+     * the node property updated automatically when the content stream closes.
+     * <p>
+     * If the update flag is off, then the state of the node property will remain unchanged
+     * regardless of the state of the written binary data.  If the flag is on, then the node
+     * property will be updated on the same thread as the code that closed the write
+     * channel.
+     * <p>
+     * If no node is supplied, then the writer will provide a stream into the backing content
+     * store, but will not be associated with any new or previous content.
+     * <p/>
+     * <b>NOTE: </b>The content URL provided will be registered for automatic cleanup in the event
+     * that the transaction, in which this method was called, rolls back.  If the transaction
+     * is successful, the writer may still be open and available for use but the underlying binary
+     * will not be cleaned up subsequently.  The recommended pattern is to group calls to retrieve
+     * the writer in the same transaction as the calls to subsequently update and close the
+     * write stream - including setting of the related content properties.
+     *
+     * @param nodeRef a reference to a node having a content property, or <tt>null</tt>
+     *      to just get a valid writer into a backing content store.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param update true if the property must be updated atomically when the content write
+     *      stream is closed (attaches a listener to the stream); false if the client code
+     *      will perform the updates itself.
+     * @param storageClassSet storage classes for the content associated with the node property
+     * @return Returns a writer for the content associated with the node property
+     * @throws InvalidNodeRefException if the node doesn't exist
+     * @throws InvalidTypeException if the node property is not of type <b>content</b>
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "update", "storageClasses"})
+    public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update,
+        StorageClassSet storageClassSet) throws InvalidNodeRefException, InvalidTypeException;
+
+    /**
      * Gets a writer to a temporary location.  The longevity of the stored
      * temporary content is determined by the system.
      * 
@@ -170,4 +209,62 @@ public interface ContentService
      */
     @Auditable(parameters = {"nodeRef", "expiresAt"})
     public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
+
+    /**
+     * Checks whether or not the current {@link ContentService} supports the provided {@link Set} storage classes
+     *
+     * @param storageClassSet The storage classes that will be checked whether or not are supported
+     * @return true if the storage classes are supported, false otherwise.
+     */
+    default boolean isStorageClassesSupported(StorageClassSet storageClassSet)
+    {
+        return false;
+    }
+
+    /**
+     * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentService}
+     */
+    default Set<String> getSupportedStorageClasses()
+    {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Updates the storage class for a {@link NodeRef}
+     *
+     * @param nodeRef The ref of the node that will have its storage classes updated
+     * @param storageClassSet The new storage classes
+     * @param parameters extra parameters
+     */
+    default void updateStorageClasses(NodeRef nodeRef, StorageClassSet storageClassSet, Map<String, Object> parameters)
+    {
+
+    }
+
+    /**
+     * @param nodeRef the {@link NodeRef} for which the storage classes are to be requested
+     * @return Returns the current storage classes for the given {@link NodeRef}
+     */
+    default StorageClassSet findStorageClasses(NodeRef nodeRef)
+    {
+        return ContentStore.SCS_DEFAULT;
+    }
+
+    /**
+     * @return Returns the complete collection of allowed storage classes transitions.
+     * The key represents the source storage classes while the value (as a {@link Set}) represents all the possible target storage classes.
+     */
+    default Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
+    {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @param nodeRef the {@link NodeRef} for which the storage classes transitions are to be requested
+     * @return Returns the complete collection of allowed storage classes transitions for the content found at content URL
+     */
+    default Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(NodeRef nodeRef)
+    {
+        return Collections.emptyMap();
+    }
 }

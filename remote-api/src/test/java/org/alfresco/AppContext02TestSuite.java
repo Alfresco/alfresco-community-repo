@@ -55,6 +55,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.QueriesNodesApiTest.class,
     org.alfresco.rest.api.tests.QueriesPeopleApiTest.class,
     org.alfresco.rest.api.tests.QueriesSitesApiTest.class,
+    org.alfresco.rest.api.tests.StorageClassesTest.class,
     org.alfresco.rest.api.tests.TestActivities.class,
     org.alfresco.rest.api.tests.TestDownloads.class,
     org.alfresco.rest.api.tests.TestFavouriteSites.class,

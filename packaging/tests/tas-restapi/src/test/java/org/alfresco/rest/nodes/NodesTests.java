@@ -25,6 +25,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
@@ -191,16 +192,16 @@ public class NodesTests extends RestTest
 
     @Bug(id = "ACS-1775")
     @TestRail(section = { TestGroup.SANITY }, executionType = ExecutionType.SANITY,
-            description = "Verify that the BAD_REQUEST is returned when updating storage classes for a node with an invalid storage class")
+            description = "Verify that the UNPROCESSABLE_ENTITY is returned when updating storage classes for a node with an invalid storage class")
     @Test(groups = { TestGroup.SANITY })
-    public void updateNodeStorageClass() throws Exception
+    public void updateNodeStorageClassWithNonexistentStorageClassShouldReturn() throws Exception
     {
-        STEP("1. Update storage classes for a node with an unexisting storage class.");
+        STEP("1. Update storage classes for a node with an nonexistent storage class.");
         JsonObject updateStorageClass = Json.createObjectBuilder().add("content",
-                Json.createObjectBuilder().add("storageClasses", Json.createArrayBuilder().add("test")))
+                Json.createObjectBuilder().add("storageClasses", Json.createArrayBuilder().add("storageClassThatDoesntExist")))
                 .build();
         RestNodeModel restResponse = restClient.authenticateUser(user1).withCoreAPI()
                 .usingNode(file1).usingParams("include=storageClasses").updateNode(updateStorageClass.toString());
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 }

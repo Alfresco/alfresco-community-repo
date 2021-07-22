@@ -804,38 +804,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(action3, savedAction2.getAction(1));
         assertEquals(action4, savedAction2.getAction(2));
     }
-    
-    /**
-     * Test the action result parameter
-     */
-    @Test
-    public void testActionResult()
-    {
-        // Create the script node reference
-        NodeRef script = this.nodeService.createNode(
-                this.folder,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testScript.js"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-        this.nodeService.setProperty(script, ContentModel.PROP_NAME, "testScript.js");
-        ContentWriter contentWriter = this.contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
-        contentWriter.setMimetype("text/plain");
-        contentWriter.setEncoding("UTF-8");
-        contentWriter.putContent("\"VALUE\";");
-        
-        // Create the action
-        Action action1 = this.actionService.createAction(ScriptActionExecuter.NAME);
-        action1.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, script);
-        
-        // Execute the action
-        this.actionService.executeAction(action1, this.nodeRef);
-        
-        // Get the result
-        String result = (String)action1.getParameterValue(ActionExecuter.PARAM_RESULT);
-        assertNotNull(result);
-        assertEquals("VALUE", result);                
-    }
-    
+
     /** ===================================================================================
      *  Test asynchronous actions
      */

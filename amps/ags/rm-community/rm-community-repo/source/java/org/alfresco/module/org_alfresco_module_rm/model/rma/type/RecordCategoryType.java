@@ -32,7 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
@@ -49,6 +50,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * rma:recordCategory behaviour bean
@@ -60,9 +62,10 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "rma:recordCategory"
 )
-public class RecordCategoryType extends    BaseBehaviourBean
+public class RecordCategoryType extends AbstractDisposableItem
                                 implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                           NodeServicePolicies.OnCreateNodePolicy
+                                           NodeServicePolicies.OnCreateNodePolicy,
+                                           NodeServicePolicies.OnMoveNodePolicy
 {
     private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<>();
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
@@ -75,6 +78,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
 
     /** record folder service */
     private RecordFolderService recordFolderService;
+
+    /** record service */
+    private RecordService recordService;
 
     /**
      * @param vitalRecordService    vital record service
@@ -98,6 +104,14 @@ public class RecordCategoryType extends    BaseBehaviourBean
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
     }
 
     /**
@@ -202,6 +216,50 @@ public class RecordCategoryType extends    BaseBehaviourBean
             }
         });
 
+    }
+
+    /**
+     * Record Category move behaviour
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
+            )
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY) && dispositionService.getDispositionSchedule(oldChildAssocRef.getChildRef()) != null)
+        {
+            for (ChildAssociationRef newChildRef : nodeService.getChildAssocs(newChildAssocRef.getChildRef(),
+                    ContentModel.ASSOC_CONTAINS,
+                    RegexQNamePattern.MATCH_ALL))
+            {
+                final NodeRef newNodeRef = newChildRef.getChildRef();
+
+                AuthenticationUtil.runAs(() -> {
+                    // clean record folder
+                    cleanDisposableItem(nodeService, newNodeRef);
+
+                    // re-initialise the record folder
+                    recordFolderService.setupRecordFolder(newNodeRef);
+
+                    // sort out the child records
+                    for (NodeRef record : recordService.getRecords(newNodeRef))
+                    {
+                        // clean record
+                        cleanDisposableItem(nodeService, record);
+
+                        // Re-initiate the records in the new folder.
+                        recordService.file(record);
+                    }
+
+                    return null;
+                }, AuthenticationUtil.getSystemUserName());
+            }
+        }
     }
 
     /**

@@ -79,7 +79,7 @@
         <dependency.jaxb.version>2.3.2</dependency.jaxb.version>
         <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
-        <dependency.tika.version>1.24.1</dependency.tika.version>
+        <dependency.tika.version>1.26</dependency.tika.version>
         <dependency.spring-security.version>5.1.9.RELEASE</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>

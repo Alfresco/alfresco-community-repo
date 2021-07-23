@@ -108,6 +108,12 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes - total Time:" + getFormattedExecutionTime(
                         startTime));
 
+            startTime = System.currentTimeMillis();
+            if (fromCustomCommitTime <= 0L)
+            {
+                fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
+            }
+            logger.debug("DeletedNodeCleanupWorker: nodeDAO.getMinUnusedTxnCommitTime - execution time:" + getFormattedExecutionTime(startTime));
             logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
             startTime = System.currentTimeMillis();
             purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);

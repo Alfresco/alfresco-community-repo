@@ -74,28 +74,46 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         {
             return Collections.singletonList("Minimum purge age is negative; purge disabled");
         }
-        if(NODE_TABLE_CLEANER_ALG_V2 ==  algorithm)
-        {
-            return deletedNodeBatchCleanup.execute();
-        }
-        long fromCommitTime = fromCustomCommitTime;
+        List<String> purgedNodes, purgedTxns;
+
         long startTime = System.currentTimeMillis();
-        if (fromCommitTime <= 0L)
+
+        if(NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
         {
-            fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+            deletedNodeBatchCleanup.setMinPurgeAgeMs(minPurgeAgeMs);
+            logger.debug("DeletedNodeCleanupWorker using batch deletion: About to execute the clean up nodes ");
+            purgedNodes = deletedNodeBatchCleanup.purgeOldDeletedNodes();
+            logger.debug("DeletedNodeCleanupWorker using batch deletion : purgeOldDeletedNodes - total Time:" + getFormattedExecutionTime(
+                        startTime));
+            logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
+            startTime = System.currentTimeMillis();
+            purgedTxns =  deletedNodeBatchCleanup.purgeOldEmptyTransactions();
+            logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:" + getFormattedExecutionTime(
+                        startTime));
         }
+        else
+        {
+            long fromCommitTime = fromCustomCommitTime;
 
-        logger.debug("DeletedNodeCleanupWorker: nodeDAO.getMinTxnCommitTimeForDeletedNodes - execution time:"+ getFormattedExecutionTime(startTime));
+            if (fromCommitTime <= 0L)
+            {
+                fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+            }
 
-        logger.debug("DeletedNodeCleanupWorker: About to execute the clean up nodes ");
-        startTime = System.currentTimeMillis();
-        List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs, fromCommitTime);
-        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes - total Time:"+ getFormattedExecutionTime(startTime));
+            logger.debug("DeletedNodeCleanupWorker: nodeDAO.getMinTxnCommitTimeForDeletedNodes - execution time:" + getFormattedExecutionTime(startTime));
 
-        logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
-        startTime = System.currentTimeMillis();
-        List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);
-        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:"+ getFormattedExecutionTime(startTime));
+            logger.debug("DeletedNodeCleanupWorker: About to execute the clean up nodes ");
+            startTime = System.currentTimeMillis();
+            purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs, fromCommitTime);
+            logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes - total Time:" + getFormattedExecutionTime(
+                        startTime));
+
+            logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
+            startTime = System.currentTimeMillis();
+            purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);
+            logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:" + getFormattedExecutionTime(
+                        startTime));
+        }
 
         List<String> allResults = new ArrayList<String>(100);
         allResults.addAll(purgedNodes);
@@ -405,5 +423,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
         return String.format("%d Hours %d Minutes %d Seconds %d Milliseconds", hr, min, sec, ms);
 
+    }
+
+     public DeletedNodeBatchCleanup getDeletedNodeBatchCleanup()
+    {
+        return deletedNodeBatchCleanup;
     }
 }

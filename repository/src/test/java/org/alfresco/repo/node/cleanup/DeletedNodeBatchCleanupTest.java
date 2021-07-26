@@ -48,6 +48,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.testing.category.DBTests;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -94,8 +95,8 @@ import java.util.Map;
         this.worker.setMinPurgeAgeDays(0);
         this.worker.setAlgorithm("V2");
         this.deletedNodeBatchCleanup = this.worker.getDeletedNodeBatchCleanup();
-        this.deletedNodeBatchCleanup.setDeleteBatchSize(10);
-        this.deletedNodeBatchCleanup.setBatchSize(2);
+        this.deletedNodeBatchCleanup.setBatchSize(10);
+        this.deletedNodeBatchCleanup.setDeleteBatchSize(2);
         this.helper = transactionService.getRetryingTransactionHelper();
         authenticationService.authenticate("admin", "admin".toCharArray());
 
@@ -295,6 +296,17 @@ import java.util.Map;
         assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
     }
 
+    @Test
+    public void testBatchSizeGreaterThanDeletedBatchSize()
+    {
+        this.deletedNodeBatchCleanup.setDeleteBatchSize(10);
+        this.deletedNodeBatchCleanup.setBatchSize(2);
+
+        List<String> messageList = worker.doClean();
+
+        Assert.assertFalse(messageList.isEmpty());
+        Assert.assertEquals(messageList.get(0), "The batchSize should be equal or greater than deleteBatchSize");
+    }
     private boolean containsTransaction(List<Transaction> txns, String txnId)
     {
         boolean found = false;

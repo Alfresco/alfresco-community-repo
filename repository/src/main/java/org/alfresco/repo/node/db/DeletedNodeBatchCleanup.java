@@ -31,6 +31,7 @@ import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,23 +41,28 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Cleans up deleted nodes and dangling transactions in fixed size batches.
+ * Cleans up deleted nodes{@link #purgeOldDeletedNodes()} and dangling transactions{@link #purgeOldEmptyTransactions()}
+ * that are old enough{@link #minPurgeAgeMs} in fixed size batches.
+ * The Algorithm fetches the deleted nodes in batches{@link #batchSize} and uses the node id to delete the entries
+ * in alf_node and alf_node_properties table. The batch size to fetch and delete{@link #deleteBatchSize} the entries are configurable.
+ * The alf_transactions entries which doesn't have an entry in alf_node table are selected for deletion in batches.
  */
 public class DeletedNodeBatchCleanup
 {
-
     private final static String SELECT_NODE_STATEMENT =
                 "select node.id as id from alf_node node join alf_transaction txn on (node.transaction_id = txn.id) "
                             + "where node.id > ? and txn.commit_time_ms < ?  and node.type_qname_id = ? order by node.id asc";
     private final static String SELECT_TXN_STATEMENT =
-                "select id from alf_transaction  where not exists (  select 1 " + " from alf_node node where"
+                "select id from alf_transaction  where not exists (  select 1 from alf_node node where"
                             + " node.transaction_id = alf_transaction.id) and id > ? and commit_time_ms <= ? order by id asc";
     private final static String DELETE_NODE_PROP_STATEMENT = "DELETE FROM ALF_NODE_PROPERTIES WHERE NODE_ID IN (";
     private final static String DELETE_NODE_STATEMENT = "DELETE FROM ALF_NODE WHERE ID IN (";
@@ -114,8 +120,19 @@ public class DeletedNodeBatchCleanup
         return purge(DeletionType.NODE);
     }
 
+    public List<String> purgeOldEmptyTransactions() throws Exception
+    {
+
+        return purge(DeletionType.TRANSACTION);
+
+    }
+
     private List<String> purge(DeletionType deletionType) throws Exception
     {
+        if(batchSize < deleteBatchSize)
+        {
+            return Collections.singletonList("The batchSize should be equal or greater than deleteBatchSize");
+        }
         final List<String> deletedList = new ArrayList<>();
         PreparedStatement primaryPrepStmt = null;
         PreparedStatement deleteEntityPrepStmt[] = new PreparedStatement[2];
@@ -165,8 +182,8 @@ public class DeletedNodeBatchCleanup
                                 .prepareStatement(createDeleteStatement(deleteBatchSize, DELETE_NODE_PROP_STATEMENT));
                 }
 
-                primaryId = processQueryResults(primaryPrepStmt, deleteEntityPrepStmt, deleteIds, connection, deletedList,
-                            deletionType);
+                primaryId = processQueryResults(primaryPrepStmt, deleteEntityPrepStmt, deleteIds, connection,
+                            deletedList, deletionType);
                 if (primaryId == null)
                 {
                     break;
@@ -196,13 +213,6 @@ public class DeletedNodeBatchCleanup
         }
 
         return deletedList;
-    }
-
-    public List<String> purgeOldEmptyTransactions() throws Exception
-    {
-
-        return purge(DeletionType.TRANSACTION);
-
     }
 
     private Long processQueryResults(PreparedStatement primaryPrepStmt, PreparedStatement[] deletePrepStmts,
@@ -252,10 +262,6 @@ public class DeletedNodeBatchCleanup
 
             }
 
-        }
-        finally
-        {
-                //TODO - Does any resource need to be closed here ?
         }
 
         return primaryId;
@@ -337,7 +343,7 @@ public class DeletedNodeBatchCleanup
         {
             return false;
         }
-
+        
         final Date now = new Date();
         return (now.getTime() > startTime.getTime() + (timeoutSec * 1000));
     }

@@ -142,7 +142,6 @@ public class DeletedNodeBatchCleanup
 
         final Date startTime = new Date();
         final long maxCommitTime = System.currentTimeMillis() - minPurgeAgeMs;
-        Connection connection = null;
         Long primaryId = 0L;
         String primaryPrepStatementSQL = SELECT_NODE_STATEMENT;
         String deletionPrepSatatementSQL = DELETE_NODE_STATEMENT;
@@ -156,10 +155,8 @@ public class DeletedNodeBatchCleanup
             primaryPrepStatementSQL = SELECT_TXN_STATEMENT;
             deletionPrepSatatementSQL = DELETE_TXN_STATEMENT;
         }
-        try
+        try(Connection connection = dataSource.getConnection())
         {
-
-            connection = dataSource.getConnection();
             connection.setAutoCommit(false);
             primaryPrepStmt = connection.prepareStatement(primaryPrepStatementSQL);
             primaryPrepStmt.setFetchSize(batchSize);
@@ -199,7 +196,6 @@ public class DeletedNodeBatchCleanup
             closeStatement(primaryPrepStmt);
             closeStatement(deleteEntityPrepStmt[0]);
             closeStatement(deleteEntityPrepStmt[1]);
-            connection.setAutoCommit(true);
 
         }
 
@@ -343,24 +339,9 @@ public class DeletedNodeBatchCleanup
         {
             return false;
         }
-        
+
         final Date now = new Date();
         return (now.getTime() > startTime.getTime() + (timeoutSec * 1000));
-    }
-
-    protected void closeResultset(ResultSet resultSet)
-    {
-        if (resultSet != null)
-        {
-            try
-            {
-                resultSet.close();
-            }
-            catch (Exception e)
-            {
-                // Little can be done at this stage.
-            }
-        }
     }
 
     protected void closeStatement(Statement statement)

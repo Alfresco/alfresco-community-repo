@@ -231,7 +231,7 @@ public class RecordCategoryType extends AbstractDisposableItem
             )
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY) && dispositionService.getDispositionSchedule(oldChildAssocRef.getChildRef()) != null)
+        if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY) && dispositionService.getDispositionSchedule(oldChildAssocRef.getParentRef()) != null)
         {
             for (ChildAssociationRef newChildRef : nodeService.getChildAssocs(newChildAssocRef.getChildRef(),
                     ContentModel.ASSOC_CONTAINS,

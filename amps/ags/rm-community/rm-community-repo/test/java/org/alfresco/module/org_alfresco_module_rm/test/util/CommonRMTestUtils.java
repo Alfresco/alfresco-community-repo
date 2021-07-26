@@ -82,6 +82,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String DEFAULT_DISPOSITION_INSTRUCTIONS = "disposition instructions";
     public static final String DEFAULT_DISPOSITION_DESCRIPTION = "disposition action description";
     public static final String DEFAULT_EVENT_NAME = "case_closed";
+    public static final String SEPARATION_EVENT_NAME = "separation";
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
     public static final String PERIOD_ONE_DAY = "day|1";

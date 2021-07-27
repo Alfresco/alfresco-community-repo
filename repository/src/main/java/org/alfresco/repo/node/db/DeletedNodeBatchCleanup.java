@@ -48,6 +48,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Cleans up deleted nodes{@link #purgeOldDeletedNodes()} and dangling transactions{@link #purgeOldEmptyTransactions()}
@@ -77,6 +78,8 @@ public class DeletedNodeBatchCleanup
     private Dialect dialect;
     private long minPurgeAgeMs;
     private long timeoutSec;
+    private AtomicLong nodeDeletionCount = new AtomicLong(0);
+    private AtomicLong txnDeletionCount = new AtomicLong(0);
 
     public void setDataSource(DataSource dataSource)
     {
@@ -117,13 +120,26 @@ public class DeletedNodeBatchCleanup
     public List<String> purgeOldDeletedNodes() throws Exception
     {
 
-        return purge(DeletionType.NODE);
+        nodeDeletionCount.getAndSet(0);
+        List<String> deleteResult = purge(DeletionType.NODE);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Total nodes deleted:"+ nodeDeletionCount.get());
+        }
+        return deleteResult;
     }
 
     public List<String> purgeOldEmptyTransactions() throws Exception
     {
 
-        return purge(DeletionType.TRANSACTION);
+        txnDeletionCount.getAndSet(0);
+        List<String> deleteResult =  purge(DeletionType.TRANSACTION);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Total transactions deleted:"+ txnDeletionCount.get());
+        }
+        return deleteResult;
+
 
     }
 
@@ -235,15 +251,15 @@ public class DeletedNodeBatchCleanup
                 }
                 if (rowsProcessed == batchSize)
                 {
-                    if (logger.isTraceEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         if (deletionType == DeletionType.NODE)
                         {
-                            logger.trace("RowsProcessed " + rowsProcessed + " from primary table alf_node ");
+                            logger.debug("RowsProcessed " + rowsProcessed + " from primary table alf_node ");
                         }
                         else
                         {
-                            logger.trace("RowsProcessed " + rowsProcessed + " from primary table alf_transaction");
+                            logger.debug("RowsProcessed " + rowsProcessed + " from primary table alf_transaction");
                         }
                     }
                     break;
@@ -269,7 +285,9 @@ public class DeletedNodeBatchCleanup
     {
 
         int deletedNodePropItems = deleteItems(preparedStatements[1], deleteIds);
+
         int deletedNodeItems = deleteItems(preparedStatements[0], deleteIds);
+        nodeDeletionCount.getAndAdd(deletedNodeItems);
         connection.commit();
         deleteIds.clear();
         if (logger.isDebugEnabled())
@@ -286,6 +304,7 @@ public class DeletedNodeBatchCleanup
     {
 
         int deletedTxnItems = deleteItems(txnPrepStmt, deleteIds);
+        txnDeletionCount.getAndAdd(deletedTxnItems);
         connection.commit();
         deleteIds.clear();
         if (logger.isDebugEnabled())

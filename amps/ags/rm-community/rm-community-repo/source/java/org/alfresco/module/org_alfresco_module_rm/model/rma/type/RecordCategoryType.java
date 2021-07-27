@@ -33,8 +33,6 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -76,12 +74,6 @@ public class RecordCategoryType extends AbstractDisposableItem
     /** file plan permission service */
     protected FilePlanPermissionService filePlanPermissionService;
 
-    /** record folder service */
-    private RecordFolderService recordFolderService;
-
-    /** record service */
-    private RecordService recordService;
-
     /**
      * @param vitalRecordService    vital record service
      */
@@ -96,22 +88,6 @@ public class RecordCategoryType extends AbstractDisposableItem
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
         this.filePlanPermissionService = filePlanPermissionService;
-    }
-
-    /**
-     * @param recordFolderService   record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
     }
 
     /**
@@ -237,27 +213,7 @@ public class RecordCategoryType extends AbstractDisposableItem
                     ContentModel.ASSOC_CONTAINS,
                     RegexQNamePattern.MATCH_ALL))
             {
-                final NodeRef newNodeRef = newChildRef.getChildRef();
-
-                AuthenticationUtil.runAs(() -> {
-                    // clean record folder
-                    cleanDisposableItem(nodeService, newNodeRef);
-
-                    // re-initialise the record folder
-                    recordFolderService.setupRecordFolder(newNodeRef);
-
-                    // sort out the child records
-                    for (NodeRef record : recordService.getRecords(newNodeRef))
-                    {
-                        // clean record
-                        cleanDisposableItem(nodeService, record);
-
-                        // Re-initiate the records in the new folder.
-                        recordService.file(record);
-                    }
-
-                    return null;
-                }, AuthenticationUtil.getSystemUserName());
+                reinitializeRecordFolder(newChildRef);
             }
         }
     }

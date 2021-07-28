@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -209,9 +211,28 @@ public class RecordCategoryType extends AbstractDisposableItem
     {
         if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY) && dispositionService.getDispositionSchedule(oldChildAssocRef.getParentRef()) != null)
         {
-            for (ChildAssociationRef newChildRef : nodeService.getChildAssocs(newChildAssocRef.getChildRef(),
-                    ContentModel.ASSOC_CONTAINS,
-                    RegexQNamePattern.MATCH_ALL))
+            reinitializeRecordFolders(newChildAssocRef);
+        }
+    }
+
+    /**
+     *  Recursively reinitialize each folder in a structure of categories
+     *  Unwanted aspects will be removed from the child records and the records will be re-filed
+     *  Disposition schedule aspects and properties will be inherited from the new parent category
+     *
+     * @param childAssociationRef
+     */
+    private void reinitializeRecordFolders(ChildAssociationRef childAssociationRef)
+    {
+        for (ChildAssociationRef newChildRef : nodeService.getChildAssocs(childAssociationRef.getChildRef(),
+                ContentModel.ASSOC_CONTAINS,
+                RegexQNamePattern.MATCH_ALL))
+        {
+            if (nodeService.getType(newChildRef.getChildRef()).equals(TYPE_RECORD_CATEGORY))
+            {
+                reinitializeRecordFolders(newChildRef);
+            }
+            else if (!nodeService.getType(newChildRef.getChildRef()).equals(TYPE_CONTENT))
             {
                 reinitializeRecordFolder(newChildRef);
             }

@@ -5755,6 +5755,54 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    public void versionableDocumentMultipartNodeCreationTest() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+        
+        //MNT-22462
+        String fileName = "myfile" + UUID.randomUUID() + ".txt";
+        File file = getResourceFile("quick-2.pdf");
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setNodeType("custom:document");
+
+        MultiPartRequest reqBody = multiPartBuilder.build();
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        Map<String, Object> documentProperties = documentResponse.getProperties();
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        checkDocumentVersionAfterCreation( documentResponse.getId(), "MAJOR", "1.0");
+        
+        //Scenario VersioningEnabled=false
+        fileName = "myfile" + UUID.randomUUID() + ".txt";
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setNodeType("custom:document");
+        multiPartBuilder.setVersioningEnabled("false");
+
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        documentProperties = documentResponse.getProperties();
+        assertNull("VersioningEnabled is false, documentProperties should not contain any version",documentProperties);
+
+        checkDocumentVersionAfterCreation(documentResponse.getId(), "MAJOR", "1.0");
+    }
+    
+    private void checkDocumentVersionAfterCreation(String documentId, String expectedVersionType, String expectedVersion) throws Exception {
+        HttpResponse response = getSingle(NodesEntityResource.class, documentId, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        Map<String, Object> documentProperties = node.getProperties();
+        assertNotNull("Document properties are null",documentProperties);
+        assertEquals(expectedVersionType, documentProperties.get("cm:versionType"));
+        assertEquals(expectedVersion, documentProperties.get("cm:versionLabel"));
+    }
+    
+
+    @Test
     public void versioningEnabledJSONNodeCreationTest() throws Exception
     {
         setRequestContext(user1);
@@ -5890,6 +5938,44 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
+    }
+
+    @Test
+    public void versionableDocumentJsonNodeCreationTest() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+        
+        //MNT-22462
+        Document d1 = new Document();
+        Map<String, String> requestHeaders = new HashMap<>();
+        d1.setNodeType("custom:document");
+        d1.setName("testDoc" + UUID.randomUUID());
+        requestHeaders.put("versioningEnabled","true");
+
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        Map<String, Object> documentProperties = documentResponse.getProperties();
+        assertNotNull(documentProperties);
+        assertEquals("MAJOR", documentProperties.get("cm:versionType"));
+        assertEquals("1.0", documentProperties.get("cm:versionLabel"));
+
+        checkDocumentVersionAfterCreation( documentResponse.getId(), "MAJOR", "1.0");
+
+        //Scenario VersioningEnabled=false
+        d1.setName("testDoc" + UUID.randomUUID());
+        d1.setNodeType("custom:document");
+        requestHeaders = new HashMap<>();
+        requestHeaders.put("versioningEnabled","false");
+
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        documentProperties = documentResponse.getProperties();
+        assertNull("VersioningEnabled is false, documentProperties should not contain any version",documentProperties);
+
+        checkDocumentVersionAfterCreation(documentResponse.getId(), "MAJOR", "1.0");
     }
 
     @Test public void testAuditableProperties() throws Exception

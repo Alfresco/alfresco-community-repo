@@ -3116,6 +3116,9 @@ public class NodesImpl implements Nodes
     private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
                                   Boolean versionMajor, String versionComment)
     {
+      if ((versionMajor != null) || (versionComment != null)) {
+            behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        }
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
         
         if (content == null)
@@ -3129,25 +3132,18 @@ public class NodesImpl implements Nodes
             writeContent(nodeRef, fileName, content.getInputStream(), true);
         }
         
-        if ((versionMajor != null) || (versionComment != null))
+        if ((versionMajor != null) || (versionComment != null)) 
         {
-            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-            try
+            // by default, first version is major, unless specified otherwise
+            VersionType versionType = VersionType.MAJOR;
+            if ((versionMajor != null) && (!versionMajor))
             {
-                // by default, first version is major, unless specified otherwise
-                VersionType versionType = VersionType.MAJOR;
-                if ((versionMajor != null) && (!versionMajor))
-                {
-                    versionType = VersionType.MINOR;
-                }
-
-                createVersion(nodeRef, false, versionType, versionComment);
-
-                extractMetadata(nodeRef);
-            } finally
-            {
-                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                versionType = VersionType.MINOR;
             }
+
+            createVersion(nodeRef, false, versionType, versionComment);
+
+            extractMetadata(nodeRef);
         }
 
         return nodeRef;

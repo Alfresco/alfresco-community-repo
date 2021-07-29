@@ -2375,7 +2375,11 @@ public class NodesImpl implements Nodes
 
         if (nodeInfo.getContent() != null && nodeInfo.getContent().getStorageClasses() != null)
         {
-            contentService.updateStorageClasses(nodeRef, nodeInfo.getContent().getStorageClasses(), null);
+            try {
+                contentService.updateStorageClasses(nodeRef, nodeInfo.getContent().getStorageClasses(), null);
+            } catch (UnsupportedStorageClassException usce) {
+                throw new IllegalArgumentException(usce.getMessage());
+            }
         }
 
         return nodeRef;

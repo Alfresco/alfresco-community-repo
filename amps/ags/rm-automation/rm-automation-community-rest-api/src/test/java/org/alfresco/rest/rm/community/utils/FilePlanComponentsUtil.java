@@ -41,6 +41,7 @@ import static org.testng.Assert.assertTrue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.record.RecordProperties;
@@ -323,6 +324,26 @@ public class FilePlanComponentsUtil
             throw new RuntimeException("Unable to create test file.", exception);
         }
     }
+
+    public static File createTempFile(final String name,int SizeinBytes)
+    {
+        try
+        {
+            // Create file
+            final File file = File.createTempFile(name, ".txt");
+
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            raf.setLength(SizeinBytes);
+            raf.close();
+
+            return file;
+        }
+        catch (Exception exception)
+        {
+            throw new RuntimeException("Unable to create test file.", exception);
+        }
+    }
+
 
     /**
      * Helper method to verify all properties of a nonElectronic record

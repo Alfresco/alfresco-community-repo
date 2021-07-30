@@ -31,7 +31,6 @@ import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,7 +40,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -78,8 +76,8 @@ public class DeletedNodeBatchCleanup
     private Dialect dialect;
     private long minPurgeAgeMs;
     private long timeoutSec;
-    private AtomicLong nodeDeletionCount = new AtomicLong(0);
-    private AtomicLong txnDeletionCount = new AtomicLong(0);
+    private final AtomicLong nodeDeletionCount = new AtomicLong(0);
+    private final AtomicLong txnDeletionCount = new AtomicLong(0);
 
     public void setDataSource(DataSource dataSource)
     {
@@ -117,7 +115,7 @@ public class DeletedNodeBatchCleanup
         this.timeoutSec = timeoutSec;
     }
 
-    public List<String> purgeOldDeletedNodes() throws Exception
+    public List<String> purgeOldDeletedNodes() throws SQLException
     {
 
         nodeDeletionCount.getAndSet(0);
@@ -129,7 +127,7 @@ public class DeletedNodeBatchCleanup
         return deleteResult;
     }
 
-    public List<String> purgeOldEmptyTransactions() throws Exception
+    public List<String> purgeOldEmptyTransactions() throws SQLException
     {
 
         txnDeletionCount.getAndSet(0);
@@ -143,7 +141,7 @@ public class DeletedNodeBatchCleanup
 
     }
 
-    private List<String> purge(DeletionType deletionType) throws Exception
+    private List<String> purge(DeletionType deletionType) throws SQLException
     {
         if(batchSize < deleteBatchSize)
         {
@@ -345,10 +343,10 @@ public class DeletedNodeBatchCleanup
             }
             else
             {
-                stmtBuilder.append("?");
+                stmtBuilder.append('?');
             }
         }
-        stmtBuilder.append(")");
+        stmtBuilder.append(')');
         return stmtBuilder.toString();
     }
 
@@ -371,9 +369,9 @@ public class DeletedNodeBatchCleanup
             {
                 statement.close();
             }
-            catch (Exception e)
+            catch (SQLException e)
             {
-                // Little can be done at this stage.
+               logger.error("Error while closing statement:",e);
             }
         }
     }

@@ -105,6 +105,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             logger.debug("DeletedNodeCleanupWorker: About to execute the clean up nodes ");
             startTime = System.currentTimeMillis();
             purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs, fromCommitTime);
+            logger.debug(purgedNodes);
             logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes - total Time:" + getFormattedExecutionTime(
                         startTime));
 
@@ -117,6 +118,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
             startTime = System.currentTimeMillis();
             purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);
+            logger.debug(purgedTxns);
             logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:" + getFormattedExecutionTime(
                         startTime));
         }

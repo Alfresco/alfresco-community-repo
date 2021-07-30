@@ -94,9 +94,9 @@ public class DeletedNodeBatchCleanup
         this.qnameDAO = qnameDAO;
     }
 
-    public void setMinPurgeAgeMs(long minPurgeAgeDays)
+    public void setMinPurgeAgeMs(long minPurgeAgeMs)
     {
-        this.minPurgeAgeMs = ((long) minPurgeAgeDays) * 24L * 3600L * 1000L;
+        this.minPurgeAgeMs = minPurgeAgeMs;
         ;
     }
 
@@ -135,6 +135,7 @@ public class DeletedNodeBatchCleanup
         if(logger.isDebugEnabled())
         {
             logger.debug("Total transactions deleted:"+ txnDeletionCount.get());
+            logger.debug(deleteResult);
         }
         return deleteResult;
 
@@ -293,7 +294,7 @@ public class DeletedNodeBatchCleanup
             logger.debug("alf_node entries deleted " + deletedNodeItems);
             logger.debug("alf_node_properties entries deleted " + deletedNodePropItems);
         }
-        deleteResult.add("Purged old nodes:" + deletedNodeItems);
+        deleteResult.add("Purged old nodes: " + deletedNodeItems);
 
     }
 

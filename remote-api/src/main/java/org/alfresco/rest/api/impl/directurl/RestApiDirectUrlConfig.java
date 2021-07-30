@@ -47,6 +47,10 @@ public class RestApiDirectUrlConfig extends AbstractDirectUrlConfig
         validate();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void validate()
     {
         // Disable direct access URLs for the REST API if any error found in the REST API direct access URL config

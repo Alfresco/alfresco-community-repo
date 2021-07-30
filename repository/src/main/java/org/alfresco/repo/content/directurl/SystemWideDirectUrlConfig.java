@@ -80,6 +80,10 @@ public class SystemWideDirectUrlConfig implements DirectUrlConfig
         validate();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void validate()
     {
         // Disable direct access URLs system-wide if any error found in the system-wide direct access URL config

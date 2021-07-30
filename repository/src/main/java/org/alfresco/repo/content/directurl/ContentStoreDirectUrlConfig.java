@@ -57,6 +57,10 @@ public class ContentStoreDirectUrlConfig extends AbstractDirectUrlConfig
         validate();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void validate()
     {
         // Disable direct access URLs for the content store if any error found in the content store direct access URL config

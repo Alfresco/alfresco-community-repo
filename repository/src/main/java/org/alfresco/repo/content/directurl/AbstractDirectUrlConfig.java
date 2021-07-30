@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.content.directurl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Direct Access Url configuration settings.
  *
@@ -35,8 +32,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractDirectUrlConfig implements DirectUrlConfig
 {
-    private static Log logger = LogFactory.getLog(AbstractDirectUrlConfig.class);
-
     /** System-wide direct access URL configuration */
     private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
 

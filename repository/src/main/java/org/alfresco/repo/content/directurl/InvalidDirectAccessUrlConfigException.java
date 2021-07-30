@@ -36,7 +36,6 @@ public class InvalidDirectAccessUrlConfigException extends AlfrescoRuntimeExcept
 {
     private static final long serialVersionUID = -6318313836484979887L;
 
-    // TODO: messages should be localized
     public InvalidDirectAccessUrlConfigException(String msg)
     {
         super(msg);

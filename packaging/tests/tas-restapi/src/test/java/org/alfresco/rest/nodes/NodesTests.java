@@ -163,9 +163,10 @@ public class NodesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertNull(restResponse.getContent().getStorageClasses());
 
-        STEP("3. Get storage classes for a node without content (e.g folder).");
+        STEP("3. Check that the request for storage classes on a node without content (e.g folder) is gracefully ignored.");
         restClient.authenticateUser(user1).withCoreAPI().usingNode(folder1).usingParams("include=storageClasses").getNode();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertNull(restResponse.getContent().getStorageClasses());
     }
 
     @TestRail(section = { TestGroup.SANITY }, executionType = ExecutionType.SANITY,

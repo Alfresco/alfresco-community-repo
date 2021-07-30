@@ -49,6 +49,7 @@ import org.junit.runners.Suite;
     org.alfresco.RepositoryStartupTest.class,
     org.alfresco.repo.content.cleanup.ContentStoreCleanerTest.class,
     org.alfresco.repo.content.RoutingContentServiceTest.class,
+    org.alfresco.repo.content.StorageClassTest.class,    
     org.alfresco.repo.exporter.ExporterComponentTest.class,
 
     // the following two tests fail on windows

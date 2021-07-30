@@ -27,6 +27,8 @@ package org.alfresco.rest.framework.resource.content;
 
 import java.util.Locale;
 
+import org.alfresco.repo.content.StorageClassSet;
+
 /**
  * Basic implementation of information about the returned content.
  */
@@ -36,16 +38,23 @@ public class ContentInfoImpl implements ContentInfo
     private final String encoding;
     private final long length;
     private final Locale locale;
-    
+    private final StorageClassSet storageClassSet;
+
     public ContentInfoImpl(String mimeType, String encoding, long length, Locale locale)
+    {
+        this(mimeType, encoding, length, locale, null);
+    }
+
+    public ContentInfoImpl(String mimeType, String encoding, long length, Locale locale, StorageClassSet storageClassSet)
     {
         super();
         this.mimeType = mimeType;
         this.encoding = encoding;
         this.length = length;
         this.locale = locale;
+        this.storageClassSet = storageClassSet;
     }
-    
+
     @Override
     public String getMimeType()
     {
@@ -65,5 +74,11 @@ public class ContentInfoImpl implements ContentInfo
     public Locale getLocale()
     {
         return this.locale;
+    }
+
+    @Override
+    public StorageClassSet getStorageClasses()
+    {
+        return this.storageClassSet;
     }
 }

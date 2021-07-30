@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -37,6 +38,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.alfresco.repo.content.AbstractRoutingContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -270,6 +272,43 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             return -1;
         }
     }
-    
+
+    @Override
+    public boolean isStorageClassesSupported(StorageClassSet storageClassSet)
+    {
+        return getTenantContentStore().isStorageClassesSupported(storageClassSet);
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return getTenantContentStore().getSupportedStorageClasses();
+    }
+
+    @Override
+    public void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet,
+        Map<String, Object> parameters)
+    {
+        getTenantContentStore().updateStorageClasses(contentUrl, storageClassSet, parameters);
+    }
+
+    @Override
+    public StorageClassSet findStorageClasses(String contentUrl)
+    {
+        return getTenantContentStore().findStorageClasses(contentUrl);
+    }
+
+    @Override
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
+    {
+        return getTenantContentStore().getStorageClassesTransitions();
+    }
+
+    @Override
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
+    {
+        return getTenantContentStore().findStorageClassesTransitions(contentUrl);
+    }
+
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

@@ -25,7 +25,11 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -415,5 +419,164 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     "   Deleted: " + deleted);
         }
         return deleted;
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(StorageClassSet storageClassSet)
+    {
+        boolean supported = false;
+        for (ContentStore store : getAllStores())
+        {
+            if (store.isStorageClassesSupported(storageClassSet))
+            {
+                supported = true;
+                break;
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("The storage classes " + storageClassSet + (supported ? "are" : "are not") + " supported by at least one store.");
+        }
+        return supported;
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        Set<String> supportedStorageClassSets = new HashSet<>();
+        for (ContentStore store : getAllStores())
+        {
+            supportedStorageClassSets.addAll(store.getSupportedStorageClasses());
+        }
+        return supportedStorageClassSets;
+    }
+
+    @Override
+    public void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet,
+        Map<String, Object> parameters)
+    {
+        ContentStore store;
+        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
+        // Get the read lock
+        storesCacheReadLock.lock();
+        try
+        {
+            // Check if the store is in the cache
+            store = storesByContentUrl.get(cacheKey);
+        }
+        finally
+        {
+            storesCacheReadLock.unlock();
+        }
+
+        if (store == null || !store.exists(contentUrl) || !store.isWriteSupported())
+        {
+            store = selectWriteStore(new ContentContext(getReader(contentUrl), contentUrl));
+            // Check that we were given a valid store
+            if (store == null)
+            {
+                throw new NullPointerException(
+                    "Unable to find a write store.  'selectWriteStore' may not return null: \n" + 
+                        "   Router: " + this + "\n" + 
+                        "   Chose:  " + store);
+            }
+            else if (!store.isWriteSupported())
+            {
+                throw new AlfrescoRuntimeException(
+                    "A write store was chosen that doesn't support writes: \n" + 
+                        "   Router: " + this + "\n" + 
+                        "   Chose:  " + store);
+            }
+        }
+        
+        if (!store.exists(contentUrl) || !store.isStorageClassesSupported(storageClassSet))
+        {
+            store = null;
+            
+            for (ContentStore storeInList : getAllStores())
+            {
+                if (storeInList.isWriteSupported() && 
+                    storeInList.exists(contentUrl) && 
+                    storeInList.isStorageClassesSupported(storageClassSet))
+                {
+                    store = storeInList;
+                    break;
+                }
+            }
+        }
+
+        if (store == null)
+        {
+            throw new UnsupportedOperationException(
+                "Unable to find a write store to update the storage classes for content URL: \n" +
+                    "   Content URL:          " + contentUrl + "\n" + 
+                    "   StorageClasses:       " + storageClassSet);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Updating storage classes for content URL: \n" +
+                             "   Content URL: " + contentUrl + "\n" +
+                             "   Store:       " + store);
+        }
+        store.updateStorageClasses(contentUrl, storageClassSet, parameters);
+    }
+
+    @Override
+    public StorageClassSet findStorageClasses(String contentUrl)
+    {
+        ContentStore contentStore = selectReadStore(contentUrl);
+
+        if (contentStore == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Storage classes not found for content URL: " + contentUrl);
+            }
+            return new StorageClassSet();
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting storage classes from store: \n" +
+                             "   Content URL: " + contentUrl + "\n" +
+                             "   Store:       " + contentStore);
+        }
+        return contentStore.findStorageClasses(contentUrl);
+    }
+
+    @Override
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
+    {
+        Map<StorageClassSet, Set<StorageClassSet>> supportedTransitions = new HashMap<>();
+        for (ContentStore store : getAllStores())
+        {
+            supportedTransitions.putAll(store.getStorageClassesTransitions());
+        }
+        return supportedTransitions;
+    }
+
+    @Override
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
+    {
+        ContentStore contentStore = selectReadStore(contentUrl);
+
+        if (contentStore == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Storage classes transitions not found for content URL: " + contentUrl);
+            }
+            return new HashMap<>();
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting storage classes transitions from store: \n" +
+                             "   Content URL: " + contentUrl + "\n" +
+                             "   Store:       " + contentStore);
+        }
+        return contentStore.findStorageClassesTransitions(contentUrl);
     }
 }

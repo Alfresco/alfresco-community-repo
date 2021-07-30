@@ -56,6 +56,8 @@ import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.StorageClassSet;
+import org.alfresco.repo.content.UnsupportedStorageClassException;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
@@ -105,6 +107,7 @@ import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeExceptio
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -1048,6 +1051,12 @@ public class NodesImpl implements Nodes
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
+        if (includeParam.contains(PARAM_INCLUDE_STORAGECLASSES) && node.getIsFile()
+            && node.getContent().getSizeInBytes() > 0)
+        {
+            node.getContent().setStorageClasses(contentService.findStorageClasses(nodeRef));
+        }
+
         return node;
     }
 
@@ -1877,7 +1886,8 @@ public class NodesImpl implements Nodes
         if (isContent)
         {
             // create empty file node - note: currently will be set to default encoding only (UTF-8)
-            nodeRef = createNewFile(parentNodeRef, nodeName, nodeTypeQName, null, props, assocTypeQName, parameters, versionMajor, versionComment);
+            nodeRef = createNewFile(parentNodeRef, nodeName, nodeTypeQName, null, null, props,
+                                    assocTypeQName, parameters, versionMajor, versionComment);
         }
         else
         {
@@ -2362,7 +2372,16 @@ public class NodesImpl implements Nodes
         }
 
         processNodePermissions(nodeRef, nodeInfo);
-        
+
+        if (nodeInfo.getContent() != null && nodeInfo.getContent().getStorageClasses() != null)
+        {
+            try {
+                contentService.updateStorageClasses(nodeRef, nodeInfo.getContent().getStorageClasses(), null);
+            } catch (UnsupportedStorageClassException usce) {
+                throw new IllegalArgumentException(usce.getMessage());
+            }
+        }
+
         return nodeRef;
     }
 
@@ -2767,7 +2786,13 @@ public class NodesImpl implements Nodes
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
         {
-            writeContent(nodeRef, fileName, stream, true);
+            writeContent(nodeRef,
+                         fileName,
+                         stream,
+                         true,
+                         contentInfo instanceof ContentInfo ?
+                             ((ContentInfo) contentInfo).getStorageClasses() :
+                             null);
 
             if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
             {
@@ -2807,9 +2832,16 @@ public class NodesImpl implements Nodes
 
     private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
     {
+        writeContent(nodeRef, fileName, stream, guessEncoding, null);
+    }
+
+    private void writeContent(NodeRef nodeRef, String fileName, InputStream stream,
+        boolean guessEncoding, StorageClassSet storageClassSet)
+    {
         try
         {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            ContentWriter writer = contentService
+                .getWriter(nodeRef, ContentModel.PROP_CONTENT, true, storageClassSet);
 
             String mimeType = mimetypeService.guessMimetype(fileName);
             if ((mimeType != null) && (!mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
@@ -2936,6 +2968,7 @@ public class NodesImpl implements Nodes
         String relativePath = null;
         String renditionNames = null;
         boolean versioningEnabled = true;
+        String storageClassesParam = null;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
@@ -2973,6 +3006,10 @@ public class NodesImpl implements Nodes
                     }
                     break;
 
+                case "storageclasses":
+                    storageClassesParam = getStringOrNull(field.getValue());
+                    break;
+                        
                 case "overwrite":
                     overwrite = Boolean.valueOf(field.getValue());
                     break;
@@ -3041,8 +3078,9 @@ public class NodesImpl implements Nodes
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedRenditions(renditionNames);
+        final StorageClassSet storageClasses = getRequestedStorageClasses(storageClassesParam);
 
-        validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
+        validateProperties(qnameStrProps, EXCLUDED_NS, Collections.emptyList());
         try
         {
             // Map the given properties, if any.
@@ -3068,8 +3106,13 @@ public class NodesImpl implements Nodes
                 else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
                 {
                     // overwrite existing (versionable) file
-                    BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(), content.getEncoding(), -1, null);
-                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo, content.getInputStream(), parameters, versionMajor, versionComment);
+
+                    BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(),
+                                                                       content.getEncoding(), -1,
+                                                                       null, storageClasses);
+                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo,
+                                              content.getInputStream(), parameters, versionMajor,
+                                              versionComment);
                 }
                 else
                 {
@@ -3087,7 +3130,9 @@ public class NodesImpl implements Nodes
             versionMajor = versioningEnabled ? versionMajor : null;
 
             // Create a new file.
-            NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+            NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content,
+                                            storageClasses, properties, assocTypeQName, parameters,
+                                            versionMajor, versionComment);
             
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
@@ -3104,6 +3149,10 @@ public class NodesImpl implements Nodes
         {
             throw new PermissionDeniedException(ade.getMessage());
         }
+        catch (UnsupportedStorageClassException usce)
+        {
+            throw new InvalidArgumentException(usce.getMessage());
+        }
 
         /*
          * NOTE: Do not clean formData temp files to allow for retries. It's
@@ -3112,8 +3161,9 @@ public class NodesImpl implements Nodes
          */
     }
 
-    private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
-                                  Boolean versionMajor, String versionComment)
+    private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType,
+        Content content, StorageClassSet storageClassSet, Map<QName, Serializable> props,
+        QName assocTypeQName, Parameters params, Boolean versionMajor, String versionComment)
     {
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
         
@@ -3125,7 +3175,7 @@ public class NodesImpl implements Nodes
         else
         {
             // Write content
-            writeContent(nodeRef, fileName, content.getInputStream(), true);
+            writeContent(nodeRef, fileName, content.getInputStream(), true, storageClassSet);
         }
         
         if ((versionMajor != null) || (versionComment != null))
@@ -3201,6 +3251,21 @@ public class NodesImpl implements Nodes
             }
         }
         return renditions;
+    }
+
+    static StorageClassSet getRequestedStorageClasses(String storageClassesParam)
+    {
+        if (storageClassesParam == null)
+        {
+            return null;
+        }
+
+        String[] storageClasses = Arrays.stream(storageClassesParam.split(","))
+            .map(String::trim)
+            .filter(sc -> !sc.isEmpty())
+            .toArray(String[]::new);
+        
+        return new StorageClassSet(storageClasses);
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)

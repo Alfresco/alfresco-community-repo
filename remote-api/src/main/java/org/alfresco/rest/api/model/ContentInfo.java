@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.api.model;
 
+import java.util.Set;
+
+import org.alfresco.repo.content.StorageClassSet;
+
 /**
  * Representation of content info
  *
@@ -37,6 +41,7 @@ public class ContentInfo
     private String mimeTypeName;
 	private Long sizeInBytes;
 	private String encoding;
+	private StorageClassSet storageClassSet;
 
 	public ContentInfo()
 	{
@@ -48,6 +53,15 @@ public class ContentInfo
 		this.mimeTypeName = mimeTypeName;
 		this.sizeInBytes = sizeInBytes;
 		this.encoding = encoding;
+	}
+
+	public ContentInfo(String mimeType, String mimeTypeName, Long sizeInBytes, String encoding, StorageClassSet storageClassSet)
+	{
+		this.mimeType = mimeType;
+		this.mimeTypeName = mimeTypeName;
+		this.sizeInBytes = sizeInBytes;
+		this.encoding = encoding;
+		this.storageClassSet = storageClassSet;
 	}
 
     public String getMimeType() {
@@ -70,10 +84,21 @@ public class ContentInfo
         return encoding;
     }
 
-    @Override
+	public StorageClassSet getStorageClasses()
+	{
+		return storageClassSet;
+	}
+
+	public void setStorageClasses(StorageClassSet storageClassSet)
+	{
+		this.storageClassSet = storageClassSet;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "ContentInfo [mimeType=" + mimeType + ", mimeTypeName=" + mimeTypeName
-				+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + "]";
+			+ ", encoding=" + encoding + ", sizeInBytes=" + sizeInBytes + ", storageClasses=" + storageClassSet
+			+ "]";
 	}
 }

@@ -26,12 +26,15 @@
 package org.alfresco.repo.content.caching;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -486,5 +489,41 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
     {
         return backingStore.getDirectAccessUrl(contentUrl, expiresAt);
+    }
+
+    @Override
+    public boolean isStorageClassesSupported(StorageClassSet storageClassSet)
+    {
+        return backingStore.isStorageClassesSupported(storageClassSet);
+    }
+
+    @Override
+    public Set<String> getSupportedStorageClasses()
+    {
+        return backingStore.getSupportedStorageClasses();
+    }
+    
+    @Override
+    public void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet, Map<String, Object> parameters)
+    {
+        backingStore.updateStorageClasses(contentUrl, storageClassSet, parameters);
+    }
+    
+    @Override
+    public StorageClassSet findStorageClasses(String contentUrl)
+    {
+        return backingStore.findStorageClasses(contentUrl);
+    }
+
+    @Override
+    public Map<StorageClassSet, Set<StorageClassSet>> getStorageClassesTransitions()
+    {
+        return backingStore.getStorageClassesTransitions();
+    }
+
+    @Override
+    public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
+    {
+        return backingStore.findStorageClassesTransitions(contentUrl);
     }
 }

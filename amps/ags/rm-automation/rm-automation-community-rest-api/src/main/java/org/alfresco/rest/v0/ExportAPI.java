@@ -26,27 +26,21 @@
  */
 package org.alfresco.rest.v0;
 
-import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.http.HttpStatus.SC_OK;
-
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.record.Record;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
-import org.alfresco.utility.report.log.Step;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 /**
- * Methods to make API requests using v0 API for Exporting a file
+ * Methods to make API requests using v0 API for Exporting Items
  *
  * @author Shubham Jain
- * @since 3.5.0
+ * @since 7.1.0
  */
 
 @Component
@@ -58,93 +52,52 @@ public class ExportAPI extends BaseAPI
     private static final String EXPORT_API = "{0}rma/admin/export";
 
     /**
-     * List to store the Node References of items to be exported
-     */
-    private static List<String> nodeRefs = new ArrayList<>();
-
-    /**
-     * Export a single Record using V0 Export API
+     * Export a single Record/Record Folder/Record Category using V0 Export API
      *
      * @param user               User performing the export
      * @param password           User's Password
      * @param expectedStatusCode Expected Response Code
-     * @param recordName         Name of the Record to be exported
-     * @return exportAPI function
+     * @param nodeID             ID of the Node(Record/RecordFolder) to be exported
+     * @return HTTP Response
      */
-    public HttpResponse exportRecord(String user, String password, int expectedStatusCode, String recordName)
+    public HttpResponse exportRMNode(String user, String password, int expectedStatusCode, String nodeID)
     {
-        final String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID,
-                recordName);
-
-        nodeRefs.add(recNodeRef);
-
-        return export(user, password, expectedStatusCode, nodeRefs);
+        return export(user, password, expectedStatusCode, Collections.singletonList(getNodeRefSpacesStore() + nodeID));
     }
 
     /**
-     * Export an array of records using V0 Export API
+     * Export a list of nodes using V0 Export API
      *
      * @param user               User performing the export
      * @param password           User's Password
      * @param expectedStatusCode Expected Response Code
-     * @param recordList         List of the records to be exported
-     * @return exportAPI function
+     * @param nodeIDList         List of the nodes to be exported
+     * @return HTTP Response
      */
-    public HttpResponse exportRecords(String user, String password, int expectedStatusCode, List<Record> recordList)
+    public HttpResponse exportRMNodes(String user, String password, int expectedStatusCode, List<String> nodeIDList)
     {
 
-        for (int i = 0; i < recordList.size(); i++)
-        {
-            String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID,
-                    recordList.get(i).getName());
-
-            nodeRefs.add(recNodeRef);
-        }
-
-        return export(user, password, expectedStatusCode, nodeRefs);
-    }
-
-    /**
-     * Export a Record Folder containing records using V0 Export API
-     *
-     * @param user               User performing the export
-     * @param password           User's Password
-     * @param expectedStatusCode Expected Response Code
-     * @param folderName         Name of the Record Folder to be exported
-     * @return exportAPI function
-     */
-    public HttpResponse exportRecordFolder(String user, String password, int expectedStatusCode, String folderName)
-    {
-
-        final String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID,
-                folderName);
-
-        nodeRefs.add(recNodeRef);
+        List<String> nodeRefs =
+                nodeIDList.stream().map(nodeID -> getNodeRefSpacesStore() + nodeID).collect(Collectors.toList());
 
         return export(user, password, expectedStatusCode, nodeRefs);
     }
 
     /**
      * Export API function to perform Export Operation on items with given noderefs using V0 Export Rest API
-     * @param user User performing the export
-     * @param password User's Password
+     *
+     * @param user               User performing the export
+     * @param password           User's Password
      * @param expectedStatusCode Expected Response Code
-     * @param nodeRefs list of the noderefs for the items to be exported
-     * @return  Rest API Post Request
+     * @param nodeRefs           list of the noderefs for the items to be exported
+     * @return Rest API Post Request
      */
-    public HttpResponse export(String user, String password, int expectedStatusCode, List nodeRefs)
+    public HttpResponse export(String user, String password, int expectedStatusCode, List<String> nodeRefs)
     {
-
         final JSONObject requestParams = new JSONObject();
 
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
-        nodeRefs.clear();
-
         return doPostJsonRequest(user, password, expectedStatusCode, requestParams, EXPORT_API);
-
-
     }
-
-
 }

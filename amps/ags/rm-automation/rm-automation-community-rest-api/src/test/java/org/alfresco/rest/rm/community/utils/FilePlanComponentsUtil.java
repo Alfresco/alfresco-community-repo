@@ -67,13 +67,19 @@ public class FilePlanComponentsUtil
         // Intentionally blank
     }
 
-    /** Name of the image resource file to be used for records body */
+    /**
+     * Name of the image resource file to be used for records body
+     */
     public static final String IMAGE_FILE = "money.JPG";
 
-    /** Title prefix for record category children */
+    /**
+     * Title prefix for record category children
+     */
     public static final String TITLE_PREFIX = "Title for ";
 
-    /** Description prefix for record category children */
+    /**
+     * Description prefix for record category children
+     */
     public static final String DESCRIPTION_PREFIX = "This is the description for";
 
 
@@ -88,7 +94,7 @@ public class FilePlanComponentsUtil
     }
 
     /**
-     *  Creates a record model with the given type and a random name (with "Record " prefix)
+     * Creates a record model with the given type and a random name (with "Record " prefix)
      *
      * @param nodeType The node type
      * @return The {@link Record} with for the given node type
@@ -96,9 +102,9 @@ public class FilePlanComponentsUtil
     private static Record createRecordModel(String nodeType)
     {
         return Record.builder()
-                .name("Record " + getRandomAlphanumeric())
-                .nodeType(nodeType)
-                .build();
+                     .name("Record " + getRandomAlphanumeric())
+                     .nodeType(nodeType)
+                     .build();
     }
 
     /**
@@ -134,22 +140,22 @@ public class FilePlanComponentsUtil
     /**
      * Creates an unfiled records container child record model with the given name and type
      *
-     * @param name The name of the unfiled records container child
+     * @param name     The name of the unfiled records container child
      * @param nodeType The type of the record category child
      * @return The {@link UnfiledContainerChild} with the given details
      */
     public static UnfiledContainerChild createUnfiledContainerChildRecordModel(String name, String nodeType)
     {
         return UnfiledContainerChild.builder()
-                .name(name)
-                .nodeType(nodeType)
-                .build();
+                                    .name(name)
+                                    .nodeType(nodeType)
+                                    .build();
     }
 
     /**
      * Creates a nonElectronic container child record model with all available properties for the non electronic records
      *
-     * @param name The name of the unfiled records container child
+     * @param name     The name of the unfiled records container child
      * @param nodeType The type of the record category child
      * @return The {@link UnfiledContainerChild} with the given details
      */
@@ -157,19 +163,19 @@ public class FilePlanComponentsUtil
                                                                                                 String shelf, String storageLocation, Integer numberOfCopies, Integer physicalSize)
     {
         return UnfiledContainerChild.builder()
-                    .name(name)
-                    .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                    .properties(UnfiledContainerChildProperties.builder()
-                            .title(title)
-                            .description(description)
-                            .box(box)
-                            .file(file)
-                            .shelf(shelf)
-                            .storageLocation(storageLocation)
-                            .numberOfCopies(numberOfCopies)
-                            .physicalSize(physicalSize)
-                            .build())
-                    .build();
+                                    .name(name)
+                                    .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                                    .properties(UnfiledContainerChildProperties.builder()
+                                                                               .title(title)
+                                                                               .description(description)
+                                                                               .box(box)
+                                                                               .file(file)
+                                                                               .shelf(shelf)
+                                                                               .storageLocation(storageLocation)
+                                                                               .numberOfCopies(numberOfCopies)
+                                                                               .physicalSize(physicalSize)
+                                                                               .build())
+                                    .build();
     }
 
     /**
@@ -191,110 +197,110 @@ public class FilePlanComponentsUtil
                                                             String shelf, String storageLocation, Integer numberOfCopies, Integer physicalSize)
     {
         return Record.builder()
-                    .name(name)
-                    .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                    .properties(RecordProperties.builder()
-                            .title(title)
-                            .description(description)
-                            .box(box)
-                            .file(file)
-                            .shelf(shelf)
-                            .storageLocation(storageLocation)
-                            .numberOfCopies(numberOfCopies)
-                            .physicalSize(physicalSize)
-                            .build())
-                    .build();
+                     .name(name)
+                     .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                     .properties(RecordProperties.builder()
+                                                 .title(title)
+                                                 .description(description)
+                                                 .box(box)
+                                                 .file(file)
+                                                 .shelf(shelf)
+                                                 .storageLocation(storageLocation)
+                                                 .numberOfCopies(numberOfCopies)
+                                                 .physicalSize(physicalSize)
+                                                 .build())
+                     .build();
     }
 
     /**
      * Creates a record model with the given name, description and title
      *
-     * @param name The name of the record
+     * @param name        The name of the record
      * @param description The description of the record
-     * @param title The title of the record
+     * @param title       The title of the record
      * @return The {@link Record} with the given details
      */
     public static Record createRecordModel(String name, String description, String title)
     {
         return Record.builder()
-                .name(name)
-                .properties(RecordProperties.builder()
-                        .description(description)
-                        .title(title)
-                        .build())
-                .build();
+                     .name(name)
+                     .properties(RecordProperties.builder()
+                                                 .description(description)
+                                                 .title(title)
+                                                 .build())
+                     .build();
     }
 
     /**
      * Creates a record category child model with the given name and type
      *
-     * @param name The name of the record category child
+     * @param name     The name of the record category child
      * @param nodeType The type of the record category child
      * @return The {@link RecordCategoryChild} with the given details
      */
     public static RecordCategoryChild createRecordCategoryChildModel(String name, String nodeType)
     {
         return RecordCategoryChild.builder()
-                .name(name)
-                .nodeType(nodeType)
-                .properties(RecordCategoryChildProperties.builder()
-                        .title(TITLE_PREFIX + name)
-                        .build())
-                .build();
+                                  .name(name)
+                                  .nodeType(nodeType)
+                                  .properties(RecordCategoryChildProperties.builder()
+                                                                           .title(TITLE_PREFIX + name)
+                                                                           .build())
+                                  .build();
     }
 
     /**
      * Creates a record category model with the given name and title
      *
-     * @param name The name of the record category
+     * @param name  The name of the record category
      * @param title The title of the record category
      * @return The {@link RecordCategory} with the given details
      */
     public static RecordCategory createRecordCategoryModel(String name, String title)
     {
         return RecordCategory.builder()
-                .name(name)
-                .nodeType(RECORD_CATEGORY_TYPE)
-                .properties(RecordCategoryProperties.builder()
-                        .title(title)
-                        .build())
-                .build();
+                             .name(name)
+                             .nodeType(RECORD_CATEGORY_TYPE)
+                             .properties(RecordCategoryProperties.builder()
+                                                                 .title(title)
+                                                                 .build())
+                             .build();
     }
 
     /**
      * Creates a record folder model with the given name and title
      *
-     * @param name The name of the record folder
+     * @param name  The name of the record folder
      * @param title The title of the record folder
      * @return The {@link RecordFolder} with the given details
      */
     public static RecordFolder createRecordFolderModel(String name, String title)
     {
         return RecordFolder.builder()
-                .name(name)
-                .nodeType(RECORD_FOLDER_TYPE)
-                .properties(RecordFolderProperties.builder()
-                        .title(title)
-                        .build())
-                .build();
+                           .name(name)
+                           .nodeType(RECORD_FOLDER_TYPE)
+                           .properties(RecordFolderProperties.builder()
+                                                             .title(title)
+                                                             .build())
+                           .build();
     }
 
     /**
      * Creates an unfiled records container child model with the given name and type
      *
-     * @param name The name of the unfiled records container child
+     * @param name     The name of the unfiled records container child
      * @param nodeType The type of the record category child
      * @return The {@link UnfiledContainerChild} with the given details
      */
     public static UnfiledContainerChild createUnfiledContainerChildModel(String name, String nodeType)
     {
         return UnfiledContainerChild.builder()
-                .name(name)
-                .nodeType(nodeType)
-                .properties(UnfiledContainerChildProperties.builder()
-                        .title(TITLE_PREFIX + name)
-                        .build())
-                .build();
+                                    .name(name)
+                                    .nodeType(nodeType)
+                                    .properties(UnfiledContainerChildProperties.builder()
+                                                                               .title(TITLE_PREFIX + name)
+                                                                               .build())
+                                    .build();
     }
 
     /**
@@ -318,14 +324,20 @@ public class FilePlanComponentsUtil
             }
 
             return file;
-        }
-        catch (Exception exception)
+        } catch (Exception exception)
         {
             throw new RuntimeException("Unable to create test file.", exception);
         }
     }
 
-    public static File createTempFile(final String name,int SizeinBytes)
+    /**
+     * Method to create a temporary file with specific size
+     *
+     * @param name            file name
+     * @param sizeInMegaBytes size
+     * @return temporary file
+     */
+    public static File createTempFile(final String name, long sizeInMegaBytes)
     {
         try
         {
@@ -333,7 +345,7 @@ public class FilePlanComponentsUtil
             final File file = File.createTempFile(name, ".txt");
 
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
-            raf.setLength(SizeinBytes);
+            raf.setLength(sizeInMegaBytes * 1024 * 1024);
             raf.close();
 
             return file;
@@ -343,7 +355,6 @@ public class FilePlanComponentsUtil
             throw new RuntimeException("Unable to create test file.", exception);
         }
     }
-
 
     /**
      * Helper method to verify all properties of a nonElectronic record

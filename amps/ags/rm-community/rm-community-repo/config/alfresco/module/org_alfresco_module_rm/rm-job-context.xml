@@ -80,9 +80,6 @@
       <property name="searchService" ref="searchService" />
       <property name="personService" ref="personService" />
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
-      <property name="recordFolderService" ref="RecordFolderService" />
-      <property name="recordService" ref="RecordService" />
-      <property name="freezeService" ref="FreezeService" />
       <property name="batchSize" value="${rm.dispositionlifecycletrigger.batchsize}"/>
    </bean>
 

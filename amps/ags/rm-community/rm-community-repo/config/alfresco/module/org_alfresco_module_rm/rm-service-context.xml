@@ -112,6 +112,7 @@
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordFolderService" ref="RecordFolderService"/>
         <property name="recordService" ref="RecordService"/>
+        <property name="freezeService" ref="FreezeService"/>
         <property name="transactionService" ref="transactionService" />
     </bean>
 
@@ -695,6 +696,13 @@
           init-method="init" depends-on="org_alfresco_module_rm_resourceBundles">
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeService" ref="nodeService"/>
+        <!-- list of disposition actions to automatically execute when eligible -->
+        <property name="retentionActions">
+            <list>
+                <value>cutoff</value>
+                <value>retain</value>
+            </list>
+        </property>
     </bean>
 
     <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">

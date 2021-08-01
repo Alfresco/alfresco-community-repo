@@ -39,6 +39,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,6 +48,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Records Management Action Service Implementation
@@ -58,9 +60,9 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /** I18N */
     private static final String MSG_NOT_DEFINED = "rm.action.not-defined";
     private static final String MSG_NO_IMPLICIT_NODEREF = "rm.action.no-implicit-noderef";
-
+    private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
     /** Logger */
-    private static Log logger = LogFactory.getLog(RecordsManagementActionServiceImpl.class);
+    private static final Log logger = LogFactory.getLog(RecordsManagementActionServiceImpl.class);
 
     /** Registered records management actions */
     private Map<String, RecordsManagementAction> rmActions = new HashMap<>(13);
@@ -77,6 +79,16 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /** Policy delegates */
     private ClassPolicyDelegate<BeforeRMActionExecution> beforeRMActionExecutionDelegate;
     private ClassPolicyDelegate<OnRMActionExecution> onRMActionExecutionDelegate;
+
+    @Autowired
+    private DispositionService dispositionService;
+
+    /** list of disposition actions to automatically execute */
+    private List<String> retentionActions;
+
+    public void setRetentionActions(List<String> retentionActions) {
+        this.retentionActions = retentionActions;
+    }
 
     /**
      * @return Policy component
@@ -281,6 +293,16 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             if (logger.isWarnEnabled())
             {
                 logger.warn(msg);
+            }
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        if (dispositionService.isFrozenOrHasFrozenChildren(nodeRef) && retentionActions.contains(name.toLowerCase())) {
+            String msg = I18NUtil.getMessage(MSG_NODE_FROZEN, rmAction.getName());
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
             }
             throw new AlfrescoRuntimeException(msg);
         }

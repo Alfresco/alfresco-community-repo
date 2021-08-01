@@ -304,6 +304,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             {
                 logger.debug(msg);
             }
+
             throw new AlfrescoRuntimeException(msg);
         }
 

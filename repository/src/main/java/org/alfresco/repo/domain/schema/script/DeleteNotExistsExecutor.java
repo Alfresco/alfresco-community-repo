@@ -69,19 +69,19 @@ public class DeleteNotExistsExecutor implements StatementExecutor
     public static final String PROPERTY_READ_ONLY = "system.delete_not_exists.read_only";
     public static final String PROPERTY_TIMEOUT_SECONDS = "system.delete_not_exists.timeout_seconds";
 
-    private Connection connection;
+    protected Connection connection;
     private String sql;
     private int line;
     private File scriptFile;
     private Properties globalProperties;
 
-    private boolean readOnly;
-    private int deleteBatchSize;
-    private int batchSize;
+    protected boolean readOnly;
+    protected int deleteBatchSize;
+    protected int batchSize;
     private long timeoutSec;
 
-    private long deletedCount;
-    private Date startTime;
+    protected long deletedCount;
+    protected Date startTime;
 
     public DeleteNotExistsExecutor(Connection connection, String sql, int line, File scriptFile, Properties globalProperties)
     {
@@ -164,7 +164,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses) throws SQLException
+    protected void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses) throws SQLException
     {
         // The approach is to fetch ordered row ids from all referencer/secondary (e.g.
         // alf_audit_app, alf_audit_entry, alf_prop_unique_ctx) tables and
@@ -190,6 +190,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         try
         {
             connection.setAutoCommit(false);
+
             primaryPrepStmt = connection.prepareStatement(createPreparedSelectStatement(primaryTableName, primaryColumnName, primaryWhereClause));
             primaryPrepStmt.setFetchSize(batchSize);
             primaryPrepStmt.setLong(1, primaryId);
@@ -264,7 +265,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private boolean isTimeoutExceeded()
+    protected boolean isTimeoutExceeded()
     {
         if (timeoutSec <= 0)
         {
@@ -275,7 +276,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return (now.getTime() > startTime.getTime() + (timeoutSec * 1000));
     }
 
-    private Long processPrimaryTableResultSet(PreparedStatement primaryPrepStmt, PreparedStatement[] secondaryPrepStmts, PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName,
+    protected Long processPrimaryTableResultSet(PreparedStatement primaryPrepStmt, PreparedStatement[] secondaryPrepStmts, PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName,
             String primaryColumnName, Pair<String, String>[] tableColumn) throws SQLException
     {
         int rowsProcessed = 0;
@@ -336,7 +337,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return primaryId;
     }
 
-    private void deleteFromPrimaryTable(PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName) throws SQLException
+    protected void deleteFromPrimaryTable(PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName) throws SQLException
     {
         int deletedBatchCount = deleteIds.size();
         if (!readOnly && !deleteIds.isEmpty())
@@ -425,7 +426,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return batchUpperLimit;
     }
 
-    private boolean isLess(Long primaryId, Long[] secondaryIds)
+    protected boolean isLess(Long primaryId, Long[] secondaryIds)
     {
         for (Long secondaryId : secondaryIds)
         {
@@ -447,8 +448,8 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
         return quotedString.replace("\"", "");
     }
-    
-    private String createPreparedSelectStatement(String tableName, String columnName, String whereClause)
+
+    protected String createPreparedSelectStatement(String tableName, String columnName, String whereClause)
     {
         StringBuilder sqlBuilder = new StringBuilder("SELECT " + columnName + " FROM " + tableName + " WHERE ");
 
@@ -461,7 +462,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return sqlBuilder.toString();
     }
 
-    private String createPreparedDeleteStatement(String tableName, String idColumnName, int deleteBatchSize, String whereClause)
+    protected String createPreparedDeleteStatement(String tableName, String idColumnName, int deleteBatchSize, String whereClause)
     {
         StringBuilder stmtBuilder = new StringBuilder("DELETE FROM " + tableName + " WHERE ");
 
@@ -515,7 +516,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private Long getColumnValueById(ResultSet resultSet, String columnId) throws SQLException
+    protected Long getColumnValueById(ResultSet resultSet, String columnId) throws SQLException
     {
         Long columnValue = null;
         if (resultSet != null && resultSet.next())
@@ -526,7 +527,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return columnValue;
     }
 
-    private ResultSet[] getSecondaryResultSets(PreparedStatement[] preparedStatements) throws SQLException
+    protected ResultSet[] getSecondaryResultSets(PreparedStatement[] preparedStatements) throws SQLException
     {
         ResultSet[] secondaryResultSets = new ResultSet[preparedStatements.length];
         for (int i = 1; i < preparedStatements.length; i++)
@@ -540,7 +541,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return secondaryResultSets;
     }
 
-    private Long[] getSecondaryIds(ResultSet[] secondaryResultSets, Pair<String, String>[] tableColumn) throws SQLException
+    protected Long[] getSecondaryIds(ResultSet[] secondaryResultSets, Pair<String, String>[] tableColumn) throws SQLException
     {
         Long[] secondaryIds = new Long[tableColumn.length];
 
@@ -571,7 +572,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private void closeQuietly(Statement statement)
+    protected void closeQuietly(Statement statement)
     {
         if (statement != null)
         {
@@ -586,7 +587,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private void closeQuietly(Statement[] statements)
+    protected void closeQuietly(Statement[] statements)
     {
         if (statements != null)
         {
@@ -597,7 +598,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private void closeQuietly(ResultSet resultSet)
+    protected void closeQuietly(ResultSet resultSet)
     {
         if (resultSet != null)
         {
@@ -612,7 +613,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private void closeQuietly(ResultSet[] resultSets)
+    protected void closeQuietly(ResultSet[] resultSets)
     {
         if (resultSets != null)
         {

@@ -324,7 +324,8 @@ public class FilePlanComponentsUtil
             }
 
             return file;
-        } catch (Exception exception)
+        }
+        catch (Exception exception)
         {
             throw new RuntimeException("Unable to create test file.", exception);
         }

@@ -87,7 +87,7 @@ public class ExportRecordsTests extends BaseRMRestTest
      * When I export the record using API
      * Then the request is successful
      */
-    @Test (description = "Testing the Export functionality on RM site using API for records of size >4MB and Record " +
+    @Test (description = "Testing the RM Export functionality for records of size >4MB and Record " +
             "Folder containing records with size >4MB",
             dataProvider = "CreateRMNodes")
     @AlfrescoTest (jira = "APPS-986")
@@ -99,11 +99,12 @@ public class ExportRecordsTests extends BaseRMRestTest
     }
 
     /**
-     * Given few records with collective size > 4 MB
-     * When I export the records using API at once
-     * Then the request is successful
+     * I would change this to
+     * Given a list of records with a size > 4MB
+     * When I export the records
+     * Then the request is succesfull
      */
-    @Test (description = "Testing the Export functionality on RM site using API for multiple records at once with " +
+    @Test (description = "Testing the RM Export functionality using API for a list of Records at once with " +
             "collective size of more than 4MB")
     public void exportRecordsTest()
     {

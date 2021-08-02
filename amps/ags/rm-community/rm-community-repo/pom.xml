@@ -14,7 +14,7 @@
    <properties>
       <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
 
-      <image.name>alfresco/alfresco-governance-repository-community</image.name>
+      <image.name>alfresco/alfresco-governance-repository-community-base</image.name>
    </properties>
 
    <dependencies>

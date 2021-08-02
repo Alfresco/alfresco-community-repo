@@ -208,7 +208,7 @@ public class ContentStoreDirectUrlConfigUnitTest
     /* Helper method to set content store direct access url configuration settings */
     private void setupDirectAccessConfig(Boolean isEnabled, Long defaultExpiryTime, Long maxExpiryTime)
     {
-        contentStoreDirectUrlConfig.setIsEnabled(isEnabled);
+        contentStoreDirectUrlConfig.setEnabled(isEnabled);
         contentStoreDirectUrlConfig.setDefaultExpiryTimeInSec(defaultExpiryTime);
         contentStoreDirectUrlConfig.setMaxExpiryTimeInSec(maxExpiryTime);
     }
@@ -225,7 +225,7 @@ public class ContentStoreDirectUrlConfigUnitTest
     private void setupSystemWideDirectAccessConfig()
     {
         SystemWideDirectUrlConfig sysConfig = new SystemWideDirectUrlConfig();
-        sysConfig.setIsEnabled(ENABLED);
+        sysConfig.setEnabled(ENABLED);
         sysConfig.setDefaultExpiryTimeInSec(SYS_DEFAULT_EXPIRY_TIME_IN_SECS);
         sysConfig.setMaxExpiryTimeInSec(SYS_MAX_EXPIRY_TIME_IN_SECS);
         sysConfig.validate();

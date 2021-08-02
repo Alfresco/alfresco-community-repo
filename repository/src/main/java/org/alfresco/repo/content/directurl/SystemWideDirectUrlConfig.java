@@ -38,13 +38,13 @@ public class SystemWideDirectUrlConfig implements DirectUrlConfig
     private static final Log logger = LogFactory.getLog(SystemWideDirectUrlConfig.class);
 
     /** Direct access url configuration settings */
-    private Boolean isEnabled;
+    private Boolean enabled;
     private Long defaultExpiryTimeInSec;
     private Long maxExpiryTimeInSec;
 
-    public void setIsEnabled(Boolean enabled)
+    public void setEnabled(Boolean enabled)
     {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec)
@@ -59,7 +59,7 @@ public class SystemWideDirectUrlConfig implements DirectUrlConfig
 
     public Boolean isEnabled()
     {
-        return isEnabled;
+        return enabled;
     }
 
     public Long getDefaultExpiryTimeInSec()
@@ -94,7 +94,7 @@ public class SystemWideDirectUrlConfig implements DirectUrlConfig
         catch (InvalidDirectAccessUrlConfigException ex)
         {
             logger.error("Disabling system-wide direct access URLs due to configuration error: " + ex.getMessage());
-            setIsEnabled(false);
+            setEnabled(false);
         }
     }
 
@@ -115,7 +115,9 @@ public class SystemWideDirectUrlConfig implements DirectUrlConfig
 
             if (getDefaultExpiryTimeInSec() > getMaxExpiryTimeInSec())
             {
-                throw new InvalidDirectAccessUrlConfigException("System-wide direct access URL default expiry time exceeds maximum expiry time.");
+                String errorMsg = String.format("System-wide direct access URL default expiry time [%s] exceeds maximum expiry time [%s].",
+                        getDefaultExpiryTimeInSec(), getMaxExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
         }
     }

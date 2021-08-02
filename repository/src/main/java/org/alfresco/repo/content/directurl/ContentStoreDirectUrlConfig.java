@@ -71,7 +71,7 @@ public class ContentStoreDirectUrlConfig extends AbstractDirectUrlConfig
         catch (InvalidDirectAccessUrlConfigException ex)
         {
             logger.error("Disabling content store direct access URLs due to configuration error: " + ex.getMessage());
-            setIsEnabled(false);
+            setEnabled(false);
         }
     }
 
@@ -82,43 +82,52 @@ public class ContentStoreDirectUrlConfig extends AbstractDirectUrlConfig
         {
             if (getMaxExpiryTimeInSec() == null)
             {
-                logger.warn("Maximum expiry time property is missing: setting to system-wide maximum.");
+                logger.warn(String.format("Maximum expiry time property is missing: setting to system-wide maximum [%s].", getSysWideMaxExpiryTimeInSec()));
                 setMaxExpiryTimeInSec(getSysWideMaxExpiryTimeInSec());
             }
             else if (getMaxExpiryTimeInSec() > getSysWideMaxExpiryTimeInSec())
             {
-                throw new InvalidDirectAccessUrlConfigException("Content store direct access URL maximum expiry time exceeds system-wide maximum expiry time.");
+                String errorMsg = String.format("Content store direct access URL maximum expiry time [%s] exceeds system-wide maximum expiry time [%s].",
+                        getMaxExpiryTimeInSec(), getSysWideMaxExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
 
             if (getDefaultExpiryTimeInSec() == null)
             {
-                logger.warn("Default expiry time property is missing: setting to system-wide default.");
+                logger.warn(String.format("Default expiry time property is missing: setting to system-wide default [%s].", getSysWideDefaultExpiryTimeInSec()));
                 setDefaultExpiryTimeInSec(getSysWideDefaultExpiryTimeInSec());
             }
             else if (getDefaultExpiryTimeInSec() > getMaxExpiryTimeInSec())
             {
-                logger.warn("Default expiry time property exceeds maximum expiry time for content store: setting to system-wide default.");
+                logger.warn(String.format("Default expiry time property [%s] exceeds maximum expiry time for content store [%s]: setting to system-wide default [%s].",
+                        getDefaultExpiryTimeInSec(), getMaxExpiryTimeInSec(), getSysWideDefaultExpiryTimeInSec()));
                 setDefaultExpiryTimeInSec(getSysWideDefaultExpiryTimeInSec());
             }
             else if (getDefaultExpiryTimeInSec() > getSysWideDefaultExpiryTimeInSec())
             {
-                logger.warn("Default expiry time property exceeds system-wide default expiry time: setting to system-wide default.");
+                logger.warn(String.format("Default expiry time property [%s] exceeds system-wide default expiry time [%s]: setting to system-wide default.",
+                        getDefaultExpiryTimeInSec(), getSysWideDefaultExpiryTimeInSec()));
                 setDefaultExpiryTimeInSec(getSysWideDefaultExpiryTimeInSec());
             }
 
             if (getDefaultExpiryTimeInSec() < 1)
             {
-                throw new InvalidDirectAccessUrlConfigException("Content store direct access URL default expiry time is invalid.");
+                String errorMsg = String.format("Content store direct access URL default expiry time [%s] is invalid.", getDefaultExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
 
             if (getDefaultExpiryTimeInSec() > getSysWideMaxExpiryTimeInSec())
             {
-                throw new InvalidDirectAccessUrlConfigException("Content store direct access URL default expiry time exceeds system-wide maximum expiry time.");
+                String errorMsg = String.format("Content store direct access URL default expiry time [%s] exceeds system-wide maximum expiry time [%s].",
+                        getDefaultExpiryTimeInSec(), getSysWideMaxExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
 
             if (getDefaultExpiryTimeInSec() > getMaxExpiryTimeInSec())
             {
-                throw new InvalidDirectAccessUrlConfigException("Content store direct access URL default expiry time exceeds content store maximum expiry time.");
+                String errorMsg = String.format("Content store direct access URL default expiry time [%s] exceeds content store maximum expiry time [%s].",
+                        getDefaultExpiryTimeInSec(), getMaxExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
         }
     }

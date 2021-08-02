@@ -36,7 +36,7 @@ public abstract class AbstractDirectUrlConfig implements DirectUrlConfig
     private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
 
     /** Direct access URL configuration settings */
-    private Boolean isEnabled;
+    private Boolean enabled;
     private Long defaultExpiryTimeInSec;
 
     public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig)
@@ -44,9 +44,9 @@ public abstract class AbstractDirectUrlConfig implements DirectUrlConfig
         this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
     }
 
-    public void setIsEnabled(Boolean enabled)
+    public void setEnabled(Boolean enabled)
     {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec)
@@ -71,7 +71,7 @@ public abstract class AbstractDirectUrlConfig implements DirectUrlConfig
 
     public Boolean isEnabled()
     {
-        return isEnabled;
+        return enabled;
     }
 
     public Long getDefaultExpiryTimeInSec()

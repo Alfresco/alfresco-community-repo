@@ -145,7 +145,7 @@ public class SystemWideDirectUrlConfigUnitTest
     /* Helper method to set system-wide direct access url configuration settings */
     private void setupDirectAccessConfig(Boolean isEnabled, Long defaultExpiryTime, Long maxExpiryTime)
     {
-        systemWideDirectUrlConfig.setIsEnabled(isEnabled);
+        systemWideDirectUrlConfig.setEnabled(isEnabled);
         systemWideDirectUrlConfig.setDefaultExpiryTimeInSec(defaultExpiryTime);
         systemWideDirectUrlConfig.setMaxExpiryTimeInSec(maxExpiryTime);
     }

@@ -80,8 +80,11 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private ClassPolicyDelegate<BeforeRMActionExecution> beforeRMActionExecutionDelegate;
     private ClassPolicyDelegate<OnRMActionExecution> onRMActionExecutionDelegate;
 
-    @Autowired
     private DispositionService dispositionService;
+
+    public void setDispositionService(DispositionService dispositionService) {
+        this.dispositionService = dispositionService;
+    }
 
     /** list of disposition actions to automatically execute */
     private List<String> retentionActions;

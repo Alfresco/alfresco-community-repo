@@ -703,6 +703,7 @@
                 <value>retain</value>
             </list>
         </property>
+        <property name="dispositionService" ref="dispositionService"/>
     </bean>
 
     <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">

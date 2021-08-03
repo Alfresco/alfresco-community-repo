@@ -33,7 +33,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -123,28 +122,24 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
 
         NodeRef newNodeRef = childAssociationRef.getChildRef();
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork()
+        AuthenticationUtil.runAs(() -> {
+            // clean record folder
+            cleanDisposableItem(nodeService, newNodeRef);
+
+            // re-initialise the record folder
+            recordFolderService.setupRecordFolder(newNodeRef);
+
+            // sort out the child records
+            for (NodeRef record : recordService.getRecords(newNodeRef))
             {
-                // clean record folder
-                cleanDisposableItem(nodeService, newNodeRef);
+                // clean record
+                cleanDisposableItem(nodeService, record);
 
-                // re-initialise the record folder
-                recordFolderService.setupRecordFolder(newNodeRef);
-
-                // sort out the child records
-                for (NodeRef record : recordService.getRecords(newNodeRef))
-                {
-                    // clean record
-                    cleanDisposableItem(nodeService, record);
-
-                    // Re-initiate the records in the new folder.
-                    recordService.file(record);
-                }
-
-                return null;
+                // Re-initiate the records in the new folder.
+                recordService.file(record);
             }
+
+            return null;
         }, AuthenticationUtil.getSystemUserName());
     }
 

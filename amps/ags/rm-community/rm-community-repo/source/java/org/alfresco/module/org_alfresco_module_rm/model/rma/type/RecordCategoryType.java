@@ -209,7 +209,11 @@ public class RecordCategoryType extends AbstractDisposableItem
             )
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY) && dispositionService.getDispositionSchedule(oldChildAssocRef.getParentRef()) != null)
+        // clean the child folders and records only if the old parent category has a disposition schedule set
+        // if it doesn't, then there are no old properties on the child nodes that have to be cleaned in order
+        // for new ones to be set
+        if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY)
+                && dispositionService.getDispositionSchedule(oldChildAssocRef.getParentRef()) != null)
         {
             reinitializeRecordFolders(newChildAssocRef);
         }

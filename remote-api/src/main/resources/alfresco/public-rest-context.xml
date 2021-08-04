@@ -944,6 +944,7 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
+        <property name="restApiDirectUrlConfig" ref="restApiDirectUrlConfig" />
     </bean>
 	
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
@@ -1063,6 +1064,13 @@
         <property name="assistant" ref="apiAssistant" />
         <property name="enabled" value="${system.api.discovery.enabled}" />
         <property name="thumbnailService" ref="ThumbnailService" />
+    </bean>
+
+    <!-- REST API direct access URL configuration settings -->
+    <bean id="restApiDirectUrlConfig" class="org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig" init-method="init">
+        <property name="systemWideDirectUrlConfig" ref="systemWideDirectUrlConfig" />
+        <property name="enabled" value="${restApi.directAccessUrl.enabled}" />
+        <property name="defaultExpiryTimeInSec" value="${restApi.directAccessUrl.defaultExpiryTimeInSec}" />
     </bean>
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">

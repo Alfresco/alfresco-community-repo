@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,22 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
+import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -47,6 +57,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -62,13 +73,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Service implementation acting as a level of indirection between the client
  * and the underlying content store.
@@ -82,7 +86,7 @@ import java.util.Set;
  */
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
-    private static Log logger = LogFactory.getLog(ContentServiceImpl.class);
+    private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -98,6 +102,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentStore tempStore;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
+
+    private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
 
     /**
      * The policy component
@@ -140,7 +146,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.store = store;
     }
-    
+
+    public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig)
+    {
+        this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
+    }
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
@@ -510,23 +521,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return tempStore.getWriter(ContentContext.NULL_CONTEXT);
     }
 
-    @Override
+    @Deprecated
     public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt)
     {
-        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
-
-        // check that the URL is available
-        if (contentData == null || contentData.getContentUrl() == null)
-        {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
-        }
-
-        if (store.isDirectAccessSupported())
-        {
-            return store.getDirectAccessUrl(contentData.getContentUrl(), expiresAt);
-        }
-
-        return null;
+        return requestContentDirectUrl(nodeRef, true, null);
     }
 
     /**
@@ -585,5 +583,93 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                         e);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isContentDirectUrlEnabled()
+    {
+        return systemWideDirectUrlConfig.isEnabled() && store.isContentDirectUrlEnabled();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        boolean contentDirectUrlEnabled = false;
+
+        // TODO: update this
+        if (systemWideDirectUrlConfig.isEnabled())
+        {
+            ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+            // check that the URL is available
+            if (contentData == null || contentData.getContentUrl() == null)
+            {
+                throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+            }
+
+            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(nodeRef));
+        }
+
+        return contentDirectUrlEnabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        if (!isContentDirectUrlEnabled())
+        {
+            throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
+        }
+
+        String contentUrl = getContentUrl(nodeRef);
+        String fileName = getFileName(nodeRef);
+        validFor = validateValidFor(validFor);
+
+        return store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+    }
+
+    private String getContentUrl(NodeRef nodeRef)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        return contentData.getContentUrl();
+    }
+
+    private String getFileName(NodeRef nodeRef)
+    {
+        String fileName = null;
+
+        try
+        {
+            fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        }
+        catch (InvalidNodeRefException ex)
+        {
+        }
+
+        return fileName;
+    }
+
+    private Long validateValidFor(Long validFor)
+    {
+        if (validFor == null || validFor > systemWideDirectUrlConfig.getDefaultExpiryTimeInSec())
+        {
+            validFor = systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
+        }
+         return validFor;
     }
 }

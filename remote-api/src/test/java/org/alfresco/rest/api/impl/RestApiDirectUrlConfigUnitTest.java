@@ -54,7 +54,7 @@ public class RestApiDirectUrlConfigUnitTest
     {
         this.restApiDirectUrlConfig = new RestApiDirectUrlConfig();
         SystemWideDirectUrlConfig sysConfig = new SystemWideDirectUrlConfig();
-        sysConfig.setIsEnabled(ENABLED);
+        sysConfig.setEnabled(ENABLED);
         sysConfig.setDefaultExpiryTimeInSec(30L);
         sysConfig.setMaxExpiryTimeInSec(300L);
         restApiDirectUrlConfig.setSystemWideDirectUrlConfig(sysConfig);
@@ -126,7 +126,7 @@ public class RestApiDirectUrlConfigUnitTest
     /* Helper method to set system-wide direct access url configuration settings */
     private void setupDirectAccessConfig(Boolean isEnabled, Long defaultExpiryTime)
     {
-        restApiDirectUrlConfig.setIsEnabled(isEnabled);
+        restApiDirectUrlConfig.setEnabled(isEnabled);
         restApiDirectUrlConfig.setDefaultExpiryTimeInSec(defaultExpiryTime);
     }
 }

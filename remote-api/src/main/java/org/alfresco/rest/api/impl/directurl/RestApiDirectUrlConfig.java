@@ -61,7 +61,7 @@ public class RestApiDirectUrlConfig extends AbstractDirectUrlConfig
         catch (InvalidDirectAccessUrlConfigException ex)
         {
             logger.error("Disabling REST API direct access URLs due to configuration error: " + ex.getMessage());
-            setIsEnabled(false);
+            setEnabled(false);
         }
     }
 
@@ -72,18 +72,21 @@ public class RestApiDirectUrlConfig extends AbstractDirectUrlConfig
         {
             if (getDefaultExpiryTimeInSec() == null)
             {
-                logger.warn("Default expiry time property is missing: setting to system-wide default.");
+                logger.warn(String.format("Default expiry time property is missing: setting to system-wide default [%s].", getSysWideDefaultExpiryTimeInSec()));
                 setDefaultExpiryTimeInSec(getSysWideDefaultExpiryTimeInSec());
             }
 
             if (getDefaultExpiryTimeInSec() < 1)
             {
-                throw new InvalidDirectAccessUrlConfigException("REST API direct access URL default expiry time is invalid.");
+                String errorMsg = String.format("REST API direct access URL default expiry time [%s] is invalid.", getDefaultExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
 
             if (getDefaultExpiryTimeInSec() > getSysWideMaxExpiryTimeInSec())
             {
-                throw new InvalidDirectAccessUrlConfigException("REST API direct access URL default expiry time exceeds system-wide maximum expiry time.");
+                String errorMsg = String.format("REST API direct access URL default expiry time [%s] exceeds system-wide maximum expiry time [%s].",
+                        getDefaultExpiryTimeInSec(), getSysWideMaxExpiryTimeInSec());
+                throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
         }
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,18 +25,12 @@
  */
 package org.alfresco.repo.version;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.EmptyContentReader;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.MimetypeMapTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -47,7 +41,6 @@ import org.junit.experimental.categories.Category;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 
 /**
  * Tests for getting content readers and writers.
@@ -139,15 +132,12 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void testWhenGetDirectAccessUrlIsNotSupported()
+    public void testWhenRequestContentDirectUrlIsNotSupported()
     {
-        assertFalse(contentStore.isDirectAccessSupported());
+        assertFalse(contentStore.isContentDirectUrlEnabled());
 
         // Set the presigned URL to expire after one minute.
-        Date expiresAt = new Date();
-        long expTimeMillis = expiresAt.getTime();
-        expTimeMillis += 1000 * 60;
-        expiresAt.setTime(expTimeMillis);
+        Long validFor = 60L;
 
         try
         {
@@ -155,7 +145,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
+            assertEquals(null, contentService.requestContentDirectUrl(nodeRef, true, validFor));
             fail("nodeRef has no content");
         }
         catch (IllegalArgumentException e)
@@ -165,7 +155,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
 
         try
         {
-            assertEquals(null, contentService.getDirectAccessUrl(null, null));
+            assertEquals(null, contentService.requestContentDirectUrl(null, true, null));
             fail("nodeRef is null");
         }
         catch (IllegalArgumentException e)
@@ -176,7 +166,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();
 
-        assertEquals(null, contentService.getDirectAccessUrl(nodeRef, null));
-        assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
+        assertEquals(null, contentService.requestContentDirectUrl(nodeRef, true, null));
+        assertEquals(null, contentService.requestContentDirectUrl(nodeRef, true, validFor));
     }
 }

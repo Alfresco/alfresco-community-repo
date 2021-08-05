@@ -29,9 +29,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
-
 import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -44,7 +44,7 @@ public class DiscoveryApiWebscriptUnitTest
     private static final Boolean ENABLED = Boolean.TRUE;
     private static final Boolean DISABLED = Boolean.FALSE;
 
-    private DiscoveryApiWebscript discoveryApiWebscript = new DiscoveryApiWebscript();
+    private DiscoveryApiWebscript discoveryApiWebscript = mock(DiscoveryApiWebscript.class);
     private RestApiDirectUrlConfig restApiDirectUrlConfig = mock(RestApiDirectUrlConfig.class);
     private ContentService contentService = mock(ContentService.class);
 
@@ -54,6 +54,7 @@ public class DiscoveryApiWebscriptUnitTest
         when(contentService.isContentDirectUrlEnabled()).thenReturn(systemwideEnabled);
         assertEquals(systemwideEnabled, contentService.isContentDirectUrlEnabled());
         assertEquals(restEnabled, restApiDirectUrlConfig.isEnabled());
+        when(discoveryApiWebscript.isContentDirectUrlEnabled()).thenReturn(restEnabled && systemwideEnabled);
     }
 
     @Test

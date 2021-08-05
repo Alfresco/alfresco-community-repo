@@ -144,7 +144,7 @@ public class DeletedNodeBatchCleanup
             return Collections.singletonList("The batchSize should be equal or greater than deleteBatchSize");
         }
         final List<String> deletedList = new ArrayList<>();
-        PreparedStatement primaryPrepStmt = null;
+        PreparedStatement selectPrepStmt = null;
         PreparedStatement deleteEntityPrepStmt[] = new PreparedStatement[2];
         //select the delete
 
@@ -153,30 +153,30 @@ public class DeletedNodeBatchCleanup
         final Date startTime = new Date();
         final long maxCommitTime = System.currentTimeMillis() - minPurgeAgeMs;
         Long primaryId = 0L;
-        String primaryPrepStatementSQL = SELECT_NODE_STATEMENT;
+        String selectPrepStatementSQL = SELECT_NODE_STATEMENT;
         String deletionPrepSatatementSQL = DELETE_NODE_STATEMENT;
 
         final Long selectPrepStatementFirstParam = maxCommitTime;
-        final Long selectPrepStatemenSecondParam = deletedTypePair.getFirst();
+        final Long selectPrepStatementSecondParam = deletedTypePair.getFirst();
         ;
 
         if (deletionType == DeletionType.TRANSACTION)
         {
-            primaryPrepStatementSQL = SELECT_TXN_STATEMENT;
+            selectPrepStatementSQL = SELECT_TXN_STATEMENT;
             deletionPrepSatatementSQL = DELETE_TXN_STATEMENT;
         }
         try (Connection connection = dataSource.getConnection())
         {
             connection.setAutoCommit(false);
             connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            primaryPrepStmt = connection.prepareStatement(primaryPrepStatementSQL);
-            primaryPrepStmt.setFetchSize(batchSize);
-            primaryPrepStmt.setLong(1, selectPrepStatementFirstParam);
+            selectPrepStmt = connection.prepareStatement(selectPrepStatementSQL);
+            selectPrepStmt.setFetchSize(batchSize);
+            selectPrepStmt.setLong(1, selectPrepStatementFirstParam);
             if (deletionType == DeletionType.NODE)
             {
-                primaryPrepStmt.setLong(2, selectPrepStatemenSecondParam);
+                selectPrepStmt.setLong(2, selectPrepStatementSecondParam);
             }
-            boolean hasResults = primaryPrepStmt.execute();
+            boolean hasResults = selectPrepStmt.execute();
             Set<Long> deleteIds = new HashSet<>();
             if (hasResults)
             {
@@ -192,7 +192,7 @@ public class DeletedNodeBatchCleanup
             if (hasResults)
             {
 
-                primaryId = processQueryResults(primaryPrepStmt, deleteEntityPrepStmt, deleteIds, connection,
+                primaryId = processQueryResults(selectPrepStmt, deleteEntityPrepStmt, deleteIds, connection,
                             deletedList, deletionType, startTime);
                 if (logger.isDebugEnabled())
                 {
@@ -212,7 +212,7 @@ public class DeletedNodeBatchCleanup
         }
         finally
         {
-            closeStatement(primaryPrepStmt);
+            closeStatement(selectPrepStmt);
             closeStatement(deleteEntityPrepStmt[0]);
             closeStatement(deleteEntityPrepStmt[1]);
         }
@@ -220,14 +220,14 @@ public class DeletedNodeBatchCleanup
         return deletedList;
     }
 
-    private Long processQueryResults(PreparedStatement primaryPrepStmt, PreparedStatement[] deletePrepStmts,
+    private Long processQueryResults(PreparedStatement selectPrepStmt, PreparedStatement[] deletePrepStmts,
                 Set<Long> deleteIds, Connection connection, List<String> deleteResult, DeletionType deletionType,
                 final Date startTime) throws SQLException
     {
         Long primaryId = null;
         int rowsProcessed = 0;
         int batchCount = 0;
-        try (ResultSet resultSet = primaryPrepStmt.getResultSet())
+        try (ResultSet resultSet = selectPrepStmt.getResultSet())
         {
             while (resultSet.next() && !isTimeoutExceeded(startTime))
             {
@@ -283,13 +283,13 @@ public class DeletedNodeBatchCleanup
 
     }
 
-    private void processNodeDeletion(PreparedStatement[] preparedStatements, Set<Long> deleteIds, Connection connection)
+    private void processNodeDeletion(PreparedStatement[] deletePrepStmts, Set<Long> deleteIds, Connection connection)
                 throws SQLException
     {
 
-        int deletedNodePropItems = deleteItems(preparedStatements[1], deleteIds);
+        int deletedNodePropItems = deleteItems(deletePrepStmts[1], deleteIds);
 
-        int deletedNodeItems = deleteItems(preparedStatements[0], deleteIds);
+        int deletedNodeItems = deleteItems(deletePrepStmts[0], deleteIds);
         nodeDeletionCount.getAndAdd(deletedNodeItems);
         connection.commit();
         deleteIds.clear();

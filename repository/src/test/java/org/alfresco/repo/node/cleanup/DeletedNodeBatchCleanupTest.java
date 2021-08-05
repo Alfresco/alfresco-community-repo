@@ -170,7 +170,7 @@ import java.util.Map;
         assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
     }
 
-    @Test public void testNodesDeletedNotPurgedWhenNotAfterPurgeAge() throws Exception
+    @Test public void testNodesDeletedNotPurgedWhenNotAfterPurgeAge()
     {
         // make sure we clean up all the other nodes that may require purging
 

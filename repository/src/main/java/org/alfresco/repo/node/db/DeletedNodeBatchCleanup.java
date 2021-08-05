@@ -59,14 +59,16 @@ public class DeletedNodeBatchCleanup
 {
     private final static String SELECT_NODE_STATEMENT =
                 "select node.id as id from alf_node node join alf_transaction txn on (node.transaction_id = txn.id) "
-                            + "where node.id > ? and txn.commit_time_ms < ?  and node.type_qname_id = ? order by node.id asc";
+                            + "where txn.commit_time_ms < ?  and node.type_qname_id = ?";
     private final static String SELECT_TXN_STATEMENT =
                 "select id from alf_transaction  where not exists (  select 1 from alf_node node where"
-                            + " node.transaction_id = alf_transaction.id) and id > ? and commit_time_ms <= ? order by id asc";
+                            + " node.transaction_id = alf_transaction.id)  and commit_time_ms <= ? ";
     private final static String DELETE_NODE_PROP_STATEMENT = "DELETE FROM ALF_NODE_PROPERTIES WHERE NODE_ID IN (";
     private final static String DELETE_NODE_STATEMENT = "DELETE FROM ALF_NODE WHERE ID IN (";
     private final static String DELETE_TXN_STATEMENT = "DELETE FROM ALF_TRANSACTION WHERE ID IN (";
     private final static Log logger = LogFactory.getLog(DeletedNodeBatchCleanup.class);
+    private final AtomicLong nodeDeletionCount = new AtomicLong(0);
+    private final AtomicLong txnDeletionCount = new AtomicLong(0);
     private int deleteBatchSize;
     private int batchSize;
     private QNameDAO qnameDAO;
@@ -76,8 +78,6 @@ public class DeletedNodeBatchCleanup
     private Dialect dialect;
     private long minPurgeAgeMs;
     private long timeoutSec;
-    private final AtomicLong nodeDeletionCount = new AtomicLong(0);
-    private final AtomicLong txnDeletionCount = new AtomicLong(0);
 
     public void setDataSource(DataSource dataSource)
     {
@@ -120,10 +120,8 @@ public class DeletedNodeBatchCleanup
 
         nodeDeletionCount.getAndSet(0);
         List<String> deleteResult = purge(DeletionType.NODE);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("Total nodes deleted:"+ nodeDeletionCount.get());
-        }
+        nodeDeletionCount.getAndSet(0);
+        logger.debug("DeletedNodeBatchCleanup: purgeOldDeletedNodes completed ");
         return deleteResult;
     }
 
@@ -131,20 +129,17 @@ public class DeletedNodeBatchCleanup
     {
 
         txnDeletionCount.getAndSet(0);
-        List<String> deleteResult =  purge(DeletionType.TRANSACTION);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("Total transactions deleted:"+ txnDeletionCount.get());
-            logger.debug(deleteResult);
-        }
-        return deleteResult;
+        List<String> deleteResult = purge(DeletionType.TRANSACTION);
+        txnDeletionCount.getAndSet(0);
+        logger.debug("DeletedNodeBatchCleanup: purgeOldTransactions completed ");
 
+        return deleteResult;
 
     }
 
     private List<String> purge(DeletionType deletionType) throws SQLException
     {
-        if(batchSize < deleteBatchSize)
+        if (batchSize < deleteBatchSize)
         {
             return Collections.singletonList("The batchSize should be equal or greater than deleteBatchSize");
         }
@@ -161,47 +156,56 @@ public class DeletedNodeBatchCleanup
         String primaryPrepStatementSQL = SELECT_NODE_STATEMENT;
         String deletionPrepSatatementSQL = DELETE_NODE_STATEMENT;
 
-        final Long selectPrepStatementFirstParam = primaryId;
-        final Long selectPrepStatemenSecondParam = maxCommitTime;
-        final Long selectPrepStatemenThirdParam = deletedTypePair.getFirst();
+        final Long selectPrepStatementFirstParam = maxCommitTime;
+        final Long selectPrepStatemenSecondParam = deletedTypePair.getFirst();
+        ;
 
         if (deletionType == DeletionType.TRANSACTION)
         {
             primaryPrepStatementSQL = SELECT_TXN_STATEMENT;
             deletionPrepSatatementSQL = DELETE_TXN_STATEMENT;
         }
-        try(Connection connection = dataSource.getConnection())
+        try (Connection connection = dataSource.getConnection())
         {
             connection.setAutoCommit(false);
+            connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
             primaryPrepStmt = connection.prepareStatement(primaryPrepStatementSQL);
             primaryPrepStmt.setFetchSize(batchSize);
             primaryPrepStmt.setLong(1, selectPrepStatementFirstParam);
-            primaryPrepStmt.setLong(2, selectPrepStatemenSecondParam);
             if (deletionType == DeletionType.NODE)
             {
-                primaryPrepStmt.setLong(3, selectPrepStatemenThirdParam);
+                primaryPrepStmt.setLong(2, selectPrepStatemenSecondParam);
             }
             boolean hasResults = primaryPrepStmt.execute();
             Set<Long> deleteIds = new HashSet<>();
-            while (hasResults && !isTimeoutExceeded(startTime))
+            if (hasResults)
             {
-
-                deleteEntityPrepStmt[0] = connection
-                            .prepareStatement(createDeleteStatement(deleteBatchSize, deletionPrepSatatementSQL));
+                deleteEntityPrepStmt[0] = connection.prepareStatement(
+                            createDeleteStatement(deleteBatchSize, deletionPrepSatatementSQL));
                 if (deletionType == DeletionType.NODE)
                 {
-                    deleteEntityPrepStmt[1] = connection
-                                .prepareStatement(createDeleteStatement(deleteBatchSize, DELETE_NODE_PROP_STATEMENT));
+                    deleteEntityPrepStmt[1] = connection.prepareStatement(
+                                createDeleteStatement(deleteBatchSize, DELETE_NODE_PROP_STATEMENT));
                 }
+            }
+
+            if (hasResults)
+            {
 
                 primaryId = processQueryResults(primaryPrepStmt, deleteEntityPrepStmt, deleteIds, connection,
-                            deletedList, deletionType);
-                if (primaryId == null)
+                            deletedList, deletionType, startTime);
+                if (logger.isDebugEnabled())
                 {
-                    break;
+                    if (primaryId == null)
+                    {
+                        logger.debug("No nodes to purge");
+                    }
+                    else
+                    {
+                        logger.debug("last id processed " + primaryId);
+                    }
+
                 }
-                primaryPrepStmt.setLong(1, primaryId);
-                hasResults = primaryPrepStmt.execute();
 
             }
 
@@ -211,30 +215,21 @@ public class DeletedNodeBatchCleanup
             closeStatement(primaryPrepStmt);
             closeStatement(deleteEntityPrepStmt[0]);
             closeStatement(deleteEntityPrepStmt[1]);
-
-        }
-
-        if (deletionType == DeletionType.NODE)
-        {
-            logger.debug("DeletedNodeBatchCleanup: purgeOldDeletedNodes finished ");
-        }
-        else
-        {
-            logger.debug("DeletedNodeBatchCleanup: purgeOldTransactions finished ");
         }
 
         return deletedList;
     }
 
     private Long processQueryResults(PreparedStatement primaryPrepStmt, PreparedStatement[] deletePrepStmts,
-                Set<Long> deleteIds, Connection connection, List<String> deleteResult, DeletionType deletionType)
-                throws SQLException
+                Set<Long> deleteIds, Connection connection, List<String> deleteResult, DeletionType deletionType,
+                final Date startTime) throws SQLException
     {
         Long primaryId = null;
         int rowsProcessed = 0;
+        int batchCount = 0;
         try (ResultSet resultSet = primaryPrepStmt.getResultSet())
         {
-            while (resultSet.next())
+            while (resultSet.next() && !isTimeoutExceeded(startTime))
             {
 
                 ++rowsProcessed;
@@ -243,44 +238,53 @@ public class DeletedNodeBatchCleanup
                 if (deleteIds.size() == deleteBatchSize)
                 {
                     if (deletionType == DeletionType.NODE)
-                        processNodeDeletion(deletePrepStmts, deleteIds, connection, deleteResult);
+                        processNodeDeletion(deletePrepStmts, deleteIds, connection);
                     else
-                        processTxnDeletion(deletePrepStmts[0], deleteIds, connection, deleteResult);
+                        processTxnDeletion(deletePrepStmts[0], deleteIds, connection);
 
                 }
                 if (rowsProcessed == batchSize)
                 {
+                    rowsProcessed = 0;
+                    batchCount++;
                     if (logger.isDebugEnabled())
                     {
-                        if (deletionType == DeletionType.NODE)
-                        {
-                            logger.debug("RowsProcessed " + rowsProcessed + " from primary table alf_node ");
-                        }
-                        else
-                        {
-                            logger.debug("RowsProcessed " + rowsProcessed + " from primary table alf_transaction");
-                        }
+                        logger.debug(" processed batch:" + batchCount);
+
                     }
-                    break;
+
                 }
             }
             if (!deleteIds.isEmpty())
             {
                 if (deletionType == DeletionType.NODE)
-                    processNodeDeletion(deletePrepStmts, deleteIds, connection, deleteResult);
+                {
+                    processNodeDeletion(deletePrepStmts, deleteIds, connection);
+                }
                 else
-                    processTxnDeletion(deletePrepStmts[0], deleteIds, connection, deleteResult);
+                {
+                    processTxnDeletion(deletePrepStmts[0], deleteIds, connection);
+                }
 
             }
 
+        }
+
+        if (deletionType == DeletionType.NODE)
+        {
+            deleteResult.add("Purged old nodes: " + nodeDeletionCount.get());
+        }
+        else
+        {
+            deleteResult.add("Purged old transactions: " + txnDeletionCount.get());
         }
 
         return primaryId;
 
     }
 
-    private void processNodeDeletion(PreparedStatement[] preparedStatements, Set<Long> deleteIds, Connection connection,
-                List<String> deleteResult) throws SQLException
+    private void processNodeDeletion(PreparedStatement[] preparedStatements, Set<Long> deleteIds, Connection connection)
+                throws SQLException
     {
 
         int deletedNodePropItems = deleteItems(preparedStatements[1], deleteIds);
@@ -294,12 +298,11 @@ public class DeletedNodeBatchCleanup
             logger.debug("alf_node entries deleted " + deletedNodeItems);
             logger.debug("alf_node_properties entries deleted " + deletedNodePropItems);
         }
-        deleteResult.add("Purged old nodes: " + deletedNodeItems);
 
     }
 
-    private void processTxnDeletion(PreparedStatement txnPrepStmt, Set<Long> deleteIds, Connection connection,
-                List<String> deleteResult) throws SQLException
+    private void processTxnDeletion(PreparedStatement txnPrepStmt, Set<Long> deleteIds, Connection connection)
+                throws SQLException
     {
 
         int deletedTxnItems = deleteItems(txnPrepStmt, deleteIds);
@@ -311,7 +314,6 @@ public class DeletedNodeBatchCleanup
             logger.debug("alf_transaction entries deleted " + deletedTxnItems);
 
         }
-        deleteResult.add("Purged old transactions:" + deletedTxnItems);
 
     }
 
@@ -372,7 +374,7 @@ public class DeletedNodeBatchCleanup
             }
             catch (SQLException e)
             {
-               logger.error("Error while closing statement:",e);
+                logger.error("Error while closing statement:", e);
             }
         }
     }

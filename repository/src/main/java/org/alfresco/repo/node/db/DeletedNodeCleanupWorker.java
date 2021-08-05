@@ -81,13 +81,17 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         if(NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
         {
             deletedNodeBatchCleanup.setMinPurgeAgeMs(minPurgeAgeMs);
+            refreshLock();
             logger.debug("DeletedNodeCleanupWorker using batch deletion: About to execute the clean up nodes ");
             purgedNodes = deletedNodeBatchCleanup.purgeOldDeletedNodes();
+            logger.debug(purgedNodes);
             logger.debug("DeletedNodeCleanupWorker using batch deletion : purgeOldDeletedNodes - total Time:" + getFormattedExecutionTime(
                         startTime));
+            refreshLock();
             logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
             startTime = System.currentTimeMillis();
             purgedTxns =  deletedNodeBatchCleanup.purgeOldEmptyTransactions();
+            logger.debug(purgedTxns);
             logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions  -total Time:" + getFormattedExecutionTime(
                         startTime));
         }

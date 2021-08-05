@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.discovery;
 
+import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.model.DiscoveryDetails;
 import org.alfresco.rest.api.model.ModulePackage;
 import org.alfresco.rest.api.model.RepositoryInfo;
@@ -41,6 +42,7 @@ import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -67,6 +69,8 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
     private ModuleService moduleService;
     private ApiAssistant assistant;
     private ThumbnailService thumbnailService;
+    private RestApiDirectUrlConfig restApiDirectUrlConfig;
+    private ContentService contentService;
 
     private boolean enabled = true;
     private final static String DISABLED = "Not Implemented";
@@ -106,6 +110,16 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         this.thumbnailService = thumbnailService;
     }
 
+    public void setRestApiDirectUrlConfig(RestApiDirectUrlConfig restApiDirectUrlConfig)
+    {
+        this.restApiDirectUrlConfig = restApiDirectUrlConfig;
+    }
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -116,6 +130,8 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         PropertyCheck.mandatory(this, "moduleService", moduleService);
         PropertyCheck.mandatory(this, "assistant", assistant);
         PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
+        PropertyCheck.mandatory(this, "restApiDirectUrlConfig", restApiDirectUrlConfig);
+        PropertyCheck.mandatory(this, "contentService", contentService);
     }
 
     @Override
@@ -154,7 +170,8 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
                                 .setReadOnly(repoAdminService.getUsage().isReadOnly())
                                 .setAuditEnabled(auditService.isAuditEnabled())
                                 .setQuickShareEnabled(quickShareService.isQuickShareEnabled())
-                                .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled()));
+                                .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled())
+                                .setDirectAccessUrlEnabled(isContentDirectUrlEnabled()));
     }
 
     private List<ModulePackage> getModules()

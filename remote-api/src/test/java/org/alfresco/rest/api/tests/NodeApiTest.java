@@ -6275,7 +6275,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
 
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 404);
+        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
     }
 }
 

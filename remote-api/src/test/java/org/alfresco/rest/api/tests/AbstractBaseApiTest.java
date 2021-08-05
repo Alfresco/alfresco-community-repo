@@ -58,6 +58,7 @@ import org.alfresco.rest.api.tests.util.JacksonUtil;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -102,6 +103,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     private static final String URL_CHILDREN = "children";
     private static final String URL_CONTENT = "content";
+
+    private static final String REQUEST_NODE_DIRECT_ACCESS_URL = "requestNodeDirectAccessUrl";
 
     protected static final String TYPE_CM_FOLDER = "cm:folder";
     protected static final String TYPE_CM_CONTENT = "cm:content";
@@ -1012,6 +1015,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return waitAndGetRendition(sourceNodeId, versionId, renditionId);
     }
 
+
     protected String getNodeRenditionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
@@ -1035,6 +1039,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getNodeContentUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_CONTENT;
+    }
+
+    protected String getRequestContentDirectUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + REQUEST_NODE_DIRECT_ACCESS_URL;
     }
 
     protected String getNodeOperationUrl(String nodeId, String operation)

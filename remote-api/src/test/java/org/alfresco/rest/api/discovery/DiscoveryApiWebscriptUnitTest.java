@@ -51,11 +51,11 @@ public class DiscoveryApiWebscriptUnitTest
     private RestApiDirectUrlConfig restApiDirectUrlConfig = mock(RestApiDirectUrlConfig.class);
     private ContentService contentService = mock(ContentService.class);
 
-    public boolean mockedAsserts(boolean restEnabled, boolean systemwideEnabled)
+    public void mockedAsserts(boolean restEnabled, boolean systemwideEnabled)
     {
-        when(contentService.isContentUrlEnabled()).thenReturn(systemwideEnabled);
+        when(contentService.isContentDirectUrlEnabled()).thenReturn(systemwideEnabled);
         when(restApiDirectUrlConfig.isEnabled()).thenReturn(restEnabled);
-        assertEquals(systemwideEnabled, contentService.isContentUrlEnabled());
+        assertEquals(systemwideEnabled, contentService.isContentDirectUrlEnabled());
         assertEquals(restEnabled, restApiDirectUrlConfig.isEnabled());
         when(discoveryApiWebscript.isContentDirectUrlEnabled()).thenReturn(restEnabled && systemwideEnabled);
     }
@@ -64,28 +64,28 @@ public class DiscoveryApiWebscriptUnitTest
     public void testEnabledConfig_RestEnabledAndSystemwideEnabled()
     {
         mockedAsserts(ENABLED,ENABLED);
-        assertTrue("Direct Acess URLs are enabled",statusInfo.getIsDirectAccessUrlEnabled());
+        assertTrue("Direct Acess URLs are enabled",discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
     @Test
     public void testDisabledConfig_RestEnabledAndSystemwideDisabled()
     {
         mockedAsserts(ENABLED,DISABLED);
-        assertFalse("Direct Access URLs are disabled system-wide",statusInfo.getIsDirectAccessUrlEnabled());
+        assertFalse("Direct Access URLs are disabled system-wide",discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
     @Test
     public void testDisabledConfig_RestDisabledAndSystemwideDisabled()
     {
         mockedAsserts(DISABLED,DISABLED);
-        assertFalse("REST API Direct Access URLs are disabled and Direct Access URLs are disabled system-wide ",statusInfo.getIsDirectAccessUrlEnabled());
+        assertFalse("REST API Direct Access URLs are disabled and Direct Access URLs are disabled system-wide ",discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
     @Test
     public void testDisabledConfig_RestDisabledAndSystemwideEnabled()
     {
         mockedAsserts(DISABLED,ENABLED);
-        assertFalse("REST API direct access URLs are disabled",statusInfo.getIsDirectAccessUrlEnabled());
+        assertFalse("REST API direct access URLs are disabled",discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
 }

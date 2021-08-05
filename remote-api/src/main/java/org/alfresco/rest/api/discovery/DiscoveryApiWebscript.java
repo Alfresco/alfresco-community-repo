@@ -211,4 +211,10 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
             throw new DisabledServiceException(DISABLED);
         }
     }
+
+    protected boolean isContentDirectUrlEnabled()
+    {
+        return (restApiDirectUrlConfig.isEnabled() && contentService.isContentDirectUrlEnabled());
+    }
+
 }

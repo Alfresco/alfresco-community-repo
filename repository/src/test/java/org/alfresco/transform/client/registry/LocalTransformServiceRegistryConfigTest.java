@@ -28,7 +28,6 @@ package org.alfresco.transform.client.registry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractLocalTransform;
-import org.alfresco.repo.content.transform.LocalCombinedConfig;
 import org.alfresco.repo.content.transform.LocalPipelineTransform;
 import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
@@ -259,7 +258,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
      */
     private void retrieveLocalTransformList(String path)
     {
-        CombinedConfig combinedConfig = new LocalCombinedConfig(log);
+        CombinedConfig combinedConfig = new CombinedConfig(log);
         combinedConfig.addLocalConfig(path);
         combinedConfig.register(registry);
         mapOfTransformOptions = combinedConfig.combinedTransformOptions;

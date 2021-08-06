@@ -355,5 +355,19 @@
       </property>
    </bean>
 
+   <!-- System direct access URL configuration settings -->
+   <bean id="systemWideDirectUrlConfig" class="org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig" init-method="init">
+      <property name="enabled" value="${system.directAccessUrl.enabled}" />
+      <property name="defaultExpiryTimeInSec" value="${system.directAccessUrl.defaultExpiryTimeInSec}" />
+      <property name="maxExpiryTimeInSec" value="${system.directAccessUrl.maxExpiryTimeInSec}" />
+   </bean>
+
+   <!-- Abstract Direct Access URL configuration -->
+   <bean id="abstractDirectUrlConfig" class="org.alfresco.repo.content.directurl.AbstractDirectUrlConfig" abstract="true">
+      <property name="systemWideDirectUrlConfig" >
+         <ref bean="systemWideDirectUrlConfig" />
+      </property>
+   </bean>
+
    
 </beans>

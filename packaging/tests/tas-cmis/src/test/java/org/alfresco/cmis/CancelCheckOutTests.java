@@ -90,7 +90,7 @@ public class CancelCheckOutTests extends CmisTest
                       .cancelCheckOut();
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {  TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE, TestGroup.REGRESSION, TestGroup.CMIS})
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that cancel check out on document created with Versioning State CHECKED OUT deletes the document")
     public void cancelCheckOutOnDocWithVersioningStateCheckedOut() throws Exception

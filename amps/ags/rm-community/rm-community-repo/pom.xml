@@ -8,13 +8,13 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>11.87-SNAPSHOT</version>
+      <version>11.99-SNAPSHOT</version>
    </parent>
 
    <properties>
       <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
 
-      <image.name>alfresco/alfresco-governance-repository-community</image.name>
+      <image.name>alfresco/alfresco-governance-repository-community-base</image.name>
    </properties>
 
    <dependencies>
@@ -396,7 +396,7 @@
                         <image>
                            <!-- TODO upgrade this old postgres version -->
                            <name>postgres:9.4.12</name>
-                           <!--<name>postgres:13.1</name>-->
+                           <!--<name>postgres:13.3</name>-->
                            <run>
                               <ports>
                                  <port>${postgresql.tests.port}:${postgresql.port}</port>

@@ -25,8 +25,12 @@
  */
 package org.alfresco.repo.version;
 
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -35,10 +39,11 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +56,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Category(OwnJVMTestsCategory.class)
 @Transactional
 public class ContentServiceImplTest extends BaseVersionStoreTest
-{   
+{
+    private static final Boolean ENABLED = Boolean.TRUE;
+
     /**
      * Test content data
      */
@@ -60,8 +67,13 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     /**
      * The version content store
      */
+    @InjectMocks
     private ContentService contentService;
+
     private ContentStore contentStore;
+
+    @Mock
+    private SystemWideDirectUrlConfig mockSystemWideDirectUrlConfig;
 
     @Before
     public void before() throws Exception
@@ -132,11 +144,12 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         }
     }
 
-    // TODO: update this
-    @Ignore("Temporarily ignored until test replaced")
     @Test
     public void testWhenRequestContentDirectUrlIsNotSupported()
     {
+        openMocks(this);
+        when(mockSystemWideDirectUrlConfig.isEnabled()).thenReturn(ENABLED);
+
         assertFalse(contentStore.isContentDirectUrlEnabled());
 
         // Set the presigned URL to expire after one minute.
@@ -148,7 +161,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            assertEquals(null, contentService.requestContentDirectUrl(nodeRef, true, validFor));
+            assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
             fail("nodeRef has no content");
         }
         catch (IllegalArgumentException e)
@@ -158,7 +171,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
 
         try
         {
-            assertEquals(null, contentService.requestContentDirectUrl(null, true, null));
+            assertNull(contentService.requestContentDirectUrl(null, true, null));
             fail("nodeRef is null");
         }
         catch (IllegalArgumentException e)
@@ -169,7 +182,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();
 
-        assertEquals(null, contentService.requestContentDirectUrl(nodeRef, true, null));
-        assertEquals(null, contentService.requestContentDirectUrl(nodeRef, true, validFor));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, true, null));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
     }
 }

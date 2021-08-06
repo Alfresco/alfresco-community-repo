@@ -26,7 +26,6 @@
 package org.alfresco.repo.content;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -624,19 +623,31 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      */
     public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
     {
-        if (!isContentDirectUrlEnabled())
+        if (!systemWideDirectUrlConfig.isEnabled())
         {
             throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
         }
 
         String contentUrl = getContentUrl(nodeRef);
         String fileName = getFileName(nodeRef);
-        validFor = validateValidFor(validFor);
+        validFor = adjustValidFor(validFor);
 
-        return store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+        DirectAccessUrl directAccessUrl = null;
+        if (store.isContentDirectUrlEnabled())
+        {
+            try
+            {
+                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+            }
+            catch (UnsupportedOperationException ex)
+            {
+                // expected exception
+            }
+        }
+        return directAccessUrl;
     }
 
-    private String getContentUrl(NodeRef nodeRef)
+    protected String getContentUrl(NodeRef nodeRef)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -649,7 +660,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return contentData.getContentUrl();
     }
 
-    private String getFileName(NodeRef nodeRef)
+    protected String getFileName(NodeRef nodeRef)
     {
         String fileName = null;
 
@@ -664,7 +675,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return fileName;
     }
 
-    private Long validateValidFor(Long validFor)
+    private Long adjustValidFor(Long validFor)
     {
         if (validFor == null || validFor > systemWideDirectUrlConfig.getDefaultExpiryTimeInSec())
         {

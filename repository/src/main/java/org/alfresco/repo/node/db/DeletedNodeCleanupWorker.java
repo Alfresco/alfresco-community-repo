@@ -105,33 +105,21 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }
         else
         {
-            long fromCommitTime = fromCustomCommitTime;
 
             if(logger.isDebugEnabled())
             {
-                logger.debug("DeletedNodeCleanupWorker: About to execute the clean up nodes ");
+                logger.debug("DeletedNodeCleanupWorker: About to start purgeOldDeletedNodes ");
             }
 
-            if (fromCommitTime <= 0L)
-            {
-                fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
-            }
-
-            purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs, fromCommitTime);
+            purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
             logger.debug(purgedNodes);
 
             if(logger.isDebugEnabled())
             {
-                logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
+                logger.debug("DeletedNodeCleanupWorker: About to start purgeOldEmptyTransactions ");
             }
 
-            if (fromCustomCommitTime <= 0L)
-            {
-                fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
-            }
-
-
-            purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs, fromCommitTime);
+            purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
             if(logger.isDebugEnabled())
             {
                 logger.debug(purgedTxns);
@@ -192,14 +180,19 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
      * Cleans up deleted nodes that are older than the given minimum age.
      * 
      * @param minAge        the minimum age of a transaction or deleted node
-     * @param fromCommitTime  the minimum commit time for deleted nodes
      * @return              Returns log message results
      */
-    private List<String> purgeOldDeletedNodes(long minAge, long fromCommitTime)
+    private List<String> purgeOldDeletedNodes(long minAge)
     {
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
+        long fromCommitTime = fromCustomCommitTime;
+
+        if (fromCommitTime <= 0L)
+        {
+            fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+        }
 
         if ( fromCommitTime == 0L )
         {
@@ -210,7 +203,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         
         long loopPurgeSize = purgeSize;
         Long purgeCount = 0l;
-        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes started ");
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes started ");
+        }
         while (true)
         {
             // Ensure we keep the lock
@@ -306,10 +302,9 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
      * Cleans up unused transactions that are older than the given minimum age.
      * 
      * @param minAge        the minimum age of a transaction or deleted node
-     * @param fromCommitTime the commit time of the oldest unused transaction of deleted node
      * @return              Returns log message results
      */
-    private List<String> purgeOldEmptyTransactions(long minAge, long fromCommitTime)
+    private List<String> purgeOldEmptyTransactions(long minAge)
     {
         if (minAge < 0)
         {
@@ -318,7 +313,15 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
-        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions started ");
+        long fromCommitTime = fromCustomCommitTime;
+        if (fromCommitTime <= 0L)
+        {
+            fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
+        }
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions started ");
+        }
     	// delete unused transactions in batches of size 'purgeTxnBlockSize'
         while (true)
         {

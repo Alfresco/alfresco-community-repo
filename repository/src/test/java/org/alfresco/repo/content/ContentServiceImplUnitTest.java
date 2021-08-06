@@ -81,6 +81,9 @@ public class ContentServiceImplUnitTest
     public void setup()
     {
         openMocks(this);
+        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentData);
+        when(mockContentData.getContentUrl()).thenReturn("someContentUrl");
+        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_NAME)).thenReturn("someFilename");
     }
 
     @Test
@@ -138,9 +141,6 @@ public class ContentServiceImplUnitTest
     {
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
-        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentData);
-        when(mockContentData.getContentUrl()).thenReturn("someContentUrl");
-        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_NAME)).thenReturn("someFilename");
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
         assertNull(directAccessUrl);

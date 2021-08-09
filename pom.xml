@@ -853,8 +853,8 @@
                 <version>1.18.20</version>
             </dependency>
         </dependencies>
-    </dependencyManagement>
 
+    </dependencyManagement>
     <build>
         <pluginManagement>
             <plugins>

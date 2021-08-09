@@ -213,7 +213,7 @@ public class NodesEntityResource implements
             throw new DisabledServiceException("Direct access url isn't available.");
         }
 
-        DirectAccessUrl directAccessUrl = null;
+        DirectAccessUrl directAccessUrl;
 
         NodeRef nodeRef = nodes.validateNode(nodeId);
         boolean attachment = true;

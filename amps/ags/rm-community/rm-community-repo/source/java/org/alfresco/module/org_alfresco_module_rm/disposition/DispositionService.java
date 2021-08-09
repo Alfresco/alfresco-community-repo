@@ -289,11 +289,4 @@ public interface DispositionService
      */
     void recalculateNextDispositionStep(NodeRef record);
 
-    /**
-     * Check given node or its children are frozen
-     * The node should be record or record folder for retention schedule
-     *
-     * @param nodeRef
-     */
-    boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef);
 }

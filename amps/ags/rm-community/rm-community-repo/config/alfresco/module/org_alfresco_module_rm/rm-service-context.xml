@@ -112,7 +112,6 @@
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordFolderService" ref="RecordFolderService"/>
         <property name="recordService" ref="RecordService"/>
-        <property name="freezeService" ref="FreezeService"/>
         <property name="transactionService" ref="transactionService" />
     </bean>
 
@@ -699,11 +698,10 @@
         <!-- list of disposition actions to automatically execute when eligible -->
         <property name="retentionActions">
             <list>
-                <value>cutoff</value>
                 <value>retain</value>
             </list>
         </property>
-        <property name="dispositionService" ref="dispositionService"/>
+        <property name="freezeService" ref="freezeService"/>
     </bean>
 
     <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -908,6 +906,8 @@
     <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" parent="baseService">
         <property name="filePlanService" ref="FilePlanService" />
         <property name="holdService" ref="HoldService" />
+        <property name="recordFolderService" ref="RecordFolderService"/>
+        <property name="recordService" ref="RecordService"/>
     </bean>
 
     <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">

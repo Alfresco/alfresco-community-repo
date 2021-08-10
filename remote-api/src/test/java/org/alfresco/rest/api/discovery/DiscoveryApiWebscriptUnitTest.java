@@ -31,13 +31,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 /**
  * @author Mikołaj Brzeziński

@@ -149,6 +149,8 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     {
         openMocks(this);
         when(mockSystemWideDirectUrlConfig.isEnabled()).thenReturn(ENABLED);
+        when(mockSystemWideDirectUrlConfig.getDefaultExpiryTimeInSec()).thenReturn(30L);
+        when(mockSystemWideDirectUrlConfig.getMaxExpiryTimeInSec()).thenReturn(300L);
 
         assertFalse(contentStore.isContentDirectUrlEnabled());
 

@@ -66,20 +66,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class FreezeServiceImpl extends ServiceBaseImpl
         implements FreezeService,
-        RecordsManagementModel {
-    /**
-     * I18N
-     */
+                                          RecordsManagementModel
+{
+    /** I18N */
     private static final String MSG_HOLD_NAME = "rm.hold.name";
 
-    /**
-     * File Plan Service
-     */
+    /** File Plan Service */
     private FilePlanService filePlanService;
 
-    /**
-     * Hold service
-     */
+    /** Hold service */
     private HoldService holdService;
 
     /**
@@ -398,10 +393,13 @@ public class FreezeServiceImpl extends ServiceBaseImpl
      * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
      */
     @Override
-    public boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef) {
-        if (recordFolderService.isRecordFolder(nodeRef)) {
+    public boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
+    {
+        if (recordFolderService.isRecordFolder(nodeRef))
+        {
             return isFrozen(nodeRef) || hasFrozenChildren(nodeRef);
-        } else if (recordService.isRecord(nodeRef)) {
+        } else if (recordService.isRecord(nodeRef))
+        {
             return isFrozen(nodeRef);
         }
         return Boolean.FALSE;

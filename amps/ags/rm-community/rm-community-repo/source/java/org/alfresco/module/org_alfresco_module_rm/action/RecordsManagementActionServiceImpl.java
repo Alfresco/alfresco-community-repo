@@ -54,10 +54,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  */
 @Slf4j
-public class RecordsManagementActionServiceImpl implements RecordsManagementActionService {
-    /**
-     * I18N
-     */
+public class RecordsManagementActionServiceImpl implements RecordsManagementActionService
+{
+    /** I18N */
     private static final String MSG_NOT_DEFINED = "rm.action.not-defined";
     private static final String MSG_NO_IMPLICIT_NODEREF = "rm.action.no-implicit-noderef";
     private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
@@ -70,19 +69,13 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
 
     private Map<String, RecordsManagementAction> dispositionActions = new HashMap<>(5);
 
-    /**
-     * Policy component
-     */
+    /** Policy component */
     private PolicyComponent policyComponent;
 
-    /**
-     * Node service
-     */
+    /** Node service */
     private NodeService nodeService;
 
-    /**
-     * Policy delegates
-     */
+    /** Policy delegates */
     private ClassPolicyDelegate<BeforeRMActionExecution> beforeRMActionExecutionDelegate;
     private ClassPolicyDelegate<OnRMActionExecution> onRMActionExecutionDelegate;
 
@@ -94,7 +87,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @param freezeService freeze service
      */
-    public void setFreezeService(FreezeService freezeService) {
+    public void setFreezeService(FreezeService freezeService)
+    {
         this.freezeService = freezeService;
     }
 
@@ -103,21 +97,24 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     private List<String> retentionActions;
 
-    public void setRetentionActions(List<String> retentionActions) {
+    public void setRetentionActions(List<String> retentionActions)
+    {
         this.retentionActions = retentionActions;
     }
 
     /**
      * @return Policy component
      */
-    protected PolicyComponent getPolicyComponent() {
+    protected PolicyComponent getPolicyComponent()
+    {
         return this.policyComponent;
     }
 
     /**
      * @return Node Service
      */
-    protected NodeService getNodeService() {
+    protected NodeService getNodeService()
+    {
         return this.nodeService;
     }
 
@@ -126,23 +123,26 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      *
      * @param policyComponent policy component
      */
-    public void setPolicyComponent(PolicyComponent policyComponent) {
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
         this.policyComponent = policyComponent;
     }
 
     /**
      * Set the node service
      *
-     * @param nodeService node service
+     * @param nodeService   node service
      */
-    public void setNodeService(NodeService nodeService) {
+    public void setNodeService(NodeService nodeService)
+    {
         this.nodeService = nodeService;
     }
 
     /**
      * Initialise RM action service
      */
-    public void init() {
+    public void init()
+    {
         // Register the various policies
         beforeRMActionExecutionDelegate = getPolicyComponent().registerClassPolicy(BeforeRMActionExecution.class);
         onRMActionExecutionDelegate = getPolicyComponent().registerClassPolicy(OnRMActionExecution.class);
@@ -151,18 +151,23 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#register(org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction)
      */
-    public void register(RecordsManagementAction rmAction) {
-        if (!rmActions.containsKey(rmAction.getName())) {
+    public void register(RecordsManagementAction rmAction)
+    {
+        if (!rmActions.containsKey(rmAction.getName()))
+        {
             rmActions.put(rmAction.getName(), rmAction);
 
-            if (rmAction.isDispositionAction()) {
+            if (rmAction.isDispositionAction())
+            {
                 dispositionActions.put(rmAction.getName(), rmAction);
             }
         }
     }
 
-    public void register(RecordsManagementActionCondition rmCondition) {
-        if (!rmConditions.containsKey(rmCondition.getBeanName())) {
+    public void register(RecordsManagementActionCondition rmCondition)
+    {
+        if (!rmConditions.containsKey(rmCondition.getBeanName()))
+        {
             rmConditions.put(rmCondition.getBeanName(), rmCondition);
         }
     }
@@ -170,11 +175,12 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Invoke beforeRMActionExecution policy
      *
-     * @param nodeRef    node reference
-     * @param name       action name
-     * @param parameters action parameters
+     * @param nodeRef       node reference
+     * @param name          action name
+     * @param parameters    action parameters
      */
-    protected void invokeBeforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters) {
+    protected void invokeBeforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
+    {
         // get qnames to invoke against
         Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), nodeRef);
         // execute policy for node type and aspects
@@ -185,11 +191,12 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Invoke onRMActionExecution policy
      *
-     * @param nodeRef    node reference
-     * @param name       action name
-     * @param parameters action parameters
+     * @param nodeRef       node reference
+     * @param name          action name
+     * @param parameters    action parameters
      */
-    protected void invokeOnRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters) {
+    protected void invokeOnRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
+    {
         // get qnames to invoke against
         Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), nodeRef);
         // execute policy for node type and aspects
@@ -200,7 +207,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getRecordsManagementActions()
      */
-    public List<RecordsManagementAction> getRecordsManagementActions() {
+    public List<RecordsManagementAction> getRecordsManagementActions()
+    {
         List<RecordsManagementAction> result = new ArrayList<>(this.rmActions.size());
         result.addAll(this.rmActions.values());
         return Collections.unmodifiableList(result);
@@ -210,7 +218,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getRecordsManagementActionConditions()
      */
     @Override
-    public List<RecordsManagementActionCondition> getRecordsManagementActionConditions() {
+    public List<RecordsManagementActionCondition> getRecordsManagementActionConditions()
+    {
         List<RecordsManagementActionCondition> result = new ArrayList<>(rmConditions.size());
         result.addAll(rmConditions.values());
         return Collections.unmodifiableList(result);
@@ -223,10 +232,12 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      * @return List of records management action
      */
     @SuppressWarnings("unused")
-    public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef) {
+    public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef)
+    {
         List<RecordsManagementAction> result = new ArrayList<>(this.rmActions.size());
 
-        for (RecordsManagementAction action : this.rmActions.values()) {
+        for (RecordsManagementAction action : this.rmActions.values())
+        {
             // TODO check the permissions on the action ...
         }
 
@@ -236,7 +247,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionActions()
      */
-    public List<RecordsManagementAction> getDispositionActions() {
+    public List<RecordsManagementAction> getDispositionActions()
+    {
         List<RecordsManagementAction> result = new ArrayList<>(dispositionActions.size());
         result.addAll(dispositionActions.values());
         return Collections.unmodifiableList(result);
@@ -245,47 +257,54 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionAction(java.lang.String)
      */
-    public RecordsManagementAction getDispositionAction(String name) {
+    public RecordsManagementAction getDispositionAction(String name)
+    {
         return dispositionActions.get(name);
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getRecordsManagementAction(java.lang.String)
      */
-    public RecordsManagementAction getRecordsManagementAction(String name) {
+    public RecordsManagementAction getRecordsManagementAction(String name)
+    {
         return this.rmActions.get(name);
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name) {
+    public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name)
+    {
         return executeRecordsManagementAction(nodeRef, name, null);
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(java.util.List, java.lang.String)
      */
-    public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name) {
+    public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name)
+    {
         return executeRecordsManagementAction(nodeRefs, name, null);
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
      */
-    public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name, Map<String, Serializable> parameters) {
+    public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
+    {
         log.debug("Executing record management action on " + nodeRef);
         log.debug("    actionName = " + name);
         log.debug("    parameters = " + parameters);
 
         RecordsManagementAction rmAction = this.rmActions.get(name);
-        if (rmAction == null) {
+        if (rmAction == null)
+        {
             String msg = I18NUtil.getMessage(MSG_NOT_DEFINED, name);
             log.warn(msg);
             throw new AlfrescoRuntimeException(msg);
         }
 
-        if (freezeService.isFrozenOrHasFrozenChildren(nodeRef) && retentionActions.contains(name.toLowerCase())) {
+        if (freezeService.isFrozenOrHasFrozenChildren(nodeRef) && retentionActions.contains(name.toLowerCase()))
+        {
             String msg = I18NUtil.getMessage(MSG_NODE_FROZEN, name);
 
             log.debug(msg);
@@ -296,7 +315,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         // Execute action
         invokeBeforeRMActionExecution(nodeRef, name, parameters);
         RecordsManagementActionResult result = rmAction.execute(nodeRef, parameters);
-        if (getNodeService().exists(nodeRef)) {
+        if (getNodeService().exists(nodeRef))
+        {
             invokeOnRMActionExecution(nodeRef, name, parameters);
         }
 
@@ -306,15 +326,18 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(java.lang.String, java.util.Map)
      */
-    public RecordsManagementActionResult executeRecordsManagementAction(String name, Map<String, Serializable> parameters) {
+    public RecordsManagementActionResult executeRecordsManagementAction(String name, Map<String, Serializable> parameters)
+    {
         RecordsManagementAction rmAction = rmActions.get(name);
 
         NodeRef implicitTargetNode = rmAction.getImplicitTargetNodeRef();
-        if (implicitTargetNode == null) {
+        if (implicitTargetNode == null)
+        {
             String msg = I18NUtil.getMessage(MSG_NO_IMPLICIT_NODEREF, name);
             log.warn(msg);
             throw new AlfrescoRuntimeException(msg);
-        } else {
+        } else
+        {
             return this.executeRecordsManagementAction(implicitTargetNode, name, parameters);
         }
     }
@@ -322,10 +345,12 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(java.util.List, java.lang.String, java.util.Map)
      */
-    public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name, Map<String, Serializable> parameters) {
+    public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name, Map<String, Serializable> parameters)
+    {
         // Execute the action on each node in the list
         Map<NodeRef, RecordsManagementActionResult> results = new HashMap<>(nodeRefs.size());
-        for (NodeRef nodeRef : nodeRefs) {
+        for (NodeRef nodeRef : nodeRefs)
+        {
             RecordsManagementActionResult result = executeRecordsManagementAction(nodeRef, name, parameters);
             results.put(nodeRef, result);
         }

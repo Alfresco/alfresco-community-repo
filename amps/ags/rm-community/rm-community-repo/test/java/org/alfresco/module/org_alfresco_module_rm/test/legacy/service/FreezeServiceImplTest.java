@@ -41,11 +41,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class FreezeServiceImplTest extends BaseRMTestCase {
+public class FreezeServiceImplTest extends BaseRMTestCase
+{
     private List<NodeRef> holdAssocs;
 
     @Override
-    protected boolean isRecordTest() {
+    protected boolean isRecordTest()
+    {
         return true;
     }
 
@@ -54,12 +56,15 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
      *
      * @deprecated as of 2.2
      */
-    public void testFreezeService() throws Exception {
+    public void testFreezeService() throws Exception
+    {
 
 
-        doTestInTransaction(new Test<Void>() {
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public Void run() throws Exception {
+            public Void run() throws Exception
+            {
                 assertTrue(recordService.isRecord(recordOne));
                 assertTrue(recordService.isRecord(recordTwo));
                 assertTrue(recordService.isRecord(recordThree));
@@ -122,25 +127,30 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
                 assertNotNull(holdAssocs);
                 assertEquals(2, holdAssocs.size());
 
-                for (NodeRef hold : holdAssocs) {
+                for (NodeRef hold : holdAssocs)
+                {
                     String reason = holdService.getHoldReason(hold);
-                    if (reason.equals("Freeze a set of nodes")) {
+                    if (reason.equals("Freeze a set of nodes"))
+                    {
                         assertEquals(newHold, hold);
                         frozenNodes = holdService.getHeld(hold);
                         assertNotNull(frozenNodes);
                         assertEquals(3, frozenNodes.size());
-                    } else if (reason.equals("NewFreezeReason")) {
+                    } else if (reason.equals("NewFreezeReason"))
+                    {
                         frozenNodes = holdService.getHeld(hold);
                         assertNotNull(frozenNodes);
                         assertEquals(1, frozenNodes.size());
-                    } else {
+                    } else
+                    {
                         throw new AlfrescoRuntimeException("The reason '" + reason + "' was not found in the existing holds.");
                     }
                 }
 
                 // Check the nodes are frozen
-                final List<NodeRef> testRecords = Arrays.asList(new NodeRef[]{recordOne, recordTwo, recordThree});
-                for (NodeRef nr : testRecords) {
+                final List<NodeRef> testRecords = Arrays.asList(new NodeRef[] { recordOne, recordTwo, recordThree });
+                for (NodeRef nr : testRecords)
+                {
                     assertTrue(freezeService.isFrozen(nr));
                     assertNotNull(freezeService.getFreezeDate(nr));
                     assertNotNull(freezeService.getFreezeInitiator(nr));
@@ -152,17 +162,21 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
                 holdAssocs = holdService.getHolds(filePlan);
                 assertNotNull(holdAssocs);
                 assertEquals(2, holdAssocs.size());
-                for (NodeRef hold : holdAssocs) {
+                for (NodeRef hold : holdAssocs)
+                {
                     String reason = holdService.getHoldReason(hold);
-                    if (reason.equals("Freeze a set of nodes")) {
+                    if (reason.equals("Freeze a set of nodes"))
+                    {
                         frozenNodes = holdService.getHeld(hold);
                         assertNotNull(frozenNodes);
                         assertEquals(2, frozenNodes.size());
-                    } else if (reason.equals("NewFreezeReason")) {
+                    } else if (reason.equals("NewFreezeReason"))
+                    {
                         frozenNodes = holdService.getHeld(hold);
                         assertNotNull(frozenNodes);
                         assertEquals(1, frozenNodes.size());
-                    } else {
+                    } else
+                    {
                         throw new AlfrescoRuntimeException("The reason '" + reason + "' was not found in the existing holds.");
                     }
                 }
@@ -180,9 +194,11 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
             }
         });
         //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
-        doTestInTransaction(new Test<Void>() {
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public Void run() throws Exception {
+            public Void run() throws Exception
+            {
                 // Relinquish the first hold
                 NodeRef holdNodeRef = holdAssocs.iterator().next();
                 holdService.deleteHold(holdNodeRef);
@@ -230,9 +246,11 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
             }
         });
         //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
-        doTestInTransaction(new Test<Void>() {
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public Void run() throws Exception {
+            public Void run() throws Exception
+            {
                 // Relinquish the first hold
                 holdService.deleteHold(holdAssocs.iterator().next());
 
@@ -247,10 +265,12 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
             }
         });
 
-        doTestInTransaction(new Test<Void>() {
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public Void run() throws Exception {
-                NodeRef hold101 = holdService.createHold(filePlan, "freezename 101", "FreezeReason", null);
+            public Void run() throws Exception
+            {
+                NodeRef hold101 = holdService.createHold(filePlan, "freezename 103", "FreezeReason", null);
                 // Freeze a record folder
                 assertNotNull(hold101);
                 holdService.addToHold(hold101, rmFolder);
@@ -260,14 +280,16 @@ public class FreezeServiceImplTest extends BaseRMTestCase {
             }
         });
 
-        doTestInTransaction(new Test<Void>() {
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public Void run() throws Exception {
-                NodeRef hold101 = holdService.createHold(filePlan, "freezename 101", "FreezeReason", null);
+            public Void run() throws Exception
+            {
+                NodeRef hold101 = holdService.createHold(filePlan, "freezename 104", "FreezeReason", null);
                 // Freeze a record inside a record folder
                 assertNotNull(hold101);
                 holdService.addToHold(hold101, recordThree);
-                assertTrue(recordService.isRecord(rmFolder));
+                assertTrue(recordService.isRecord(recordThree));
                 assertTrue(freezeService.isFrozenOrHasFrozenChildren(rmFolder));
                 return null;
             }

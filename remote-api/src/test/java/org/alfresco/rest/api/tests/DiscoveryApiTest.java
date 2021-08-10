@@ -185,6 +185,7 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(statusInfo.getIsAuditEnabled());
         assertTrue(statusInfo.getIsQuickShareEnabled());
         assertTrue(statusInfo.getIsThumbnailGenerationEnabled());
+        assertFalse(statusInfo.getIsDirectAccessUrlEnabled());
 
         // Check modules
         List<ModulePackage> modulePackageList = repositoryInfo.getModules();

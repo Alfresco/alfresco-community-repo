@@ -1073,8 +1073,8 @@
     <!-- REST API direct access URL configuration settings -->
     <bean id="restApiDirectUrlConfig" class="org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig" init-method="init">
         <property name="systemWideDirectUrlConfig" ref="systemWideDirectUrlConfig" />
-        <property name="enabled" value="${restApi.directAccessUrl.enabled: #{false}}" />
-        <property name="defaultExpiryTimeInSec" value="${restApi.directAccessUrl.defaultExpiryTimeInSec: #{null}}" />
+        <property name="enabled" value="${restApi.directAccessUrl.enabled}" />
+        <property name="defaultExpiryTimeInSec" value="${restApi.directAccessUrl.defaultExpiryTimeInSec}" />
     </bean>
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">

@@ -494,7 +494,7 @@
                org.alfresco.service.cmr.repository.ContentService.getRawReader=ACL_METHOD.ROLE_ADMINISTRATOR
                org.alfresco.service.cmr.repository.ContentService.getReader=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.repository.ContentService.getWriter=ACL_NODE.0.sys:base.WriteContent
-               org.alfresco.service.cmr.repository.ContentService.getDirectAccessUrl=ACL_NODE.0.sys:base.ReadContent 
+               org.alfresco.service.cmr.repository.ContentService.requestContentDirectUrl=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.repository.ContentService.getTempWriter=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.isContentDirectUrlEnabled=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.*=ACL_DENY

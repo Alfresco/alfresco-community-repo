@@ -311,7 +311,6 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
-        NodeRef nodeRef = nodes.validateNode(nodeId);
         Version version = findVersion(nodeId, versionId);
         if (version != null)
         {

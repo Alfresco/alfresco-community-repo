@@ -287,11 +287,13 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         retryingTransactionHelper.doInTransaction(processTranCB, false, true);
     }
 
-    public PersonService getPersonService() {
+    public PersonService getPersonService()
+    {
         return personService;
     }
 
-    public void setPersonService(PersonService personService) {
+    public void setPersonService(PersonService personService)
+    {
         this.personService = personService;
     }
 }

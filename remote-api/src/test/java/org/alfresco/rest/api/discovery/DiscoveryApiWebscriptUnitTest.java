@@ -1,6 +1,6 @@
 /*
  * #%L
- * Alfresco Repository
+ * Alfresco Remote API
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%

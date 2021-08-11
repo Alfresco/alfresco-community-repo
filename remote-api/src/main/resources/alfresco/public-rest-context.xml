@@ -1068,6 +1068,8 @@
         <property name="assistant" ref="apiAssistant" />
         <property name="enabled" value="${system.api.discovery.enabled}" />
         <property name="thumbnailService" ref="ThumbnailService" />
+        <property name="restApiDirectUrlConfig" ref="restApiDirectUrlConfig" />
+        <property name="contentService" ref="ContentService" />
     </bean>
 
     <!-- REST API direct access URL configuration settings -->
@@ -1079,6 +1081,13 @@
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">
         <property name="discovery" ref="webscript.org.alfresco.api.DiscoveryApiWebscript.get" />
+    </bean>
+
+    <!-- REST API direct access URL configuration settings -->
+    <bean id="restApiDirectUrlConfig" class="org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig" init-method="init">
+        <property name="systemWideDirectUrlConfig" ref="systemWideDirectUrlConfig" />
+        <property name="enabled" value="${restApi.directAccessUrl.enabled}" />
+        <property name="defaultExpiryTimeInSec" value="${restApi.directAccessUrl.defaultExpiryTimeInSec}" />
     </bean>
 
     <!-- OpenCMIS -->

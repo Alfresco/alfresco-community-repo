@@ -3116,9 +3116,6 @@ public class NodesImpl implements Nodes
     private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
                                   Boolean versionMajor, String versionComment)
     {
-      if ((versionMajor != null) || (versionComment != null)) {
-            behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-        }
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
         
         if (content == null)

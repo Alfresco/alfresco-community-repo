@@ -1456,5 +1456,4 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         return new NextActionFromDisposition(dispositionNodeRef, newAction,
                 newDispositionActionName, newDispositionActionDateAsOf, WriteMode.DATE_AND_NAME);
     }
-
 }

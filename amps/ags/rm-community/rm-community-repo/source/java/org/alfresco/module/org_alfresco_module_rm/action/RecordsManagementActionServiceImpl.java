@@ -61,9 +61,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private static final String MSG_NO_IMPLICIT_NODEREF = "rm.action.no-implicit-noderef";
     private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
 
-    /**
-     * Registered records management actions
-     */
+    /** Registered records management actions */
     private Map<String, RecordsManagementAction> rmActions = new HashMap<>(13);
     private Map<String, RecordsManagementActionCondition> rmConditions = new HashMap<>(13);
 

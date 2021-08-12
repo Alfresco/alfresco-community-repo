@@ -433,7 +433,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         if (recordFolderService.isRecordFolder(nodeRef))
         {
             return isFrozen(nodeRef) || hasFrozenChildren(nodeRef);
-        } else if (recordService.isRecord(nodeRef))
+        }
+        else if (recordService.isRecord(nodeRef))
         {
             return isFrozen(nodeRef);
         }

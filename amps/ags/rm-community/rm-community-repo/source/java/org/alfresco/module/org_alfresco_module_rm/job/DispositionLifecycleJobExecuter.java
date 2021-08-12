@@ -90,7 +90,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * @param freezeService freeze service
      */
-    public void setFreezeService(FreezeService freezeService) {
+    public void setFreezeService(FreezeService freezeService)
+    {
         this.freezeService = freezeService;
     }
 

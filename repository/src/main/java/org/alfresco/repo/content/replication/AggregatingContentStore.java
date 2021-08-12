@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.replication;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -41,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -65,7 +65,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AggregatingContentStore extends AbstractContentStore
 {    
-    private static Log logger = LogFactory.getLog(AggregatingContentStore.class);
+    private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
     
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
@@ -266,33 +266,58 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     /**
-     * @return Returns <tt>true</tt> if at least one store supports direct access
+     * @return Returns {@code true} if at least one store supports direct access URLs
      */
-    public boolean isDirectAccessSupported()
+    public boolean isContentDirectUrlEnabled()
     {
         // Check the primary store
-        boolean isDirectAccessSupported = primaryStore.isDirectAccessSupported();
+        boolean isContentDirectUrlEnabled = primaryStore.isContentDirectUrlEnabled();
 
-        if (!isDirectAccessSupported)
+        if (!isContentDirectUrlEnabled)
         {
             // Direct access is not supported by the primary store so we have to check the
             // other stores
             for (ContentStore store : secondaryStores)
             {
+                isContentDirectUrlEnabled = store.isContentDirectUrlEnabled();
 
-                isDirectAccessSupported = store.isDirectAccessSupported();
-
-                if (isDirectAccessSupported)
+                if (isContentDirectUrlEnabled)
                 {
                     break;
                 }
             }
         }
 
-        return isDirectAccessSupported;
+        return isContentDirectUrlEnabled;
     }
 
-    public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
+    /**
+     * @return Returns {@code true} if at least one store supports direct access URL for node
+     */
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        // Check the primary store
+        boolean isContentDirectUrlEnabled = primaryStore.isContentDirectUrlEnabled(nodeRef);
+
+        if (!isContentDirectUrlEnabled)
+        {
+            // Direct access is not supported by the primary store so we have to check the
+            // other stores
+            for (ContentStore store : secondaryStores)
+            {
+                isContentDirectUrlEnabled = store.isContentDirectUrlEnabled(nodeRef);
+
+                if (isContentDirectUrlEnabled)
+                {
+                    break;
+                }
+            }
+        }
+
+        return isContentDirectUrlEnabled;
+    }
+
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
         if (primaryStore == null)
         {
@@ -312,13 +337,13 @@ public class AggregatingContentStore extends AbstractContentStore
             // Check the primary store
             try
             {
-                directAccessUrl = primaryStore.getDirectAccessUrl(contentUrl, expiresAt);
+                directAccessUrl = primaryStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
             }
             catch (UnsupportedOperationException e)
             {
                 // The store does not support direct access URL
                 directAccessUrlSupported = false;
-            } 
+            }
             catch (UnsupportedContentUrlException e)
             {
                 // The store can't handle the content URL
@@ -335,7 +360,7 @@ public class AggregatingContentStore extends AbstractContentStore
             {
                 try
                 {
-                    directAccessUrl = store.getDirectAccessUrl(contentUrl, expiresAt);
+                    directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
                 }
                 catch (UnsupportedOperationException e)
                 {

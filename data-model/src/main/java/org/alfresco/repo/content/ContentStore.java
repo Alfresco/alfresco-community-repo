@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Date;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -32,8 +34,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 
-import java.util.Date;
 
 /**
  * Provides low-level retrieval of content
@@ -240,6 +242,58 @@ public interface ContentStore
     public boolean delete(String contentUrl);
 
     /**
+     * Checks if the store supports the retrieving of direct access URLs.
+     *
+     * @return {@code true} if direct access URLs retrieving is supported, {@code false} otherwise
+     */
+    default boolean isContentDirectUrlEnabled()
+    {
+        return false;
+    }
+
+    /**
+     * Checks if the store supports the retrieving of a direct access URL for the given node.
+     *
+     * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
+     */
+    default boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        return false;
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param contentUrl A content store {@code URL}
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param fileName File name of the content
+     * @return A direct access {@code URL} object for the content
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
+    {
+        return requestContentDirectUrl(contentUrl, attachment, fileName, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param contentUrl A content store {@code URL}
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param fileName File name of the content
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    {
+        throw new UnsupportedOperationException(
+                "Retrieving direct access URLs is not supported by this content store.");
+    }
+
+    /**
      * Gets a presigned URL to directly access a binary content. It is up to the actual store
      * implementation if it can fulfil this request with an expiry time or not.
      *
@@ -248,10 +302,11 @@ public interface ContentStore
      * @return A direct access URL object for a binary content
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
+    @Deprecated
     default DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
     {
         throw new UnsupportedOperationException(
-            "Retrieving direct access URLs is not supported by this content store.");
+                "Retrieving direct access URLs is not supported by this content store.");
     }
 
     /**
@@ -259,6 +314,7 @@ public interface ContentStore
      *
      * @return true if direct access URLs retrieving is supported, false otherwise
      */
+    @Deprecated
     default boolean isDirectAccessSupported()
     {
         return false;

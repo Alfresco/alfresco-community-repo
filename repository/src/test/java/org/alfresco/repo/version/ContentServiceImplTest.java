@@ -34,11 +34,13 @@ import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -144,6 +146,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         }
     }
 
+    @Ignore
     @Test
     public void testWhenRequestContentDirectUrlIsNotSupported()
     {
@@ -186,5 +189,50 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
 
         assertNull(contentService.requestContentDirectUrl(nodeRef, true, null));
         assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
+    }
+
+    // This test class is not to be merged to master.
+    @Test
+    public void testWhenRequestContentDirectUrlIsSupported()
+    {
+        openMocks(this);
+        when(mockSystemWideDirectUrlConfig.isEnabled()).thenReturn(ENABLED);
+        when(mockSystemWideDirectUrlConfig.getDefaultExpiryTimeInSec()).thenReturn(30L);
+        when(mockSystemWideDirectUrlConfig.getMaxExpiryTimeInSec()).thenReturn(300L);
+
+        assertTrue(contentStore.isContentDirectUrlEnabled());
+
+        // Set the presigned URL to expire after one minute.
+        Long validFor = 60L;
+
+        try
+        {
+            // Create a node without content
+            NodeRef nodeRef = this.dbNodeService
+                    .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
+
+            assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
+            fail("nodeRef has no content");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
+
+        try
+        {
+            assertNull(contentService.requestContentDirectUrl(null, true, null));
+            fail("nodeRef is null");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
+
+        // Create a node with content
+        NodeRef nodeRef = createNewVersionableNode();
+
+        assertNotNull(contentService.requestContentDirectUrl(nodeRef, true, null));
+        assertNotNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
     }
 }

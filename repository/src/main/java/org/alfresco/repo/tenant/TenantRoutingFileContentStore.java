@@ -27,6 +27,8 @@ package org.alfresco.repo.tenant;
 
 import java.io.File;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,8 @@ import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentUrlProvider;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -44,7 +48,10 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
 {
     private ContentLimitProvider contentLimitProvider = new NoLimitProvider();
     private FileContentUrlProvider fileContentUrlProvider;
-    
+
+    // TODO: remove this
+    private boolean enabled = true;
+
     /**
      * Sets a new {@link ContentLimitProvider} which will provide a maximum filesize for content.
      */
@@ -82,5 +89,30 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
             fileContentStore.setFileContentUrlProvider(fileContentUrlProvider);
         }
         return fileContentStore;
+    }
+
+    // TODO: remove these temp methods
+    @Override
+    public boolean isContentDirectUrlEnabled()
+    {
+        return enabled;
+    }
+
+    @Override
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        return enabled;
+    }
+
+    @Override
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    {
+        DirectAccessUrl directAccessUrl = new DirectAccessUrl();
+        directAccessUrl.setContentUrl(contentUrl);
+        directAccessUrl.setAttachment(attachment);
+        Date expiryTime = Date.from(Instant.now().plusSeconds(validFor));
+        directAccessUrl.setExpiryTime(expiryTime);
+
+        return directAccessUrl;
     }
 }

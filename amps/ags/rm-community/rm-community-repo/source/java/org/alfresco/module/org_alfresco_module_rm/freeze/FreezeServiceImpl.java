@@ -64,23 +64,17 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class FreezeServiceImpl extends ServiceBaseImpl
-        implements FreezeService,
-                   RecordsManagementModel
+public class FreezeServiceImpl extends    ServiceBaseImpl
+                               implements FreezeService,
+                                          RecordsManagementModel
 {
-    /**
-     * I18N
-     */
+    /** I18N */
     private static final String MSG_HOLD_NAME = "rm.hold.name";
 
-    /**
-     * File Plan Service
-     */
+    /** File Plan Service */
     private FilePlanService filePlanService;
 
-    /**
-     * Hold service
-     */
+    /** Hold service */
     private HoldService holdService;
 
     /**
@@ -379,10 +373,7 @@ public class FreezeServiceImpl extends ServiceBaseImpl
         if (isFrozen(nodeRef))
         {
             Serializable property = nodeService.getProperty(nodeRef, PROP_FROZEN_AT);
-            if (property != null)
-            {
-                return (Date) property;
-            }
+            if (property != null) { return (Date) property; }
         }
 
         return null;
@@ -399,10 +390,7 @@ public class FreezeServiceImpl extends ServiceBaseImpl
         if (isFrozen(nodeRef))
         {
             Serializable property = nodeService.getProperty(nodeRef, PROP_FROZEN_BY);
-            if (property != null)
-            {
-                return (String) property;
-            }
+            if (property != null) { return (String) property; }
         }
 
         return null;

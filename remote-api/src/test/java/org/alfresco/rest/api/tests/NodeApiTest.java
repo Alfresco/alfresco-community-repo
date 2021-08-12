@@ -73,6 +73,7 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -6278,5 +6279,37 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
     }
 
+    @Test
+    public void testRequestVersionsContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Use existing test file
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload text content
+        post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+
+        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        final String contentNodeId = document.getId();
+
+        // Check the upload response
+        assertNotNull(document.getProperties());
+        assertTrue(document.getAspectNames().contains("cm:versionable"));
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+
+        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+    }
 }
 

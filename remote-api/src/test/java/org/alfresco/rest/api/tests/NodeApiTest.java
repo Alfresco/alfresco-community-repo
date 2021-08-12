@@ -6284,30 +6284,41 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         setRequestContext(user1);
 
-        // Use existing test file
-        String fileName = "quick-1.txt";
-        File file = getResourceFile(fileName);
+        String myNodeId = getMyNodeId();
 
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
-        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
 
-        // Upload text content
-        post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        // create *empty* text file - as of now, versioning is not enabled by default
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        String docId = documentResp.getId();
+        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
 
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        int majorVersion = 1;
+        int minorVersion = 0;
 
-        final String contentNodeId = document.getId();
+        String content = "The quick brown fox jumps over the lazy dog ";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "my version ");
+
+        documentResp = updateTextFile(docId, content, params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        final String contentNodeId = documentResp.getId();
 
         // Check the upload response
-        assertNotNull(document.getProperties());
-        assertTrue(document.getAspectNames().contains("cm:versionable"));
-        assertEquals(fileName, document.getName());
-        ContentInfo contentInfo = document.getContent();
+        assertNotNull(documentResp.getProperties());
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        ContentInfo contentInfo = documentResp.getContent();
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
-
 
         getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
     }

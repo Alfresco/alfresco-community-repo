@@ -301,7 +301,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             throw new AlfrescoRuntimeException(msg);
         }
 
-        if (freezeService.isFrozenOrHasFrozenChildren(nodeRef) && retentionActions.contains(name.toLowerCase()))
+        if (retentionActions.contains(name.toLowerCase()) && freezeService.isFrozenOrHasFrozenChildren(nodeRef))
         {
             String msg = I18NUtil.getMessage(MSG_NODE_FROZEN, name);
 

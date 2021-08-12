@@ -88,6 +88,7 @@
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.24.2</dependency.camel.version>
         <dependency.activemq.version>5.15.11</dependency.activemq.version>
+        <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
 
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>
@@ -505,7 +506,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.19</version>
+                <version>${dependency.apache-compress.version}</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>

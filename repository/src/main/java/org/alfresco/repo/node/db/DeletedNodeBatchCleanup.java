@@ -53,7 +53,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * that are old enough{@link #minPurgeAgeMs} in fixed size batches.
  * The Algorithm fetches the deleted nodes in batches{@link #batchSize} and uses the node id to delete the entries
  * in alf_node and alf_node_properties table. The batch size to fetch and delete{@link #deleteBatchSize} the entries are configurable.
- * The alf_transactions entries which doesn't have an entry in alf_node table are selected for deletion in batches.
+ * The alf_transactions entries which doesn't have an entry in alf_node table that are old enough{@link #minPurgeAgeMs} are selected
+ * for deletion in batches{@link #batchSize} and the transaction ids are used to delete the alf_transaction table rows
+ * in fixed size batches {@link #deleteBatchSize}.
+ * This Algorithm uses JDBC cursor based approach to initially query the alf_node ids and alf_transaction ids to limit
+ * the number of rows fetched on the client side.
  */
 public class DeletedNodeBatchCleanup
 {

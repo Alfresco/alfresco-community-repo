@@ -288,5 +288,4 @@ public interface DispositionService
      * @param record
      */
     void recalculateNextDispositionStep(NodeRef record);
-
 }

@@ -58,7 +58,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  */
 @Slf4j
-public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecuter {
+public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecuter
+{
 
     /** batching properties */
     private int batchSize;
@@ -226,7 +227,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 }
             }
             log.debug("Job Finished");
-        } catch (AlfrescoRuntimeException exception)
+        }
+        catch (AlfrescoRuntimeException exception)
         {
             log.debug(exception.getMessage());
         }
@@ -276,7 +278,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                     log.debug("Processed action: " + dispAction + "on" + parent);
 
-                } catch (AlfrescoRuntimeException exception)
+                }
+                catch (AlfrescoRuntimeException exception)
                 {
                     log.debug(exception.getMessage());
 

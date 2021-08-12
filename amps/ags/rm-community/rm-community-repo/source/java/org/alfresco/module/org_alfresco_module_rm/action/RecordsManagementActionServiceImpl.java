@@ -85,22 +85,9 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private FreezeService freezeService;
 
     /**
-     * @param freezeService freeze service
-     */
-    public void setFreezeService(FreezeService freezeService)
-    {
-        this.freezeService = freezeService;
-    }
-
-    /**
      * list of retention actions to automatically execute
      */
     private List<String> retentionActions;
-
-    public void setRetentionActions(List<String> retentionActions)
-    {
-        this.retentionActions = retentionActions;
-    }
 
     /**
      * @return Policy component
@@ -116,6 +103,19 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     protected NodeService getNodeService()
     {
         return this.nodeService;
+    }
+
+    /**
+     * @param freezeService freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
+
+    public void setRetentionActions(List<String> retentionActions)
+    {
+        this.retentionActions = retentionActions;
     }
 
     /**
@@ -336,7 +336,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             String msg = I18NUtil.getMessage(MSG_NO_IMPLICIT_NODEREF, name);
             log.warn(msg);
             throw new AlfrescoRuntimeException(msg);
-        } else
+        }
+        else
         {
             return this.executeRecordsManagementAction(implicitTargetNode, name, parameters);
         }

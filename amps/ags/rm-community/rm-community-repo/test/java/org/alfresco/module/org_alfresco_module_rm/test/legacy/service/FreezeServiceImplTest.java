@@ -51,215 +51,219 @@ public class FreezeServiceImplTest extends BaseRMTestCase
         return true;
     }
 
-    /**
-     * Test freeze service methods.
-     *
-     * @deprecated as of 2.2
-     */
-    public void testFreezeService() throws Exception
-    {
+   /**
+    * Test freeze service methods.
+    *
+    * @deprecated as of 2.2
+    */
+   public void testFreezeService() throws Exception
+   {
 
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
+       doTestInTransaction(new Test<Void>()
+      {
+         @Override
+         public Void run() throws Exception
+         {
+            assertTrue(recordService.isRecord(recordOne));
+            assertTrue(recordService.isRecord(recordTwo));
+            assertTrue(recordService.isRecord(recordThree));
+            assertTrue(recordService.isRecord(recordFour));
+            assertTrue(filePlanService.isFilePlanComponent(recordOne));
+            assertTrue(filePlanService.isFilePlanComponent(recordTwo));
+            assertTrue(filePlanService.isFilePlanComponent(recordThree));
+            assertTrue(filePlanService.isFilePlanComponent(recordFour));
+
+            // Freeze a record
+             NodeRef hold101 = holdService.createHold(filePlan, "freezename 101", "FreezeReason", null);
+
+           assertNotNull(hold101);
+           holdService.addToHold(hold101, recordOne);
+
+           //assertTrue(freezeService.hasFrozenChildren(rmFolder));
+
+           // Check the hold exists
+           holdAssocs = holdService.getHolds(filePlan);
+           assertNotNull(holdAssocs);
+           assertEquals(1, holdAssocs.size());
+
+             NodeRef holdNodeRef = holdAssocs.iterator().next();
+
+
+            assertEquals(holdNodeRef, hold101);
+            assertTrue(holdService.isHold(holdNodeRef));
+            assertEquals("FreezeReason", holdService.getHoldReason(holdNodeRef));
+             List<NodeRef> frozenNodes = holdService.getHeld(holdNodeRef);
+
+            assertNotNull(frozenNodes);
+            assertEquals(1, frozenNodes.size());
+
+            // Check the nodes are frozen
+            assertTrue(freezeService.isFrozen(recordOne));
+            assertNotNull(freezeService.getFreezeDate(recordOne));
+            assertNotNull(freezeService.getFreezeInitiator(recordOne));
+            assertFalse(freezeService.isFrozen(recordTwo));
+            assertFalse(freezeService.isFrozen(recordThree));
+
+            // Update the freeze reason
+            holdService.setHoldReason(holdNodeRef, "NewFreezeReason");
+
+            // Check the hold has been updated
+            assertEquals("NewFreezeReason", holdService.getHoldReason(holdNodeRef));
+
+            // Freeze a number of records
+             List<NodeRef> records = new ArrayList<>();
+            records.add(recordOne);
+            records.add(recordTwo);
+            records.add(recordThree);
+            NodeRef newHold = holdService.createHold(filePlan, "Hold 102", "Freeze a set of nodes", null);
+
+            holdService.addToHold(newHold, records);
+            assertNotNull(newHold);
+            assertTrue(holdService.isHold(newHold));
+
+            // Check the holds exist
+            holdAssocs = holdService.getHolds(filePlan);
+            assertNotNull(holdAssocs);
+            assertEquals(2, holdAssocs.size());
+
+            for (NodeRef hold : holdAssocs)
             {
-                assertTrue(recordService.isRecord(recordOne));
-                assertTrue(recordService.isRecord(recordTwo));
-                assertTrue(recordService.isRecord(recordThree));
-                assertTrue(recordService.isRecord(recordFour));
-                assertTrue(filePlanService.isFilePlanComponent(recordOne));
-                assertTrue(filePlanService.isFilePlanComponent(recordTwo));
-                assertTrue(filePlanService.isFilePlanComponent(recordThree));
-                assertTrue(filePlanService.isFilePlanComponent(recordFour));
-
-                // Freeze a record
-                NodeRef hold101 = holdService.createHold(filePlan, "freezename 101", "FreezeReason", null);
-
-                assertNotNull(hold101);
-                holdService.addToHold(hold101, recordOne);
-
-                //assertTrue(freezeService.hasFrozenChildren(rmFolder));
-
-                // Check the hold exists
-                holdAssocs = holdService.getHolds(filePlan);
-                assertNotNull(holdAssocs);
-                assertEquals(1, holdAssocs.size());
-
-                NodeRef holdNodeRef = holdAssocs.iterator().next();
-
-
-                assertEquals(holdNodeRef, hold101);
-                assertTrue(holdService.isHold(holdNodeRef));
-                assertEquals("FreezeReason", holdService.getHoldReason(holdNodeRef));
-                List<NodeRef> frozenNodes = holdService.getHeld(holdNodeRef);
-
-                assertNotNull(frozenNodes);
-                assertEquals(1, frozenNodes.size());
-
-                // Check the nodes are frozen
-                assertTrue(freezeService.isFrozen(recordOne));
-                assertNotNull(freezeService.getFreezeDate(recordOne));
-                assertNotNull(freezeService.getFreezeInitiator(recordOne));
-                assertFalse(freezeService.isFrozen(recordTwo));
-                assertFalse(freezeService.isFrozen(recordThree));
-
-                // Update the freeze reason
-                holdService.setHoldReason(holdNodeRef, "NewFreezeReason");
-
-                // Check the hold has been updated
-                assertEquals("NewFreezeReason", holdService.getHoldReason(holdNodeRef));
-
-                // Freeze a number of records
-                List<NodeRef> records = new ArrayList<>();
-                records.add(recordOne);
-                records.add(recordTwo);
-                records.add(recordThree);
-                NodeRef newHold = holdService.createHold(filePlan, "Hold 102", "Freeze a set of nodes", null);
-
-                holdService.addToHold(newHold, records);
-                assertNotNull(newHold);
-                assertTrue(holdService.isHold(newHold));
-
-                // Check the holds exist
-                holdAssocs = holdService.getHolds(filePlan);
-                assertNotNull(holdAssocs);
-                assertEquals(2, holdAssocs.size());
-
-                for (NodeRef hold : holdAssocs)
-                {
-                    String reason = holdService.getHoldReason(hold);
-                    if (reason.equals("Freeze a set of nodes"))
-                    {
-                        assertEquals(newHold, hold);
-                        frozenNodes = holdService.getHeld(hold);
-                        assertNotNull(frozenNodes);
-                        assertEquals(3, frozenNodes.size());
-                    } else if (reason.equals("NewFreezeReason"))
-                    {
-                        frozenNodes = holdService.getHeld(hold);
-                        assertNotNull(frozenNodes);
-                        assertEquals(1, frozenNodes.size());
-                    } else
-                    {
-                        throw new AlfrescoRuntimeException("The reason '" + reason + "' was not found in the existing holds.");
-                    }
-                }
-
-                // Check the nodes are frozen
-                final List<NodeRef> testRecords = Arrays.asList(new NodeRef[] { recordOne, recordTwo, recordThree });
-                for (NodeRef nr : testRecords)
-                {
-                    assertTrue(freezeService.isFrozen(nr));
-                    assertNotNull(freezeService.getFreezeDate(nr));
-                    assertNotNull(freezeService.getFreezeInitiator(nr));
-                }
-
-                // Unfreeze a node
-                holdService.removeFromAllHolds(recordThree);
-                // Check the holds
-                holdAssocs = holdService.getHolds(filePlan);
-                assertNotNull(holdAssocs);
-                assertEquals(2, holdAssocs.size());
-                for (NodeRef hold : holdAssocs)
-                {
-                    String reason = holdService.getHoldReason(hold);
-                    if (reason.equals("Freeze a set of nodes"))
-                    {
-                        frozenNodes = holdService.getHeld(hold);
-                        assertNotNull(frozenNodes);
-                        assertEquals(2, frozenNodes.size());
-                    } else if (reason.equals("NewFreezeReason"))
-                    {
-                        frozenNodes = holdService.getHeld(hold);
-                        assertNotNull(frozenNodes);
-                        assertEquals(1, frozenNodes.size());
-                    } else
-                    {
-                        throw new AlfrescoRuntimeException("The reason '" + reason + "' was not found in the existing holds.");
-                    }
-                }
-
-                // Check the nodes are frozen
-                assertTrue(freezeService.isFrozen(recordOne));
-                assertNotNull(freezeService.getFreezeDate(recordOne));
-                assertNotNull(freezeService.getFreezeInitiator(recordOne));
-                assertTrue(freezeService.isFrozen(recordTwo));
-                assertNotNull(freezeService.getFreezeDate(recordTwo));
-                assertNotNull(freezeService.getFreezeInitiator(recordTwo));
-                assertFalse(freezeService.isFrozen(recordThree));
-                assertFalse(freezeService.isFrozen(recordFour));
-                return null;
+               String reason = holdService.getHoldReason(hold);
+               if (reason.equals("Freeze a set of nodes"))
+               {
+                  assertEquals(newHold, hold);
+                  frozenNodes = holdService.getHeld(hold);
+                  assertNotNull(frozenNodes);
+                  assertEquals(3, frozenNodes.size());
+               }
+               else if (reason.equals("NewFreezeReason"))
+               {
+                  frozenNodes = holdService.getHeld(hold);
+                  assertNotNull(frozenNodes);
+                  assertEquals(1, frozenNodes.size());
+               }
+               else
+               {
+                  throw new AlfrescoRuntimeException("The reason '" + reason + "' was not found in the existing holds.");
+               }
             }
-        });
-        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
+
+            // Check the nodes are frozen
+            final List<NodeRef> testRecords = Arrays.asList(new NodeRef[]{recordOne, recordTwo, recordThree});
+            for (NodeRef nr : testRecords)
             {
-                // Relinquish the first hold
-                NodeRef holdNodeRef = holdAssocs.iterator().next();
-                holdService.deleteHold(holdNodeRef);
-
-                // Check the existing hold
-                holdAssocs = holdService.getHolds(filePlan);
-                assertNotNull(holdAssocs);
-                assertEquals(1, holdAssocs.size());
-
-                // Relinquish the second hold
-                holdNodeRef = holdAssocs.iterator().next();
-                holdService.removeFromAllHolds(holdService.getHeld(holdNodeRef));
-
-                // hold is not automatically removed
-                holdAssocs = holdService.getHolds(filePlan);
-                assertEquals(1, holdAssocs.size());
-
-                // delete hold
-                holdService.deleteHold(holdNodeRef);
-
-                holdAssocs = holdService.getHolds(filePlan);
-                assertEquals(0, holdAssocs.size());
-
-                // Check the nodes are unfrozen
-                assertFalse(freezeService.isFrozen(recordOne));
-                assertFalse(freezeService.isFrozen(recordTwo));
-                assertFalse(freezeService.isFrozen(recordThree));
-                assertFalse(freezeService.isFrozen(recordFour));
-                //assertFalse(freezeService.hasFrozenChildren(rmFolder));
-
-                // Test freezing nodes, adding them to an existing hold
-                NodeRef hold = holdService.createHold(filePlan, "hold 1", "AnotherFreezeReason", "description");
-                holdService.addToHold(hold, recordFour);
-                holdService.addToHold(hold, recordOne);
-                List<NodeRef> nodes = new ArrayList<>();
-                nodes.add(recordTwo);
-                nodes.add(recordThree);
-                holdService.addToHold(hold, nodes);
-                //assertTrue(freezeService.hasFrozenChildren(rmFolder));
-                // Check the hold
-                holdAssocs = holdService.getHolds(filePlan);
-                assertNotNull(holdAssocs);
-                assertEquals(1, holdAssocs.size());
-                return null;
+               assertTrue(freezeService.isFrozen(nr));
+               assertNotNull(freezeService.getFreezeDate(nr));
+               assertNotNull(freezeService.getFreezeInitiator(nr));
             }
-        });
-        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                // Relinquish the first hold
-                holdService.deleteHold(holdAssocs.iterator().next());
 
-                // Check the nodes are unfrozen
-                assertFalse(freezeService.isFrozen(recordOne));
-                assertFalse(freezeService.isFrozen(recordTwo));
-                assertFalse(freezeService.isFrozen(recordThree));
-                assertFalse(freezeService.isFrozen(recordFour));
-                // assertFalse(freezeService.hasFrozenChildren(rmFolder));
+            // Unfreeze a node
+            holdService.removeFromAllHolds(recordThree);
+            // Check the holds
+            holdAssocs = holdService.getHolds(filePlan);
+            assertNotNull(holdAssocs);
+            assertEquals(2, holdAssocs.size());
+            for (NodeRef hold : holdAssocs)
+            {
+               String reason = holdService.getHoldReason(hold);
+               if (reason.equals("Freeze a set of nodes"))
+               {
+                  frozenNodes = holdService.getHeld(hold);
+                  assertNotNull(frozenNodes);
+                  assertEquals(2, frozenNodes.size());
+               }
+               else if (reason.equals("NewFreezeReason"))
+               {
+                  frozenNodes = holdService.getHeld(hold);
+                  assertNotNull(frozenNodes);
+                  assertEquals(1, frozenNodes.size());
+               }
+               else
+               {
+                  throw new AlfrescoRuntimeException("The reason '" + reason + "' was not found in the existing holds.");
+               }
+            }
+
+            // Check the nodes are frozen
+            assertTrue(freezeService.isFrozen(recordOne));
+            assertNotNull(freezeService.getFreezeDate(recordOne));
+            assertNotNull(freezeService.getFreezeInitiator(recordOne));
+            assertTrue(freezeService.isFrozen(recordTwo));
+            assertNotNull(freezeService.getFreezeDate(recordTwo));
+            assertNotNull(freezeService.getFreezeInitiator(recordTwo));
+            assertFalse(freezeService.isFrozen(recordThree));
+            assertFalse(freezeService.isFrozen(recordFour));
+               return null;
+           }
+       });
+        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
+       doTestInTransaction(new Test<Void>()
+       {
+           @Override
+           public Void run() throws Exception
+           {
+            // Relinquish the first hold
+            NodeRef holdNodeRef = holdAssocs.iterator().next();
+            holdService.deleteHold(holdNodeRef);
+
+            // Check the existing hold
+            holdAssocs = holdService.getHolds(filePlan);
+            assertNotNull(holdAssocs);
+            assertEquals(1, holdAssocs.size());
+
+            // Relinquish the second hold
+            holdNodeRef = holdAssocs.iterator().next();
+            holdService.removeFromAllHolds(holdService.getHeld(holdNodeRef));
+
+            // hold is not automatically removed
+            holdAssocs = holdService.getHolds(filePlan);
+            assertEquals(1, holdAssocs.size());
+
+            // delete hold
+            holdService.deleteHold(holdNodeRef);
+
+            holdAssocs = holdService.getHolds(filePlan);
+            assertEquals(0, holdAssocs.size());
+
+            // Check the nodes are unfrozen
+            assertFalse(freezeService.isFrozen(recordOne));
+            assertFalse(freezeService.isFrozen(recordTwo));
+            assertFalse(freezeService.isFrozen(recordThree));
+            assertFalse(freezeService.isFrozen(recordFour));
+            //assertFalse(freezeService.hasFrozenChildren(rmFolder));
+
+            // Test freezing nodes, adding them to an existing hold
+            NodeRef hold = holdService.createHold(filePlan, "hold 1", "AnotherFreezeReason", "description");
+            holdService.addToHold(hold, recordFour);
+            holdService.addToHold(hold, recordOne);
+            List<NodeRef> nodes = new ArrayList<>();
+            nodes.add(recordTwo);
+            nodes.add(recordThree);
+            holdService.addToHold(hold, nodes);
+           //assertTrue(freezeService.hasFrozenChildren(rmFolder));
+            // Check the hold
+            holdAssocs = holdService.getHolds(filePlan);
+            assertNotNull(holdAssocs);
+            assertEquals(1, holdAssocs.size());
+               return null;
+           }
+       });
+       //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
+       doTestInTransaction(new Test<Void>()
+       {
+           @Override
+           public Void run() throws Exception
+           {
+            // Relinquish the first hold
+            holdService.deleteHold(holdAssocs.iterator().next());
+
+            // Check the nodes are unfrozen
+            assertFalse(freezeService.isFrozen(recordOne));
+            assertFalse(freezeService.isFrozen(recordTwo));
+            assertFalse(freezeService.isFrozen(recordThree));
+            assertFalse(freezeService.isFrozen(recordFour));
+           // assertFalse(freezeService.hasFrozenChildren(rmFolder));
 
                 return null;
             }

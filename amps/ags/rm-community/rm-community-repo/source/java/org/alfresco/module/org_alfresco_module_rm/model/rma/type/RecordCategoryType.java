@@ -27,13 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -49,6 +50,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * rma:recordCategory behaviour bean
@@ -60,9 +62,10 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "rma:recordCategory"
 )
-public class RecordCategoryType extends    BaseBehaviourBean
+public class RecordCategoryType extends AbstractDisposableItem
                                 implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                           NodeServicePolicies.OnCreateNodePolicy
+                                           NodeServicePolicies.OnCreateNodePolicy,
+                                           NodeServicePolicies.OnMoveNodePolicy
 {
     private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<>();
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
@@ -72,9 +75,6 @@ public class RecordCategoryType extends    BaseBehaviourBean
 
     /** file plan permission service */
     protected FilePlanPermissionService filePlanPermissionService;
-
-    /** record folder service */
-    private RecordFolderService recordFolderService;
 
     /**
      * @param vitalRecordService    vital record service
@@ -90,14 +90,6 @@ public class RecordCategoryType extends    BaseBehaviourBean
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
         this.filePlanPermissionService = filePlanPermissionService;
-    }
-
-    /**
-     * @param recordFolderService   record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -202,6 +194,53 @@ public class RecordCategoryType extends    BaseBehaviourBean
             }
         });
 
+    }
+
+    /**
+     * Record Category move behaviour
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
+            )
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        // clean the child folders and records only if the old parent category has a disposition schedule set
+        // if it doesn't, then there are no old properties on the child nodes that have to be cleaned in order
+        // for new ones to be set
+        if (nodeService.getType(newChildAssocRef.getChildRef()).equals(TYPE_RECORD_CATEGORY)
+                && dispositionService.getDispositionSchedule(oldChildAssocRef.getParentRef()) != null)
+        {
+            reinitializeRecordFolders(newChildAssocRef);
+        }
+    }
+
+    /**
+     *  Recursively reinitialize each folder in a structure of categories
+     *  Unwanted aspects will be removed from the child records and the records will be re-filed
+     *  Disposition schedule aspects and properties will be inherited from the new parent category
+     *
+     * @param childAssociationRef
+     */
+    private void reinitializeRecordFolders(ChildAssociationRef childAssociationRef)
+    {
+        for (ChildAssociationRef newChildRef : nodeService.getChildAssocs(childAssociationRef.getChildRef(),
+                ContentModel.ASSOC_CONTAINS,
+                RegexQNamePattern.MATCH_ALL))
+        {
+            if (nodeService.getType(newChildRef.getChildRef()).equals(TYPE_RECORD_CATEGORY))
+            {
+                reinitializeRecordFolders(newChildRef);
+            }
+            else if (!nodeService.getType(newChildRef.getChildRef()).equals(TYPE_CONTENT))
+            {
+                reinitializeRecordFolder(newChildRef);
+            }
+        }
     }
 
     /**

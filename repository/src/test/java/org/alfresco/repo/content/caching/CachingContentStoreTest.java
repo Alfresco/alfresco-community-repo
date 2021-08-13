@@ -35,6 +35,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -493,10 +494,10 @@ public class CachingContentStoreTest
     @Test
     public void isDirectAccessSupported()
     {
-        assertFalse(cachingStore.isDirectAccessSupported());
+        assertFalse(cachingStore.isContentDirectUrlEnabled());
 
-        when(backingStore.isDirectAccessSupported()).thenReturn(true);
-        assertTrue(cachingStore.isDirectAccessSupported());
+        when(backingStore.isContentDirectUrlEnabled()).thenReturn(true);
+        assertTrue(cachingStore.isContentDirectUrlEnabled());
     }
 
     @Test
@@ -504,8 +505,8 @@ public class CachingContentStoreTest
     {
         try
         {
-            when(backingStore.getDirectAccessUrl(anyString(), any())).thenThrow(new UnsupportedOperationException());
-            cachingStore.getDirectAccessUrl("url", null);
+            when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
+            cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);
             fail();
         }
         catch (UnsupportedOperationException e)
@@ -517,7 +518,7 @@ public class CachingContentStoreTest
     @Test
     public void getDirectAccessUrl()
     {
-        when(backingStore.getDirectAccessUrl(anyString(), any())).thenReturn(new DirectAccessUrl());
-        cachingStore.getDirectAccessUrl("url", null);
+        when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
+        cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);
     }
 }

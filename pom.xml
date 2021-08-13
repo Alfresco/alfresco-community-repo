@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>11.95-SNAPSHOT</version>
+    <version>11.105-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -85,7 +85,7 @@
         <dependency.jboss.logging.version>3.4.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.4</dependency.camel.version>
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
-        <dependency.apache-compress.version>1.20</dependency.apache-compress.version>
+        <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.1.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
@@ -112,7 +112,7 @@
         <dependency.mysql.version>8.0.25</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.2</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.44</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.45</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.tas-restapi.version>1.61</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.30</dependency.tas-cmis.version>

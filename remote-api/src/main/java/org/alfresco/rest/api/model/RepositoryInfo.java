@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -416,6 +416,7 @@ public class RepositoryInfo
         private boolean isAuditEnabled;
         private boolean isQuickShareEnabled;
         private boolean isThumbnailGenerationEnabled;
+        private boolean isDirectAccessUrlEnabled;
 
         public StatusInfo()
         {
@@ -465,6 +466,17 @@ public class RepositoryInfo
             return this;
         }
 
+        public boolean getIsDirectAccessUrlEnabled()
+        {
+            return isDirectAccessUrlEnabled;
+        }
+
+        public StatusInfo setDirectAccessUrlEnabled(boolean isDirectAccessUrlEnabled)
+        {
+            this.isDirectAccessUrlEnabled = isDirectAccessUrlEnabled;
+            return this;
+        }
+
         @Override
         public String toString()
         {
@@ -473,6 +485,7 @@ public class RepositoryInfo
                         .append(", isAuditEnabled=").append(isAuditEnabled)
                         .append(", isQuickShareEnabled=").append(isQuickShareEnabled)
                         .append(", isThumbnailGenerationEnabled=").append(isThumbnailGenerationEnabled)
+                        .append(", isDirectAccessUrlEnabled=").append(isDirectAccessUrlEnabled)
                         .append(']');
             return sb.toString();
         }

@@ -8,13 +8,13 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>11.95-SNAPSHOT</version>
+      <version>11.105-SNAPSHOT</version>
    </parent>
 
    <properties>
       <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
 
-      <image.name>alfresco/alfresco-governance-repository-community</image.name>
+      <image.name>alfresco/alfresco-governance-repository-community-base</image.name>
    </properties>
 
    <dependencies>

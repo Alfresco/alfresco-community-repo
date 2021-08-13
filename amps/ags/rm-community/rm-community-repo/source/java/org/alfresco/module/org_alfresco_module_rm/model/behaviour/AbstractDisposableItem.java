@@ -30,6 +30,10 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -52,13 +56,35 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
     
     /** disposition service */
     protected DispositionService dispositionService;
-    
+
+    /** record service */
+    protected RecordService recordService;
+
+    /** record folder service */
+    protected RecordFolderService recordFolderService;
+
     /**
      * @param dispositionService    disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
+    }
+
+    /**
+     * @param recordService    record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+
+    /**
+     * @param recordFolderService    record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
     }
     
     /**
@@ -84,6 +110,37 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
         {
             nodeService.deleteNode(dispositionAction.getNodeRef());
         }
+    }
+
+    /**
+     * Cleans and re-initiates the containing records
+     *
+     * @param childAssociationRef
+     */
+    protected void reinitializeRecordFolder(ChildAssociationRef childAssociationRef)
+    {
+
+        NodeRef newNodeRef = childAssociationRef.getChildRef();
+
+        AuthenticationUtil.runAs(() -> {
+            // clean record folder
+            cleanDisposableItem(nodeService, newNodeRef);
+
+            // re-initialise the record folder
+            recordFolderService.setupRecordFolder(newNodeRef);
+
+            // sort out the child records
+            for (NodeRef record : recordService.getRecords(newNodeRef))
+            {
+                // clean record
+                cleanDisposableItem(nodeService, record);
+
+                // Re-initiate the records in the new folder.
+                recordService.file(record);
+            }
+
+            return null;
+        }, AuthenticationUtil.getSystemUserName());
     }
 
 }

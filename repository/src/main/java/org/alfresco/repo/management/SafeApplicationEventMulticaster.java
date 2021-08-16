@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -150,6 +151,20 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
             this.defaultRetriever.applicationListenerBeans.remove(listenerBeanName);
             this.retrieverCache.clear();
         }
+    }
+
+    //PRODSEC-4331 Upgrade spring version from 5.3.3 to 5.3.7 -> new methods added to the interface
+    // ApplicationEventMulticaster (removeApplicationListeners and removeApplicationListenerBeans)
+    @Override
+    public void removeApplicationListeners(Predicate<ApplicationListener<?>> predicate)
+    {
+
+    }
+
+    @Override
+    public void removeApplicationListenerBeans(Predicate<String> predicate)
+    {
+
     }
 
     public void removeAllListeners()

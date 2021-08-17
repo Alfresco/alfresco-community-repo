@@ -153,18 +153,14 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
         }
     }
 
-    //PRODSEC-4331 Upgrade spring version from 5.3.3 to 5.3.7 -> new methods added to the interface
-    // ApplicationEventMulticaster (removeApplicationListeners and removeApplicationListenerBeans)
     @Override
     public void removeApplicationListeners(Predicate<ApplicationListener<?>> predicate)
     {
-
     }
 
     @Override
     public void removeApplicationListenerBeans(Predicate<String> predicate)
     {
-
     }
 
     public void removeAllListeners()

@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import static org.alfresco.repo.security.authority.AuthorityServiceImpl.GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -117,9 +118,10 @@ public class AuthorityServiceTest extends TestCase
     
     private static final int DEFAULT_SITE_GRP_CNT = 5;      // default number of groups per site
     private static final int DEFAULT_SITE_ROOT_GRP_CNT = 1; // default number of root groups per site
-    private static final int DEFAULT_GRP_CNT = 5;           // default (non-site) bootstrap groups -
+    private static final int DEFAULT_GRP_CNT = 6;           // default (non-site) bootstrap groups -
                                                             // eg. GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_SITE_ADMINISTRATORS,
-                                                            // GROUP_ALFRESCO_SEARCH_ADMINISTRATORS, GROUP_ALFRESCO_MODEL_ADMINISTRATORS
+                                                            // GROUP_ALFRESCO_SEARCH_ADMINISTRATORS, GROUP_ALFRESCO_MODEL_ADMINISTRATORS,
+                                                            // GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS
 
     private int SITE_CNT = 0;
     private int GRP_CNT = 0;
@@ -467,8 +469,8 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
         Set<String> authorities = authorityService.getAuthorities();
-        // 6 => [GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_EVERYONE, GROUP_SITE_ADMINISTRATORS, ROLE_ADMINISTRATOR, GROUP_ALFRESCO_SEARCH_ADMINISTRATORS, GROUP_ALFRESCO_MODEL_ADMINISTRATORS]
-        assertEquals("Unexpected result: " + authorities, 7 + (SITE_CNT*2), authorityService.getAuthorities().size());
+        // 8 => [GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_EVERYONE, GROUP_SITE_ADMINISTRATORS, ROLE_ADMINISTRATOR, GROUP_ALFRESCO_SEARCH_ADMINISTRATORS, GROUP_ALFRESCO_MODEL_ADMINISTRATORS, GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS]
+        assertEquals("Unexpected result: " + authorities, 8 + (SITE_CNT*2), authorityService.getAuthorities().size());
     }
     
     public void testNoUser()
@@ -1771,6 +1773,46 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, subGroup2));
         pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, username));
         personService.deletePerson(username);
+    }
+
+    public void testAdminHasSysAdminAuthority()
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        assertTrue(authorityService.hasAdminAuthority());
+        assertTrue("By default, Admin should be member of Alfresco_System_Administrators group.",
+                   pubAuthorityService.hasSysAdminAuthority());
+    }
+
+    public void testSysAdminGroup()
+    {
+        personService.getPerson("andy");
+        // Make sure Andy is not part of ALFRESCO_ADMINISTRATORS group
+        String adminGroup = authorityService.getName(AuthorityType.GROUP, "ALFRESCO_ADMINISTRATORS");
+        authorityService.removeAuthority(adminGroup, "andy");
+        assertFalse(authorityService.isAdminAuthority("andy"));
+
+        // Set the current authentication to Andy, so we can check the runAsUser
+        authenticationComponent.setCurrentUser("andy");
+        assertFalse("Andy hasn't been added to the Alfresco_System_Administrators group yet.",
+                    pubAuthorityService.hasSysAdminAuthority());
+
+        // Set the current authentication to admin in order to add Andy to the group
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        pubAuthorityService.addAuthority(GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY, "andy");
+
+        // Set the current authentication to Andy, so we can check the runAsUser
+        authenticationComponent.setCurrentUser("andy");
+        assertTrue("Andy is a member of the Alfresco_System_Administrators group",
+                   pubAuthorityService.hasSysAdminAuthority());
+
+        // Set the current authentication to admin in order to remove Andy from the group
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        pubAuthorityService.removeAuthority(GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY, "andy");
+
+        // Set the current authentication to Andy, so we can check the runAsUser
+        authenticationComponent.setCurrentUser("andy");
+        assertFalse("Andy has been removed from the Alfresco_System_Administrators group.",
+                    pubAuthorityService.hasSysAdminAuthority());
     }
 
     private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)

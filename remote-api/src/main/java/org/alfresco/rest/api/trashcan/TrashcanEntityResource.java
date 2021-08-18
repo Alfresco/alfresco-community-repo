@@ -28,7 +28,10 @@ package org.alfresco.rest.api.trashcan;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DeletedNodes;
+import org.alfresco.rest.api.DirectAccessUrlHelper;
+import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTargetAssoc;
 import org.alfresco.rest.framework.BinaryProperties;
@@ -36,6 +39,7 @@ import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
@@ -44,6 +48,8 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * An implementation of an Entity Resource for handling archived content
@@ -55,10 +61,16 @@ public class TrashcanEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Read<Node>, EntityResourceAction.Delete, BinaryResourceAction.Read
 {
     private DeletedNodes deletedNodes;
+    private DirectAccessUrlHelper directAccessUrlHelper;
 
     public void setDeletedNodes(DeletedNodes deletedNodes)
     {
         this.deletedNodes = deletedNodes;
+    }
+
+    public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
+    {
+        this.directAccessUrlHelper = directAccessUrlHelper;
     }
 
     @Override
@@ -87,6 +99,27 @@ public class TrashcanEntityResource implements
     public BinaryResource readProperty(String nodeId, Parameters parameters)
     {
         return deletedNodes.getContent(nodeId, null, parameters);
+    }
+
+    @Operation("requestNodeDirectAccessUrl")
+    @WebApiParam(name = "requestNodeDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiDescription(title = "Request content url",
+            description="Generates a direct access URL.",
+            successStatus = HttpServletResponse.SC_OK)
+    public DirectAccessUrl requestContentDirectUrl(String originalNodeId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
+    {
+        boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
+        Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        DirectAccessUrl directAccessUrl;
+        try
+        {
+            directAccessUrl = deletedNodes.requestContentDirectUrl(originalNodeId, attachment, validFor);
+        }
+        catch (DirectAccessUrlDisabledException ex)
+        {
+            throw new DisabledServiceException(ex.getMessage());
+        }
+        return directAccessUrl;
     }
 
     @Override

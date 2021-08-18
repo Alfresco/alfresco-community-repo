@@ -34,6 +34,8 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Handles trashcan / deleted nodes
@@ -99,4 +101,14 @@ public interface DeletedNodes
      * @return
      */
     CollectionWithPagingInfo<Rendition> getRenditions(String archivedId, Parameters parameters);
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param archivedId The node id for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     */
+    DirectAccessUrl requestContentDirectUrl(String archivedId, boolean attachment, Long validFor);
+
 }

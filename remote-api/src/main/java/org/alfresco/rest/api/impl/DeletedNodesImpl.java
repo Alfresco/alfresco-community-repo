@@ -48,6 +48,7 @@ import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -55,6 +56,8 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -73,6 +76,7 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     private NodeService nodeService;
     private Nodes nodes;
     private Renditions renditions;
+    private ContentService contentService;
 
     public void setNodeArchiveService(NodeArchiveService nodeArchiveService)
     {
@@ -98,6 +102,8 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     {
         this.renditions = renditions;
     }
+
+    public void setContentService(ContentService contentService) {this.contentService = contentService;}
 
     /**
      * Sets archived information on the Node
@@ -243,5 +249,25 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
         return renditions.getRenditions(nodeRef, parameters);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DirectAccessUrl requestContentDirectUrl(String originalNodeId, boolean attachment, Long validFor)
+    {
+        //First check the node is valid and has been archived.
+        NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalNodeId);
+
+        //Now get the Node
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, validatedNodeRef.getId());
+        NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(archivedNodeRef, attachment, validFor);
+        if (directAccessUrl == null)
+        {
+            throw new DisabledServiceException("Direct access url isn't available.");
+        }
+        return directAccessUrl;
     }
 }

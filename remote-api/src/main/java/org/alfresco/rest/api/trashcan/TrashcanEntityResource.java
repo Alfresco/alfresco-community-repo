@@ -100,8 +100,8 @@ public class TrashcanEntityResource implements
         return deletedNodes.getContent(nodeId, null, parameters);
     }
 
-    @Operation("requestNodeDirectAccessUrl")
-    @WebApiParam(name = "requestNodeDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @Operation("requestDeletedNodeDirectAccessUrl")
+    @WebApiParam(name = "requestDeletedNodeDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
             description="Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)

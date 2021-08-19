@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -90,6 +91,7 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -6329,16 +6331,33 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         setRequestContext(user1);
 
-        RepoService.TestNetwork networkN1 = repoService.createNetworkWithAlias("ping", true);
+        RepoService.TestNetwork networkN1;
+        RepoService.TestPerson userOneN1;
+        Site userOneN1Site;
+        ContentService contentService;
+        SynchronousTransformClient synchronousTransformClient;
+
+        contentService = applicationContext.getBean("contentService", ContentService.class);
+        synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
+        networkN1 = repoService.createNetworkWithAlias("ping", true);
+        networkN1.create();
+        userOneN1 = networkN1.createUser();
+
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
-        Site userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);;
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
 
-        networkN1.create();
-        RepoService.TestPerson userOneN1 = networkN1.createUser();
-
-        String userId = userOneN1.getId();
-        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+//        RepoService.TestNetwork networkN1 = repoService.createNetworkWithAlias("ping", true);
+//
+//        String siteTitle = "RandomSite" + System.currentTimeMillis();
+//        Site userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);;
+//
+//        networkN1.create();
+//        RepoService.TestPerson userOneN1 = networkN1.createUser();
+//
+//        String userId = userOneN1.getId();
+//        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
 
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();

@@ -56,7 +56,6 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -76,7 +75,6 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     private NodeService nodeService;
     private Nodes nodes;
     private Renditions renditions;
-    private ContentService contentService;
 
     public void setNodeArchiveService(NodeArchiveService nodeArchiveService)
     {
@@ -102,8 +100,6 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     {
         this.renditions = renditions;
     }
-
-    public void setContentService(ContentService contentService) {this.contentService = contentService;}
 
     /**
      * Sets archived information on the Node
@@ -261,11 +257,7 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
         //Now get the Node
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, validatedNodeRef.getId());
         NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(archivedNodeRef, attachment, validFor);
-        if (directAccessUrl == null)
-        {
-            throw new DisabledServiceException("Direct access url isn't available.");
-        }
-        return directAccessUrl;
+        //two above might be unnecessary
+        return nodes.requestContentDirectUrl(archivedNodeRef,attachment,validFor);
     }
 }

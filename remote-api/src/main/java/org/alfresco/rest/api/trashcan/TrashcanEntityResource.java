@@ -49,7 +49,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * An implementation of an Entity Resource for handling archived content

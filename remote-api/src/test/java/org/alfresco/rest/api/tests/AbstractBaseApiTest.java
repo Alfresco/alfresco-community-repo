@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -68,6 +68,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -136,6 +137,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static PersonService personService;
 
     protected final String RUNID = System.currentTimeMillis()+"";
+
+    private static final String REQUEST_NODE_DIRECT_ACCESS_URL = "requestNodeDirectAccessUrl";
     
     @Override
     @Before
@@ -209,6 +212,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         users.clear();
         AuthenticationUtil.clearCurrentSecurityContext();
         setRequestContext(null);
+    }
+
+    protected String getRequestContentDirectUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + REQUEST_NODE_DIRECT_ACCESS_URL;
     }
 
     /**

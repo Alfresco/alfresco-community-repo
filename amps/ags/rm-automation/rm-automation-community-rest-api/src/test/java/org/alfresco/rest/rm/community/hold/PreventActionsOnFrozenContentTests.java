@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 /**
  * API tests to check actions on frozen content
  *
@@ -309,11 +309,11 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Execute the retain action");
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getPassword(), record.getName(),
-                RM_ACTIONS.END_RETENTION);
+            RM_ACTIONS.END_RETENTION, null, SC_INTERNAL_SERVER_ERROR);
 
         STEP("Check the record search disposition properties");
         Record recordUpdated = getRestAPIFactory().getRecordsAPI().getRecord(record.getId());
-        assertTrue(recordUpdated.getProperties().getRecordSearchDispositionActionName().contains(RM_ACTIONS.DESTROY.getAction()));
+        assertTrue(recordUpdated.getProperties().getRecordSearchDispositionActionName().contains(RM_ACTIONS.END_RETENTION.getAction()));
         assertTrue(recordUpdated.getProperties().getRecordSearchDispositionPeriod().contains("immediately"));
     }
 

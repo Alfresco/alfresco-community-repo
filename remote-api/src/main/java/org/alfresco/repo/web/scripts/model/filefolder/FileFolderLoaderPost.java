@@ -152,8 +152,7 @@ public class FileFolderLoaderPost extends AbstractWebScript implements Applicati
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
         }
         // Write the response
-        OutputStream os = res.getOutputStream();
-        try
+        try (OutputStream os = res.getOutputStream())
         {
             JSONObject json = new JSONObject();
             json.put(KEY_COUNT, count);
@@ -162,10 +161,6 @@ public class FileFolderLoaderPost extends AbstractWebScript implements Applicati
         catch (JSONException e)
         {
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to write JSON", e);
-        }
-        finally
-        {
-            os.close();
         }
     }
 }

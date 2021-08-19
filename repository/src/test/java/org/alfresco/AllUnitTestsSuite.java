@@ -180,6 +180,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.audit.AuditableAnnotationTest.class,
     org.alfresco.repo.audit.PropertyAuditFilterTest.class,
     org.alfresco.repo.audit.access.NodeChangeTest.class,
+    org.alfresco.repo.content.ContentServiceImplUnitTest.class,
     org.alfresco.repo.content.directurl.SystemWideDirectUrlConfigUnitTest.class,
     org.alfresco.repo.content.directurl.ContentStoreDirectUrlConfigUnitTest.class,
     org.alfresco.repo.content.LimitedStreamCopierTest.class,

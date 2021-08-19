@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software LimitedP
+ * Copyright (C) 2005 - 2021 Alfresco Software LimitedP
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,19 @@
  */
 
 package org.alfresco.rest.api.impl;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 
 import org.alfresco.heartbeat.RenditionsDataCollector;
 import org.alfresco.model.ContentModel;
@@ -61,6 +74,7 @@ import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -77,19 +91,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
-
-import java.io.File;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.TreeMap;
 
 /**
  * @author Jamal Kaabi-Mofrad, janv
@@ -481,6 +482,22 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     {
         nodeRef = findVersionIfApplicable(nodeRef, versionLabelId);
         return getContentImpl(nodeRef, renditionId, parameters);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor)
+    {
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionId, null);
+        NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, null);
+
+        if (renditionNodeRef == null)
+        {
+            throw new NotFoundException("The rendition with id: " + renditionId + " was not found.");
+        }
+
+        return nodes.requestContentDirectUrl(renditionNodeRef, attachment, validFor);
     }
 
     private BinaryResource getContentImpl(NodeRef nodeRef, String renditionId, Parameters parameters)

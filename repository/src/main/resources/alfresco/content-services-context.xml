@@ -161,6 +161,9 @@
       <property name="ignoreEmptyContent" >
          <value>${policy.content.update.ignoreEmpty}</value>
       </property>
+      <property name="systemWideDirectUrlConfig" >
+         <ref bean="systemWideDirectUrlConfig" />
+      </property>
    </bean>
    
    <bean id="contentService" parent="baseContentService">

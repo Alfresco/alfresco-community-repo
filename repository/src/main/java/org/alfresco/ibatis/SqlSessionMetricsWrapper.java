@@ -194,21 +194,45 @@ public class SqlSessionMetricsWrapper implements SqlSession
     }
 
     @Override
-    public <T> Cursor<T> selectCursor(String s)
+    public <T> Cursor<T> selectCursor(String statement)
     {
-        return null;
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
     }
 
     @Override
-    public <T> Cursor<T> selectCursor(String s, Object o)
+    public <T> Cursor<T> selectCursor(String statement, Object parameter)
     {
-        return null;
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement, parameter);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
     }
 
     @Override
-    public <T> Cursor<T> selectCursor(String s, Object o, RowBounds rowBounds)
+    public <T> Cursor<T> selectCursor(String statement, Object parameter, RowBounds rowBounds)
     {
-        return null;
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement, parameter, rowBounds);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
     }
 
     @Override

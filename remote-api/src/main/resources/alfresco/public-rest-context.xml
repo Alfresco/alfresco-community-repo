@@ -974,6 +974,7 @@
 
     <bean id="nodeVersionsRelation" class="org.alfresco.rest.api.nodes.NodeVersionsRelation" parent="baseNodeRelation">
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
     
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
@@ -1423,10 +1424,12 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeRenditionsRelation">
         <property name="renditions" ref="Renditions" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <bean class="org.alfresco.rest.api.nodes.NodeVersionRenditionsRelation">
         <property name="renditions" ref="Renditions" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkRenditionsRelation">

@@ -6334,11 +6334,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         RepoService.TestNetwork networkN1;
         RepoService.TestPerson userOneN1;
         Site userOneN1Site;
-        ContentService contentService;
-        SynchronousTransformClient synchronousTransformClient;
-
-        contentService = applicationContext.getBean("contentService", ContentService.class);
-        synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
+//        ContentService contentService;
+//        SynchronousTransformClient synchronousTransformClient;
+//
+//        contentService = applicationContext.getBean("contentService", ContentService.class);
+//        synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();

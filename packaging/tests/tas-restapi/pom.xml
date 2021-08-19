@@ -44,6 +44,24 @@
         <java.version>11</java.version>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>rest-api-explorer-master</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <rest.api.explorer.branch>master</rest.api.explorer.branch>
+            </properties>
+        </profile>
+        <profile>
+            <id>rest-api-explorer-52N</id>
+            <properties>
+                <rest.api.explorer.branch>5.2.N</rest.api.explorer.branch>
+            </properties>
+        </profile>
+    </profiles>
+
     <scm>
         <connection>scm:git:https://github.com/Alfresco/alfresco-tas-restapi.git</connection>
         <developerConnection>scm:git:https://github.com/Alfresco/alfresco-tas-restapi.git</developerConnection>
@@ -120,11 +138,11 @@
                 </executions>
                 <configuration>
                     <arguments>
-                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-auth.yaml</argument>
-                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-core.yaml</argument>
-                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-discovery.yaml</argument>
-                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-search.yaml</argument>
-                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-workflow.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-auth.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-core.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-discovery.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-search.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-workflow.yaml</argument>
                     </arguments>
                     <mainClass>org.alfresco.rest.core.swagger.Generator</mainClass>
                 </configuration>

@@ -28,6 +28,7 @@ package org.alfresco.ibatis;
 import org.alfresco.metrics.db.DBMetricsReporter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
@@ -190,6 +191,24 @@ public class SqlSessionMetricsWrapper implements SqlSession
         {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
+    }
+
+    @Override
+    public <T> Cursor<T> selectCursor(String s)
+    {
+        return null;
+    }
+
+    @Override
+    public <T> Cursor<T> selectCursor(String s, Object o)
+    {
+        return null;
+    }
+
+    @Override
+    public <T> Cursor<T> selectCursor(String s, Object o, RowBounds rowBounds)
+    {
+        return null;
     }
 
     @Override

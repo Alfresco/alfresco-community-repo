@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -251,9 +251,7 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
         return renditions.getRenditions(nodeRef, parameters);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public DirectAccessUrl requestContentDirectUrl(String originalNodeId, boolean attachment, Long validFor)
     {

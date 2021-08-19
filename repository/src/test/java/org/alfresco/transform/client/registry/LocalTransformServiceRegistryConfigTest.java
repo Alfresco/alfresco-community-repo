@@ -134,6 +134,12 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             super.logError(msg);
         }
 
+        @Override
+        protected void logWarn(String msg)
+        {
+            logError(msg);
+        }
+
         public Data assertDataChanged(Data prevData, String msg)
         {
             // If the data changes, there has been a read

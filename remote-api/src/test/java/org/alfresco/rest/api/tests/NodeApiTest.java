@@ -73,7 +73,6 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -82,6 +81,7 @@ import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.client.data.PathInfo.ElementInfo;
+import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
@@ -6319,6 +6319,51 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         ContentInfo contentInfo = documentResp.getContent();
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+    }
+
+    @Test
+    public void testRequestRenditionContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        RepoService.TestNetwork networkN1;
+        RepoService.TestPerson userOneN1;
+        Site userOneN1Site;
+
+        networkN1 = repoService.createNetworkWithAlias("ping", true);
+        networkN1.create();
+        userOneN1 = networkN1.createUser();
+
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String parentId = getSiteContainerNodeId(userOneN1Site.getId(), "documentLibrary");
+        String folder_Id = createNode(parentId, folderName, TYPE_CM_FOLDER, null).getId();
+
+        // Create multipart request - pdf file
+        String renditionName = "doclib";
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+            .setFileData(new FileData(fileName, file))
+            .setRenditions(Collections.singletonList(renditionName))
+            .build();
+
+        // Upload quick.pdf file into 'folder' - including request to create 'doclib' thumbnail
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
         getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
     }

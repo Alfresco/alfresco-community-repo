@@ -248,16 +248,19 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     }
 
 
+    /**
+     * @author Mikołaj Brzeziński
+     * Gets a presigned URL to directly access content.
+     * @param originalNodeId The node id for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     */
     @Override
     public DirectAccessUrl requestContentDirectUrl(String originalNodeId, boolean attachment, Long validFor)
     {
         //First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalNodeId);
-
-        //Now get the Node
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, validatedNodeRef.getId());
-        NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
-        //two above might be unnecessary
-        return nodes.requestContentDirectUrl(archivedNodeRef,attachment,validFor);
+        return nodes.requestContentDirectUrl(validatedNodeRef,attachment,validFor);
     }
 }

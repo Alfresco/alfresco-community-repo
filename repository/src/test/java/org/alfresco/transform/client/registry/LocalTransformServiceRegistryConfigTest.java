@@ -34,9 +34,13 @@ import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
 import org.alfresco.transform.client.model.config.TransformOption;
+import org.alfresco.transform.client.model.config.TransformOptionGroup;
+import org.alfresco.transform.client.model.config.TransformOptionValue;
 import org.alfresco.transform.client.model.config.Transformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -47,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -54,7 +59,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -62,11 +69,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Extends the {@link TransformServiceRegistryConfigTest} (used to test the config received from the Transform Service)
- * so that configuration for the local transformations may be tested. This includes pipelines and options specific
- * transform steps.
+ * Testing LocalTransformServiceRegistry.
  */
-public class LocalTransformServiceRegistryConfigTest extends TransformServiceRegistryConfigTest
+public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTest
 {
     public static final String HARD_CODED_VALUE = "hard coded value";
 
@@ -174,10 +179,14 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
 
     private static Log log = LogFactory.getLog(LocalTransformServiceRegistry.class);
 
+    public static final String PNG = "image/png";
+    public static final String TIFF = "image/tiff";
+
+    public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
+
     private static final String LOCAL_TRANSFORM_SERVICE_CONFIG = "alfresco/local-transform-service-config-test.json";
     private static final String LOCAL_TRANSFORM_SERVICE_CONFIG_PIPELINE = "alfresco/local-transform-service-config-pipeline-test.json";
 
-    private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
     private static final String LOCAL_TRANSFORM = "localTransform.";
     private static final String URL = ".url";
 
@@ -207,8 +216,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         initTestData();
 
         super.setUp();
+        LogManager.getLogger(LocalTransformServiceRegistryConfigTest.class).setLevel(Level.DEBUG);
     }
 
+    @Override
     protected LocalTransformServiceRegistry buildTransformServiceRegistryImpl() throws Exception
     {
         registry = new TestLocalTransformServiceRegistry();
@@ -227,19 +238,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         return (System.currentTimeMillis() - startMs) + "ms: ";
     }
 
-    @Override
-    protected String getTransformServiceConfig()
-    {
-        return LOCAL_TRANSFORM_SERVICE_CONFIG;
-    }
-
-    @Override
-    protected String getTransformServiceConfigPipeline()
-    {
-        return LOCAL_TRANSFORM_SERVICE_CONFIG_PIPELINE;
-    }
-
-    @Override
     protected int getExpectedTransformsForTestJsonPipeline()
     {
 // imagemagick
@@ -384,11 +382,166 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         return i;
     }
 
+    private void register(String path) throws IOException
+    {
+        CombinedConfig combinedConfig = new CombinedConfig(log);
+        combinedConfig.addLocalConfig(path);
+        combinedConfig.register((TransformServiceRegistryImpl)registry);
+    }
+
     @Test
-    @Override
     public void testJsonConfig() throws IOException
     {
-        internalTestJsonConfig(64, 70);
+        register(LOCAL_TRANSFORM_SERVICE_CONFIG);
+
+        // Check the count of transforms supported
+        assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
+                64, countSupportedTransforms(true));
+        assertEquals("The number of source to target mimetypes transforms has changed. " +
+                        "There may be multiple transformers for the same combination. Config change?",
+                70, countSupportedTransforms(false));
+
+        // Check a supported transform for each transformer.
+        assertSupported(DOC, 1234, PDF, emptyMap(), null, ""); // libreoffice
+        assertSupported(DOC, 1234, PDF, emptyMap(), null, ""); // libreoffice
+        assertSupported(PDF, 1234, PNG, emptyMap(), null, ""); // pdfrenderer
+        assertSupported(JPEG,1234, GIF, emptyMap(), null, ""); // imagemagick
+        assertSupported(MSG, 1234, TXT, emptyMap(), null, ""); // tika
+        assertSupported(MSG, 1234, GIF, emptyMap(), null, ""); // officeToImageViaPdf
+
+        Map<String, String> invalidPdfOptions = new HashMap<>();
+        invalidPdfOptions.put("allowEnlargement", "false");
+        assertSupported(DOC, 1234, PDF, invalidPdfOptions, null, "Invalid as there is a extra option");
+    }
+
+    @Test
+    public void testJsonPipeline() throws IOException
+    {
+        register(LOCAL_TRANSFORM_SERVICE_CONFIG_PIPELINE);
+
+        // Check the count of transforms supported
+        int expectedTransforms = getExpectedTransformsForTestJsonPipeline();
+        assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
+                expectedTransforms, countSupportedTransforms(true));
+        assertEquals("The number of source to target mimetypes transforms has changed. " +
+                        "There may be multiple transformers for the same combination. Config change?",
+                expectedTransforms, countSupportedTransforms(false));
+
+        // Check required and optional default correctly
+        Map<String, List<SupportedTransform>> transformsToWord =
+                registry.getData().getTransforms().get(DOC);
+        List<SupportedTransform> supportedTransforms = transformsToWord.get(GIF);
+        SupportedTransform supportedTransform = supportedTransforms.get(0);
+
+        Set<TransformOption> transformOptionsSet = supportedTransform.getTransformOptions().getTransformOptions();
+
+        Iterator<TransformOption> iterator = transformOptionsSet.iterator();
+        assertTrue("Expected transform values", iterator.hasNext());
+        // Because Set is unordered we don't know which TransformOptionGroup we retrieve
+        TransformOptionGroup transformOptions1 = (TransformOptionGroup)iterator.next();
+
+        assertTrue("Expected transform values", iterator.hasNext());
+        TransformOptionGroup transformOptions2 = (TransformOptionGroup)iterator.next();
+
+        TransformOptionGroup imagemagick;
+        TransformOptionGroup pdf;
+
+        if(containsTransformOptionValueName(transformOptions1, "alphaRemove"))
+        {
+            imagemagick = transformOptions1;
+            pdf = transformOptions2;
+        }
+        else
+        {
+            imagemagick = transformOptions2;
+            pdf = transformOptions1;
+        }
+
+        TransformOptionValue alphaRemove = (TransformOptionValue)retrieveTransformOptionByPropertyName(imagemagick, "alphaRemove", "TransformOptionValue");
+        TransformOptionGroup crop = (TransformOptionGroup)retrieveTransformOptionByPropertyName(imagemagick, "crop", "TransformOptionGroup");
+        TransformOptionValue cropGravity = (TransformOptionValue)retrieveTransformOptionByPropertyName(crop, "cropGravity", "TransformOptionValue");
+        TransformOptionValue cropWidth = (TransformOptionValue)retrieveTransformOptionByPropertyName(crop, "cropWidth", "TransformOptionValue");
+
+        assertTrue("The holding group should be required", supportedTransform.getTransformOptions().isRequired());
+        assertFalse("imagemagick should be optional as it is not set", imagemagick.isRequired());
+        assertFalse("pdf should be optional as required is not set", pdf.isRequired());
+        assertEquals("alphaRemove", alphaRemove.getName());
+        assertEquals("cropGravity", cropGravity.getName());
+        assertEquals("cropWidth", cropWidth.getName());
+        assertFalse("alphaRemove should be optional as required is not set", alphaRemove.isRequired());
+        assertFalse("crop should be optional as required is not set", crop.isRequired());
+        assertTrue("cropGravity should be required as it is set", cropGravity.isRequired());
+        assertFalse("cropWidth should be optional as required is not set", cropWidth.isRequired());
+
+        // Check a supported transform for each transformer.
+        assertSupported(DOC,1234, GIF,  emptyMap(), null, "");
+        assertSupported(DOC,1234, PNG,  emptyMap(), null, "");
+        assertSupported(DOC,1234, JPEG, emptyMap(), null, "");
+        assertSupported(DOC,1234, TIFF, emptyMap(), null, "");
+
+        Map<String, String> actualOptions = new HashMap<>();
+        actualOptions.put("thumbnail", "true");
+        actualOptions.put("resizeWidth", "100");
+        actualOptions.put("resizeHeight", "100");
+        actualOptions.put("allowEnlargement", "false");
+        actualOptions.put("maintainAspectRatio", "true");
+        assertSupported(DOC,1234, PNG, actualOptions, null, "");
+    }
+
+    private TransformOption retrieveTransformOptionByPropertyName (TransformOptionGroup transformOptionGroup, String propertyName, String propertyType)
+    {
+        Iterator<TransformOption> iterator = transformOptionGroup.getTransformOptions().iterator();
+
+        List<TransformOption> transformOptionsList = new ArrayList<>();
+        while(iterator.hasNext())
+        {
+            transformOptionsList.add(iterator.next());
+        }
+
+        for (TransformOption t : transformOptionsList)
+        {
+            if (t instanceof TransformOptionValue)
+            {
+                TransformOptionValue value = (TransformOptionValue) t;
+                if (propertyType.equalsIgnoreCase("TransformOptionValue"))
+                {
+                    if (value.getName().equalsIgnoreCase(propertyName))
+                        return value;
+                }
+                else
+                {
+                    if (value.getName().contains(propertyName))
+                        return transformOptionGroup;
+                }
+            }
+            else
+            {
+                TransformOption result = retrieveTransformOptionByPropertyName((TransformOptionGroup)t, propertyName, propertyType);
+                if (result != null)
+                    return result;
+            }
+        }
+        return null;
+    }
+
+    private boolean containsTransformOptionValueName (TransformOptionGroup transformOptionGroup, String propertyName)
+    {
+        return retrieveTransformOptionByPropertyName(transformOptionGroup, propertyName, "TransformOptionValue") != null;
+    }
+
+    private int countSupportedTransforms(boolean unique)
+    {
+        int count = 0;
+        int uniqueCount = 0;
+        for (Map<String, List<SupportedTransform>> targetMap : registry.getData().getTransforms().values())
+        {
+            for (List<SupportedTransform> supportedTransforms : targetMap.values())
+            {
+                uniqueCount++;
+                count += supportedTransforms.size();
+            }
+        }
+        return unique ? uniqueCount : count;
     }
 
     @Test

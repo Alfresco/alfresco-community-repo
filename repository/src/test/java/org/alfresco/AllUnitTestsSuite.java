@@ -235,7 +235,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.events.ClientUtilTest.class,
     org.alfresco.repo.rendition2.RenditionService2Test.class,
     org.alfresco.repo.rendition2.TransformationOptionsConverterTest.class,
-    org.alfresco.transform.client.registry.TransformServiceRegistryConfigTest.class,
 
     org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
 

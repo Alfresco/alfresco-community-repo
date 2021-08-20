@@ -133,7 +133,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     @Override
     public boolean readConfig() throws IOException
     {
-        CombinedConfig combinedConfig = new LocalCombinedConfig(getLog());
+        CombinedConfig combinedConfig = new CombinedConfig(getLog());
         List<String> urls = getTEngineUrls();
         boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
         successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");
@@ -313,12 +313,6 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         return options.size() == 1 ?
                 ((TransformOptionGroup) options.iterator().next()).getTransformOptions() :
                 options;
-    }
-
-    // When testing, we need to be able to set the baseUrl when reading from a file.
-    public String getBaseUrlIfTesting(String name, String baseUrl)
-    {
-        return baseUrl;
     }
 
     @Override

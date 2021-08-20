@@ -294,10 +294,10 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * @return Returns {@code true} if at least one store supports direct access URL for node
      */
-    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    public boolean isContentDirectUrlEnabled(String contentUrl)
     {
         // Check the primary store
-        boolean isContentDirectUrlEnabled = primaryStore.isContentDirectUrlEnabled(nodeRef);
+        boolean isContentDirectUrlEnabled = primaryStore.isContentDirectUrlEnabled(contentUrl);
 
         if (!isContentDirectUrlEnabled)
         {
@@ -305,7 +305,7 @@ public class AggregatingContentStore extends AbstractContentStore
             // other stores
             for (ContentStore store : secondaryStores)
             {
-                isContentDirectUrlEnabled = store.isContentDirectUrlEnabled(nodeRef);
+                isContentDirectUrlEnabled = store.isContentDirectUrlEnabled(contentUrl);
 
                 if (isContentDirectUrlEnabled)
                 {

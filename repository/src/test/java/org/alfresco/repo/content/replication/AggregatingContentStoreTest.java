@@ -216,7 +216,7 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     }
 
     @Test
-    public void testGetDirectAccessUrl()
+    public void testRequestContentDirectUrl()
     {
         // Create the aggregating store
         AggregatingContentStore aggStore = new AggregatingContentStore();

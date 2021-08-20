@@ -1067,6 +1067,7 @@
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">
         <property name="discovery" ref="webscript.org.alfresco.api.DiscoveryApiWebscript.get" />
+        <property name="repoHealthChecker" ref="repoHealthChecker" />
     </bean>
 
     <!-- OpenCMIS -->

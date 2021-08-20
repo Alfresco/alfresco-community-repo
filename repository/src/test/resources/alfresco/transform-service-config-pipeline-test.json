@@ -32,6 +32,7 @@
   },
   "transformers": [
     {
+      "transformerName": "imagemagick",
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
         {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},

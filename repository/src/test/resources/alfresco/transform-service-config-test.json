@@ -39,6 +39,7 @@
   },
   "transformers": [
     {
+      "transformerName": "imagemagick",
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "image/gif",  "targetMediaType": "image/gif" },
         {"sourceMediaType": "image/gif",  "targetMediaType": "image/jpeg"},
@@ -63,6 +64,7 @@
       ]
     },
     {
+      "transformerName": "tika",
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/pdf",                           "maxSourceSizeBytes": 26214400, "targetMediaType": "text/plain" },
         {"sourceMediaType": "application/msword",                                                        "targetMediaType": "text/plain"},
@@ -78,6 +80,7 @@
       ]
     },
     {
+      "transformerName": "pdfrenderer",
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
       ],
@@ -86,6 +89,7 @@
       ]
     },
     {
+      "transformerName": "libreoffice",
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/msword",                                                                                        "targetMediaType": "application/msword" },
         {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",                                   "targetMediaType": "application/msword" },
@@ -99,6 +103,7 @@
       ]
     },
     {
+      "transformerName": "officeToImageViaPdf",
       "supportedSourceAndTargetList": [
         {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
         {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},

@@ -640,7 +640,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     public void testNoName()
     {
         retrieveLocalTransformList("alfresco/local-transform-service-config-no-name-test.json");
-        registry.assertErrorLogged("Local transformer names may not be null.*no-name-test.*");
+        registry.assertErrorLogged("Transformer names may not be null.*no-name-test.*");
     }
 
     @Test
@@ -654,7 +654,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     public void testTEngineDuplicateNames()
     {
         retrieveLocalTransformList("alfresco/local-transform-service-config-dup-name-test.json");
-        registry.assertErrorLogged("Local T-Engine transformer .* must be a unique name.*dup-name.*");
+        registry.assertErrorLogged("Transformer \"pdfrenderer\" must be a unique name.*dup-name.*");
     }
 
     @Test
@@ -662,21 +662,22 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     {
         registry.setResetBaseUrl(false);
         retrieveLocalTransformList("alfresco/local-transform-service-config-no-base-url-test.json");
-        registry.assertErrorLogged("Local T-Engine transformer .* must have its baseUrl set .*no-base-url.*");
+        registry.assertErrorLogged("Single step transformers \\(such as \"pdfrenderer\"\\) must be defined in a " +
+                "T-Engine rather than in a pipeline file, unless they are overriding an existing single step definition.*no-base-url.*");
     }
 
     @Test
     public void testPipelineMissingStepTransform()
     {
         retrieveLocalTransformList("alfresco/transform-service-config-pipeline-missing-step-test.json");
-        registry.assertErrorLogged("Transformer .* ignored as step transforms do not exist.*pipeline-missing-step.*");
+        registry.assertErrorLogged("Transformer \"missingPdfrenderer\" ignored as step transforms \\(\"pdfrenderer\"\\) do not exist.*pipeline-missing-step-test.*");
     }
 
     @Test
     public void testFailoverMissingStepTransform()
     {
         retrieveLocalTransformList("alfresco/transform-service-config-failover-missing-step-test.json");
-        registry.assertErrorLogged("Transformer .* ignored as step transforms do not exist.*failover-missing-step.*");
+        registry.assertErrorLogged("Transformer \"missingPdfrenderer\" ignored as step transforms \\(\"pdfrenderer\"\\) do not exist.*failover-missing-step-test.*");
     }
 
     @Test

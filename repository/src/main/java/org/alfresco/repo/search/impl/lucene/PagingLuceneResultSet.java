@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -53,8 +52,6 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     SearchParameters searchParameters;
     
     NodeService nodeService;
-
-    private boolean trimmedResultSet;
     
     public PagingLuceneResultSet(ResultSet wrapped, SearchParameters searchParameters, NodeService nodeService)
     {
@@ -119,21 +116,15 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
 
         int max = searchParameters.getMaxItems();
         int skip = searchParameters.getSkipCount();
-        int length = getWrappedResultSetLength();
-        if ((max >= 0) && (max < (length - skip)))
+        if ((max >= 0) && (max < (wrapped.length() - skip)))
         {
             return searchParameters.getMaxItems();
         }
         else
         {
-            int lengthAfterSkipping = length - skip;
+            int lengthAfterSkipping = wrapped.length() - skip;
             return lengthAfterSkipping < 0 ? 0 : lengthAfterSkipping;
         }
-    }
-
-    private int getWrappedResultSetLength()
-    {
-        return trimmedResultSet ? wrapped.length() + searchParameters.getSkipCount() : wrapped.length();
     }
 
     /*
@@ -143,14 +134,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
      */
     public int getStart()
     {
-        if (trimmedResultSet)
-        {
-            return 0;
-        }
-        else
-        {
-            return searchParameters.getSkipCount();
-        }
+        return searchParameters.getSkipCount();
     }
 
     /*
@@ -270,14 +254,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     @Override
     public long getNumberFound()
     {
-        if (trimmedResultSet && wrapped instanceof FilteringResultSet)
-        {
-            return ((FilteringResultSet) wrapped).getUnFilteredResultSet().getNumberFound();
-        }
-        else
-        {
-            return wrapped.getNumberFound();
-        }
+       return wrapped.getNumberFound();
     }
 
     @Override
@@ -296,10 +273,5 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     public SpellCheckResult getSpellCheckResult()
     {
         return wrapped.getSpellCheckResult();
-    }
-
-    public void setTrimmedResultSet(boolean value)
-    {
-        this.trimmedResultSet = value;
     }
 }

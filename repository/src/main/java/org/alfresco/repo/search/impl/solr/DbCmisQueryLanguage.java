@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -53,6 +53,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1;
     
     OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
+    
 
     /**
      * @param metadataIndexCheck1 the metadataIndexCheck1 to set
@@ -62,6 +63,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         this.metadataIndexCheck1 = metadataIndexCheck1;
     }
 
+
     /**
      * @param metadataIndexCheck2 the metadataIndexCheck2 to set
      */
@@ -69,6 +71,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     {
         this.metadataIndexCheck2 = metadataIndexCheck2;
     }
+
 
     /**
      * Set the query engine
@@ -79,6 +82,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     {
         this.queryEngine = queryEngine;
     }
+
     
     /**
      * @param cmisDictionaryService the cmisDictionaryService to set
@@ -105,7 +109,8 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
             throw new QueryModelException("The patch to add the indexes to support in-transactional metadata queries has not been applied");
         }
     }
-
+    
+    
     private ResultSet executeQueryImpl(SearchParameters searchParameters)
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
@@ -118,8 +123,25 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         functionContext.setValidScopes(validScopes);
 
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
-        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = parser.parse(queryEngine.getQueryModelFactory(), functionContext);
+        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = parser.parse(new DBQueryModelFactory(), functionContext);
 
+// TODO: Remove as this appears to be dead code
+//        // build lucene query
+//        Set<String> selectorGroup = null;
+//        if (queryModelQuery.getSource() != null)
+//        {
+//            List<Set<String>> selectorGroups = queryModelQuery.getSource().getSelectorGroups(functionContext);
+//            if (selectorGroups.size() == 0)
+//            {
+//                throw new UnsupportedOperationException("No selectors");
+//            }
+//            if (selectorGroups.size() > 1)
+//            {
+//                throw new UnsupportedOperationException("Advanced join is not supported");
+//            }
+//            selectorGroup = selectorGroups.get(0);
+//        }
+//
         QueryEngineResults results = queryEngine.executeQuery(queryModelQuery, options, functionContext);
         ResultSet resultSet = results.getResults().values().iterator().next();
         return resultSet;

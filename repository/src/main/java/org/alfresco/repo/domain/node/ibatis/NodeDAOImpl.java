@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -426,7 +426,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     {
         NodeEntity node = new NodeEntity();
         node.setId(id);
-
+        
         return template.selectOne(SELECT_NODE_BY_ID, node);
     }
 
@@ -449,7 +449,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
                                     // Originally for DB2 which has been EOLed, but might now be used by other databases.
         }
         node.setUuid(uuid);
-
+        
         return template.selectOne(SELECT_NODE_BY_NODEREF, node);
     }
 

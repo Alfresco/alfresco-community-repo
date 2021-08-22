@@ -138,7 +138,7 @@ public class ACS1907Test extends TestCase
                     NodeRef testFolder = nodeService.createNode(
                             rootNodeRef,
                             ContentModel.ASSOC_CHILDREN,
-                            QName.createQName("https://example.com/test", "folder"+1),
+                            QName.createQName("https://example.com/test", "folder"+ff),
                             ContentModel.TYPE_FOLDER,
                             testFolderProps
                     ).getChildRef();
@@ -149,7 +149,7 @@ public class ACS1907Test extends TestCase
                         NodeRef testContent = nodeService.createNode(
                                 testFolder,
                                 ContentModel.ASSOC_CONTAINS,
-                                QName.createQName("https://example.com/test", "folder"+1),
+                                QName.createQName("https://example.com/test", "content"+c),
                                 ContentModel.TYPE_CONTENT,
                                 testContentProps
                         ).getChildRef();

@@ -77,6 +77,9 @@ import org.junit.runners.Suite;
 	// From MiscContextTestSuite
     org.alfresco.repo.domain.query.CannedQueryDAOTest.class,
 
+    // ACS-1907
+    org.alfresco.repo.search.impl.querymodel.impl.db.ACS1907Test.class,
+
     // REPO-2963 : Tests causing a cascade of failures in AllDBTestsTestSuite on PostgreSQL/MySQL	
     // Moved at the bottom of the suite because DbNodeServiceImplTest.testNodeCleanupRegistry() takes a long time on a clean DB.
     org.alfresco.repo.node.db.DbNodeServiceImplTest.class,

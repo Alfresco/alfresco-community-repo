@@ -32,6 +32,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.event.v1.model.EventData;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,6 +55,18 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 
     @Autowired
     private NodeDAO nodeDAO;
+    
+    @Autowired
+    private NamespaceDAO namespaceDAO;
+    
+    @Before
+    public void setup() {
+        if(namespaceDAO.getNamespaceURI("ce") == null) 
+        {
+            namespaceDAO.addURI(TEST_NAMESPACE);
+            namespaceDAO.addPrefix("ce", TEST_NAMESPACE);
+        }
+    }
     
     @Test
     public void testCreateEvent()
@@ -103,6 +117,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong node modifier display name.", "Administrator",
             nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
+        assertTrue("Wrong assocQName prefix, it doesn't start with \"ce:\".", nodeResource.getAssocQName().startsWith("ce:"));
     }
 
     @Test

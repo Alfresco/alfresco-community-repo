@@ -46,6 +46,7 @@ import org.alfresco.repo.event2.filter.NodePropertyFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -148,6 +149,7 @@ public class NodeResourceHelper implements InitializingBean
                            .setModifiedByUser(getUserInfo((String) properties.get(ContentModel.PROP_MODIFIER), mapUserCache))
                            .setModifiedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_MODIFIED)))
                            .setContent(getContentInfo(properties))
+                           .setAssocQName(getAssocQName(nodeRef))
                            .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
                            .setProperties(mapToNodeProperties(properties))
                            .setAspectNames(getMappedAspects(nodeRef));
@@ -156,6 +158,15 @@ public class NodeResourceHelper implements InitializingBean
     private boolean isSubClass(QName className, QName ofClassQName)
     {
         return dictionaryService.isSubClass(className, ofClassQName);
+    }
+
+    private String getAssocQName(NodeRef nodeRef) {
+        String result = null;
+        ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
+        if(primaryParent != null) {
+            result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString(); 
+        }
+        return result; 
     }
 
     private UserInfo getUserInfo(String userName, Map<String, UserInfo> mapUserCache)

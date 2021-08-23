@@ -37,9 +37,6 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.rest.core.v0.BaseAPI.RM_ACTIONS;
 import org.alfresco.rest.core.v0.RMEvents;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -49,7 +46,8 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -57,13 +55,25 @@ import org.testng.annotations.Test;
  */
 public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
 {
-    /**
-     * list with the root categories to be deleted after running the test
-     */
-    private List<String> categoriesToBeDeleted = new ArrayList<>();
-    ;
+    private RecordCategory rootCategory, rootCategory2;
+    private Record elRecord, nonElRecord;
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
+
+    /**
+     * Create two root categories with some retention schedules on record level
+     */
+    @BeforeMethod
+    private void setUpMoveRecCategoriesWithRSTests()
+    {
+        STEP("Create record category with retention schedule and apply it to records.");
+        rootCategory = createRootCategory(getRandomName("rootCategory1"));
+        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
+
+        STEP("Create record category with retention schedule and apply it to records.");
+        rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
+        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory2.getName(), true);
+    }
 
     /**
      * Given following structure is created:
@@ -80,30 +90,14 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
     @AlfrescoTest (jira = "APPS-1005")
     public void testInheritWhenMoveToDifferentRSStep() throws Exception
     {
-        STEP("Create record category with retention schedule and apply it to records.");
-        RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory1"));
-        categoriesToBeDeleted.add(rootCategory.getId());
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
-
         STEP("Add retention schedule cut off step after 1 day period.");
         dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "day|1", CREATED_DATE);
 
         STEP("Add retention schedule destroy step after 1 Day period.");
         dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory.getName(), "day|1", CUT_OFF_DATE);
 
-        STEP("Create a subcategory with a record folder");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
-
-        STEP("Create 2 records in the record folder. Complete one of them.");
-        Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
-        getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
-
-        STEP("Create record category with retention schedule and apply it to records.");
-        RecordCategory rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
-        categoriesToBeDeleted.add(rootCategory2.getId());
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory2.getName(), true);
+        STEP("Create a subcategory with a record folder and records.");
+        RecordCategoryChild subCategory = createSubCategoryWithRecords();
 
         STEP("Add retention schedule retain step after 2 day period.");
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory2.getName(), "day|2");
@@ -130,7 +124,6 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
                 "Disposition period property should be day");
         assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("2"),
                 "Disposition period expression should be 2");
-
     }
 
     /**
@@ -148,30 +141,14 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
     @AlfrescoTest (jira = "APPS-1004")
     public void testInheritWhenMoveToDifferentRSStepOnEventBase() throws Exception
     {
-        STEP("Create record category with retention schedule and apply it to records.");
-        RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory1"));
-        categoriesToBeDeleted.add(rootCategory.getId());
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
-
         STEP("Add retention schedule retain step after 1 day period.");
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "day|1");
 
         STEP("Add retention schedule destroy step after 1 Day period.");
         dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory.getName(), "day|1", CUT_OFF_DATE);
 
-        STEP("Create a subcategory with a record folder");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
-
-        STEP("Create 2 records in the record folder. Complete one of them.");
-        Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
-        getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
-
-        STEP("Create record category with retention schedule and apply it to records.");
-        RecordCategory rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
-        categoriesToBeDeleted.add(rootCategory2.getId());
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory2.getName(), true);
+        STEP("Create a subcategory with a record folder and records.");
+        RecordCategoryChild subCategory = createSubCategoryWithRecords();
 
         STEP("Add retention schedule cut off step on event case closed.");
         dispositionScheduleService.addCutOffAfterEventStep(rootCategory2.getName(), RMEvents.CASE_CLOSED.getEventName());
@@ -219,30 +196,14 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
     @AlfrescoTest (jira = "APPS-1004")
     public void testInheritWhenMoveToSameStepDifferentEvent() throws Exception
     {
-        STEP("Create record category with retention schedule and apply it to records.");
-        RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory1"));
-        categoriesToBeDeleted.add(rootCategory.getId());
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
-
         STEP("Add retention schedule cut off on case closed.");
         dispositionScheduleService.addCutOffAfterEventStep(rootCategory.getName(), RMEvents.CASE_CLOSED.getEventName());
 
         STEP("Add retention schedule destroy step after 1 Day period.");
         dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory.getName(), "day|1", CUT_OFF_DATE);
 
-        STEP("Create a subcategory with a record folder");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
-
-        STEP("Create 2 records in the record folder. Complete one of them.");
-        Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
-        getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
-
-        STEP("Create record category with retention schedule and apply it to records.");
-        RecordCategory rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
-        categoriesToBeDeleted.add(rootCategory2.getId());
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory2.getName(), true);
+        STEP("Create a subcategory with a record folder and records.");
+        RecordCategoryChild subCategory = createSubCategoryWithRecords();
 
         STEP("Add retention schedule cut off step on event separation.");
         dispositionScheduleService.addCutOffAfterEventStep(rootCategory2.getName(), RMEvents.OBSOLETE.getEventName());
@@ -279,9 +240,29 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
                 "Event list doesn't contain the event from the current RS ");
     }
 
-    @AfterClass (alwaysRun = true)
+    @AfterMethod (alwaysRun = true)
     public void cleanupMoveRecCategoriesWithRSTests()
     {
-        categoriesToBeDeleted.forEach(cat -> getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(cat));
+        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory.getId());
+        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory2.getId());
     }
+
+    /**
+     * Helper method to create a sub-category with a folder, an incomplete electronic record and a complete
+     * electronic record
+     * @return
+     */
+    private RecordCategoryChild createSubCategoryWithRecords()
+    {
+        STEP("Create a subcategory with a record folder");
+        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
+
+        STEP("Create 2 records in the record folder. Complete one of them.");
+        elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
+        nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
+        getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
+        return subCategory;
+    }
+
 }

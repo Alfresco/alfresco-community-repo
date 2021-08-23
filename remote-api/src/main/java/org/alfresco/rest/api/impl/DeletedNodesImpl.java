@@ -48,7 +48,6 @@ import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
-import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -247,20 +246,14 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
         return renditions.getRenditions(nodeRef, parameters);
     }
 
-
     /**
-     * @author Mikołaj Brzeziński
-     * Gets a presigned URL to directly access content.
-     * @param originalNodeId The node id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
-     * @param validFor The time at which the direct access {@code URL} will expire.
-     * @return A direct access {@code URL} object for the content.
+     * {@inheritDoc}
      */
     @Override
     public DirectAccessUrl requestContentDirectUrl(String originalNodeId, boolean attachment, Long validFor)
     {
         //First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalNodeId);
-        return nodes.requestContentDirectUrl(validatedNodeRef,attachment,validFor);
+        return nodes.requestContentDirectUrl(validatedNodeRef, attachment, validFor);
     }
 }

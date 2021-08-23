@@ -33,7 +33,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.virtual.store.TypeVirtualizationMethodUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -45,8 +44,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -57,8 +54,6 @@ import java.util.Map;
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ACS1907Test extends TestCase
 {
-
-    private static Log logger = LogFactory.getLog(ACS1907Test.class);
 
     private ApplicationContext ctx;
 
@@ -80,14 +75,12 @@ public class ACS1907Test extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        logger.info("setup...");
         setupServices();
         this.authenticationComponent.setSystemUserAsCurrentUser();
         rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         setupTestUsers();
         setupTestContent();
         dropCaches();
-        logger.info("setup done");
     }
 
     @Override
@@ -109,7 +102,13 @@ public class ACS1907Test extends TestCase
         aclCache = (TransactionalCache) ctx.getBean("aclCache");
         aclEntityCache = (TransactionalCache) ctx.getBean("aclEntityCache");
         permissionEntityCache = (TransactionalCache) ctx.getBean("permissionEntityCache");
-        txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper = new RetryingTransactionHelper();
+        txnHelper.setTransactionService(transactionService);
+        txnHelper.setReadOnly(false);
+        txnHelper.setMaxRetries(1);
+        txnHelper.setMinRetryWaitMs(1);
+        txnHelper.setMaxRetryWaitMs(10);
+        txnHelper.setRetryWaitIncrementMs(1);
     }
 
     private void setupTestUser(String userName)
@@ -135,7 +134,7 @@ public class ACS1907Test extends TestCase
 
     private void setupTestContent()
     {
-        for(int f = 0; f < 25; f++)
+        for(int f = 0; f < 5; f++)
         {
             final int ff = f;
             txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
@@ -150,7 +149,7 @@ public class ACS1907Test extends TestCase
                             ContentModel.TYPE_FOLDER,
                             testFolderProps
                     ).getChildRef();
-                    for(int c = 0; c < 25; c++)
+                    for(int c = 0; c < 5; c++)
                     {
                         Map<QName, Serializable> testContentProps = new HashMap<>();
                         testContentProps.put(ContentModel.PROP_NAME, "content"+c);
@@ -191,14 +190,12 @@ public class ACS1907Test extends TestCase
                         sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
                         sp.setQuery("TYPE:\"cm:content\"");
                         ResultSet rs = pubSearchService.query(sp);
-                        logger.info("result set length: "+rs.length());
                         int cnt = 0;
                         for (ResultSetRow row : rs)
                         {
                             assertNotNull(row.getValue(ContentModel.PROP_NAME));
                             cnt++;
                         }
-                        logger.info("counting: "+cnt);
                         return null;
                     }
                 }, "userA");

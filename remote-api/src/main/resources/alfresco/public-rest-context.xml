@@ -995,8 +995,8 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">
         <property name="deletedNodes" ref="DeletedNodes" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
-
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
         <property name="quickShareLinks" ref="QuickShareLinks" />

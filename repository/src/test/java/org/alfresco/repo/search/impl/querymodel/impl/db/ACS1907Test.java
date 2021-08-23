@@ -33,30 +33,28 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.virtual.store.TypeVirtualizationMethodUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.*;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ACS1907Test extends TestCase
 {
+
+    private static Log logger = LogFactory.getLog(ACS1907Test.class);
 
     private ApplicationContext ctx;
 
@@ -78,12 +76,14 @@ public class ACS1907Test extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        logger.info("setup...");
         setupServices();
         this.authenticationComponent.setSystemUserAsCurrentUser();
         rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         setupTestUsers();
         setupTestContent();
         dropCaches();
+        logger.info("setup done");
     }
 
     @Override
@@ -131,7 +131,7 @@ public class ACS1907Test extends TestCase
 
     private void setupTestContent()
     {
-        for(int f = 0; f < 100; f++)
+        for(int f = 0; f < 25; f++)
         {
             final int ff = f;
             txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
@@ -146,7 +146,7 @@ public class ACS1907Test extends TestCase
                             ContentModel.TYPE_FOLDER,
                             testFolderProps
                     ).getChildRef();
-                    for(int c = 0; c < 1000; c++)
+                    for(int c = 0; c < 25; c++)
                     {
                         Map<QName, Serializable> testContentProps = new HashMap<>();
                         testContentProps.put(ContentModel.PROP_NAME, "content"+c);
@@ -183,13 +183,18 @@ public class ACS1907Test extends TestCase
                     public Object doWork() throws Exception {
                         SearchParameters sp = new SearchParameters();
                         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+                        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
                         sp.setQuery("TYPE:\"cm:content\"");
                         ResultSet rs = pubSearchService.query(sp);
+                        logger.info("result set length: "+rs.length());
+                        int cnt = 0;
                         for (ResultSetRow row : rs)
                         {
                             assertNotNull(row.getValue(ContentModel.PROP_NAME));
+                            cnt++;
                         }
+                        logger.info("counting: "+cnt);
                         return null;
                     }
                 }, "userA");

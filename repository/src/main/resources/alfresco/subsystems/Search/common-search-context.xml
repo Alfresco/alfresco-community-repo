@@ -105,25 +105,8 @@
             <ref bean="metadataQueryIndexesCheck2" />
         </property>
     </bean>
-
-    <bean id="search.dbQueryEngineImpl" class="org.alfresco.util.bean.HierarchicalBeanLoader">
-        <property name="targetBeanName">
-            <value>search.dbQueryEngine.#bean.dialect#</value>
-        </property>
-        <property name="targetClass">
-            <value>org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine</value>
-        </property>
-        <property name="dialectBaseClass">
-            <value>org.alfresco.repo.domain.dialect.Dialect</value>
-        </property>
-        <property name="dialectClass">
-            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
-                <property name="targetBeanName" value="dialect" />
-                <property name="propertyPath" value="class.name" />
-            </bean>
-        </property>
-    </bean>
-    <bean id="search.dbQueryEngineBase" abstract="true">
+    
+    <bean id="search.dbQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine" >
         <property name="permissionService" ref="permissionService"/>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="namespaceService" ref="namespaceService" />
@@ -138,18 +121,16 @@
             <ref bean="metadataQueryIndexesCheck2" />
         </property>
         <property name="maxPermissionChecks">
-            <value>${system.acl.maxPermissionChecks}</value>
+        	<value>${system.acl.maxPermissionChecks}</value>
         </property>
         <property name="maxPermissionCheckTimeMillis">
-            <value>${system.acl.maxPermissionCheckTimeMillis}</value>
+        	<value>${system.acl.maxPermissionCheckTimeMillis}</value>
         </property>
         <property name="maxPermissionCheckEnabled">
             <value>${system.acl.maxPermissionCheckEnabled}</value>
         </property>
     </bean>
-    <bean id="search.dbQueryEngine.org.alfresco.repo.domain.dialect.Dialect" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine" parent="search.dbQueryEngineBase" />
-    <bean id="search.dbQueryEngine.org.alfresco.repo.domain.dialect.PostgreSQLDialect" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngineMySQLInnoDBDialect" parent="search.dbQueryEngineBase" />
-
+   
    <bean id="search.dbQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>

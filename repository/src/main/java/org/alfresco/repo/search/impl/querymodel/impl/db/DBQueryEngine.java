@@ -76,8 +76,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -114,6 +116,8 @@ public class DBQueryEngine implements QueryEngine
 
     private boolean maxPermissionCheckEnabled;
 
+    private boolean usePagingQuery = false;
+
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
 
     private List<Pair<Long, StoreRef>> stores;
@@ -149,7 +153,11 @@ public class DBQueryEngine implements QueryEngine
     {
         this.permissionService = permissionService;
     }
-    
+
+    public void setUsePagingQuery(boolean usePagingQuery) {
+        this.usePagingQuery = usePagingQuery;
+    }
+
     public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
     {
         this.metadataIndexCheck2 = metadataIndexCheck2;
@@ -331,7 +339,7 @@ public class DBQueryEngine implements QueryEngine
         int requiredNodes = computeRequiredNodesCount(options);
         
         logger.debug("- query sent to the database");
-        template.select(pickQueryTemplate(options, dbQuery), dbQuery, new ResultHandler<Node>()
+        performTmdqSelect(pickQueryTemplate(options, dbQuery), dbQuery, requiredNodes, new ResultHandler<Node>()
         {
             @Override
             public void handleResult(ResultContext<? extends Node> context)
@@ -397,6 +405,58 @@ public class DBQueryEngine implements QueryEngine
  
         logger.debug("- query is completed, "+nodes.size()+" nodes loaded");
         return frs;
+    }
+
+    private void performTmdqSelect(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
+    {
+        if(usePagingQuery)
+        {
+            performTmdqSelectPaging(statement, dbQuery, requiredNodes, handler);
+        }
+        else
+        {
+            performTmdqSelectStreaming(statement, dbQuery, handler);
+        }
+    }
+
+    private void performTmdqSelectStreaming(String statement, DBQuery dbQuery, ResultHandler<Node> handler)
+    {
+        template.select(statement, dbQuery, handler);
+    }
+
+    private static int MIN_PAGING_BATCH_SIZE = 2500;
+
+    private static int MAX_PAGING_BATCH_SIZE = 10000;
+
+    private void performTmdqSelectPaging(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
+    {
+        int batchStart = 0;
+        int batchSize = requiredNodes * 2;
+        batchSize = Math.max(Math.min(batchSize, MIN_PAGING_BATCH_SIZE), MAX_PAGING_BATCH_SIZE);
+        DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
+        while(!resultCtx.isStopped())
+        {
+            dbQuery.setOffset(batchStart);
+            dbQuery.setLimit(batchSize);
+            List<Node> batch = template.selectList(statement, dbQuery);
+            for(Node node : batch)
+            {
+                resultCtx.nextResultObject(node);
+                handler.handleResult(resultCtx);
+                if(resultCtx.isStopped())
+                {
+                    break;
+                }
+            }
+            if(batch.size() < batchSize)
+            {
+                resultCtx.stop();
+            }
+            else
+            {
+                batchStart += batchSize;
+            }
+        }
     }
 
     private DBResultSet createResultSet(QueryOptions options, List<Node> nodes, int numberFound)

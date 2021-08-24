@@ -32,7 +32,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.event.v1.model.EventData;

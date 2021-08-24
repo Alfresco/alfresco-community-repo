@@ -160,13 +160,13 @@ public class NodeResourceHelper implements InitializingBean
         return dictionaryService.isSubClass(className, ofClassQName);
     }
 
-    private String getAssocQName(NodeRef nodeRef) {
-        String result = null;
-        ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
-        if(primaryParent != null) {
-            result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString(); 
-        }
-        return result; 
+    private String getAssocQName(NodeRef nodeRef) 
+    {
+        return nodeService
+                       .getPrimaryParent(nodeRef)
+                       .getQName()
+                       .getPrefixedQName(namespaceService)
+                       .getPrefixString(); 
     }
 
     private UserInfo getUserInfo(String userName, Map<String, UserInfo> mapUserCache)

@@ -45,9 +45,10 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
     @Test
     public void testDeleteContent()
     {
+        String localName = GUID.generate();
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
-        NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, propertyMap);
+        NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
 
         NodeResource createdResource = getNodeResource(1);
 
@@ -64,6 +65,7 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertEquals("Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
         assertEquals(createdResource.getId(), getNodeResource(resultRepoEvent).getId());
+        assertEquals("Wrong assocQName prefix.", "ce:" + localName, createdResource.getAssocQName());
 
         // There should be no resourceBefore
         EventData<NodeResource> eventData = getEventData(resultRepoEvent);

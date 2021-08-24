@@ -43,7 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,28 +54,17 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 
     @Autowired
     private NodeDAO nodeDAO;
-    
-    @Autowired
-    private NamespaceDAO namespaceDAO;
-    
-    @Before
-    public void setup() {
-        if(namespaceDAO.getNamespaceURI("ce") == null) 
-        {
-            namespaceDAO.addURI(TEST_NAMESPACE);
-            namespaceDAO.addPrefix("ce", TEST_NAMESPACE);
-        }
-    }
-    
+
     @Test
     public void testCreateEvent()
     {
         // Create a node without content
         final String name = "TestFile-" + System.currentTimeMillis() + ".txt";
+        String localName = GUID.generate();
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
         propertyMap.put(ContentModel.PROP_NAME, name);
-        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, propertyMap);
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
 
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
         // Repo event attributes
@@ -117,7 +105,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong node modifier display name.", "Administrator",
             nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
-        assertTrue("Wrong assocQName prefix, it doesn't start with \"ce:\".", nodeResource.getAssocQName().startsWith("ce:"));
+        assertEquals("Wrong assocQName prefix.", "ce:" + localName, nodeResource.getAssocQName());
     }
 
     @Test

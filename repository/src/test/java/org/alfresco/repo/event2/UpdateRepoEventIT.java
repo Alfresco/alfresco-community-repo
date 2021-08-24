@@ -37,7 +37,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
-import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.event.v1.model.ContentInfo;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
@@ -48,13 +47,10 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Iulian Aftene
@@ -63,21 +59,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 {
 
-    @Autowired
-    private NamespaceDAO namespaceDAO;
-
-    @Autowired
-    private NamespaceService namespaceService;
-
-    @Before
-    public void setup() {
-        if(namespaceDAO.getNamespaceURI("ce") == null)
-        {
-            namespaceDAO.addURI(TEST_NAMESPACE);
-            namespaceDAO.addPrefix("ce", TEST_NAMESPACE);
-        }
-    }
-    
     @Test
     public void testUpdateNodeResourceContent()
     {
@@ -596,8 +577,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
-        
-        setup(); //init again the prefix mapping after the custom model creation
+
+        initTestNamespacePrefixMapping();
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         // old node's type
         assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));

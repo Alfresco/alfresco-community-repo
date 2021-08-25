@@ -89,7 +89,7 @@ public class TrashcanRenditionsRelation
         return deletedNodes.getContent(nodeId, renditionId, parameters);
     }
 
-    @Operation ("requestArchivedNodeRenditionDirectAccessUrl")
+    @Operation ("request-direct-access-url")
     @WebApiParam (name = "requestArchivedNodeRenditionDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
             description="Generates a direct access URL.",

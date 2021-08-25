@@ -106,8 +106,6 @@
         </property>
     </bean>
 
-
-
     <bean id="search.dbQueryEngineImpl" class="org.alfresco.util.bean.HierarchicalBeanLoader">
         <property name="targetBeanName">
             <value>search.dbQueryEngineImpl.#bean.dialect#</value>

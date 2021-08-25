@@ -6278,7 +6278,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
 
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 501);
     }
 
     @Test
@@ -6322,7 +6322,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 501);
     }
 
     @Test
@@ -6367,7 +6367,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 501);
     }
 
 
@@ -6473,7 +6473,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document document2b = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         String contentNodeId2b = document2b.getId();
-        getSingle(getRequestContentDirectUrl(contentNodeId2b), null, null, null, 405);
+        getSingle(getRequestContentDirectUrl(contentNodeId2b), null, null, null, 501);
 
     }
 }

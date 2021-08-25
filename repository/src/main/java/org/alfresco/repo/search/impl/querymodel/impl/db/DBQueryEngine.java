@@ -92,9 +92,9 @@ public class DBQueryEngine implements QueryEngine
     
     protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
 
-    private static final int MIN_PAGING_BATCH_SIZE = 2500;
+    private static final int DEFAULT_MIN_PAGING_BATCH_SIZE = 2500;
 
-    private static final int MAX_PAGING_BATCH_SIZE = 10000;
+    private static final int DEFAULT_MAX_PAGING_BATCH_SIZE = 10000;
 
     protected SqlSessionTemplate template;
 
@@ -121,6 +121,10 @@ public class DBQueryEngine implements QueryEngine
     private boolean maxPermissionCheckEnabled;
 
     private boolean usePagingQuery = false;
+
+    private int minPagingBatchSize = DEFAULT_MIN_PAGING_BATCH_SIZE;
+
+    private int maxPagingBatchSize = DEFAULT_MAX_PAGING_BATCH_SIZE;
 
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
 
@@ -158,8 +162,28 @@ public class DBQueryEngine implements QueryEngine
         this.permissionService = permissionService;
     }
 
+    public boolean isUsePagingQuery() {
+        return usePagingQuery;
+    }
+
     public void setUsePagingQuery(boolean usePagingQuery) {
         this.usePagingQuery = usePagingQuery;
+    }
+
+    public int getMinPagingBatchSize() {
+        return minPagingBatchSize;
+    }
+
+    public void setMinPagingBatchSize(int minPagingBatchSize) {
+        this.minPagingBatchSize = minPagingBatchSize;
+    }
+
+    public int getMaxPagingBatchSize() {
+        return maxPagingBatchSize;
+    }
+
+    public void setMaxPagingBatchSize(int maxPagingBatchSize) {
+        this.maxPagingBatchSize = maxPagingBatchSize;
     }
 
     public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
@@ -432,7 +456,7 @@ public class DBQueryEngine implements QueryEngine
     {
         int batchStart = 0;
         int batchSize = requiredNodes * 2;
-        batchSize = Math.min(Math.max(batchSize, MIN_PAGING_BATCH_SIZE), MAX_PAGING_BATCH_SIZE);
+        batchSize = Math.min(Math.max(batchSize, minPagingBatchSize), maxPagingBatchSize);
         DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
         while (!resultCtx.isStopped())
         {

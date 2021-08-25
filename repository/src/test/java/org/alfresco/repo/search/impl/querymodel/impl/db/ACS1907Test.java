@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.db;
 import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -49,6 +50,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
@@ -65,6 +67,7 @@ public class ACS1907Test extends TestCase
     private PermissionService pubPermissionService;
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
+    private DBQueryEngine queryEngine;
 
     private TransactionalCache<Serializable, AccessControlList> aclCache;
     private TransactionalCache<Serializable, Object> aclEntityCache;
@@ -102,6 +105,9 @@ public class ACS1907Test extends TestCase
         aclCache = (TransactionalCache) ctx.getBean("aclCache");
         aclEntityCache = (TransactionalCache) ctx.getBean("aclEntityCache");
         permissionEntityCache = (TransactionalCache) ctx.getBean("permissionEntityCache");
+        SwitchableApplicationContextFactory searchContextFactory = (SwitchableApplicationContextFactory) ctx.getBean("Search");
+        ApplicationContext searchCtx = searchContextFactory.getApplicationContext();
+        queryEngine = (DBQueryEngine) searchCtx.getBean("search.dbQueryEngineImpl");
         txnHelper = new RetryingTransactionHelper();
         txnHelper.setTransactionService(transactionService);
         txnHelper.setReadOnly(false);
@@ -202,6 +208,53 @@ public class ACS1907Test extends TestCase
                 return null;
             }
         }, false, false);
+    }
+
+    public void testPaging()
+    {
+        HashSet<NodeRef> resultPageSize2 = queryNodes(2);
+        HashSet<NodeRef> resultPageSize5 = queryNodes(5);
+        HashSet<NodeRef> resultPageSize10 = queryNodes(10);
+        HashSet<NodeRef> resultPageSizeAll = queryNodes(10000);
+        // all result sets must be equal, independent of page size used to retrieve them
+        assertTrue(resultPageSize2.size() >= 25);
+        assertTrue(resultPageSize5.size() >= 25);
+        assertTrue(resultPageSize10.size() >= 25);
+        assertTrue(resultPageSizeAll.size() >= 25);
+        assertTrue(resultPageSize2.containsAll(resultPageSize5));
+        assertTrue(resultPageSize2.containsAll(resultPageSize10));
+        assertTrue(resultPageSize2.containsAll(resultPageSizeAll));
+        assertTrue(resultPageSize5.containsAll(resultPageSize2));
+        assertTrue(resultPageSize5.containsAll(resultPageSize10));
+        assertTrue(resultPageSize5.containsAll(resultPageSizeAll));
+        assertTrue(resultPageSize10.containsAll(resultPageSize2));
+        assertTrue(resultPageSize10.containsAll(resultPageSize5));
+        assertTrue(resultPageSize10.containsAll(resultPageSizeAll));
+        assertTrue(resultPageSizeAll.containsAll(resultPageSize2));
+        assertTrue(resultPageSizeAll.containsAll(resultPageSize5));
+        assertTrue(resultPageSizeAll.containsAll(resultPageSize10));
+        // reset
+        queryEngine.setMinPagingBatchSize(2500);
+        queryEngine.setMaxPagingBatchSize(10000);
+    }
+
+    HashSet<NodeRef> queryNodes(int pageSize)
+    {
+        queryEngine.setMinPagingBatchSize(pageSize);
+        queryEngine.setMaxPagingBatchSize(pageSize);
+        HashSet<NodeRef> result = new HashSet<>();
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+        sp.setQuery("TYPE:\"cm:content\"");
+        ResultSet rs = pubSearchService.query(sp);
+        int cnt = 0;
+        for (ResultSetRow row : rs)
+        {
+            result.add(row.getNodeRef());
+        }
+        return result;
     }
 
 }

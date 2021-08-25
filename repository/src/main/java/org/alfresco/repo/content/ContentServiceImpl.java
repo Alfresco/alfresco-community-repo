@@ -27,7 +27,6 @@ package org.alfresco.repo.content;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -520,12 +519,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return tempStore.getWriter(ContentContext.NULL_CONTEXT);
     }
 
-    @Deprecated
-    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt)
-    {
-        return requestContentDirectUrl(nodeRef, true, null);
-    }
-
     /**
      * Ensures that, upon closure of the output stream, the node is updated with
      * the latest URL of the content to which it refers.
@@ -612,7 +605,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
             }
 
-            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(nodeRef));
+            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(getContentUrl(nodeRef)));
         }
 
         return contentDirectUrlEnabled;

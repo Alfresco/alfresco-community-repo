@@ -25,7 +25,6 @@
  */
 package org.alfresco.service.cmr.repository;
 
-import java.util.Date;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
@@ -154,23 +153,6 @@ public interface ContentService
      */
     @Auditable
     public ContentWriter getTempWriter();
-
-    /**
-     * Gets a presigned URL to directly access a binary content. It is up to the
-     * content store if it can fulfil this request with an expiry time (in
-     * milliseconds) or not.
-     *
-     * @param nodeRef
-     *            a reference to a node having a content property
-     * @param expiresAt
-     *            an optional expiry date, so the direct access url would become
-     *            invalid when the expiry date is reached
-     * @return A direct access URL object for a binary content or returns null if not supported
-     * @throws IllegalArgumentException if there is no binary content for the node
-     */
-    @Deprecated
-    @Auditable(parameters = {"nodeRef", "expiresAt"})
-    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
 
     /**
      * Checks if the system and at least one store supports the retrieving of direct access URLs.

@@ -132,7 +132,7 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
         return renditions.getContent(nodeRef, versionId, renditionId, parameters);
     }
 
-    @Operation ("requestVersionRenditionDirectAccessUrl")
+    @Operation ("request-direct-access-url")
     @WebApiParam (name = "requestVersionRenditionDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
             description="Generates a direct access URL.",

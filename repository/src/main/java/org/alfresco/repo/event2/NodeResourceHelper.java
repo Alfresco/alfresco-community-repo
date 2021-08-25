@@ -46,6 +46,7 @@ import org.alfresco.repo.event2.filter.NodePropertyFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -161,11 +162,19 @@ public class NodeResourceHelper implements InitializingBean
 
     private String getPrimaryAssocQName(NodeRef nodeRef) 
     {
-        return nodeService
-                       .getPrimaryParent(nodeRef)
-                       .getQName()
-                       .getPrefixedQName(namespaceService)
-                       .getPrefixString(); 
+        String result = null;
+        try 
+        {
+            ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
+            if(primaryParent != null && primaryParent.getQName() != null) 
+            {
+                result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString();
+            }
+        } catch (NamespaceException namespaceException) 
+        {
+            LOGGER.error("Cannot return a valid primary association QName: " + namespaceException.getMessage());
+        }
+        return result;
     }
 
     private UserInfo getUserInfo(String userName, Map<String, UserInfo> mapUserCache)

@@ -99,7 +99,7 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
     }
 
     @Override
-    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    public boolean isContentDirectUrlEnabled(String contentUrl)
     {
         return enabled;
     }

@@ -138,7 +138,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-        assertNull(resourceBefore.getAssocQName());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -199,7 +199,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-        assertNull(resourceBefore.getAssocQName());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -276,7 +276,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-        assertNull(resourceBefore.getAssocQName());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -542,7 +542,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-        assertNull(resourceBefore.getAssocQName());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -618,7 +618,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-        assertNull(resourceBefore.getAssocQName());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -665,7 +665,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-        assertNull(resourceBefore.getAssocQName());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test

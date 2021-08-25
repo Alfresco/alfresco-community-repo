@@ -104,7 +104,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong node modifier display name.", "Administrator",
             nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
-        assertEquals("Wrong assocQName prefix.", "ce:" + localName, nodeResource.getAssocQName());
+        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, nodeResource.getPrimaryAssocQName());
     }
 
     @Test

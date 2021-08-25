@@ -65,7 +65,7 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertEquals("Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
         assertEquals(createdResource.getId(), getNodeResource(resultRepoEvent).getId());
-        assertEquals("Wrong assocQName prefix.", "ce:" + localName, createdResource.getAssocQName());
+        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, createdResource.getPrimaryAssocQName());
 
         // There should be no resourceBefore
         EventData<NodeResource> eventData = getEventData(resultRepoEvent);

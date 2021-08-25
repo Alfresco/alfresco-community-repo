@@ -250,10 +250,18 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
      * {@inheritDoc}
      */
     @Override
-    public DirectAccessUrl requestContentDirectUrl(String originalNodeId, boolean attachment, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(String originalNodeId, String renditionId, boolean attachment, Long validFor)
     {
         //First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalNodeId);
-        return nodes.requestContentDirectUrl(validatedNodeRef, attachment, validFor);
+
+        if (renditionId != null)
+        {
+            return renditions.requestContentDirectUrl(validatedNodeRef, null, renditionId, attachment, validFor);
+        }
+        else
+        {
+            return nodes.requestContentDirectUrl(validatedNodeRef, attachment, validFor);
+        }
     }
 }

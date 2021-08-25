@@ -112,7 +112,7 @@ public class TrashcanEntityResource implements
         DirectAccessUrl directAccessUrl;
         try
         {
-            directAccessUrl = deletedNodes.requestContentDirectUrl(originalNodeId, attachment, validFor);
+            directAccessUrl = deletedNodes.requestContentDirectUrl(originalNodeId, null, attachment, validFor);
         }
         catch (DirectAccessUrlDisabledException ex)
         {

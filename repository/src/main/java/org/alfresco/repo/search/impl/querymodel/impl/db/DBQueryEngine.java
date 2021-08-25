@@ -432,7 +432,7 @@ public class DBQueryEngine implements QueryEngine
     {
         int batchStart = 0;
         int batchSize = requiredNodes * 2;
-        batchSize = Math.max(Math.min(batchSize, MIN_PAGING_BATCH_SIZE), MAX_PAGING_BATCH_SIZE);
+        batchSize = Math.min(Math.max(batchSize, MIN_PAGING_BATCH_SIZE), MAX_PAGING_BATCH_SIZE);
         DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
         while (!resultCtx.isStopped())
         {

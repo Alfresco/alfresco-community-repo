@@ -91,7 +91,11 @@ public class DBQueryEngine implements QueryEngine
     protected static final Log logger = LogFactory.getLog(DBQueryEngine.class);
     
     protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
-    
+
+    private static final int MIN_PAGING_BATCH_SIZE = 2500;
+
+    private static final int MAX_PAGING_BATCH_SIZE = 10000;
+
     protected SqlSessionTemplate template;
 
     protected QNameDAO qnameDAO;
@@ -409,7 +413,7 @@ public class DBQueryEngine implements QueryEngine
 
     private void performTmdqSelect(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
     {
-        if(usePagingQuery)
+        if (usePagingQuery)
         {
             performTmdqSelectPaging(statement, dbQuery, requiredNodes, handler);
         }
@@ -424,31 +428,27 @@ public class DBQueryEngine implements QueryEngine
         template.select(statement, dbQuery, handler);
     }
 
-    private static int MIN_PAGING_BATCH_SIZE = 2500;
-
-    private static int MAX_PAGING_BATCH_SIZE = 10000;
-
     private void performTmdqSelectPaging(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
     {
         int batchStart = 0;
         int batchSize = requiredNodes * 2;
         batchSize = Math.max(Math.min(batchSize, MIN_PAGING_BATCH_SIZE), MAX_PAGING_BATCH_SIZE);
         DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
-        while(!resultCtx.isStopped())
+        while (!resultCtx.isStopped())
         {
             dbQuery.setOffset(batchStart);
             dbQuery.setLimit(batchSize);
             List<Node> batch = template.selectList(statement, dbQuery);
-            for(Node node : batch)
+            for (Node node : batch)
             {
                 resultCtx.nextResultObject(node);
                 handler.handleResult(resultCtx);
-                if(resultCtx.isStopped())
+                if (resultCtx.isStopped())
                 {
                     break;
                 }
             }
-            if(batch.size() < batchSize)
+            if (batch.size() < batchSize)
             {
                 resultCtx.stop();
             }

@@ -138,7 +138,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected final String RUNID = System.currentTimeMillis()+"";
 
-    private static final String REQUEST_NODE_DIRECT_ACCESS_URL = "requestNodeDirectAccessUrl";
+    private static final String REQUEST_DIRECT_ACCESS_URL = "request-direct-access-url";
     
     @Override
     @Before
@@ -216,7 +216,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected String getRequestContentDirectUrl(String nodeId)
     {
-        return URL_NODES + "/" + nodeId + "/" + REQUEST_NODE_DIRECT_ACCESS_URL;
+        return URL_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
     /**

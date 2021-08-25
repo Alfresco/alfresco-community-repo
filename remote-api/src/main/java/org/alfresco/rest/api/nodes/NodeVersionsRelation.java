@@ -302,7 +302,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         return null;
     }
 
-    @Operation("requestVersionDirectAccessUrl")
+    @Operation("request-direct-access-url")
     @WebApiParam (name = "requestVersionDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
             description="Generates a direct access URL.",

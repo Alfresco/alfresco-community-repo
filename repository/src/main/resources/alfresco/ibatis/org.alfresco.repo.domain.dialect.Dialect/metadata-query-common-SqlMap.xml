@@ -177,8 +177,7 @@
                  </choose>
             </foreach>
           </if>
-        </if>
-        <if test="limit != 0">limit #{offset}, #{limit}</if>
-   </sql>
+        </if>    
+    </sql>
 
 </mapper>

@@ -76,10 +76,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -91,11 +89,7 @@ public class DBQueryEngine implements QueryEngine
     protected static final Log logger = LogFactory.getLog(DBQueryEngine.class);
     
     protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
-
-    private static final int DEFAULT_MIN_PAGING_BATCH_SIZE = 2500;
-
-    private static final int DEFAULT_MAX_PAGING_BATCH_SIZE = 10000;
-
+    
     protected SqlSessionTemplate template;
 
     protected QNameDAO qnameDAO;
@@ -119,12 +113,6 @@ public class DBQueryEngine implements QueryEngine
     private long maxPermissionCheckTimeMillis;
 
     private boolean maxPermissionCheckEnabled;
-
-    private boolean usePagingQuery = false;
-
-    private int minPagingBatchSize = DEFAULT_MIN_PAGING_BATCH_SIZE;
-
-    private int maxPagingBatchSize = DEFAULT_MAX_PAGING_BATCH_SIZE;
 
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
 
@@ -161,31 +149,7 @@ public class DBQueryEngine implements QueryEngine
     {
         this.permissionService = permissionService;
     }
-
-    public boolean isUsePagingQuery() {
-        return usePagingQuery;
-    }
-
-    public void setUsePagingQuery(boolean usePagingQuery) {
-        this.usePagingQuery = usePagingQuery;
-    }
-
-    public int getMinPagingBatchSize() {
-        return minPagingBatchSize;
-    }
-
-    public void setMinPagingBatchSize(int minPagingBatchSize) {
-        this.minPagingBatchSize = minPagingBatchSize;
-    }
-
-    public int getMaxPagingBatchSize() {
-        return maxPagingBatchSize;
-    }
-
-    public void setMaxPagingBatchSize(int maxPagingBatchSize) {
-        this.maxPagingBatchSize = maxPagingBatchSize;
-    }
-
+    
     public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
     {
         this.metadataIndexCheck2 = metadataIndexCheck2;
@@ -367,7 +331,7 @@ public class DBQueryEngine implements QueryEngine
         int requiredNodes = computeRequiredNodesCount(options);
         
         logger.debug("- query sent to the database");
-        performTmdqSelect(pickQueryTemplate(options, dbQuery), dbQuery, requiredNodes, new ResultHandler<Node>()
+        template.select(pickQueryTemplate(options, dbQuery), dbQuery, new ResultHandler<Node>()
         {
             @Override
             public void handleResult(ResultContext<? extends Node> context)
@@ -433,54 +397,6 @@ public class DBQueryEngine implements QueryEngine
  
         logger.debug("- query is completed, "+nodes.size()+" nodes loaded");
         return frs;
-    }
-
-    private void performTmdqSelect(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
-    {
-        if (usePagingQuery)
-        {
-            performTmdqSelectPaging(statement, dbQuery, requiredNodes, handler);
-        }
-        else
-        {
-            performTmdqSelectStreaming(statement, dbQuery, handler);
-        }
-    }
-
-    private void performTmdqSelectStreaming(String statement, DBQuery dbQuery, ResultHandler<Node> handler)
-    {
-        template.select(statement, dbQuery, handler);
-    }
-
-    private void performTmdqSelectPaging(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
-    {
-        int batchStart = 0;
-        int batchSize = requiredNodes * 2;
-        batchSize = Math.min(Math.max(batchSize, minPagingBatchSize), maxPagingBatchSize);
-        DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
-        while (!resultCtx.isStopped())
-        {
-            dbQuery.setOffset(batchStart);
-            dbQuery.setLimit(batchSize);
-            List<Node> batch = template.selectList(statement, dbQuery);
-            for (Node node : batch)
-            {
-                resultCtx.nextResultObject(node);
-                handler.handleResult(resultCtx);
-                if (resultCtx.isStopped())
-                {
-                    break;
-                }
-            }
-            if (batch.size() < batchSize)
-            {
-                resultCtx.stop();
-            }
-            else
-            {
-                batchStart += batchSize;
-            }
-        }
     }
 
     private DBResultSet createResultSet(QueryOptions options, List<Node> nodes, int numberFound)

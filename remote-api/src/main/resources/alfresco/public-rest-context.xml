@@ -1438,6 +1438,7 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanRenditionsRelation">
         <property name="deletedNodes" ref="DeletedNodes"/>
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <!-- HeartBeat rest api renditions data collector -->

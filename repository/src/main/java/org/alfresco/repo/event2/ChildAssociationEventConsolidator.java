@@ -27,7 +27,6 @@ package org.alfresco.repo.event2;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
 import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventData;
@@ -117,8 +116,9 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
     {
         String parentId = childAssociationRef.getParentRef().getId();
         String childId = childAssociationRef.getChildRef().getId();
+        String assocQName = helper.getQNamePrefixString(childAssociationRef.getQName());
         String assocType = helper.getQNamePrefixString(childAssociationRef.getTypeQName());
-        return new ChildAssociationResource(parentId, childId, assocType);
+        return new ChildAssociationResource(parentId, childId, assocType, assocQName);
     }
 
     /**

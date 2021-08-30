@@ -704,6 +704,34 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
     }
 
+    @Test
+    public void testRequestArchivedContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        String fileName = "TestDocumentToArchive.txt";
+        Document testDocumentToArchive = new Document();
+        testDocumentToArchive.setName(fileName);
+        testDocumentToArchive.setNodeType(TYPE_CM_CONTENT);
+
+        // create *empty* text file
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(testDocumentToArchive), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        final String contentNodeId = document.getId();
+        deleteNode(contentNodeId);
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
     private String getDeletedNodeRenditionsUrl(String nodeId)
     {
         return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS;

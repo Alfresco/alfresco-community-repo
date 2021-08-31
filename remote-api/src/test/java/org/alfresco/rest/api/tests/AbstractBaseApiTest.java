@@ -68,7 +68,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

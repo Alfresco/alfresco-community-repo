@@ -899,9 +899,18 @@ public class Node extends ModelRequest<Node>
      * Get Direct Access URL for a node
      * @return
      */
-    public RestResponse createDirectAccessURL()
+    public RestResponse createDirectAccessURL(String postBody)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "nodes/{nodeId}/request-content-url", this.repoModel.getNodeRef());
+        RestRequest request;
+        if (postBody == null)
+        {
+            request = RestRequest.simpleRequest(HttpMethod.POST, "nodes/{nodeId}/request-direct-access-url", this.repoModel.getNodeRef());
+        }
+        else
+        {
+            request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/request-direct-access-url", this.repoModel.getNodeRef());
+        }
+
         return this.restWrapper.process(request);
     }
 
@@ -913,7 +922,7 @@ public class Node extends ModelRequest<Node>
     public RestResponse createDirectAccessURLforVersion(String versionId)
     {
         RestRequest request = RestRequest
-                .simpleRequest(HttpMethod.POST, "nodes/{nodeId}/versions/{versionId}/request-content-url", this.repoModel.getNodeRef(), versionId);
+                .simpleRequest(HttpMethod.POST, "nodes/{nodeId}/versions/{versionId}/request-direct-access-url", this.repoModel.getNodeRef(), versionId);
         return this.restWrapper.process(request);
     }
 
@@ -926,7 +935,7 @@ public class Node extends ModelRequest<Node>
     public RestResponse createDirectAccessURLforVersionAndRendition(String versionId, String renditionId)
     {
         RestRequest request = RestRequest
-                .simpleRequest(HttpMethod.POST, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/request-content-url", this.repoModel.getNodeRef(), versionId, renditionId);
+                .simpleRequest(HttpMethod.POST, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/request-direct-access-url", this.repoModel.getNodeRef(), versionId, renditionId);
         return this.restWrapper.process(request);
     }
 
@@ -938,7 +947,7 @@ public class Node extends ModelRequest<Node>
     public RestResponse createDirectAccessURLforRendition(String renditionId)
     {
         RestRequest request = RestRequest
-                .simpleRequest(HttpMethod.POST, "nodes/{nodeId}/renditions/{renditionId}/request-content-url", this.repoModel.getNodeRef(), renditionId);
+                .simpleRequest(HttpMethod.POST, "nodes/{nodeId}/renditions/{renditionId}/request-direct-access-url", this.repoModel.getNodeRef(), renditionId);
         return this.restWrapper.process(request);
     }
 

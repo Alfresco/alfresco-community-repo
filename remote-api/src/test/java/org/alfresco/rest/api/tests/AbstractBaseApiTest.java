@@ -68,7 +68,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -97,6 +96,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     private static final String RESOURCE_PREFIX = "publicapi/upload/";
 
     protected static final String URL_NODES = "nodes";
+    protected static final String URL_DELETED_NODES = "deleted-nodes";
 
     protected static final String URL_RENDITIONS = "renditions";
     protected static final String URL_VERSIONS = "versions";
@@ -217,6 +217,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getRequestContentDirectUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestArchivedContentDirectUrl(String nodeId)
+    {
+        return URL_DELETED_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
     /**

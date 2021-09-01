@@ -55,7 +55,10 @@ import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.client.data.Rendition;
+import org.alfresco.rest.api.tests.client.data.Rendition.RenditionStatus;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.api.trashcan.TrashcanEntityResource;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
@@ -721,6 +724,47 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         final String contentNodeId = document.getId();
+        deleteNode(contentNodeId);
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        HttpResponse dauResponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
+    @Test
+    public void testRequestArchivedRenditionDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        String fileName = "TestDocumentToArchive.txt";
+        Document testDocumentToArchive = new Document();
+        testDocumentToArchive.setName(fileName);
+        testDocumentToArchive.setNodeType(TYPE_CM_CONTENT);
+
+        // create *empty* text file
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(testDocumentToArchive), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        final String contentNodeId = document.getId();
+
+        // Here we want to overwrite/update the existing content in order to force a new rendition creation,
+        // so the ContentModel.PROP_MODIFIED date would be different. Hence, we use the multipart upload by providing
+        // the old fileName and setting overwrite field to true
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                                           .setFileData(new FileData(fileName, testDocumentToArchive))
+                                           .setOverwrite(true);
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Update quick.pdf
+        post(getNodeChildrenUrl(contentNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+
         deleteNode(contentNodeId);
 
         // Check the upload response

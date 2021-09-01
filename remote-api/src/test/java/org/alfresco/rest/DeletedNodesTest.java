@@ -769,7 +769,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         deleteNode(contentNodeId);
 
-        HttpResponse dauResponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 501);
+        HttpResponse dauResponse = post(getRequestArchivedRenditonContentDirectUrl(contentNodeId), null, null, null, null, 501);
     }
 
     private String addToDocumentLibrary(String name, String nodeType, String userId) throws Exception

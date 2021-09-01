@@ -224,6 +224,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_DELETED_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
+    protected String getRequestArchivedRenditonContentDirectUrl(String nodeId)
+    {
+        return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
     /**
      * The api scope. either public or private
      *

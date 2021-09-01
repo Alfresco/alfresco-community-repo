@@ -742,30 +742,26 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // Create a folder within the site document's library
-        String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(folderName, TYPE_CM_FOLDER, user1);
+        Date now = new Date();
+        String folder1 = "folder" + now.getTime() + "_1";
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
+        assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
 
-        // Create multipart request
+        // Create multipart request using an existing file
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
-        MultiPartRequest reqBody = multiPartBuilder.build();
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
-        // Create and get 'doclib' rendition
         Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
         assertNotNull(rendition);
-        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
-        ContentInfo contentInfo = rendition.getContent();
-        assertNotNull(contentInfo);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, contentInfo.getMimeType());
-        assertEquals("PNG Image", contentInfo.getMimeTypeName());
-        assertNotNull(contentInfo.getEncoding());
-        assertTrue(contentInfo.getSizeInBytes() > 0);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
         deleteNode(contentNodeId);
 

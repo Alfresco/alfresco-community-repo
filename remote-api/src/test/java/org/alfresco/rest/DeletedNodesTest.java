@@ -761,11 +761,12 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
         assertNotNull(rendition);
+        String renditionID = rendition.getId();
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
         deleteNode(contentNodeId);
 
-        HttpResponse dauResponse = post(getRequestArchivedRenditonContentDirectUrl(contentNodeId), null, null, null, null, 501);
+        HttpResponse dauResponse = post(getRequestArchivedRenditonContentDirectUrl(contentNodeId, renditionID), null, null, null, null, 501);
     }
 
     private String addToDocumentLibrary(String name, String nodeType, String userId) throws Exception

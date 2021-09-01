@@ -26,28 +26,18 @@
 
 package org.alfresco.rest.api.nodes;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
-import org.alfresco.rest.api.DirectAccessUrlHelper;
 import org.alfresco.rest.api.Renditions;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.BinaryProperties;
-import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.core.ResourceParameter;
-import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
@@ -62,7 +52,6 @@ import org.springframework.extensions.webscripts.Status;
  * - POST /nodes/{nodeId}/versions/{versionId}/renditions
  * - GET  /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
  * - GET  /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
- * - POST /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/requestVersionDirectAccessUrl
  *
  * @author janv
  */
@@ -74,16 +63,10 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
         InitializingBean
 {
     private Renditions renditions;
-    private DirectAccessUrlHelper directAccessUrlHelper;
 
     public void setRenditions(Renditions renditions)
     {
         this.renditions = renditions;
-    }
-
-    public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
-    {
-        this.directAccessUrlHelper = directAccessUrlHelper;
     }
 
     @Override
@@ -130,30 +113,6 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
 
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         return renditions.getContent(nodeRef, versionId, renditionId, parameters);
-    }
-
-    @Operation ("request-direct-access-url")
-    @WebApiParam (name = "requestVersionRenditionDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
-            successStatus = HttpServletResponse.SC_OK)
-    public DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
-    {
-        boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
-        Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
-        String renditionId = parameters.getRelationship2Id();
-
-        DirectAccessUrl directAccessUrl;
-        try
-        {
-            directAccessUrl = renditions.requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
-        }
-        catch (DirectAccessUrlDisabledException ex)
-        {
-            throw new DisabledServiceException(ex.getMessage());
-        }
-        return directAccessUrl;
     }
 
 }

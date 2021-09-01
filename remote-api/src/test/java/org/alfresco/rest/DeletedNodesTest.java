@@ -47,6 +47,7 @@ import java.util.UUID;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.NodeTargetAssoc;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -740,40 +741,41 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     {
         setRequestContext(user1);
 
-        String myNodeId = getMyNodeId();
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String folder_Id = addToDocumentLibrary(folderName, TYPE_CM_FOLDER, user1);
 
-        String fileName = "TestDocumentToArchive.txt";
-        Document testDocumentToArchive = new Document();
-        testDocumentToArchive.setName(fileName);
-        testDocumentToArchive.setNodeType(TYPE_CM_CONTENT);
-
-        // create *empty* text file
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(testDocumentToArchive), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        final String contentNodeId = document.getId();
-
-        // Here we want to overwrite/update the existing content in order to force a new rendition creation,
-        // so the ContentModel.PROP_MODIFIED date would be different. Hence, we use the multipart upload by providing
-        // the old fileName and setting overwrite field to true
-
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                                           .setFileData(new FileData(fileName, testDocumentToArchive))
-                                           .setOverwrite(true);
+        // Create multipart request
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
-        // Update quick.pdf
-        post(getNodeChildrenUrl(contentNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // Create and get 'doclib' rendition
+        Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+        ContentInfo contentInfo = rendition.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, contentInfo.getMimeType());
+        assertEquals("PNG Image", contentInfo.getMimeTypeName());
+        assertNotNull(contentInfo.getEncoding());
+        assertTrue(contentInfo.getSizeInBytes() > 0);
 
         deleteNode(contentNodeId);
 
-        // Check the upload response
-        assertEquals(fileName, document.getName());
-        ContentInfo contentInfo = document.getContent();
-        assertNotNull(contentInfo);
-        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
-
         HttpResponse dauResponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
+    private String addToDocumentLibrary(String name, String nodeType, String userId) throws Exception
+    {
+        String parentId = getSiteContainerNodeId(Nodes.PATH_MY, "documentLibrary");
+        return createNode(parentId, name, nodeType, null).getId();
     }
 
     private String getDeletedNodeRenditionsUrl(String nodeId)

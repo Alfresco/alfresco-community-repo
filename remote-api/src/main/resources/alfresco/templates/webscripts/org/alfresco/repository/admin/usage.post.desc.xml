@@ -3,7 +3,7 @@
   <description>Update and retrieve repository usage</description>
   <url>/api/admin/usage</url>
   <format default="json" />
-  <authentication>admin</authentication>
+  <authentication>sysadmin</authentication>
   <transaction>required</transaction>
   <family>Admin</family>
   <lifecycle>internal</lifecycle>

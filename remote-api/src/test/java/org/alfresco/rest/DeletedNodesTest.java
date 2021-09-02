@@ -47,7 +47,6 @@ import java.util.UUID;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.NodeTargetAssoc;
-import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -56,10 +55,7 @@ import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.client.data.Rendition;
-import org.alfresco.rest.api.tests.client.data.Rendition.RenditionStatus;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.api.trashcan.TrashcanEntityResource;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
@@ -82,8 +78,6 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_RENDITIONS = "renditions";
-
-    private final static long DELAY_IN_MS = 500;
     
     @Override
     public void setup() throws Exception

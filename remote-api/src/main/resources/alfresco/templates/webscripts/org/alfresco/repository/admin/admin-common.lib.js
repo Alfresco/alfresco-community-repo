@@ -40,7 +40,7 @@ var Admin = Admin || {};
       var toolInfo = {};
       
       // collect the tools required for the Admin Console
-      var tools = utils.findWebScripts("AdminConsole");
+      var tools = utils.findWebScriptsForCurrentUser("AdminConsole");
       
       // process each tool and generate the data so that a label+link can
       // be output by the component template for each tool required

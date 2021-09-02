@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
@@ -355,7 +356,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             return;
         }
 
-        if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
+        // if the required authentication is not equal to guest, then it should be one of the following:
+        // user | sysadmin | admin (the 'none' authentication is handled above)
+        // in this case the guest user should not be able to execute those scripts.
+        if (required != RequiredAuthentication.guest && isGuest)
         {
             throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
         }
@@ -383,28 +387,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 {
                     return false;
                 }
-                // The user will now have been authenticated, based on HTTP Auth, Ticket etc
+                // The user will now have been authenticated, based on HTTP Auth, Ticket, etc.
                 // Check that the user they authenticated as has appropriate access to the script
-
-                // Check to see if they supplied HTTP Auth or Ticket as guest, on a script that needs more
-                if (required == RequiredAuthentication.user || required == RequiredAuthentication.admin)
-                {
-                    final String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-                    final String runAsUser = AuthenticationUtil.getRunAsUser();
-
-                    if ( (authenticatedUser == null) ||
-                         (authenticatedUser.equals(runAsUser) && authorityService.hasGuestAuthority()) ||
-                         (!authenticatedUser.equals(runAsUser) && authorityService.isGuestAuthority(authenticatedUser)) )
-                    {
-                        throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
-                    }
-                }
-
-                // Check to see if they're admin or system on an Admin only script
-                if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getSystemUserName())))
-                {
-                    throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
-                }
+                checkScriptAccess(required, desc.getId());
 
                 if (debug)
                 {
@@ -424,7 +409,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
 
             // Execute Web Script if authentication passed
             // The Web Script has its own txn management with potential runAs() user
-            transactionedExecuteAs(script, scriptReq, scriptRes);
+            transactionedExecuteAs(script, scriptReq, scriptRes, required);
         }
         finally
         {
@@ -438,6 +423,65 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
                 logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
             }
+        }
+    }
+
+    private boolean isSystemUser()
+    {
+        return Objects.equals(AuthenticationUtil.getFullyAuthenticatedUser(), AuthenticationUtil.getSystemUserName());
+    }
+
+    private boolean isSysAdminUser()
+    {
+        return authorityService.hasSysAdminAuthority();
+    }
+
+    private boolean isAdmin()
+    {
+        return authorityService.hasAdminAuthority();
+    }
+
+    public final boolean isAdminOrSystemUser()
+    {
+        return isAdmin() || isSystemUser();
+    }
+
+    /**
+     * Check to see if they supplied HTTP Auth or Ticket as guest, on a script that needs more
+     */
+    private void checkGuestAccess(RequiredAuthentication required, String scriptDescriptorId)
+    {
+        if (required == RequiredAuthentication.user || required == RequiredAuthentication.admin
+                    || required == RequiredAuthentication.sysadmin)
+        {
+            final String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            final String runAsUser = AuthenticationUtil.getRunAsUser();
+
+            if ((authenticatedUser == null) || (authenticatedUser.equals(runAsUser)
+                        && authorityService.hasGuestAuthority()) || (!authenticatedUser.equals(runAsUser)
+                        && authorityService.isGuestAuthority(authenticatedUser)))
+            {
+                throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + scriptDescriptorId
+                            + " requires user authentication; however, a guest has attempted access.");
+            }
+        }
+    }
+
+    private void checkScriptAccess(RequiredAuthentication required, String scriptDescriptorId)
+    {
+        // first, check guest access
+        checkGuestAccess(required, scriptDescriptorId);
+
+        // Check to see if the user is sysAdmin, admin or system on a sysadmin scripts
+        if (required == RequiredAuthentication.sysadmin && !(isSysAdminUser() || isAdminOrSystemUser()))
+        {
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + scriptDescriptorId
+                        + " requires system-admin authentication; however, a non-system-admin has attempted access.");
+        }
+        else if (required == RequiredAuthentication.admin && !isAdminOrSystemUser())
+        {
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + scriptDescriptorId
+                        + " requires admin authentication; however, a non-admin has attempted access.");
         }
     }
 
@@ -624,6 +668,35 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 transactionedExecute(script, scriptReq, scriptRes);
                 return null;
             }, runAs);
+        }
+    }
+
+    /**
+     * Execute script within required level of transaction as required effective user.
+     *
+     * @param script    WebScript
+     * @param scriptReq WebScriptRequest
+     * @param scriptRes WebScriptResponse
+     * @param requiredAuthentication Required authentication
+     * @throws IOException
+     */
+    private void transactionedExecuteAs(final WebScript script, final WebScriptRequest scriptReq,
+                                        final WebScriptResponse scriptRes, RequiredAuthentication requiredAuthentication) throws IOException
+    {
+        // Execute as System if and only if, the current user is a member of System-Admin group, and he is not a super admin.
+        // E.g. if 'jdoe' is a member of ALFRESCO_SYSTEM_ADMINISTRATORS group, then the work should be executed as System to satisfy the ACL checks.
+        // But, if the current user is Admin (i.e. super admin, which by default he is a member fo the ALFRESCO_SYSTEM_ADMINISTRATORS group)
+        // then don't wrap the work as RunAs, since he can do anything!
+        if (requiredAuthentication == RequiredAuthentication.sysadmin && isSysAdminUser() && !isAdmin())
+        {
+            AuthenticationUtil.runAs(() -> {
+                transactionedExecute(script, scriptReq, scriptRes);
+                return null;
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
+        }
+        else
+        {
+            transactionedExecuteAs(script, scriptReq, scriptRes);
         }
     }
     

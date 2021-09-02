@@ -6275,8 +6275,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
-
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
     }
 
     @Test
@@ -6320,7 +6319,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
     }
 
     @Test
@@ -6365,7 +6364,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
-        getSingle(getRequestContentDirectUrl(contentNodeId), null, null, null, 405);
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
     }
 }
 

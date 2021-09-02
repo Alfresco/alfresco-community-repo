@@ -119,8 +119,8 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
         return renditions.getContent(nodeRef, renditionId, parameters);
     }
 
-    @Operation ("requestRenditionDirectAccessUrl")
-    @WebApiParam (name = "requestRenditionDirectAccessUrl", title = "Request direct access url", description = "Request direct access url", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @Operation("request-direct-access-url")
+    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
             description="Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)

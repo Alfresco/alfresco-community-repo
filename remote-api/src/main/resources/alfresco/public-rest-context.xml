@@ -995,8 +995,8 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">
         <property name="deletedNodes" ref="DeletedNodes" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
-
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
         <property name="quickShareLinks" ref="QuickShareLinks" />
@@ -1080,8 +1080,8 @@
     <!-- REST API direct access URL configuration settings -->
     <bean id="restApiDirectUrlConfig" class="org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig" init-method="init">
         <property name="systemWideDirectUrlConfig" ref="systemWideDirectUrlConfig" />
-        <property name="enabled" value="${restApi.directAccessUrl.enabled}" />
-        <property name="defaultExpiryTimeInSec" value="${restApi.directAccessUrl.defaultExpiryTimeInSec}" />
+        <property name="enabled" value="#{T(Boolean).valueOf('${restApi.directAccessUrl.enabled}')}"/>
+        <property name="defaultExpiryTimeInSec" value="#{T(Integer).parseInt('${restApi.directAccessUrl.defaultExpiryTimeInSec}')}" />
     </bean>
 
     <!-- OpenCMIS -->
@@ -1429,7 +1429,6 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeVersionRenditionsRelation">
         <property name="renditions" ref="Renditions" />
-        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkRenditionsRelation">
@@ -1438,6 +1437,7 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanRenditionsRelation">
         <property name="deletedNodes" ref="DeletedNodes"/>
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <!-- HeartBeat rest api renditions data collector -->

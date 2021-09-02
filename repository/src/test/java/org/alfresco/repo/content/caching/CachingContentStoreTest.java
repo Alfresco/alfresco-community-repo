@@ -492,7 +492,7 @@ public class CachingContentStoreTest
     }
 
     @Test
-    public void isDirectAccessSupported()
+    public void isContentDirectUrlSupported()
     {
         assertFalse(cachingStore.isContentDirectUrlEnabled());
 
@@ -501,7 +501,7 @@ public class CachingContentStoreTest
     }
 
     @Test
-    public void getDirectAccessUrlUnsupported()
+    public void getRequestContentDirectUrlUnsupported()
     {
         try
         {
@@ -516,7 +516,7 @@ public class CachingContentStoreTest
     }
 
     @Test
-    public void getDirectAccessUrl()
+    public void getRequestContentDirectUrl()
     {
         when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
         cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);

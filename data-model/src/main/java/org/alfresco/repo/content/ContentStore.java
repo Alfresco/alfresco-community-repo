@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import java.util.Date;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -34,7 +32,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 
 /**
@@ -254,9 +251,10 @@ public interface ContentStore
     /**
      * Checks if the store supports the retrieving of a direct access URL for the given node.
      *
+     * @param contentUrl    the {@code URL} of the content for which to request a direct access {@code URL}
      * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
      */
-    default boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    default boolean isContentDirectUrlEnabled(String contentUrl)
     {
         return false;
     }
@@ -291,32 +289,5 @@ public interface ContentStore
     {
         throw new UnsupportedOperationException(
                 "Retrieving direct access URLs is not supported by this content store.");
-    }
-
-    /**
-     * Gets a presigned URL to directly access a binary content. It is up to the actual store
-     * implementation if it can fulfil this request with an expiry time or not.
-     *
-     * @param contentUrl A content store URL
-     * @param expiresAt An optional expiry date, so the direct access url would become invalid when the expiry date is reached
-     * @return A direct access URL object for a binary content
-     * @throws UnsupportedOperationException if the store is unable to provide the information
-     */
-    @Deprecated
-    default DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
-    {
-        throw new UnsupportedOperationException(
-                "Retrieving direct access URLs is not supported by this content store.");
-    }
-
-    /**
-     * Checks if the store supports the retrieving of direct access URLs.
-     *
-     * @return true if direct access URLs retrieving is supported, false otherwise
-     */
-    @Deprecated
-    default boolean isDirectAccessSupported()
-    {
-        return false;
     }
 }

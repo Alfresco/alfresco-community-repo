@@ -50,6 +50,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
     @Test
     public void testAddChildAssociation()
     {
+        String assocLocalName = GUID.generate();
         final NodeRef parentNodeRef = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef childNodeRef = createNode(ContentModel.TYPE_CONTENT);
 
@@ -64,11 +65,11 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             resultRepoEvent.getType());
 
         retryingTransactionHelper.doInTransaction(() ->
-            nodeService.addChild(
-                parentNodeRef,
-                childNodeRef,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE, GUID.generate())));
+                                                      nodeService.addChild(
+                                                          parentNodeRef,
+                                                          childNodeRef,
+                                                          ContentModel.ASSOC_CONTAINS,
+                                                          QName.createQName(TEST_NAMESPACE, assocLocalName)));
 
         List<ChildAssociationRef> childAssociationRefs = retryingTransactionHelper.doInTransaction(() ->
                 nodeService.getChildAssocs(parentNodeRef));
@@ -101,6 +102,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong parent", parentNodeRef.getId(), childAssociationResource.getParent().getId());
         assertEquals("Wrong child", childNodeRef.getId(), childAssociationResource.getChild().getId());
         assertEquals("Wrong assoc type", "cm:contains", childAssociationResource.getAssocType());
+        assertEquals("Wrong assoc name", "ce:" + assocLocalName, childAssociationResource.getAssocQName());
     }
 
     @Test

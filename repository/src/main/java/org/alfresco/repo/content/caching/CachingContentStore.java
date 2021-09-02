@@ -489,9 +489,9 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
-    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    public boolean isContentDirectUrlEnabled(String contentUrl)
     {
-        return backingStore.isContentDirectUrlEnabled(nodeRef);
+        return backingStore.isContentDirectUrlEnabled(contentUrl);
     }
 
     /**

@@ -105,8 +105,35 @@
             <ref bean="metadataQueryIndexesCheck2" />
         </property>
     </bean>
-    
-    <bean id="search.dbQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine" >
+
+    <bean id="search.dbQueryEngineImpl" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+        <property name="targetBeanName">
+            <value>search.dbQueryEngineImpl.#bean.dialect#</value>
+        </property>
+        <property name="targetClass">
+            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
+        </property>
+        <property name="dialectBaseClass">
+            <value>org.alfresco.repo.domain.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="search.dbQueryEngineImpl.org.alfresco.repo.domain.dialect.Dialect"
+          parent="search.baseDbQueryEngineImpl">
+        <property name="usePagingQuery" value="false"/>
+    </bean>
+    <bean id="search.dbQueryEngineImpl.org.alfresco.repo.domain.dialect.MySQLInnoDBDialect"
+          parent="search.baseDbQueryEngineImpl">
+        <property name="usePagingQuery" value="true"/>
+    </bean>
+
+    <bean id="search.baseDbQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine" abstract="true">
         <property name="permissionService" ref="permissionService"/>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="namespaceService" ref="namespaceService" />

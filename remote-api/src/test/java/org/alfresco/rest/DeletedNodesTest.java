@@ -78,8 +78,6 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_RENDITIONS = "renditions";
-
-    private final static long DELAY_IN_MS = 500;
     
     @Override
     public void setup() throws Exception
@@ -730,6 +728,45 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
         HttpResponse dauResponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
+    @Test
+    public void testRequestArchivedRenditionDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create a folder within the site document's library
+        Date now = new Date();
+        String folder1 = "folder" + now.getTime() + "_1";
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
+        assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
+
+        // Create multipart request using an existing file
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
+        assertNotNull(rendition);
+        String renditionID = rendition.getId();
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        deleteNode(contentNodeId);
+
+        HttpResponse dauResponse = post(getRequestArchivedRenditonContentDirectUrl(contentNodeId, renditionID), null, null, null, null, 501);
+    }
+
+    private String addToDocumentLibrary(String name, String nodeType, String userId) throws Exception
+    {
+        String parentId = getSiteContainerNodeId(Nodes.PATH_MY, "documentLibrary");
+        return createNode(parentId, name, nodeType, null).getId();
     }
 
     private String getDeletedNodeRenditionsUrl(String nodeId)

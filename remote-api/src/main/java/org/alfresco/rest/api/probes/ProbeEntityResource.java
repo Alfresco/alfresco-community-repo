@@ -55,7 +55,6 @@ import org.apache.commons.logging.LogFactory;
     ;
     private final Object lock = new Object();
     private final Probe liveProbe = new Probe(getMessage(true, true, "Tested"));
-    private long nextCheckTime = 0;
     private long lastCheckTime = 0;
     private Boolean checkResult;
     private DiscoveryApiWebscript discovery;
@@ -128,17 +127,15 @@ import org.apache.commons.logging.LogFactory;
                 {
 
                     checkResult = result;
-
                     setLastCheckTime(now);
+                    logInfo = true;
 
                 }
             }
             else
             {
                 // if no check is performed, use previous check result
-
                 result = checkResult;
-                logInfo = true;
 
             }
         }
@@ -171,6 +168,7 @@ import org.apache.commons.logging.LogFactory;
 
         discovery.getRepositoryInfo();
         repoHealthChecker.checkDatabase();
+        logger.debug("All checks complete");
 
     }
 

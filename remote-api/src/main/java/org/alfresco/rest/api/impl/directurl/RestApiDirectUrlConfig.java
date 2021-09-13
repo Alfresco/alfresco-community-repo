@@ -63,6 +63,7 @@ public class RestApiDirectUrlConfig extends AbstractDirectUrlConfig
             logger.error("Disabling REST API direct access URLs due to configuration error: " + ex.getMessage());
             setEnabled(false);
         }
+        logger.info("REST API direct access URLs are " + (isEnabled() ? "enabled" : "disabled"));
     }
 
     /* Helper method to validate the REST API direct access url configuration settings */

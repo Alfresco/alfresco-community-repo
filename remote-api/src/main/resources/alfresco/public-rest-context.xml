@@ -1138,6 +1138,7 @@
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="properties"         ref="global-properties"/>
     </bean>
 
     <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 

@@ -159,9 +159,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
 	private boolean getAllowUnsecureCallbackJSONP(Properties properties)
 	{
-		try {
+		try
+		{
 			return "true".equalsIgnoreCase(properties.getProperty(ALLOW_UNSECURE_CALLBACK_JSONP_PROPERTY_NAME));
-		} catch( NullPointerException exception ) {
+		}
+		catch (NullPointerException exception)
+		{
 			return false;
 		}
 	}
@@ -240,8 +243,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 			CMISHttpServletResponse httpResWrapper = getHttpResponse(res);
 	    	CMISHttpServletRequest httpReqWrapper = getHttpRequest(req);
 
-	    	// check for "callback" query param
-			if (!allowUnsecureCallbackJSONP && httpReqWrapper.getParameter("callback")!=null )
+			// check for "callback" query param
+			if (!allowUnsecureCallbackJSONP && httpReqWrapper.getParameter("callback") != null)
 			{
 				throw new JsonpCallbackNotAllowedException();
 			}

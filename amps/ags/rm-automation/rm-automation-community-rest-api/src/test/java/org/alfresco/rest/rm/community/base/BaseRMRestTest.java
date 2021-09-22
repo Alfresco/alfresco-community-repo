@@ -633,7 +633,7 @@ public class BaseRMRestTest extends RestTest
      * @return
      * @throws Exception
      */
-    public List<String> searchForContentAsUser(UserModel user, String q, String queryLanguage) throws Exception
+    public List<String> searchForContentAsUser(UserModel user, String q, String queryLanguage)
     {
         getRestAPIFactory().getRmRestWrapper().authenticateUser(user);
         RestRequestQueryModel queryReq = new RestRequestQueryModel();

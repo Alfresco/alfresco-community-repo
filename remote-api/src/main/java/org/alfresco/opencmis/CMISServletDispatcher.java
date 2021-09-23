@@ -86,14 +86,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	protected String version;
 	protected CmisVersion cmisVersion;
 	protected TenantAdminService tenantAdminService;
-	protected Properties properties;
 
 	private boolean allowUnsecureCallbackJSONP;
-
-	public void setProperties(Properties properties)
-	{
-		this.properties = properties;
-	}
 
     private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
@@ -174,6 +168,11 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		this.allowUnsecureCallbackJSONP = allowUnsecureCallbackJSONP;
 	}
 
+	public boolean isAllowUnsecureCallbackJSONP()
+	{
+		return allowUnsecureCallbackJSONP;
+	}
+
 	public void init()
 	{
 		Endpoint endpoint = new Endpoint(getBinding(), version);
@@ -185,8 +184,6 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 			ServletConfig config = getServletConfig();
 	    	this.servlet = getServlet();
 	    	servlet.init(config);
-
-			allowUnsecureCallbackJSONP = getAllowUnsecureCallbackJSONP(properties);
 		}
 		catch(ServletException e)
 		{

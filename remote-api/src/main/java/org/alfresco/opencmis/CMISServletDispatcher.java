@@ -35,7 +35,6 @@ import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map;
 import java.util.Set;
 
@@ -149,18 +148,6 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		}
 
 		return this.currentDescriptor;
-	}
-
-	private boolean getAllowUnsecureCallbackJSONP(Properties properties)
-	{
-		try
-		{
-			return "true".equalsIgnoreCase(properties.getProperty(ALLOW_UNSECURE_CALLBACK_JSONP_PROPERTY_NAME));
-		}
-		catch (NullPointerException exception)
-		{
-			return false;
-		}
 	}
 
 	public void setAllowUnsecureCallbackJSONP(boolean allowUnsecureCallbackJSONP)

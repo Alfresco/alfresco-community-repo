@@ -73,8 +73,6 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  */
 public abstract class CMISServletDispatcher implements CMISDispatcher
 {
-	private static final String ALLOW_UNSECURE_CALLBACK_JSONP_PROPERTY_NAME = "allow.unsecure.callback.jsonp";
-
 	private DescriptorService descriptorService;
     private Descriptor currentDescriptor;
     protected CmisServiceFactory cmisServiceFactory;

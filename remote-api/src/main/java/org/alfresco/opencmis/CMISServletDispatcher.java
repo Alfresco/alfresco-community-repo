@@ -27,14 +27,17 @@ package org.alfresco.opencmis;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,17 +48,19 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Endpoint;
 import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.rest.framework.core.exceptions.JsonpCallbackNotAllowedException;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
@@ -64,6 +69,7 @@ import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 
 /**
  * Dispatches OpenCMIS requests to a servlet e.g. the OpenCMIS AtomPub servlet.
@@ -83,8 +89,6 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	protected String version;
 	protected CmisVersion cmisVersion;
 	protected TenantAdminService tenantAdminService;
-
-	private boolean allowUnsecureCallbackJSONP;
 
     private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
@@ -147,17 +151,7 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
 		return this.currentDescriptor;
 	}
-
-	public void setAllowUnsecureCallbackJSONP(boolean allowUnsecureCallbackJSONP)
-	{
-		this.allowUnsecureCallbackJSONP = allowUnsecureCallbackJSONP;
-	}
-
-	public boolean isAllowUnsecureCallbackJSONP()
-	{
-		return allowUnsecureCallbackJSONP;
-	}
-
+	
 	public void init()
 	{
 		Endpoint endpoint = new Endpoint(getBinding(), version);
@@ -225,21 +219,11 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 			CMISHttpServletResponse httpResWrapper = getHttpResponse(res);
 	    	CMISHttpServletRequest httpReqWrapper = getHttpRequest(req);
 
-			// check for "callback" query param
-			if (!allowUnsecureCallbackJSONP && httpReqWrapper.getParameter("callback") != null)
-			{
-				throw new JsonpCallbackNotAllowedException();
-			}
-			servlet.service(httpReqWrapper, httpResWrapper);
+	    	servlet.service(httpReqWrapper, httpResWrapper);
 		}
 		catch(ServletException e)
 		{
 			throw new AlfrescoRuntimeException("", e);
-		}
-		catch (JsonpCallbackNotAllowedException e)
-		{
-			res.setStatus(403);
-			res.getWriter().append(e.getMessage());
 		}
 	}
 

@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.bulkimport;
 
 import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_BATCH_SIZE;
 import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_DISABLE_RULES;
+import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_NUM_THREADS;
 import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_TARGET_NODEREF;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -126,7 +127,19 @@ public class BulkImportParametersExtractorTest
         final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
                 PARAMETER_TARGET_NODEREF, TEST_MISSING_NODE_REF));
 
-        assertThrows(FileNotFoundException.class, () -> extractor.extract());
+        assertThrows(FileNotFoundException.class, extractor::extract);
+    }
+
+    @Test
+    public void shouldExtractValidBatchSize() throws FileNotFoundException
+    {
+        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
+                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
+                PARAMETER_BATCH_SIZE, "1"));
+
+        final BulkImportParameters params = extractor.extract();
+
+        assertEquals(Integer.valueOf(1), params.getBatchSize());
     }
 
     @Test
@@ -139,8 +152,7 @@ public class BulkImportParametersExtractorTest
         try
         {
             extractor.extract();
-        }
-        catch (WebScriptException e)
+        } catch (WebScriptException e)
         {
             assertNotNull(e.getMessage());
             assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
@@ -160,11 +172,62 @@ public class BulkImportParametersExtractorTest
         try
         {
             extractor.extract();
-        }
-        catch (WebScriptException e)
+        } catch (WebScriptException e)
         {
             assertNotNull(e.getMessage());
             assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
+            return;
+        }
+
+        fail("Expected exception to be thrown.");
+    }
+
+    @Test
+    public void shouldExtractValidNumberOfThreads() throws FileNotFoundException
+    {
+        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
+                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
+                PARAMETER_NUM_THREADS, "1"));
+
+        final BulkImportParameters params = extractor.extract();
+
+        assertEquals(Integer.valueOf(1), params.getNumThreads());
+    }
+
+    @Test
+    public void shouldFailWithWebScriptExceptionWhenInvalidNumberOfThreadsIsRequested() throws FileNotFoundException
+    {
+        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
+                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
+                PARAMETER_NUM_THREADS, "not-a-number"));
+
+        try
+        {
+            extractor.extract();
+        } catch (WebScriptException e)
+        {
+            assertNotNull(e.getMessage());
+            assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
+            return;
+        }
+
+        fail("Expected exception to be thrown.");
+    }
+
+    @Test
+    public void shouldFailWithWebScriptExceptionWhenNegativeNumberOfThreadsIsRequested() throws FileNotFoundException
+    {
+        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
+                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
+                PARAMETER_NUM_THREADS, "-1"));
+
+        try
+        {
+            extractor.extract();
+        } catch (WebScriptException e)
+        {
+            assertNotNull(e.getMessage());
+            assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
             return;
         }
 

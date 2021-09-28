@@ -1070,7 +1070,7 @@
         <property name="enabled" value="${system.api.discovery.enabled}" />
         <property name="thumbnailService" ref="ThumbnailService" />
         <property name="restApiDirectUrlConfig" ref="restApiDirectUrlConfig" />
-        <property name="contentService" ref="ContentService" />
+        <property name="contentService" ref="contentService" />
     </bean>
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">

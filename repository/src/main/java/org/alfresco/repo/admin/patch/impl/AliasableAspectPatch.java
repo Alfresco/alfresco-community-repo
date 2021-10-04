@@ -93,6 +93,11 @@ public class AliasableAspectPatch extends AbstractPatch
                 return result.size();
             }
 
+            public long getTotalEstimatedWorkSizeLong()
+            {
+                return result.size();
+            }
+
             public Collection<NodeRef> getNextWork()
             {
                 if(val != null)

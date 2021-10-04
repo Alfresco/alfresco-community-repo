@@ -462,6 +462,20 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         }
 
         @Override
+        public synchronized long getTotalEstimatedWorkSizeLong()
+        {
+            if (maxId == Long.MAX_VALUE)
+            {
+                maxId = patchDAO.getMaxAdmNodeID();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\tQ: Max node id: " + maxId);
+                }
+            }
+            return 0;
+        }
+
+        @Override
         public synchronized Collection<NodeRef> getNextWork()
         {
             // Record the user folder node IDs

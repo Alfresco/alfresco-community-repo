@@ -238,6 +238,12 @@ public class FixBpmPackagesPatch extends AbstractPatch
                 }
 
                 @Override
+                public synchronized long getTotalEstimatedWorkSizeLong()
+                {
+                    return assocCount;
+                }
+
+                @Override
                 public synchronized Collection<ChildAssociationRef> getNextWork()
                 {
                     int nextMaxSize = skipCount + batchSize;

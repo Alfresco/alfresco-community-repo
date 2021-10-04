@@ -486,6 +486,11 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                     return tenants.size();
                 }
 
+                public long getTotalEstimatedWorkSizeLong()
+                {
+                    return tenants.size();
+                }
+
                 @Override
                 public Collection<Tenant> getNextWork()
                 {
@@ -554,13 +559,13 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                 logger.debug("batch worker finished processing id:" + id);
             }
             
-            if (batchProcessor.getTotalErrors() > 0)
+            if (batchProcessor.getTotalErrorsLong() > 0)
             {
-                sb.append("\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntries() + " number of errors: " +batchProcessor.getTotalErrors() + " lastError" + batchProcessor.getLastError());
+                sb.append("\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntriesLong() + " number of errors: " +batchProcessor.getTotalErrorsLong() + " lastError" + batchProcessor.getLastError());
             }
             else
             {
-                sb.append("\n" + " and successful batch update of " + batchProcessor.getTotalResults() + "tennants");
+                sb.append("\n" + " and successful batch update of " + batchProcessor.getTotalResultsLong() + "tennants");
             }
         }
 

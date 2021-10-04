@@ -1960,6 +1960,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
 
             @Override
+            public synchronized long getTotalEstimatedWorkSizeLong()
+            {
+                return size;
+            }
+
+            @Override
             public synchronized Collection<BulkEntry> getNextWork()
             {
                 Collection<BulkEntry> results = new ArrayList<BulkEntry>(batchSize);

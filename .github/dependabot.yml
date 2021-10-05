@@ -3,9 +3,8 @@ registries:
   maven-repository-artifacts-alfresco-com-nexus-content-groups-int:
     type: maven-repository
     url: https://artifacts.alfresco.com/nexus/content/groups/internal
-    username: bamboo
-    password: "${{secrets.MAVEN_REPOSITORY_ARTIFACTS_ALFRESCO_COM_NEXUS_CONTENT_GROUPS_INT_PASSWORD}}"
-
+    username: ${{secrets.NEXUS_USERNAME}}
+    password: ${{secrets.NEXUS_PASSWORD}}
 updates:
 - package-ecosystem: maven
   directory: "/"

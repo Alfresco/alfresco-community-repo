@@ -46,15 +46,11 @@ import org.apache.commons.logging.LogFactory;
 @EntityResource(name = "probes", title = "Probes") public class ProbeEntityResource
             implements EntityResourceAction.ReadById<Probe>
 {
-    public static final String LIVE = "-live-";
-    public static final String READY = "-ready-";
-
     public static final long CHECK_PERIOD = 10 * 1000; // Maximum of only one checkResult every 10 seconds.
 
     protected static Log logger = LogFactory.getLog(ProbeEntityResource.class);
-    ;
     private final Object lock = new Object();
-    private final Probe liveProbe = new Probe(getMessage(true, true, "Tested"));
+    private final Probe liveProbe = new Probe("liveProbe: Success - Tested");
     private long lastCheckTime = 0;
     private Boolean checkResult;
     private DiscoveryApiWebscript discovery;
@@ -78,10 +74,10 @@ import org.apache.commons.logging.LogFactory;
      * Note: does *not* require authenticated access, so limits the amount of work performed to avoid a DDOS.
      */
     @Override @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid") @WebApiParam(name = "probeName", title = "The probe's name") @WebApiNoAuth public Probe readById(
-                String name, Parameters parameters)
+                  String name, Parameters parameters)
     {
-        boolean isLiveProbe = LIVE.equalsIgnoreCase(name);
-        if (!isLiveProbe && !READY.equalsIgnoreCase(name))
+        boolean isLiveProbe = ProbeType.LIVE.getValue().equalsIgnoreCase(name);
+        if (!isLiveProbe && !ProbeType.READY.getValue().equalsIgnoreCase(name))
         {
             throw new InvalidArgumentException("Bad probe name");
         }
@@ -97,8 +93,7 @@ import org.apache.commons.logging.LogFactory;
     // We don't want to be doing checks all the time or holding monitors for a long time to avoid a DDOS.
     public String doReadyCheck()
     {
-        boolean doCheck = false;
-        long now = 0;
+        long now;
         boolean result = false;
         String message = "No test";
         boolean logInfo = false;
@@ -106,12 +101,8 @@ import org.apache.commons.logging.LogFactory;
         {
 
             now = System.currentTimeMillis();
-            if (checkResult == null || isAfterCheckPeriod(now))
-            {
-                doCheck = true;
-            }
 
-            if (doCheck)
+            if (checkResult == null || isAfterCheckPeriod(now))
             {
                 try
                 {
@@ -122,6 +113,7 @@ import org.apache.commons.logging.LogFactory;
                 catch (Exception e)
                 {
                     result = false;
+                    logger.debug(e);
                 }
                 finally
                 {
@@ -140,7 +132,7 @@ import org.apache.commons.logging.LogFactory;
             }
         }
 
-        message = getMessage(false, result, message);
+        message = getMessage(result, message);
 
         if (logInfo)
         {
@@ -158,9 +150,12 @@ import org.apache.commons.logging.LogFactory;
         throw new ServiceUnavailableException(message);
     }
 
-    private String getMessage(boolean isLiveProbe, boolean result, String message)
+    private String getMessage(boolean result, String message)
     {
-        return (isLiveProbe ? "liveProbe" : "readyProbe") + ": " + (result ? "Success" : "Failure") + " - " + message;
+
+        return "readyProbe:" + (result ? "Success" : "Failure") + " - " + message;
+
+
     }
 
     private void performReadinessCheck()
@@ -168,7 +163,10 @@ import org.apache.commons.logging.LogFactory;
 
         discovery.getRepositoryInfo();
         repoHealthChecker.checkDatabase();
-        logger.debug("All checks complete");
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("All checks complete");
+        }
 
     }
 
@@ -185,6 +183,21 @@ import org.apache.commons.logging.LogFactory;
     private boolean isAfterCheckPeriod(long currentTime)
     {
         return ((currentTime - lastCheckTime) >= CHECK_PERIOD);
+    }
+
+    public enum ProbeType
+    {
+        LIVE("-live-"),READY("-ready");
+        ProbeType(String strValue)
+        {
+            value = strValue;
+        }
+        String value;
+
+        public String getValue()
+        {
+            return value;
+        }
     }
 
 }

@@ -41,6 +41,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.alfresco.rest.api.probes.ProbeEntityResource.*;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.LIVE;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.READY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.lenient;
@@ -99,7 +101,7 @@ public class ProbeApiTest extends AbstractBaseApiTest
         return "public";
     }
 
-    private void assertResponse(String probeName, Boolean ready, String expected, int expectedStatus) throws Exception
+    private void assertResponse(ProbeType probeType, Boolean ready, String expected, int expectedStatus) throws Exception
     {
         String[] keys = expectedStatus == 200
                 ? new String[]{"entry", "message"}
@@ -111,7 +113,7 @@ public class ProbeApiTest extends AbstractBaseApiTest
                 ? goodDiscovery
                 : badDiscovery);
 
-        HttpResponse response = getSingle(ProbeEntityResource.class, probeName, null, expectedStatus);
+        HttpResponse response = getSingle(ProbeEntityResource.class, probeType.getValue(), null, expectedStatus);
         Object object = response.getJsonResponse();
         for (String key: keys)
         {

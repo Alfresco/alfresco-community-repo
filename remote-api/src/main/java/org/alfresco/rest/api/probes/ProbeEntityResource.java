@@ -153,7 +153,7 @@ import org.apache.commons.logging.LogFactory;
     private String getMessage(boolean result, String message)
     {
 
-        return "readyProbe:" + (result ? "Success" : "Failure") + " - " + message;
+        return "readyProbe: " + (result ? "Success" : "Failure") + " - " + message;
 
 
     }

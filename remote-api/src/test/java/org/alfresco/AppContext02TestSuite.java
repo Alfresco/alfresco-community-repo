@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -47,6 +47,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.ActivitiesPostingTest.class,
     org.alfresco.rest.api.tests.AuthenticationsTest.class,
     org.alfresco.rest.api.tests.DiscoveryApiTest.class,
+    org.alfresco.rest.api.discovery.DiscoveryApiWebscriptUnitTest.class,
     org.alfresco.rest.api.tests.GroupsTest.class,
     org.alfresco.rest.api.tests.ModulePackagesApiTest.class,
     org.alfresco.rest.api.tests.NodeApiTest.class,

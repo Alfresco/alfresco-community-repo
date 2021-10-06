@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,12 @@ package org.alfresco.repo.content;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,6 +44,8 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdateP
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
+import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -54,6 +62,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -82,7 +91,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
-    private static Log logger = LogFactory.getLog(ContentServiceImpl.class);
+    private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -98,6 +107,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentStore tempStore;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
+
+    private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
 
     /**
      * The policy component
@@ -140,7 +151,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.store = store;
     }
-    
+
+    public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig)
+    {
+        this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
+    }
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
@@ -451,16 +467,15 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         return getWriter(nodeRef,propertyQName, update, null);
     }
-    
+
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update,
-        StorageClassSet storageClassSet)
+                                   StorageClassSet storageClassSet)
     {
         if (!isStorageClassesSupported(storageClassSet))
         {
             throw new UnsupportedStorageClassException(store, storageClassSet,
-                                                       "The supplied storage classes are not supported");
+                    "The supplied storage classes are not supported");
         }
-        
         if (nodeRef == null)
         {
             ContentContext ctx = new ContentContext(null, null, storageClassSet);
@@ -477,18 +492,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
         if (storageClassSet != null)
         {
-            if (existingContentReader != null && 
-                existingContentReader.getContentData() != null && 
+            if (existingContentReader != null &&
+                existingContentReader.getContentData() != null &&
                 existingContentReader.getContentData().getContentUrl() != null)
             {
                 Set<String> currentStorageClasses = findStorageClasses(nodeRef);
-                if (currentStorageClasses != null && 
+                if (currentStorageClasses != null &&
                     !currentStorageClasses.equals(storageClassSet))
                 {
                     Set<StorageClassSet> possibleTransitions = findStorageClassesTransitions(nodeRef)
                         .get(currentStorageClasses);
 
-                    if (possibleTransitions == null || 
+                    if (possibleTransitions == null ||
                         !possibleTransitions.contains(storageClassSet))
                     {
                         throw new UnsupportedStorageClassException(store, storageClassSet,
@@ -501,11 +516,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 }
             }
         }
-        
+
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.
-        ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef,
-                                                    propertyQName, storageClassSet);
+        ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef, propertyQName);
         ContentWriter writer = store.getWriter(ctx);
         // Register the new URL for rollback cleanup
         eagerContentStoreCleaner.registerNewContentUrl(writer.getContentUrl());
@@ -548,25 +562,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         // there is no existing content and we don't specify the location of the new content
         return tempStore.getWriter(ContentContext.NULL_CONTEXT);
-    }
-
-    @Override
-    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt)
-    {
-        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
-
-        // check that the URL is available
-        if (contentData == null || contentData.getContentUrl() == null)
-        {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
-        }
-
-        if (store.isDirectAccessSupported())
-        {
-            return store.getDirectAccessUrl(contentData.getContentUrl(), expiresAt);
-        }
-
-        return null;
     }
 
     /**
@@ -625,6 +620,106 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                         e);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isContentDirectUrlEnabled()
+    {
+        return systemWideDirectUrlConfig.isEnabled() && store.isContentDirectUrlEnabled();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        boolean contentDirectUrlEnabled = false;
+
+        // TODO: update this
+        if (systemWideDirectUrlConfig.isEnabled())
+        {
+            ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+            // check that the URL is available
+            if (contentData == null || contentData.getContentUrl() == null)
+            {
+                throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+            }
+
+            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(getContentUrl(nodeRef)));
+        }
+
+        return contentDirectUrlEnabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        if (!systemWideDirectUrlConfig.isEnabled())
+        {
+            throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
+        }
+
+        String contentUrl = getContentUrl(nodeRef);
+        String fileName = getFileName(nodeRef);
+        validFor = adjustValidFor(validFor);
+
+        DirectAccessUrl directAccessUrl = null;
+        if (store.isContentDirectUrlEnabled())
+        {
+            try
+            {
+                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+            }
+            catch (UnsupportedOperationException ex)
+            {
+                // expected exception
+            }
+        }
+        return directAccessUrl;
+    }
+
+    protected String getContentUrl(NodeRef nodeRef)
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        return contentData.getContentUrl();
+    }
+
+    protected String getFileName(NodeRef nodeRef)
+    {
+        String fileName = null;
+
+        try
+        {
+            fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        }
+        catch (InvalidNodeRefException ex)
+        {
+        }
+
+        return fileName;
+    }
+
+    private Long adjustValidFor(Long validFor)
+    {
+        if (validFor == null || validFor > systemWideDirectUrlConfig.getDefaultExpiryTimeInSec())
+        {
+            validFor = systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
+        }
+        return validFor;
     }
 
     @Override

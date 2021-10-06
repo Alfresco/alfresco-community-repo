@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -67,10 +68,9 @@ import org.apache.commons.logging.LogFactory;
  * @see CachingContentStore
  */
 public class AggregatingContentStore extends AbstractContentStore
-{
+{    
     private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
-    private static final String REPLICATING_CONTENT_STORE_NOT_INITIALISED = "ReplicatingContentStore not initialised";
-
+    
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
     
@@ -138,7 +138,7 @@ public class AggregatingContentStore extends AbstractContentStore
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
         }
         
         // get a read lock so that we are sure that no replication is underway
@@ -173,12 +173,11 @@ public class AggregatingContentStore extends AbstractContentStore
         }     
     }
 
-    @Override
     public boolean exists(String contentUrl)
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
         }
 
         // get a read lock so that we are sure that no replication is underway
@@ -244,7 +243,6 @@ public class AggregatingContentStore extends AbstractContentStore
         }
     }
 
-    @Override
     public ContentWriter getWriter(ContentContext ctx)
     {
         // get the writer
@@ -259,7 +257,6 @@ public class AggregatingContentStore extends AbstractContentStore
      * 
      * @return Returns the value returned by the delete on the primary store.
      */
-    @Override
     public boolean delete(String contentUrl) throws ContentIOException
     {
         // delete on the primary store
@@ -273,39 +270,62 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     /**
-     * @return Returns <tt>true</tt> if at least one store supports direct access
+     * @return Returns {@code true} if at least one store supports direct access URLs
      */
-    @Override
-    public boolean isDirectAccessSupported()
+    public boolean isContentDirectUrlEnabled()
     {
         // Check the primary store
-        boolean isDirectAccessSupported = primaryStore.isDirectAccessSupported();
+        boolean isContentDirectUrlEnabled = primaryStore.isContentDirectUrlEnabled();
 
-        if (!isDirectAccessSupported)
+        if (!isContentDirectUrlEnabled)
         {
             // Direct access is not supported by the primary store so we have to check the
             // other stores
             for (ContentStore store : secondaryStores)
             {
+                isContentDirectUrlEnabled = store.isContentDirectUrlEnabled();
 
-                isDirectAccessSupported = store.isDirectAccessSupported();
-
-                if (isDirectAccessSupported)
+                if (isContentDirectUrlEnabled)
                 {
                     break;
                 }
             }
         }
 
-        return isDirectAccessSupported;
+        return isContentDirectUrlEnabled;
     }
 
-    @Override
-    public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
+    /**
+     * @return Returns {@code true} if at least one store supports direct access URL for node
+     */
+    public boolean isContentDirectUrlEnabled(String contentUrl)
+    {
+        // Check the primary store
+        boolean isContentDirectUrlEnabled = primaryStore.isContentDirectUrlEnabled(contentUrl);
+
+        if (!isContentDirectUrlEnabled)
+        {
+            // Direct access is not supported by the primary store so we have to check the
+            // other stores
+            for (ContentStore store : secondaryStores)
+            {
+                isContentDirectUrlEnabled = store.isContentDirectUrlEnabled(contentUrl);
+
+                if (isContentDirectUrlEnabled)
+                {
+                    break;
+                }
+            }
+        }
+
+        return isContentDirectUrlEnabled;
+    }
+
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
         }
 
         // get a read lock so that we are sure that no replication is underway
@@ -321,13 +341,13 @@ public class AggregatingContentStore extends AbstractContentStore
             // Check the primary store
             try
             {
-                directAccessUrl = primaryStore.getDirectAccessUrl(contentUrl, expiresAt);
+                directAccessUrl = primaryStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
             }
             catch (UnsupportedOperationException e)
             {
                 // The store does not support direct access URL
                 directAccessUrlSupported = false;
-            } 
+            }
             catch (UnsupportedContentUrlException e)
             {
                 // The store can't handle the content URL
@@ -344,7 +364,7 @@ public class AggregatingContentStore extends AbstractContentStore
             {
                 try
                 {
-                    directAccessUrl = store.getDirectAccessUrl(contentUrl, expiresAt);
+                    directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
                 }
                 catch (UnsupportedOperationException e)
                 {
@@ -389,7 +409,7 @@ public class AggregatingContentStore extends AbstractContentStore
     public boolean isStorageClassesSupported(StorageClassSet storageClassesSet)
     {
         // We only need to provide info about the primary store,
-        // because the aggregating CS only allows to be written in the primary   
+        // because the aggregating CS only allows to be written in the primary
         return primaryStore.isStorageClassesSupported(storageClassesSet);
     }
 
@@ -463,7 +483,7 @@ public class AggregatingContentStore extends AbstractContentStore
                 // The content URL was not supported
                 throw new UnsupportedContentUrlException(this, contentUrl);
             }
-            
+
             return storageClassesSet;
         }
         finally
@@ -479,7 +499,7 @@ public class AggregatingContentStore extends AbstractContentStore
         // because the aggregating CS only allows to be written in the primary
         return primaryStore.getStorageClassesTransitions();
     }
-    
+
     @Override
     public Map<StorageClassSet, Set<StorageClassSet>> findStorageClassesTransitions(String contentUrl)
     {

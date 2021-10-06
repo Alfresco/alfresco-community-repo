@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -44,6 +44,7 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -265,6 +266,49 @@ public interface Nodes
      * @return
      */
     Node unlock(String nodeId, Parameters parameters);
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeId The node id for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @return A direct access {@code URL} object for the content.
+     */
+    default DirectAccessUrl requestContentDirectUrl(String nodeId, boolean attachment)
+    {
+        return requestContentDirectUrl(validateNode(nodeId), attachment);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeRef The node reference for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @return A direct access {@code URL} object for the content.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
+    {
+        return requestContentDirectUrl(nodeRef, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeId The node id for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     */
+    default DirectAccessUrl requestContentDirectUrl(String nodeId, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(validateNode(nodeId), attachment, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeRef The node reference for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     */
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
 
     /**
      * Convert from node properties (map of QName to Serializable) retrieved from

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,6 +35,7 @@ import org.alfresco.repo.jscript.ScriptUtils;
 import org.alfresco.repo.web.scripts.RepositoryContainer;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.WebScript;
 
 /**
@@ -65,27 +66,61 @@ public class WebScriptUtils extends ScriptUtils
      */
     public Object[] findWebScripts(String family)
     {
-        List<Object> values = new ArrayList<Object>();
-        
+        List<Object> values = new ArrayList<>();
+
         for (WebScript webscript : this.repositoryContainer.getRegistry().getWebScripts())
         {
-            if (family != null)
+            addScriptDescription(family, values, webscript);
+        }
+
+        return values.toArray(new Object[0]);
+    }
+
+    /**
+     * Searches for webscript components with the given family name accessible to the current user.
+     *
+     * @param family        the family
+     *
+     * @return An array of webscripts that match the given family name accessible to the current user
+     *
+     * @since 7.1
+     */
+    public Object[] findWebScriptsForCurrentUser(String family)
+    {
+        List<Object> values = new ArrayList<>();
+
+        final boolean isAdminOrSystemUser = repositoryContainer.isAdminOrSystemUser();
+        for (WebScript webscript : this.repositoryContainer.getRegistry().getWebScripts())
+        {
+            final RequiredAuthentication required = webscript.getDescription().getRequiredAuthentication();
+            // Ignore admin webscripts if the current user is not an Admin or System
+            if (RequiredAuthentication.admin == required && !isAdminOrSystemUser)
             {
-                Set<String> familys = webscript.getDescription().getFamilys();
-                if (familys != null && familys.contains(family))
-                {
-                    values.add(webscript.getDescription());
-                }
+                continue;
             }
-            else
+
+            addScriptDescription(family, values, webscript);
+        }
+
+        return values.toArray(new Object[0]);
+    }
+
+    private void addScriptDescription(String family, List<Object> values, WebScript webscript)
+    {
+        if (family != null)
+        {
+            Set<String> families = webscript.getDescription().getFamilys();
+            if (families != null && families.contains(family))
             {
                 values.add(webscript.getDescription());
             }
         }
-        
-        return values.toArray(new Object[values.size()]);
+        else
+        {
+            values.add(webscript.getDescription());
+        }
     }
-    
+
     public String getHostAddress()
     {
         try

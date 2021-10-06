@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -106,7 +107,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         eventPublisher.publishEvent(new CachingContentStoreCreatedEvent(this));
     }
-    
+
     @Override
     public boolean isContentUrlSupported(String contentUrl)
     {
@@ -140,7 +141,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      * <p>
-     * For {@link #SPOOF_PROTOCOL spoofed} URLs, the URL always exists.
+     * For {@link FileContentStore#SPOOF_PROTOCOL spoofed} URLs, the URL always exists.
      */
     @Override
     public boolean exists(String contentUrl)
@@ -481,14 +482,36 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         return this.beanName;
     }
 
-    public boolean isDirectAccessSupported()
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isContentDirectUrlEnabled()
     {
-        return backingStore.isDirectAccessSupported();
+        return backingStore.isContentDirectUrlEnabled();
     }
 
-    public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isContentDirectUrlEnabled(String contentUrl)
     {
-        return backingStore.getDirectAccessUrl(contentUrl, expiresAt);
+        return backingStore.isContentDirectUrlEnabled(contentUrl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
+    {
+        return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    {
+        return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
     }
 
     @Override
@@ -502,13 +525,13 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         return backingStore.getSupportedStorageClasses();
     }
-    
+
     @Override
     public void updateStorageClasses(String contentUrl, StorageClassSet storageClassSet, Map<String, Object> parameters)
     {
         backingStore.updateStorageClasses(contentUrl, storageClassSet, parameters);
     }
-    
+
     @Override
     public StorageClassSet findStorageClasses(String contentUrl)
     {

@@ -30,15 +30,14 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,8 +47,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 
 /**
  * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where
@@ -58,14 +57,14 @@ import org.apache.commons.logging.LogFactory;
  * @author mrogers
  * @author Roy Wetherall
  */
+@Slf4j
 public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecuter
 {
-    /** logger */
-    private static Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
 
     /** batching properties */
     private int batchSize;
     public static final int DEFAULT_BATCH_SIZE = 500;
+    private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
 
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
@@ -88,11 +87,13 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** freeze service */
     private FreezeService freezeService;
 
-    /** record service */
-    private RecordService recordService;
-
-    /** record folder service */
-    private RecordFolderService recordFolderService;
+    /**
+     * @param freezeService freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
 
     /**
      * List of disposition actions to automatically execute when eligible.
@@ -131,30 +132,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
-    }
-
-    /**
-     * @param freezeService freeze service
-     */
-    public void setFreezeService(FreezeService freezeService)
-    {
-        this.freezeService = freezeService;
-    }
-
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
-
-    /**
-     * @param recordFolderService record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -207,11 +184,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     {
         try
         {
-            logger.debug("Job Starting");
+            log.debug("Job Starting");
 
             if (dispositionActions == null || dispositionActions.isEmpty())
             {
-                logger.debug("Job Finished as disposition action is empty");
+                log.debug("Job Finished as disposition action is empty");
                 return;
             }
 
@@ -220,16 +197,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             if (batchSize < 1)
             {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
-                }
+                log.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
                 batchSize = DEFAULT_BATCH_SIZE;
             }
-            if (logger.isTraceEnabled())
-            {
-                logger.trace("Using batch size of " + batchSize);
-            }
+
+            log.trace("Using batch size of " + batchSize);
 
             while (hasMore)
             {
@@ -247,10 +219,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 skipCount += resultNodes.size(); // increase by page size
                 results.close();
 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Processing " + resultNodes.size() + " nodes");
-                }
+                log.debug("Processing " + resultNodes.size() + " nodes");
 
                 // process search results
                 if (!resultNodes.isEmpty())
@@ -258,14 +227,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     executeAction(resultNodes);
                 }
             }
-            logger.debug("Job Finished");
+            log.debug("Job Finished");
         }
         catch (AlfrescoRuntimeException exception)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(exception);
-            }
+            log.debug(exception.getMessage());
         }
     }
 
@@ -299,12 +265,9 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 }
                 Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
 
-                if (isFrozenOrHasFrozenChildren(parent.getParentRef()))
+                if (freezeService.isFrozenOrHasFrozenChildren(parent.getParentRef()))
                 {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("unable to perform action " + dispAction +
-                                " because node is frozen or has frozen children");
-                    }
+                    log.debug(I18NUtil.getMessage(MSG_NODE_FROZEN, dispAction));
                     continue;
                 }
 
@@ -314,41 +277,18 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     recordsManagementActionService
                         .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
 
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Processed action: " + dispAction + "on" + parent);
-                    }
+                    log.debug("Processed action: " + dispAction + "on" + parent);
+
                 }
                 catch (AlfrescoRuntimeException exception)
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(exception);
-                    }
+                    log.debug(exception.getMessage());
+
                 }
             }
             return Boolean.TRUE;
         };
         retryingTransactionHelper.doInTransaction(processTranCB, false, true);
-    }
-
-    /**
-     * Helper method to determine if a node is frozen or has frozen children
-     *
-     * @param nodeRef Node to be checked
-     * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
-     */
-    private boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
-    {
-        if (recordFolderService.isRecordFolder(nodeRef))
-        {
-            return freezeService.isFrozen(nodeRef) || freezeService.hasFrozenChildren(nodeRef);
-        }
-        if (recordService.isRecord(nodeRef))
-        {
-            return freezeService.isFrozen(nodeRef);
-        }
-        throw new AlfrescoRuntimeException("The nodeRef '" + nodeRef + "' is neither a record nor a record folder.");
     }
 
     public PersonService getPersonService()

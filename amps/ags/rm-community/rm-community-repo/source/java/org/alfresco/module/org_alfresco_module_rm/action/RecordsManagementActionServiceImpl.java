@@ -35,17 +35,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRMActionExecution;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -53,14 +53,13 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
+@Slf4j
 public class RecordsManagementActionServiceImpl implements RecordsManagementActionService
 {
     /** I18N */
     private static final String MSG_NOT_DEFINED = "rm.action.not-defined";
     private static final String MSG_NO_IMPLICIT_NODEREF = "rm.action.no-implicit-noderef";
-
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RecordsManagementActionServiceImpl.class);
+    private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
 
     /** Registered records management actions */
     private Map<String, RecordsManagementAction> rmActions = new HashMap<>(13);
@@ -79,6 +78,16 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private ClassPolicyDelegate<OnRMActionExecution> onRMActionExecutionDelegate;
 
     /**
+     * Freeze Service
+     */
+    private FreezeService freezeService;
+
+    /**
+     * list of retention actions to automatically execute
+     */
+    private List<String> retentionActions;
+
+    /**
      * @return Policy component
      */
     protected PolicyComponent getPolicyComponent()
@@ -92,6 +101,19 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     protected NodeService getNodeService()
     {
         return this.nodeService;
+    }
+
+    /**
+     * @param freezeService freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
+
+    public void setRetentionActions(List<String> retentionActions)
+    {
+        this.retentionActions = retentionActions;
     }
 
     /**
@@ -267,21 +289,23 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing record management action on " + nodeRef);
-            logger.debug("    actionName = " + name);
-            logger.debug("    parameters = " + parameters);
-        }
+        log.debug("Executing record management action on " + nodeRef);
+        log.debug("    actionName = " + name);
+        log.debug("    parameters = " + parameters);
 
         RecordsManagementAction rmAction = this.rmActions.get(name);
         if (rmAction == null)
         {
             String msg = I18NUtil.getMessage(MSG_NOT_DEFINED, name);
-            if (logger.isWarnEnabled())
-            {
-                logger.warn(msg);
-            }
+            log.warn(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        if (retentionActions.contains(name.toLowerCase()) && freezeService.isFrozenOrHasFrozenChildren(nodeRef))
+        {
+            String msg = I18NUtil.getMessage(MSG_NODE_FROZEN, name);
+            log.debug(msg);
+
             throw new AlfrescoRuntimeException(msg);
         }
 
@@ -307,10 +331,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         if (implicitTargetNode == null)
         {
             String msg = I18NUtil.getMessage(MSG_NO_IMPLICIT_NODEREF, name);
-            if (logger.isWarnEnabled())
-            {
-                logger.warn(msg);
-            }
+            log.warn(msg);
             throw new AlfrescoRuntimeException(msg);
         }
         else

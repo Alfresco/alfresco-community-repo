@@ -53,16 +53,17 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 
     @Autowired
     private NodeDAO nodeDAO;
-    
+
     @Test
     public void testCreateEvent()
     {
         // Create a node without content
         final String name = "TestFile-" + System.currentTimeMillis() + ".txt";
+        String localName = GUID.generate();
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
         propertyMap.put(ContentModel.PROP_NAME, name);
-        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, propertyMap);
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
 
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
         // Repo event attributes
@@ -103,6 +104,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong node modifier display name.", "Administrator",
             nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
+        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, nodeResource.getPrimaryAssocQName());
     }
 
     @Test

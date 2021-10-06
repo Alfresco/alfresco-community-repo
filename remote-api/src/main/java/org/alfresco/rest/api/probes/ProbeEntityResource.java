@@ -76,18 +76,16 @@ import org.apache.commons.logging.LogFactory;
     @Override @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid") @WebApiParam(name = "probeName", title = "The probe's name") @WebApiNoAuth public Probe readById(
                   String name, Parameters parameters)
     {
-        boolean isLiveProbe = ProbeType.LIVE.getValue().equalsIgnoreCase(name);
-        if (!isLiveProbe && !ProbeType.READY.getValue().equalsIgnoreCase(name))
+        switch (ProbeType.valueOf(name.toUpperCase()))
         {
-            throw new InvalidArgumentException("Bad probe name");
+            case READY:
+                String message = doReadyCheck();
+                return new Probe(message);
+            case LIVE:
+                return liveProbe;
+            default:
+                throw new InvalidArgumentException("Bad probe name: " + name);
         }
-
-        if (isLiveProbe)
-        {
-            return liveProbe;
-        }
-        String message = doReadyCheck();
-        return new Probe(message);
     }
 
     // We don't want to be doing checks all the time or holding monitors for a long time to avoid a DDOS.

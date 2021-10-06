@@ -37,8 +37,8 @@ import org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of an Entity Resource for Probes.
@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
 {
     public static final long CHECK_PERIOD = 10 * 1000; // Maximum of only one checkResult every 10 seconds.
 
-    protected static Log logger = LogFactory.getLog(ProbeEntityResource.class);
+    protected static Logger LOGGER = LoggerFactory.getLogger(ProbeEntityResource.class);
     private final Object lock = new Object();
     private final Probe liveProbe = new Probe("liveProbe: Success - Tested");
     private long lastCheckTime = 0;
@@ -73,8 +73,11 @@ import org.apache.commons.logging.LogFactory;
      * Returns a status code of 200 for okay. The probe contains little information for security reasons.
      * Note: does *not* require authenticated access, so limits the amount of work performed to avoid a DDOS.
      */
-    @Override @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid") @WebApiParam(name = "probeName", title = "The probe's name") @WebApiNoAuth public Probe readById(
-                  String name, Parameters parameters)
+    @Override
+    @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid")
+    @WebApiParam(name = "probeName", title = "The probe's name")
+    @WebApiNoAuth
+    public Probe readById(String name, Parameters parameters)
     {
         switch (ProbeType.valueOf(name.toUpperCase()))
         {
@@ -88,94 +91,68 @@ import org.apache.commons.logging.LogFactory;
         }
     }
 
-    // We don't want to be doing checks all the time or holding monitors for a long time to avoid a DDOS.
+    /**
+     * Perform the readiness check if enough time has passed since the last one. We don't want to be doing checks all
+     * the time or holding monitors for a long time to avoid a DDOS.
+     */
     public String doReadyCheck()
     {
-        long now;
-        boolean result = false;
-        String message = "No test";
-        boolean logInfo = false;
         synchronized (lock)
         {
-
-            now = System.currentTimeMillis();
+            String message;
+            long now = System.currentTimeMillis();
 
             if (checkResult == null || isAfterCheckPeriod(now))
             {
                 try
                 {
-                    message = "Tested";
                     performReadinessCheck();
-                    result = true;
+                    checkResult = true;
                 }
                 catch (Exception e)
                 {
-                    result = false;
-                    logger.debug(e);
+                    checkResult = false;
+                    LOGGER.debug("Exception received during readiness check.", e);
                 }
                 finally
                 {
-
-                    checkResult = result;
                     setLastCheckTime(now);
-                    logInfo = true;
-
+                    message = getMessage(checkResult, "Tested");
+                    LOGGER.info(message);
                 }
             }
             else
             {
                 // if no check is performed, use previous check result
-                result = checkResult;
-
+                message = getMessage(checkResult, "No test");
+                LOGGER.debug(message);
             }
-        }
 
-        message = getMessage(result, message);
-
-        if (logInfo)
-        {
-            logger.info(message);
-        }
-        else
-        {
-            logger.debug(message);
-        }
-
-        if (result)
-        {
+            if (!checkResult)
+            {
+                throw new ServiceUnavailableException(message);
+            }
             return message;
         }
-        throw new ServiceUnavailableException(message);
     }
 
     private String getMessage(boolean result, String message)
     {
-
         return "readyProbe: " + (result ? "Success" : "Failure") + " - " + message;
-
-
     }
 
     private void performReadinessCheck()
     {
-
         discovery.getRepositoryInfo();
         repoHealthChecker.checkDatabase();
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("All checks complete");
-        }
-
+        LOGGER.debug("All checks complete");
     }
 
     private void setLastCheckTime(long time)
     {
         this.lastCheckTime = time;
         long nextCheckTime = lastCheckTime + CHECK_PERIOD;
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("nextCheckTime: " + nextCheckTime + " (+" + ((nextCheckTime) / 1000) + " secs)");
-        }
+        LOGGER.trace("nextCheckTime: {} (+{}ms)", nextCheckTime, CHECK_PERIOD);
     }
 
     private boolean isAfterCheckPeriod(long currentTime)
@@ -185,17 +162,6 @@ import org.apache.commons.logging.LogFactory;
 
     public enum ProbeType
     {
-        LIVE("-live-"),READY("-ready");
-        ProbeType(String strValue)
-        {
-            value = strValue;
-        }
-        String value;
-
-        public String getValue()
-        {
-            return value;
-        }
+        LIVE, READY
     }
-
 }

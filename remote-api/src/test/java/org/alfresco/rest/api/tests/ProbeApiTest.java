@@ -113,7 +113,9 @@ public class ProbeApiTest extends AbstractBaseApiTest
                 ? goodDiscovery
                 : badDiscovery);
 
-        HttpResponse response = getSingle(ProbeEntityResource.class, probeType.getValue(), null, expectedStatus);
+        String probeValue = (probeType == LIVE ? "-live-" : "-ready");
+
+        HttpResponse response = getSingle(ProbeEntityResource.class, probeValue, null, expectedStatus);
         Object object = response.getJsonResponse();
         for (String key: keys)
         {

@@ -37,8 +37,8 @@ import org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of an Entity Resource for Probes.
@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
 {
     public static final long CHECK_PERIOD = 10 * 1000; // Maximum of only one checkResult every 10 seconds.
 
-    protected static Log logger = LogFactory.getLog(ProbeEntityResource.class);
+    private final static Logger logger = LoggerFactory.getLogger(ProbeEntityResource.class);
     private final Object lock = new Object();
     private final Probe liveProbe = new Probe("liveProbe: Success - Tested");
     private long lastCheckTime = 0;
@@ -147,7 +147,6 @@ import org.apache.commons.logging.LogFactory;
 
         return "readyProbe: " + (result ? "Success" : "Failure") + " - " + message;
 
-
     }
 
     private void performReadinessCheck()
@@ -155,10 +154,7 @@ import org.apache.commons.logging.LogFactory;
 
         discovery.getRepositoryInfo();
         repoHealthChecker.checkDatabase();
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("All checks complete");
-        }
+        logger.debug("All checks complete");
 
     }
 
@@ -166,10 +162,9 @@ import org.apache.commons.logging.LogFactory;
     {
         this.lastCheckTime = time;
         long nextCheckTime = lastCheckTime + CHECK_PERIOD;
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("nextCheckTime: " + nextCheckTime + " (+" + ((nextCheckTime) / 1000) + " secs)");
-        }
+
+        logger.trace("nextCheckTime: {} (+{} secs)", nextCheckTime, ((nextCheckTime) / 1000));
+
     }
 
     private boolean isAfterCheckPeriod(long currentTime)
@@ -179,7 +174,7 @@ import org.apache.commons.logging.LogFactory;
 
     public enum ProbeType
     {
-        LIVE("-live-"), READY("-ready"), UNKNOWN("");
+        LIVE("-live-"), READY("-ready-"), UNKNOWN("");
 
         String value;
 

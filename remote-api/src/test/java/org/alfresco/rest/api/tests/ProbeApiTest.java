@@ -43,6 +43,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.alfresco.rest.api.probes.ProbeEntityResource.*;
 import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.LIVE;
 import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.READY;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.UNKNOWN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.lenient;
@@ -160,6 +161,7 @@ public class ProbeApiTest extends AbstractBaseApiTest
         Mockito.doThrow(AlfrescoRuntimeException.class).when(repoHealthChecker).checkDatabase();
         assertResponse(READY, OK, "readyProbe: Failure - Tested", 503);
         assertResponse(READY, OK, "readyProbe: Failure - No test", 503);
+        
     }
 
 }

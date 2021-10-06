@@ -76,78 +76,70 @@ import org.apache.commons.logging.LogFactory;
     @Override @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid") @WebApiParam(name = "probeName", title = "The probe's name") @WebApiNoAuth public Probe readById(
                   String name, Parameters parameters)
     {
-        boolean isLiveProbe = ProbeType.LIVE.getValue().equalsIgnoreCase(name);
-        if (!isLiveProbe && !ProbeType.READY.getValue().equalsIgnoreCase(name))
+        ProbeType probeType = ProbeType.fromString(name);
+        Probe probeResponse = null;
+
+        switch (probeType)
         {
-            throw new InvalidArgumentException("Bad probe name");
+            case LIVE:
+                probeResponse = liveProbe;
+                break;
+            case READY:
+                String message = doReadyCheck();
+                probeResponse = new Probe(message);
+                break;
+            case UNKNOWN:
+                throw new InvalidArgumentException("Bad probe name");
         }
 
-        if (isLiveProbe)
-        {
-            return liveProbe;
-        }
-        String message = doReadyCheck();
-        return new Probe(message);
+        return probeResponse;
     }
 
     // We don't want to be doing checks all the time or holding monitors for a long time to avoid a DDOS.
     public String doReadyCheck()
     {
-        long now;
-        boolean result = false;
-        String message = "No test";
-        boolean logInfo = false;
+
         synchronized (lock)
         {
-
-            now = System.currentTimeMillis();
+            String message;
+            long now = System.currentTimeMillis();
 
             if (checkResult == null || isAfterCheckPeriod(now))
             {
                 try
                 {
-                    message = "Tested";
                     performReadinessCheck();
-                    result = true;
+                    checkResult = true;
                 }
                 catch (Exception e)
                 {
-                    result = false;
-                    logger.debug(e);
+                    checkResult = false;
+                    logger.debug("Exception durring readiness check", e);
                 }
                 finally
                 {
 
-                    checkResult = result;
                     setLastCheckTime(now);
-                    logInfo = true;
+                    message = getMessage(checkResult, "Tested");
+                    logger.info(message);
 
                 }
             }
             else
             {
                 // if no check is performed, use previous check result
-                result = checkResult;
+                message = getMessage(checkResult, "No test");
+                logger.debug(message);
 
             }
+            if (checkResult)
+            {
+                return message;
+            }
+
+            throw new ServiceUnavailableException(message);
         }
 
-        message = getMessage(result, message);
-
-        if (logInfo)
-        {
-            logger.info(message);
-        }
-        else
-        {
-            logger.debug(message);
-        }
-
-        if (result)
-        {
-            return message;
-        }
-        throw new ServiceUnavailableException(message);
     }
 
     private String getMessage(boolean result, String message)
@@ -187,12 +179,26 @@ import org.apache.commons.logging.LogFactory;
 
     public enum ProbeType
     {
-        LIVE("-live-"),READY("-ready");
+        LIVE("-live-"), READY("-ready"), UNKNOWN("");
+
+        String value;
+
         ProbeType(String strValue)
         {
             value = strValue;
         }
-        String value;
+
+        public static ProbeType fromString(String text)
+        {
+            for (ProbeType p : ProbeType.values())
+            {
+                if (p.value.equalsIgnoreCase(text))
+                {
+                    return p;
+                }
+            }
+            return UNKNOWN;
+        }
 
         public String getValue()
         {

@@ -76,7 +76,7 @@
         <dependency.slf4j.version>1.7.30</dependency.slf4j.version>
         <dependency.gytheio.version>0.12</dependency.gytheio.version>
         <dependency.groovy.version>3.0.9</dependency.groovy.version>
-        <dependency.tika.version>1.27</dependency.tika.version>
+        <dependency.tika.version>2.1.0</dependency.tika.version>
         <dependency.spring-security.version>5.5.2</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>

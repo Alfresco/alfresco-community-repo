@@ -28,14 +28,15 @@
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -45,13 +46,11 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -81,7 +80,7 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
     public void testAddCustomRMPropertiesNoneFound()
     {        
         typeFormFilter.addCustomRMProperties(MY_CUSTOM_TYPE, mockForm);
-        verifyZeroInteractions(mockForm);        
+        verifyNoMoreInteractions(mockForm);
     }
     
     /**
@@ -130,8 +129,8 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
         
         typeFormFilter.afterGenerate(mockTypeDefinition, null, null, mockForm, null);
         
-        verify(mockedIdentifierService).generateIdentifier(any(QName.class), any(NodeRef.class));
-        verify(idDef).setDefaultValue(anyString());
+        verify(mockedIdentifierService).generateIdentifier(eq(null), eq(null));
+        verify(idDef).setDefaultValue(eq(null));
         verify(vrDef).setDefaultValue(Boolean.FALSE.toString());
         verify(rpDef).setDefaultValue("none|0");
     }
@@ -162,7 +161,7 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
         typeFormFilter.addCustomRMProperties(MY_CUSTOM_TYPE, mockForm);
         
         // ensure that two custom properties have been added to the form
-        verify(mockForm, times(1)).addFields(anyListOf(Field.class));       
+        verify(mockForm, times(1)).addFields(anyList());
     }
     
     /**

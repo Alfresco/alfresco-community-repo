@@ -33,10 +33,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -562,7 +562,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         executeWebScript(parameters);
 
         verify(contentStreamer, times(1)).streamContent(any(WebScriptRequest.class), any(WebScriptResponse.class),
-                    csvFileCaptor.capture(), any(Long.class), any(Boolean.class), any(String.class), any(Map.class));
+                    csvFileCaptor.capture(), eq(null), any(Boolean.class), any(String.class), any(Map.class));
 
         File fileForDownload = csvFileCaptor.getValue();
         assertNotNull(fileForDownload);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,10 +31,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityServiceImpl;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.admin.RepoUsage;
@@ -48,11 +50,18 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.PropertyMap;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
@@ -74,29 +83,46 @@ import static org.mockito.Mockito.when;
 @Category(OwnJVMTestsCategory.class)
 public class AdminWebScriptTest extends BaseWebScriptTest
 {
-    private ApplicationContext ctx;
-    private RepoAdminService repoAdminService;
-    private DescriptorService descriptorService;
+    private RepoAdminService             repoAdminService;
+    private DescriptorService            descriptorService;
+    private PersonService                personService;
+    private MutableAuthenticationService authenticationService;
+
     private String admin;
     private String guest;
+    private String user1_sysAdmin;
+    private String user2;
 
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
-        ctx = getServer().getApplicationContext();
-        repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
-        descriptorService = (DescriptorService) ctx.getBean("DescriptorService");
+        ApplicationContext ctx = getServer().getApplicationContext();
+        repoAdminService = ctx.getBean("RepoAdminService", RepoAdminService.class);
+        descriptorService = ctx.getBean("DescriptorService", DescriptorService.class);
+        personService = ctx.getBean("PersonService", PersonService.class);
+        authenticationService = ctx.getBean("AuthenticationService", MutableAuthenticationService.class);
+        AuthorityService authorityService = ctx.getBean("AuthorityService", AuthorityService.class);
         admin = AuthenticationUtil.getAdminUserName();
         guest = AuthenticationUtil.getGuestUserName();
 
         AuthenticationUtil.setFullyAuthenticatedUser(admin);
+
+        user1_sysAdmin = RandomStringUtils.randomAlphabetic(10);
+        String user1_password = RandomStringUtils.randomAlphabetic(10);
+        createUser(user1_sysAdmin, user1_password);
+        authorityService.addAuthority(AuthorityServiceImpl.GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY, user1_sysAdmin);
+
+        user2 = RandomStringUtils.randomAlphabetic(10);
+        String user2_password = RandomStringUtils.randomAlphabetic(10);
+        createUser(user2, user2_password);
     }
 
     @Override
     protected void tearDown() throws Exception
     {
         super.tearDown();
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     public void testGetRestrictions() throws Exception
@@ -227,6 +253,129 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         assertTrue(property.getResidual());
     }
 
+    public void testSysAdminAccess() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
+
+        String url = "/admin/admin-communitysummary";
+        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+
+        Response response = sendRequest(req, Status.STATUS_OK, user1_sysAdmin);
+        Document doc = Jsoup.parse(response.getContentAsString());
+        assertNotNull(doc.title());
+        assertTrue(doc.title().contains("System Summary"));
+
+        // Super Admin should still have access to all the scripts
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        doc = Jsoup.parse(response.getContentAsString());
+        assertNotNull(doc.title());
+        assertTrue(doc.title().contains("System Summary"));
+    }
+
+    public void testSysAdminAccess_nodeBrowser() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
+
+        String nodeBrowserUrl = "/admin/admin-nodebrowser";
+
+        // test the get webscript of the node browser
+        TestWebScriptServer.GetRequest getReq = new TestWebScriptServer.GetRequest(nodeBrowserUrl);
+        // The node browser is only accessible to admins, not sysAdmins
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // test the post webscript of the node browser too
+        TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(nodeBrowserUrl, "",
+                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+        // The node browser is only accessible to admins, not sysAdmins
+        sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // Normal user shouldn't have access either
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user2);
+
+        // Admin should have access to everything
+        Response response = sendRequest(getReq, Status.STATUS_OK, admin);
+        Document doc = Jsoup.parse(response.getContentAsString());
+        assertNotNull(doc.title());
+        assertTrue(doc.title().contains("Node Browser"));
+    }
+
+    public void testSysAdminAccess_repoConsole() throws Exception
+    {
+        String repoConsoleUrl = "/admin/admin-repoconsole";
+
+        // test the get webscript of the repo console
+        TestWebScriptServer.GetRequest getReq = new TestWebScriptServer.GetRequest(repoConsoleUrl);
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // test the post webscript of the repo console too
+        TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(repoConsoleUrl, "",
+                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+        sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // Normal user shouldn't have access either
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user2);
+
+        // Admin should have access to everything
+        Response response = sendRequest(getReq, Status.STATUS_OK, admin);
+        Document doc = Jsoup.parse(response.getContentAsString());
+        assertNotNull(doc.title());
+        assertTrue(doc.title().contains("Model and Messages Console"));
+    }
+
+    public void testSysAdminAccess_tenantConsole() throws Exception
+    {
+        String tenantConsoleUrl = "/admin/admin-tenantconsole";
+        // test the get webscript of the tenant console
+        TestWebScriptServer.GetRequest getReq = new TestWebScriptServer.GetRequest(tenantConsoleUrl);
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // test the post webscript of the tenant console too
+        TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(tenantConsoleUrl, "",
+                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+        sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // Normal user shouldn't have access either
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user2);
+
+        // Admin should have access to everything
+        Response response = sendRequest(getReq, Status.STATUS_OK, admin);
+        Document doc = Jsoup.parse(response.getContentAsString());
+        assertNotNull(doc.title());
+        assertTrue(doc.title().contains("Tenant Admin Console"));
+    }
+
+    public void testSysAdminAccess_workflowConsole() throws Exception
+    {
+        String workflowConsoleUrl = "/admin/admin-workflowconsole";
+        // test the get webscript of the workflow console
+        TestWebScriptServer.GetRequest getReq = new TestWebScriptServer.GetRequest(workflowConsoleUrl);
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // test the post webscript of the workflow console too
+        TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(workflowConsoleUrl, "",
+                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+        sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
+
+        // Normal user shouldn't have access either
+        sendRequest(getReq, Status.STATUS_UNAUTHORIZED, user2);
+
+        // Admin should have access to everything
+        Response response = sendRequest(getReq, Status.STATUS_OK, admin);
+        Document doc = Jsoup.parse(response.getContentAsString());
+        assertNotNull(doc.title());
+        assertTrue(doc.title().contains("Workflow Admin Console"));
+    }
+
+    public void testNonSysAdminAccess() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
+
+        String url = "/admin/admin-communitysummary";
+        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+
+        sendRequest(req, Status.STATUS_UNAUTHORIZED, user2);
+    }
+
     private class SimplePropertyDefinition implements PropertyDefinition
     {
         private boolean isAspect;
@@ -348,6 +497,21 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         public List<ConstraintDefinition> getConstraints()
         {
             return null;
+        }
+    }
+
+    private void createUser(String username, String password)
+    {
+        if (!personService.personExists(username))
+        {
+            this.authenticationService.createAuthentication(username, password.toCharArray());
+
+            PropertyMap personProps = new PropertyMap();
+            personProps.put(ContentModel.PROP_USERNAME, username);
+            personProps.put(ContentModel.PROP_FIRSTNAME, "testFirstName");
+            personProps.put(ContentModel.PROP_LASTNAME, "testLastName");
+            personProps.put(ContentModel.PROP_EMAIL, username + "@email.com");
+            this.personService.createPerson(personProps);
         }
     }
 }

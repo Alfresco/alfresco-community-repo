@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -77,7 +77,10 @@ import org.junit.runners.Suite;
 	// From MiscContextTestSuite
     org.alfresco.repo.domain.query.CannedQueryDAOTest.class,
 
-    // REPO-2963 : Tests causing a cascade of failures in AllDBTestsTestSuite on PostgreSQL/MySQL	
+    // ACS-1907
+    org.alfresco.repo.search.impl.querymodel.impl.db.ACS1907Test.class,
+
+    // REPO-2963 : Tests causing a cascade of failures in AllDBTestsTestSuite on PostgreSQL/MySQL
     // Moved at the bottom of the suite because DbNodeServiceImplTest.testNodeCleanupRegistry() takes a long time on a clean DB.
     org.alfresco.repo.node.db.DbNodeServiceImplTest.class,
 

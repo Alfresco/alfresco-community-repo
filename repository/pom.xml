@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>11.92-SNAPSHOT</version>
+        <version>14.9-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -191,7 +191,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-artifact</artifactId>
-            <version>3.8.1</version>
+            <version>3.8.3</version>
         </dependency>
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
@@ -718,7 +718,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-transform-model</artifactId>
-            <version>${dependency.transform.model.version}</version>
+            <version>${dependency.alfresco-transform-model.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -740,7 +740,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-transform-model</artifactId>
-            <version>${dependency.transform.model.version}</version>
+            <version>${dependency.alfresco-transform-model.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

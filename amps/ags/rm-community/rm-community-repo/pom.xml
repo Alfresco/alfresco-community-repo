@@ -8,13 +8,13 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>11.92-SNAPSHOT</version>
+      <version>14.9-SNAPSHOT</version>
    </parent>
 
    <properties>
       <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
 
-      <image.name>alfresco/alfresco-governance-repository-community</image.name>
+      <image.name>alfresco/alfresco-governance-repository-community-base</image.name>
    </properties>
 
    <dependencies>
@@ -141,6 +141,11 @@
          <artifactId>spring-test</artifactId>
          <scope>test</scope>
       </dependency>
+       <dependency>
+           <groupId>org.projectlombok</groupId>
+           <artifactId>lombok</artifactId>
+           <scope>provided</scope>
+       </dependency>
    </dependencies>
 
    <build>

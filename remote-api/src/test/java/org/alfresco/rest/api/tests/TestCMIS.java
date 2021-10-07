@@ -60,8 +60,11 @@ import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.cmis.client.type.AlfrescoType;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.opencmis.CMISDispatcher;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.opencmis.CMISServletDispatcher;
 import org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory;
+import org.alfresco.opencmis.PublicApiBrowserCMISDispatcher;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.dictionary.QNameFilter;
 import org.alfresco.opencmis.dictionary.QNameFilterImpl;
@@ -99,6 +102,7 @@ import org.alfresco.rest.api.tests.client.data.NodeRating.Aggregate;
 import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.framework.core.exceptions.JsonpCallbackNotAllowedException;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -153,6 +157,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.URLEncoder;
 
 public class TestCMIS extends EnterpriseTestApi
@@ -514,6 +519,73 @@ public class TestCMIS extends EnterpriseTestApi
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
 
         HttpResponse response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", null);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    /**
+     * MNT-22428 Check the return from http://localhost:8080/alfresco/api/-default-/public/cmis/versions/1.1/browser/root&callback= when jsonp callback is disabled
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testBrowserDisabledJSONPCallback() throws Exception
+    {
+        // disables unsecure callback jsonp
+        final PublicApiBrowserCMISDispatcher dispatcher = ctx.getBean(PublicApiBrowserCMISDispatcher.class);
+        dispatcher.setAllowUnsecureCallbackJSONP(false);
+
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+        Iterator<String> personIt = network1.getPersonIds().iterator();
+        final String personId = personIt.next();
+        assertNotNull(personId);
+        Person person = repoService.getPerson(personId);
+        assertNotNull(person);
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+
+        // request with a callback parameter
+        HttpResponse response;
+        final Map<String, String> params = Map.of("callback", "");
+        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", params);
+        assertEquals(403, response.getStatusCode());
+
+        String exceptionMessage = I18NUtil.getMessage(JsonpCallbackNotAllowedException.DEFAULT_MESSAGE_ID, params);
+        assertTrue(response.getResponse().endsWith(exceptionMessage));
+
+        // request without a callback parameter
+        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", null);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    /*
+     * MNT-22428 Check the return from http://localhost:8080/alfresco/api/-default-/public/cmis/versions/1.1/browser/root&callback= when jsonp callback is enabled
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testBrowserEnabledJSONPCallback() throws Exception
+    {
+        // enables unsecure callback jsonp
+        final PublicApiBrowserCMISDispatcher dispatcher = ctx.getBean(PublicApiBrowserCMISDispatcher.class);
+        dispatcher.setAllowUnsecureCallbackJSONP(true);
+
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+        Iterator<String> personIt = network1.getPersonIds().iterator();
+        final String personId = personIt.next();
+        assertNotNull(personId);
+        Person person = repoService.getPerson(personId);
+        assertNotNull(person);
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+
+        // request with a callback parameter
+        HttpResponse response;
+        final Map<String, String> params = Map.of("callback", "someFunction");
+        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", params);
+        assertEquals(200, response.getStatusCode());
+
+        // request without a callback parameter
+        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", null);
         assertEquals(200, response.getStatusCode());
     }
 

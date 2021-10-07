@@ -114,7 +114,7 @@ import org.slf4j.LoggerFactory;
                 catch (Exception e)
                 {
                     checkResult = false;
-                    logger.debug("Exception durring readiness check", e);
+                    logger.debug("Exception during readiness check", e);
                 }
                 finally
                 {
@@ -163,7 +163,7 @@ import org.slf4j.LoggerFactory;
         this.lastCheckTime = time;
         long nextCheckTime = lastCheckTime + CHECK_PERIOD;
 
-        logger.trace("nextCheckTime: {} (+{} secs)", nextCheckTime, ((nextCheckTime) / 1000));
+        logger.trace("nextCheckTime: {} (+{} secs)", nextCheckTime, ((CHECK_PERIOD) / 1000));
 
     }
 

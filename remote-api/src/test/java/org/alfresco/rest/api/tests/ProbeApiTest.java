@@ -43,7 +43,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.alfresco.rest.api.probes.ProbeEntityResource.*;
 import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.LIVE;
 import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.READY;
-import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.UNKNOWN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.lenient;

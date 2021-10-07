@@ -58,7 +58,6 @@ import static org.mockito.Mockito.lenient;
 public class ProbeApiTest extends AbstractBaseApiTest
 {
     private static final boolean OK = true;
-    private static final boolean ERROR = false;
 
     private ProbeEntityResource probe;
     private DiscoveryApiWebscript origDiscovery;

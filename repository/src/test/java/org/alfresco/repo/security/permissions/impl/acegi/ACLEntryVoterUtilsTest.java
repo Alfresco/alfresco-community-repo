@@ -38,9 +38,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
 import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
@@ -48,9 +46,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 
-@RunWith(MockitoJUnitRunner.class)
 public class ACLEntryVoterUtilsTest
 {
     private static final String REQUIRED_PERMISSION_REFERENCE_STRING = "REQUIRED_PERMISSION_REFERENCE_STRING";
@@ -74,6 +72,7 @@ public class ACLEntryVoterUtilsTest
     @Before
     public void setUp()
     {
+        initMocks(this);
         when(nodeServiceMock.exists(testStoreRefMock)).thenReturn(Boolean.TRUE);
         when(nodeServiceMock.exists(testNodeRefMock)).thenReturn(Boolean.TRUE);
         when(nodeServiceMock.getRootNode(testStoreRefMock)).thenReturn(rootNodeMock);

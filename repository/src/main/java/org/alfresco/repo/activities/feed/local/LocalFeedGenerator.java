@@ -156,14 +156,16 @@ public class LocalFeedGenerator extends AbstractFeedGenerator
             @Override
             public int getTotalEstimatedWorkSize()
             {
-                long size = maxSequence - minSequence + 1;
-                long remain = size % batchSize;
-                long workSize = (remain == 0) ? (size / batchSize) : (size / batchSize + 1);
-                return (int) workSize;
+                return (int) calculateEstimatedWorkSize();
             }
 
             @Override
             public long getTotalEstimatedWorkSizeLong()
+            {
+               return calculateEstimatedWorkSize();
+            }
+
+            private long calculateEstimatedWorkSize()
             {
                 long size = maxSequence - minSequence + 1;
                 long remain = size % batchSize;

@@ -209,7 +209,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.authentication.AuthorizationTest.class,
     org.alfresco.repo.security.permissions.PermissionCheckedCollectionTest.class,
     org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSetTest.class,
-    org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtilsTest.class,
     org.alfresco.repo.security.authentication.ChainingAuthenticationServiceTest.class,
     org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest.class,
     org.alfresco.repo.version.common.VersionImplTest.class,

@@ -450,6 +450,12 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         @Override
         public synchronized int getTotalEstimatedWorkSize()
         {
+            return (int)getTotalEstimatedWorkSizeLong();
+        }
+
+        @Override
+        public synchronized long getTotalEstimatedWorkSizeLong()
+        {
             if (maxId == Long.MAX_VALUE)
             {
                 maxId = patchDAO.getMaxAdmNodeID();
@@ -459,12 +465,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
                 }
             }
             return 0;
-        }
 
-        @Override
-        public synchronized long getTotalEstimatedWorkSizeLong()
-        {
-            return getTotalEstimatedWorkSize();
         }
 
         @Override

@@ -241,8 +241,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         @Override
         public int getTotalEstimatedWorkSize()
         {
-            int workSize = getNodesWithAspects.getWorkSize();
-            return workSize;
+            return (int)getTotalEstimatedWorkSizeLong();
         }
         @Override
         public long getTotalEstimatedWorkSizeLong()

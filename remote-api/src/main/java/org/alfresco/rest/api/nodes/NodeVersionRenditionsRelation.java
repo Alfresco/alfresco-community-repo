@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
+
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.BinaryProperties;
@@ -41,8 +43,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
-
-import java.util.List;
 
 /**
  *

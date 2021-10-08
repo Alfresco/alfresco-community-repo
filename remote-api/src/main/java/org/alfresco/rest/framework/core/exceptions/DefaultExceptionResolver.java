@@ -41,7 +41,11 @@ public class DefaultExceptionResolver implements ExceptionResolver<Exception>
     @Override
     public ErrorResponse resolveException(Exception ex)
     {
-        return new ErrorResponse(DEFAULT_MESSAGE_ID, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getLocalizedMessage(), ex.getStackTrace(), null);
+        return new ErrorResponse(DEFAULT_MESSAGE_ID,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                ex.getLocalizedMessage(),
+                ex.getStackTrace(),
+                null);
     }
 
 }

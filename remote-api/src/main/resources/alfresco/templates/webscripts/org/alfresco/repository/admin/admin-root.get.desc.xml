@@ -5,7 +5,7 @@
    <url>/admin/</url>
    <family>AdminConsoleHelper</family>
    <format default="html">argument</format>
-   <authentication>admin</authentication>
+   <authentication>sysadmin</authentication>
    <lifecycle>internal</lifecycle>
    <transaction allow="readonly">required</transaction>
 </webscript>

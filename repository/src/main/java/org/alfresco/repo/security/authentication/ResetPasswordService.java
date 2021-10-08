@@ -32,11 +32,13 @@ import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
 
 /**
+ * @deprecated from 7.1.0
  * Reset password service.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
+@Deprecated
 public interface ResetPasswordService
 {
     /**

@@ -30,11 +30,14 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 
 /**
+ * @deprecated from 7.1.0
+ * 
  * This {@link JavaDelegate activiti delegate} is executed when a user is finished resetting his/her password.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
+@Deprecated
 public class SendResetPasswordConfirmationEmailDelegate extends AbstractResetPasswordDelegate
 {
     private static final String EMAIL_SUBJECT_KEY = "reset-password-confirmation.email.subject";

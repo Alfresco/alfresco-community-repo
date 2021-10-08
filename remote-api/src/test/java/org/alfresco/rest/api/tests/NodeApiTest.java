@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -81,6 +81,7 @@ import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.client.data.PathInfo.ElementInfo;
+import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
@@ -6250,5 +6251,120 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertFalse((Boolean) constraintParameters.get("requiresMatch"));
     }
 
+    @Test
+    public void testRequestContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Use existing test file
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload text content
+        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        final String contentNodeId = document.getId();
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
+    @Test
+    public void testRequestVersionsContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        // create *empty* text file - as of now, versioning is not enabled by default
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String docId = documentResp.getId();
+        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+
+        int majorVersion = 1;
+        int minorVersion = 0;
+
+        String content = "The quick brown fox jumps over the lazy dog ";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "my version ");
+
+        documentResp = updateTextFile(docId, content, params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        final String contentNodeId = documentResp.getId();
+
+        // Check the upload response
+        assertNotNull(documentResp.getProperties());
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        ContentInfo contentInfo = documentResp.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
+    @Test
+    public void testRequestRenditionContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        RepoService.TestNetwork networkN1;
+        RepoService.TestPerson userOneN1;
+        Site userOneN1Site;
+
+        networkN1 = repoService.createNetworkWithAlias("ping", true);
+        networkN1.create();
+        userOneN1 = networkN1.createUser();
+
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String parentId = getSiteContainerNodeId(userOneN1Site.getId(), "documentLibrary");
+        String folder_Id = createNode(parentId, folderName, TYPE_CM_FOLDER, null).getId();
+
+        // Create multipart request - pdf file
+        String renditionName = "doclib";
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+            .setFileData(new FileData(fileName, file))
+            .setRenditions(Collections.singletonList(renditionName))
+            .build();
+
+        // Upload quick.pdf file into 'folder' - including request to create 'doclib' thumbnail
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
 }
 

@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>11.53-SNAPSHOT</version>
+      <version>14.11-SNAPSHOT</version>
    </parent>
 
 
@@ -40,7 +40,7 @@
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
-         <version>1.7.26</version>
+         <version>1.7.32</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -82,7 +82,7 @@
       <dependency>
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>
-         <version>3.0.14</version>
+         <version>3.2.12</version>
       </dependency>
    </dependencies>
 </project>

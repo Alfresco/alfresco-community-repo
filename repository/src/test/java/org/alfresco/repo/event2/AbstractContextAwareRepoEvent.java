@@ -36,6 +36,7 @@ import java.util.List;
 import javax.jms.ConnectionFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
 import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventType;
@@ -114,6 +115,9 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Qualifier("eventGeneratorQueue")
     protected EventGeneratorQueue eventQueue;
 
+    @Autowired
+    private NamespaceDAO namespaceDAO;
+
     protected NodeRef rootNodeRef;
 
     @BeforeClass
@@ -152,7 +156,17 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             return nodeService.getRootNode(storeRef);
         });
 
+        initTestNamespacePrefixMapping();
+
         flushSpuriousEvents();
+    }
+
+    protected void initTestNamespacePrefixMapping() {
+        if(namespaceDAO.getNamespaceURI("ce") == null)
+        {
+            namespaceDAO.addURI(TEST_NAMESPACE);
+            namespaceDAO.addPrefix("ce", TEST_NAMESPACE);
+        }
     }
 
     /*
@@ -208,10 +222,15 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     protected NodeRef createNode(QName contentType, PropertyMap propertyMap)
     {
+        return createNode(contentType, GUID.generate(), propertyMap);
+    }
+
+    protected NodeRef createNode(QName contentType, String localName, PropertyMap propertyMap)
+    {
         return retryingTransactionHelper.doInTransaction(() -> nodeService.createNode(
             rootNodeRef,
             ContentModel.ASSOC_CHILDREN,
-            QName.createQName(TEST_NAMESPACE, GUID.generate()),
+            QName.createQName(TEST_NAMESPACE, localName),
             contentType,
             propertyMap).getChildRef());
     }

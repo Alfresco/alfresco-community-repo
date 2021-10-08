@@ -12,6 +12,7 @@ ALTER TABLE alf_transaction
     DROP COLUMN IF EXISTS server_id;
 
 DROP TABLE IF EXISTS alf_server;
+DROP SEQUENCE IF EXISTS alf_server_seq;
 
 --
 -- Record script finish

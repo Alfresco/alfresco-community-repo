@@ -29,16 +29,23 @@ package org.alfresco.repo.rule;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Extended rule service implementation.
@@ -48,6 +55,11 @@ import org.alfresco.service.namespace.QName;
  */
 public class ExtendedRuleServiceImpl extends RuleServiceImpl
 {
+    private static final String MSG_RETENTION_PERIOD_NOT_VALID = "rm.action.worm-retention-period-not-valid";
+    private static final String PARAM_RETENTION_PERIOD = "retentionPeriod";
+    private static final String POSITIVE_INTEGERS_PATTERN = "^\\+?([1-9]\\d*)$";
+    private static final String WORM_LOCK_ACTION = "wormLock";
+
 	/** indicates whether the rules should be run as admin or not */
     private boolean runAsAdmin = true;
 
@@ -110,12 +122,43 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         ignoredTypes.add(RecordsManagementModel.TYPE_EVENT_EXECUTION);
     }
 
+    private void validateWormLockRuleAction(final Rule rule)
+    {
+        try
+        {
+            CompositeActionImpl compositeAction = (CompositeActionImpl) rule.getAction();
+            Pattern pattern = Pattern.compile(POSITIVE_INTEGERS_PATTERN);
+            for (Action action : compositeAction.getActions())
+            {
+                if (WORM_LOCK_ACTION.equals(action.getActionDefinitionName()))
+                {
+                    String retentionPeriodParamValue = (String) action.getParameterValue(PARAM_RETENTION_PERIOD);
+                    if (retentionPeriodParamValue != null)
+                    {
+                        Matcher matcher = pattern.matcher(retentionPeriodParamValue);
+                        if (!matcher.matches())
+                        {
+                            throw new IntegrityException(I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID), null);
+                        }
+                    }
+                }
+            }
+        } catch (PatternSyntaxException ex)
+        {
+            throw new IntegrityException (I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID), null);
+        } catch (ClassCastException ex1)
+        {
+            //do nothing, not a composite action for validation
+        }
+    }
+
     /**
      * @see org.alfresco.repo.rule.RuleServiceImpl#saveRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
      */
     @Override
     public void saveRule(final NodeRef nodeRef, final Rule rule)
     {
+        validateWormLockRuleAction(rule);
         if (filePlanService.isFilePlanComponent(nodeRef))
         {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()

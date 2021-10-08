@@ -836,13 +836,13 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         // Get network admin's groups by explicit ID.
         {
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(networkAdmin, null, "Couldn't get user's groups", 200);
-            assertEquals(6L, (long) groups.getPaging().getTotalItems());
+            assertEquals(7L, (long) groups.getPaging().getTotalItems());
         }
 
         // test -me- alias (as network admin)
         {
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
-            assertEquals(6L, (long) groups.getPaging().getCount());
+            assertEquals(7L, (long) groups.getPaging().getCount());
             Iterator<Group> it = groups.getList().iterator();
             assertEquals("GROUP_ALFRESCO_ADMINISTRATORS", it.next().getId());
         }

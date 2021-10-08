@@ -30,8 +30,19 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import com.google.common.primitives.Ints;
 
 import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
+import org.alfresco.repo.bulkimport.BulkImportParameters;
+import org.alfresco.repo.bulkimport.NodeImporter;
+import org.alfresco.repo.bulkimport.impl.MultiThreadedBulkFilesystemImporter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -39,8 +50,12 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * contains common fields and methods for the import web scripts.
@@ -60,10 +75,10 @@ public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
     // Web scripts parameters (common)
 	protected static final String PARAMETER_REPLACE_EXISTING        = "replaceExisting";
 	protected static final String PARAMETER_EXISTING_FILE_MODE      = "existingFileMode";
-	protected static final String PARAMETER_VALUE_REPLACE_EXISTING 	= "replaceExisting";
+	protected static final String PARAMETER_VALUE_REPLACE_EXISTING 	= "true";
 	protected static final String PARAMETER_SOURCE_DIRECTORY       	= "sourceDirectory";
 	protected static final String PARAMETER_DISABLE_RULES		    = "disableRules";
-	protected static final String PARAMETER_VALUE_DISABLE_RULES		= "disableRules";
+	protected static final String PARAMETER_VALUE_DISABLE_RULES		= "true";
 
 	protected static final String IMPORT_ALREADY_IN_PROGRESS_MODEL_KEY = "importInProgress";
 	protected static final String IMPORT_ALREADY_IN_PROGRESS_ERROR_KEY ="bfsit.error.importAlreadyInProgress";
@@ -75,7 +90,7 @@ public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
 	protected Repository repository;
 	   
 	protected volatile boolean importInProgress;
-    
+
 	protected NodeRef getTargetNodeRef(String targetNodeRefStr, String targetPath) throws FileNotFoundException
 	{
 		NodeRef targetNodeRef;
@@ -217,6 +232,200 @@ public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
 	public void setRepository(Repository repository)
 	{
 		this.repository = repository;
+	}
+
+	protected class MultithreadedImportWebScriptLogic
+	{
+		private final MultiThreadedBulkFilesystemImporter bulkImporter;
+		private final Supplier<NodeImporter> nodeImporterFactory;
+		private final WebScriptRequest request;
+		private final Status status;
+		private final Cache cache;
+
+		public MultithreadedImportWebScriptLogic(MultiThreadedBulkFilesystemImporter bulkImporter, Supplier<NodeImporter> nodeImporterFactory, WebScriptRequest request, Status status, Cache cache)
+		{
+			this.bulkImporter = Objects.requireNonNull(bulkImporter);
+			this.nodeImporterFactory = Objects.requireNonNull(nodeImporterFactory);
+			this.request = Objects.requireNonNull(request);
+			this.status = Objects.requireNonNull(status);
+			this.cache = Objects.requireNonNull(cache);
+		}
+
+		public Map<String, Object> executeImport()
+		{
+			Map<String, Object> model  = new HashMap<>();
+			cache.setNeverCache(true);
+			String targetPath = null;
+
+			try
+			{
+				targetPath = request.getParameter(PARAMETER_TARGET_PATH);
+				if (isRunning())
+				{
+					model.put(IMPORT_ALREADY_IN_PROGRESS_MODEL_KEY, I18NUtil.getMessage(IMPORT_ALREADY_IN_PROGRESS_ERROR_KEY));
+					return model;
+				}
+
+				final BulkImportParameters bulkImportParameters = getBulkImportParameters();
+				final NodeImporter nodeImporter = nodeImporterFactory.get();
+
+				bulkImporter.asyncBulkImport(bulkImportParameters, nodeImporter);
+
+				waitForImportToBegin();
+
+				// redirect to the status Web Script
+				status.setCode(Status.STATUS_MOVED_TEMPORARILY);
+				status.setRedirect(true);
+				status.setLocation(request.getServiceContextPath() + WEB_SCRIPT_URI_BULK_FILESYSTEM_IMPORT_STATUS);
+			}
+			catch (WebScriptException | IllegalArgumentException e)
+			{
+				status.setCode(Status.STATUS_BAD_REQUEST, e.getMessage());
+				status.setRedirect(true);
+			}
+			catch (FileNotFoundException fnfe)
+			{
+				status.setCode(Status.STATUS_BAD_REQUEST,"The repository path '" + targetPath + "' does not exist !");
+				status.setRedirect(true);
+			}
+			catch (Throwable t)
+			{
+				throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, buildTextMessage(t), t);
+			}
+
+			return model;
+		}
+
+		private void waitForImportToBegin() throws InterruptedException
+		{
+			// ACE-3047 fix, since bulk import is started asynchronously there is a chance that client
+			// will get into the status page before import is actually started.
+			// In this case wrong information (for previous import) will be displayed.
+			// So lets ensure that import started before redirecting client to status page.
+			int i = 0;
+			while (!bulkImporter.getStatus().inProgress() && i < 10)
+			{
+				Thread.sleep(100);
+				i++;
+			}
+		}
+
+		private BulkImportParameters getBulkImportParameters() throws FileNotFoundException
+		{
+			final BulkImportParametersExtractor extractor = new BulkImportParametersExtractor(request::getParameter,
+					AbstractBulkFileSystemImportWebScript.this::getTargetNodeRef,
+					bulkImporter.getDefaultBatchSize(),
+					bulkImporter.getDefaultNumThreads());
+			return extractor.extract();
+		}
+
+		private boolean isRunning()
+		{
+			return bulkImporter.getStatus().inProgress();
+		}
+	}
+
+	protected static class BulkImportParametersExtractor
+	{
+		private final Function<String, String> paramsProvider;
+		private final NodeRefCreator nodeRefCreator;
+		private final int defaultBatchSize;
+		private final int defaultNumThreads;
+
+		public BulkImportParametersExtractor(final Function<String, String> paramsProvider, final NodeRefCreator nodeRefCreator,
+											 final int defaultBatchSize, final int defaultNumThreads)
+		{
+			this.paramsProvider = Objects.requireNonNull(paramsProvider);
+			this.nodeRefCreator = Objects.requireNonNull(nodeRefCreator);
+			this.defaultBatchSize = defaultBatchSize;
+			this.defaultNumThreads = defaultNumThreads;
+		}
+
+		public BulkImportParameters extract() throws FileNotFoundException
+		{
+			BulkImportParameters result = new BulkImportParameters();
+
+			result.setTarget(getTargetNodeRef());
+			setExistingFileMode(result);
+			result.setNumThreads(getOptionalPositiveInteger(PARAMETER_NUM_THREADS).orElse(defaultNumThreads));
+			result.setBatchSize(getOptionalPositiveInteger(PARAMETER_BATCH_SIZE).orElse(defaultBatchSize));
+			setDisableRules(result);
+
+			return result;
+		}
+
+		private void setExistingFileMode(BulkImportParameters params)
+		{
+			String replaceExistingStr = getParamStringValue(PARAMETER_REPLACE_EXISTING);
+			String existingFileModeStr = getParamStringValue(PARAMETER_EXISTING_FILE_MODE);
+
+			if (!isNullOrEmpty(replaceExistingStr) && !isNullOrEmpty(existingFileModeStr))
+			{
+				// Check that we haven't had both the deprecated and new (existingFileMode)
+				// parameters supplied.
+				throw new IllegalStateException(
+						String.format("Only one of these parameters may be used, not both: %s, %s",
+								PARAMETER_REPLACE_EXISTING,
+								PARAMETER_EXISTING_FILE_MODE));
+			}
+
+			if (!isNullOrEmpty(existingFileModeStr))
+			{
+				params.setExistingFileMode(BulkImportParameters.ExistingFileMode.valueOf(existingFileModeStr));
+			}
+			else
+			{
+				params.setReplaceExisting(PARAMETER_VALUE_REPLACE_EXISTING.equals(replaceExistingStr));
+			}
+		}
+
+		private void setDisableRules(final BulkImportParameters params)
+		{
+			final String disableRulesStr = getParamStringValue(PARAMETER_DISABLE_RULES);
+			params.setDisableRulesService(!isNullOrEmpty(disableRulesStr) && PARAMETER_VALUE_DISABLE_RULES.equals(disableRulesStr));
+		}
+
+		private NodeRef getTargetNodeRef() throws FileNotFoundException
+		{
+			String targetNodeRefStr = getParamStringValue(PARAMETER_TARGET_NODEREF);
+			String targetPath = getParamStringValue(PARAMETER_TARGET_PATH);
+			return nodeRefCreator.fromNodeRefAndPath(targetNodeRefStr, targetPath);
+		}
+
+		private OptionalInt getOptionalPositiveInteger(final String paramName)
+		{
+			final String strValue = getParamStringValue(paramName);
+			if (isNullOrEmpty(strValue))
+			{
+				return OptionalInt.empty();
+			}
+
+			final Integer asInt = Ints.tryParse(strValue);
+			if (asInt == null || asInt < 1)
+			{
+				throw new WebScriptException("Error: parameter '" + paramName + "' must be an integer > 0.");
+			}
+
+			return OptionalInt.of(asInt);
+		}
+
+		private String getParamStringValue(String paramName)
+		{
+			Objects.requireNonNull(paramName);
+
+			return paramsProvider.apply(paramName);
+		}
+
+		private boolean isNullOrEmpty(String str)
+		{
+			return str == null || str.trim().length() == 0;
+		}
+
+		@FunctionalInterface
+		protected interface NodeRefCreator
+		{
+			NodeRef fromNodeRefAndPath(String nodeRef, String path) throws FileNotFoundException;
+		}
 	}
 
 }

@@ -42,6 +42,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.TestPublicApiAtomPub10TCK.class,
     org.alfresco.rest.api.tests.TestPublicApiAtomPub11TCK.class,
     org.alfresco.rest.api.tests.TestPublicApiBrowser11TCK.class,
+    org.alfresco.repo.web.scripts.bulkimport.BulkImportParametersExtractorTest.class
 })
 public class AppContext01TestSuite
 {

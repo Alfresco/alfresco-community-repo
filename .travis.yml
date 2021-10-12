@@ -63,7 +63,7 @@ jobs:
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      script: travis_wait 20 mvn -B -X test -pl repository -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext03TestSuite"
       if: commit_message !~ /\[skip repo\]/

@@ -1,3 +1,4 @@
+
 /*
  * #%L
  * Alfresco Remote API
@@ -12,7 +13,8 @@
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version.                  
+ * 
  * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -3645,6 +3647,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
+//        if (DUA.isEnabled) { // Thomas what is the conlusion on how to check this?
+//            assertEquals(response contains url); // once u can see env on thomas' enviroment you can see the url
+//        }
+        // print the response here
+        System.out.println("------------------------testing 123-----------------------------------");
+        System.out.println(response.getHeaders());
+        System.out.println("------------------------testing 123-----------------------------------");
         assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", responseHeaders.get("Content-Disposition"));
         String cacheControl = responseHeaders.get("Cache-Control");
         assertNotNull(cacheControl);

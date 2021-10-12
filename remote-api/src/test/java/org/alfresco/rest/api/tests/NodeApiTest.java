@@ -105,6 +105,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -143,6 +145,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     private String groupA = null;
     private String groupB = null;
 
+
     @Before
     public void setup() throws Exception
     {
@@ -153,13 +156,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         namespaceService= (NamespaceService) applicationContext.getBean("NamespaceService");
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
         super.tearDown();
     }
-    
+
     /**
      * Tests get document library children.
      * <p>GET:</p>
@@ -168,12 +171,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testListChildrenWithinSiteDocLib() throws Exception
     {
+    LogManager.getRootLogger().setLevel(Level.DEBUG);
+        System.out.println("------------------------testing 321-----------------------------------");
         setRequestContext(user1);
 
         // create folder f0
         String folder0Name = "f0-testListChildrenWithinSiteDocLib-"+RUNID;
         String f0Id = createFolder(tDocLibNodeId, folder0Name).getId();
-        
+
         String folder1 = "folder" + RUNID + "_1";
         createFolder(f0Id, folder1, null).getId();
 

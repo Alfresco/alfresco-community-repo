@@ -37,7 +37,6 @@ import org.junit.runners.Suite;
     // [classpath*:/publicapi/lucene/, classpath:alfresco/application-context.xml,
     // classpath:alfresco/web-scripts-application-context-test.xml,
     // classpath:alfresco/web-scripts-application-context.xml, rest-api-test-context.xml, testcmis-model-context.xml]
-
     // this need to be run first
     org.alfresco.rest.api.tests.TestCMIS.class,
 
@@ -68,7 +67,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.TestPublicApiCaching.class,
     org.alfresco.rest.api.tests.TestUserPreferences.class,
     org.alfresco.rest.api.tests.WherePredicateApiTest.class,
-    org.alfresco.rest.api.tests.TestRemovePermissions.class, 
+    org.alfresco.rest.api.tests.TestRemovePermissions.class,
     org.alfresco.rest.api.tests.TempOutputStreamTest.class,
     org.alfresco.rest.api.tests.BufferedResponseTest.class,
     org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class,

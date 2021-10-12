@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -57,8 +60,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
-import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
 
 /**
  * @author andyh
@@ -399,14 +400,15 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
                 if (List.class.isAssignableFrom(params[cad.parameter[0]]))
                 {
-                    List listArgument = getArgument(invocation, cad.parameter[0]);
+                    List<?> listArgument = getArgument(invocation, cad.parameter[0]);
                     if (listArgument != null)
                     {
+                        NodeRef listNodeRef;
                         Integer accessAbstainOrDeny = null;
                         for (Object listElement : listArgument)
                         {
-                            testNodeRef = getNodeRef(listElement, testNodeRef, nodeService);
-                            Integer currentValue = shouldAbstainOrDeny(cad.required, testNodeRef, abstainForClassQNames, nodeService, permissionService);
+                            listNodeRef = getNodeRef(listElement, nodeService);
+                            Integer currentValue = shouldAbstainOrDeny(cad.required, listNodeRef, abstainForClassQNames, nodeService, permissionService);
 
                             if (currentValue != null)
                             {
@@ -426,13 +428,22 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         {
                             return accessAbstainOrDeny;
                         }
+                        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
+                        {
+                            return AccessDecisionVoter.ACCESS_GRANTED;
+                        }
+                        else
+                        {
+                            return AccessDecisionVoter.ACCESS_DENIED;
+                        }
 
                     }
                 }
                 else
                 {
                     Object testObject = getArgument(invocation, cad.parameter[0]);
-                    testNodeRef = getNodeRef(testObject, testNodeRef, nodeService);
+                    //If the execution reaches here, then testNodeRef is always null
+                    testNodeRef = getNodeRef(testObject, nodeService);
                 }
             }
             else if (cad.typeString.equals(ACL_ITEM))
@@ -583,7 +594,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             return AccessDecisionVoter.ACCESS_DENIED;
         }
     }
-
 
     @SuppressWarnings("unchecked")
     private <T> T getArgument(MethodInvocation invocation, int index)

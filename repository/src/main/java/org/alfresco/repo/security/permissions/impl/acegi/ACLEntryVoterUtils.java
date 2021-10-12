@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 final class ACLEntryVoterUtils
 {
     private static final Logger LOG = LoggerFactory.getLogger(ACLEntryVoterUtils.class);
-    private static final String ABSTAIN = "Abstain";
 
     private ACLEntryVoterUtils()
     {
@@ -148,7 +147,6 @@ final class ACLEntryVoterUtils
         {
             if (abstainForClassQNames.contains(nodeService.getType(testNodeRef)))
             {
-                LOG.debug(ABSTAIN);
                 return AccessDecisionVoter.ACCESS_ABSTAIN;
             }
             Set<QName> testNodeRefAspects = nodeService.getAspects(testNodeRef);
@@ -156,7 +154,6 @@ final class ACLEntryVoterUtils
             {
                 if (testNodeRefAspects.contains(abstain))
                 {
-                    LOG.debug(ABSTAIN);
                     return AccessDecisionVoter.ACCESS_ABSTAIN;
                 }
             }

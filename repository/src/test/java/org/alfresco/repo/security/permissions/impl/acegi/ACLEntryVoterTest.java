@@ -64,7 +64,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     private static final String ABSTAIN = "ABSTAIN";
     private static final String DENIED = "Access denied";
     private static final String SHOULD_FAIL_DENIED = "Should fail because node is DENIED";
-    public static final String SHOULD_FAIL_ABSTAINED = "Should fail because node is ABSTAINED";
+    private static final String SHOULD_FAIL_ABSTAINED = "Should fail because node is ABSTAINED";
 
     public ACLEntryVoterTest()
     {

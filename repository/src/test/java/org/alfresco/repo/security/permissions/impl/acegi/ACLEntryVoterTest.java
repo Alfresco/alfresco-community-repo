@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
+import static java.util.Collections.singletonList;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -53,16 +55,16 @@ import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
 import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
 import org.springframework.aop.target.SingletonTargetSource;
 
-import static java.util.Collections.singletonList;
-
-
 @Category(OwnJVMTestsCategory.class)
-public class ACLEntryVoterTest extends AbstractPermissionTest {
+public class ACLEntryVoterTest extends AbstractPermissionTest
+{
     private static final String ANDY = "andy";
     private static final String ACL_NODE_0_SYS_BASE_READ = "ACL_NODE.0.sys:base.Read";
     private static final String TEST_LIST_OF_NODE_REFS = "testListOfNodeRefs";
     private static final String ABSTAIN = "ABSTAIN";
     private static final String DENIED = "Access denied";
+    private static final String SHOULD_FAIL_DENIED = "Should fail because node is DENIED";
+    public static final String SHOULD_FAIL_ABSTAINED = "Should fail because node is ABSTAINED";
 
     public ACLEntryVoterTest()
     {
@@ -81,7 +83,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { rootNodeRef });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -91,7 +93,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { systemNodeRef });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -118,7 +120,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { rootNodeRef.getStoreRef() });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -204,7 +206,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -224,7 +226,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -322,7 +324,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -363,7 +365,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { rootNodeRef, null, null, null });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -390,7 +392,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { null, rootNodeRef, null, null });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -417,7 +419,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { null, null, rootNodeRef, null });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -444,7 +446,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { null, null, null, rootNodeRef });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -473,7 +475,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef), null, null, null });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -502,7 +504,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { null, nodeService.getPrimaryParent(rootNodeRef), null, null });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -531,7 +533,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { null, null, nodeService.getPrimaryParent(rootNodeRef), null });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -560,7 +562,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, new Object[] { null, null, null, nodeService.getPrimaryParent(rootNodeRef) });
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
         {
@@ -673,7 +675,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, singletonList(rootNodeRef));
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         } catch (InvocationTargetException e)
         {
             verifyAccessDenied(e);
@@ -715,7 +717,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, Arrays.asList(systemNodeRef, rootNodeRef, systemNodeRef));
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         } catch (InvocationTargetException e)
         {
             verifyAccessDenied(e);
@@ -734,7 +736,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, Collections.singletonList(abstainedNode));
-            failTest();
+            fail(SHOULD_FAIL_ABSTAINED);
         } catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
@@ -753,7 +755,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, Collections.singletonList(abstainedNode));
-            failTest();
+            fail(SHOULD_FAIL_ABSTAINED);
         } catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
@@ -772,7 +774,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, Collections.singletonList(abstainedNode));
-            failTest();
+            fail(SHOULD_FAIL_ABSTAINED);
         } catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
@@ -792,7 +794,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, Arrays.asList(rootNodeRef, abstainedNode, rootNodeRef));
-            failTest();
+            fail(SHOULD_FAIL_ABSTAINED);
         } catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
@@ -811,7 +813,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
         try
         {
             method.invoke(proxy, Arrays.asList(abstainedNode, systemNodeRef, abstainedNode));
-            failTest();
+            fail(SHOULD_FAIL_DENIED);
         } catch (InvocationTargetException e)
         {
             verifyAccessDenied(e);
@@ -828,11 +830,6 @@ public class ACLEntryVoterTest extends AbstractPermissionTest {
     {
         String causeMessage = e.getCause().getMessage();
         assertEquals(DENIED, causeMessage.substring(causeMessage.length() - 13));
-    }
-
-    private void failTest()
-    {
-        assertNotNull(null);
     }
 
     public static class ClassWithMethods

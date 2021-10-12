@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
  * Utility methods extracted from AclEntryVoter
  *
  * @author Lev Belava
- * @since 14.7
  */
 final class ACLEntryVoterUtils
 {
@@ -60,12 +59,11 @@ final class ACLEntryVoterUtils
      * Gets NodeRef for testObject based on inferred type
      *
      * @param testObject                Tested object to work on
-     * @param testNodeRef               Will be returned if StoreRef from testObject does not exist
      * @param nodeService               Node service to perform checks on refs
-     * @return                          NodeRef for testObject or null if testObject is null
-     * @throws ACLEntryVoterException   if testObject is not null or a NodeRef or ChildAssociationRef type
+     * @return                          NodeRef for testObject or null if (testObject is null or StoreRef from testObject does not exist in the provided NodeService)
+     * @throws ACLEntryVoterException   if testObject is not null and not one of a NodeRef or ChildAssociationRef types
      */
-    static NodeRef getNodeRef(Object testObject, NodeRef testNodeRef, NodeService nodeService)
+    static NodeRef getNodeRef(Object testObject, NodeService nodeService)
     {
         if (testObject == null)
         {
@@ -83,7 +81,7 @@ final class ACLEntryVoterUtils
             else
             {
                 LOG.debug("StoreRef does not exist");
-                return testNodeRef;
+                return null;
             }
         }
 
@@ -110,7 +108,7 @@ final class ACLEntryVoterUtils
             NodeRef result = testChildRef.getChildRef();
             if (LOG.isDebugEnabled())
             {
-                if (result != null && nodeService.exists(result))
+                if (nodeService.exists(result))
                 {
                     LOG.debug("Permission test on node {}", nodeService.getPath(result));
                 }
@@ -153,9 +151,10 @@ final class ACLEntryVoterUtils
                 LOG.debug(ABSTAIN);
                 return AccessDecisionVoter.ACCESS_ABSTAIN;
             }
+            Set<QName> testNodeRefAspects = nodeService.getAspects(testNodeRef);
             for (QName abstain : abstainForClassQNames)
             {
-                if (nodeService.getAspects(testNodeRef).contains(abstain))
+                if (testNodeRefAspects.contains(abstain))
                 {
                     LOG.debug(ABSTAIN);
                     return AccessDecisionVoter.ACCESS_ABSTAIN;

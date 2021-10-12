@@ -25,6 +25,15 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.when;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -43,30 +52,21 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
-import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Mockito.when;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class ACLEntryVoterUtilsTest
 {
-    private NodeRef testNodeRef = new NodeRef("workspace://testNodeRef/testNodeRef");
-    private NodeRef rootNodeRef = new NodeRef("workspace://rootNodeRef/rootNodeRef");
-    private NodeRef refNodeForTestObject = new NodeRef("workspace://refNodeForTestObject/refNodeForTestObject");
-    private NodeRef childRefNode = new NodeRef("workspace://childRefNode/childRefNode");
-    private StoreRef testStoreNodeRef = new StoreRef("system://testStoreRefMock/testStoreRefMock");
-    private SimplePermissionReference simplePermissionReference = SimplePermissionReference.getPermissionReference(QName.createQName("uri", "local"), "Write");
-    private QName qNameToAbstain1 = QName.createQName("{test}testnode1");
-    private QName qNameToAbstain2 = QName.createQName("{test}testnode2");
-    private QName qNameToAbstain3 = QName.createQName("{test}testnode3");
-    private QName qNameNotFromTheAbstainSet = QName.createQName("{test}testnodeAbstain");
-    private Set<QName> qNamesToAbstain = Set.of(qNameToAbstain1, qNameToAbstain2, qNameToAbstain3);
+    private final NodeRef testNodeRef = new NodeRef("workspace://testNodeRef/testNodeRef");
+    private final NodeRef rootNodeRef = new NodeRef("workspace://rootNodeRef/rootNodeRef");
+    private final NodeRef refNodeForTestObject = new NodeRef("workspace://refNodeForTestObject/refNodeForTestObject");
+    private final NodeRef childRefNode = new NodeRef("workspace://childRefNode/childRefNode");
+    private final StoreRef testStoreNodeRef = new StoreRef("system://testStoreRefMock/testStoreRefMock");
+    private final SimplePermissionReference simplePermissionReference = SimplePermissionReference.getPermissionReference(QName.createQName("uri", "local"), "Write");
+    private final QName qNameToAbstain1 = QName.createQName("{test}testnode1");
+    private final QName qNameToAbstain2 = QName.createQName("{test}testnode2");
+    private final QName qNameToAbstain3 = QName.createQName("{test}testnode3");
+    private final QName qNameNotFromTheAbstainSet = QName.createQName("{test}testnodeAbstain");
+    private final Set<QName> qNamesToAbstain = Set.of(qNameToAbstain1, qNameToAbstain2, qNameToAbstain3);
     @Mock
     private PermissionService permissionServiceMock;
     @Mock
@@ -95,39 +95,39 @@ public class ACLEntryVoterUtilsTest
     @Test
     public void returnsNullOnNullTestObject()
     {
-        assertThat(getNodeRef(null, testNodeRef, nodeServiceMock), is(nullValue()));
+        assertThat(getNodeRef(null, nodeServiceMock), is(nullValue()));
     }
 
     @Test(expected = ACLEntryVoterException.class)
     public void throwsExceptionWhenParameterIsNotNodeRefOrChildAssociationRef()
     {
-        getNodeRef("TEST", testNodeRef, nodeServiceMock);
+        getNodeRef("TEST", nodeServiceMock);
     }
 
     @Test
     public void returnsGivenTestNodeRefWhenStoreRefDoesNotExist()
     {
         when(nodeServiceMock.exists(testStoreNodeRef)).thenReturn(Boolean.FALSE);
-        assertThat(getNodeRef(testStoreNodeRef, testNodeRef, nodeServiceMock), is(testNodeRef));
+        assertThat(getNodeRef(testStoreNodeRef, nodeServiceMock), is(nullValue()));
     }
 
     @Test
     public void returnsRootNode()
     {
-        assertThat(getNodeRef(testStoreNodeRef, testNodeRef, nodeServiceMock), is(rootNodeRef));
+        assertThat(getNodeRef(testStoreNodeRef, nodeServiceMock), is(rootNodeRef));
     }
 
     @Test
     public void returnsNodeRefFromTestObject()
     {
-        assertThat(getNodeRef(refNodeForTestObject, testNodeRef, nodeServiceMock), is(refNodeForTestObject));
+        assertThat(getNodeRef(refNodeForTestObject, nodeServiceMock), is(refNodeForTestObject));
     }
 
     @Test
     public void returnsChildRefFromChildAssocRef()
     {
         when(childAssocRefMock.getChildRef()).thenReturn(childRefNode);
-        assertThat(getNodeRef(childAssocRefMock, testNodeRef, nodeServiceMock), is(childRefNode));
+        assertThat(getNodeRef(childAssocRefMock, nodeServiceMock), is(childRefNode));
     }
 
     @Test

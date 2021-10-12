@@ -683,6 +683,7 @@ public class RenditionServiceImpl implements
                     log.debug("OnContentUpdate calling RenditionService2.render(\""+sourceNodeRef+"\", \""+renditionName+"\" so we switch to the new service.");
                 }
                 useRenditionService2 = true;
+                renditionService2.clearRenditionContentData(sourceNodeRef, renditionName);
                 renditionService2.render(sourceNodeRef, renditionName);
             }
         }

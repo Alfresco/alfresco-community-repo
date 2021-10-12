@@ -640,7 +640,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
         boolean valid = true;
         ContentData content = (ContentData) this.nodeService.getProperty(thumbnailNode, ContentModel.PROP_CONTENT);
         // (MNT-17162) A thumbnail with an empty content is cached for post-transaction removal, to prevent the delete in read-only transactions. 
-        if (content.getSize() == 0)
+        if (content == null || content.getSize() == 0)
         {
             TransactionalResourceHelper.getSet(THUMBNAIL_TO_DELETE_NODES).add(thumbnailNode);
             TransactionSupportUtil.bindListener(this.thumbnailsToDeleteTransactionListener, 0);

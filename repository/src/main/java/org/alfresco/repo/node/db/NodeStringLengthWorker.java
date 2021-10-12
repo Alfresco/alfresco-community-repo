@@ -241,6 +241,12 @@ public class NodeStringLengthWorker implements ApplicationContextAware
         }
 
         @Override
+        public long getTotalEstimatedWorkSizeLong()
+        {
+            return -1;
+        }
+
+        @Override
         public Collection<NodePropertyEntity> getNextWork()
         {
             // Check that there are not too many errors

@@ -404,6 +404,15 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         }
 
         @Override
+        public long getTotalEstimatedWorkSizeLong()
+        {
+            // execute a query to get total number of user nodes in the system.
+            long totalUserCount = patchDAO.getCountNodesWithTypId(ContentModel.TYPE_USER);
+
+            return totalUserCount;
+        }
+
+        @Override
         public Collection<Long> getNextWork()
         {
             // Check that there are not too many errors

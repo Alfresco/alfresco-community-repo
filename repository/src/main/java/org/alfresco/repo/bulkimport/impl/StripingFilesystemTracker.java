@@ -196,6 +196,12 @@ public class StripingFilesystemTracker extends AbstractFilesystemTracker
 			}
 
 			@Override
+			public long getTotalEstimatedWorkSizeLong()
+			{
+				return count();
+			}
+
+			@Override
 			public Collection<ImportableItem> getNextWork()
 			{
 				// TODO perhaps some multiple of the batchSize to limit calls

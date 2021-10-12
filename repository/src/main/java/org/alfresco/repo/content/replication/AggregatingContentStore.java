@@ -4,34 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.content.replication;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
@@ -44,16 +36,22 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <h1><u>Aggregating Content Store</u></h1>
  * <p>
- * A content store implementation that aggregates a set of stores.  Content is not 
+ * A content store implementation that aggregates a set of stores.  Content is not
  * persisted by this store, but rather it relies on any number of
- * child {@link org.alfresco.repo.content.ContentStore stores} to provide access 
+ * child {@link org.alfresco.repo.content.ContentStore stores} to provide access
  * to content readers and writers.
  * <p>
  * The order in which the stores appear in the list of stores participating is
@@ -62,49 +60,48 @@ import org.apache.commons.logging.LogFactory;
  * Content is written to the primary store only.  The other stores are
  * only used to retrieve content and the primary store is not updated with
  * the content.
- * 
+ *
  * @author Derek Hulley
  * @author Mark Rogers
  * @see CachingContentStore
  */
-public class AggregatingContentStore extends AbstractContentStore
-{    
+public class AggregatingContentStore extends AbstractContentStore {
     private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
-    
+    public static final String REPLICATING_CONTENT_STORE_NOT_INITIALISED = "ReplicatingContentStore not initialised";
+
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
-    
+
     private Lock readLock;
 
     /**
-     * Default constructor 
+     * Default constructor
      */
     public AggregatingContentStore()
     {
         ReadWriteLock storeLock = new ReentrantReadWriteLock();
         readLock = storeLock.readLock();
     }
-        
+
     /**
      * Set the primary store that content will be replicated to or from
-     * 
+     *
      * @param primaryStore the primary content store
      */
-    public void setPrimaryStore(ContentStore primaryStore)
-    {
+    public void setPrimaryStore(ContentStore primaryStore) {
         this.primaryStore = primaryStore;
     }
 
     /**
      * Set the secondary stores that this component will replicate to or from
-     * 
+     *
      * @param secondaryStores a list of stores to replicate to or from
      */
     public void setSecondaryStores(List<ContentStore> secondaryStores)
     {
         this.secondaryStores = secondaryStores;
     }
-    
+
     /**
      * @return      Returns <tt>true</tt> if the primary store supports writing
      */
@@ -121,7 +118,7 @@ public class AggregatingContentStore extends AbstractContentStore
     {
         return primaryStore.isContentUrlSupported(contentUrl);
     }
-    
+
     /**
      * @return      Return the primary store root location
      */
@@ -140,14 +137,14 @@ public class AggregatingContentStore extends AbstractContentStore
         {
             throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
         }
-        
+
         // get a read lock so that we are sure that no replication is underway
         readLock.lock();
         try
         {
             // get a reader from the primary store
             ContentReader primaryReader = primaryStore.getReader(contentUrl);
-            
+
             // give it straight back if the content is there
             if (primaryReader.exists())
             {
@@ -170,7 +167,7 @@ public class AggregatingContentStore extends AbstractContentStore
         finally
         {
             readLock.unlock();
-        }     
+        }
     }
 
     public boolean exists(String contentUrl)
@@ -247,21 +244,21 @@ public class AggregatingContentStore extends AbstractContentStore
     {
         // get the writer
         ContentWriter writer = primaryStore.getWriter(ctx);
-                
+
         return writer;
     }
 
     /**
      * Performs a delete on the local store and if outbound replication is on, propogates
      * the delete to the other stores too.
-     * 
+     *
      * @return Returns the value returned by the delete on the primary store.
      */
     public boolean delete(String contentUrl) throws ContentIOException
     {
         // delete on the primary store
         boolean deleted = primaryStore.delete(contentUrl);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Deleted content for URL: " + contentUrl);

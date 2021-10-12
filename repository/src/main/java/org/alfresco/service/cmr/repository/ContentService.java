@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,17 +26,16 @@
 package org.alfresco.service.cmr.repository;
 
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.StorageClassSet;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -52,11 +51,11 @@ import org.alfresco.service.namespace.QName;
  * Whereas the content stores have no knowledge of nodes other than their
  * references, the <code>ContentService</code> <b>is</b> responsible for
  * ensuring that all the relevant node-content relationships are maintained.
- * 
+ *
  * @see org.alfresco.repo.content.ContentStore
  * @see org.alfresco.service.cmr.repository.ContentReader
  * @see org.alfresco.service.cmr.repository.ContentWriter
- * 
+ *
  * @author Derek Hulley
  */
 @AlfrescoPublicApi
@@ -64,26 +63,26 @@ public interface ContentService
 {
     /**
      * Gets the total space of the underlying content store (not exclusively Alfresco-controlled binaries).
-     * 
+     *
      * @return
      *      Returns the total, possibly approximate, size (in bytes) of of the store
      *      or <tt>-1</tt> if no size data is available.
-     * 
+     *
      * @since 3.3.3
      */
     public long getStoreTotalSpace();
-    
+
     /**
      * Gets the remaing <i>available</i> space in the underlying content store.
-     * 
+     *
      * @return
      *      Returns the total, possibly approximate, remaining space (in bytes) available to store content
      *      or <tt>-1</tt> if no size data is available.
-     * 
+     *
      * @since 3.3.3
      */
     public long getStoreFreeSpace();
-    
+
     /**
      * Fetch content from the low-level stores using a content URL.  None of the
      * metadata associated with the content will be populated.  This method should
@@ -92,27 +91,27 @@ public interface ContentService
      * <p>
      * <tt>null</tt> is never returned, but the reader should always be checked for
      * {@link ContentReader#exists() existence}.
-     * 
+     *
      * @param contentUrl        a content store URL
      * @return                  Returns a reader for the URL that needs to be checked.
      */
     @Auditable(parameters = {"contentUrl"})
     public ContentReader getRawReader(String contentUrl);
-    
+
     /**
      * Gets a reader for the content associated with the given node property.
      * <p>
      * If a content URL is present for the given node then a reader <b>must</b>
      * be returned.  The {@link ContentReader#exists() exists} method should then
      * be used to detect 'missing' content.
-     * 
+     *
      * @param nodeRef a reference to a node having a content property
      * @param propertyQName the name of the property, which must be of type <b>content</b>
      * @return Returns a reader for the content associated with the node property,
      *      or null if no content has been written for the property
      * @throws InvalidNodeRefException if the node doesn't exist
      * @throws InvalidTypeException if the node is not of type <b>content</b>
-     * 
+     *
      * @see org.alfresco.repo.content.filestore.FileContentReader#getSafeContentReader(ContentReader, String, Object[])
      */
     @Auditable(parameters = {"nodeRef", "propertyQName"})
@@ -137,7 +136,7 @@ public interface ContentService
      * will not be cleaned up subsequently.  The recommended pattern is to group calls to retrieve
      * the writer in the same transaction as the calls to subsequently update and close the
      * write stream - including setting of the related content properties.
-     * 
+     *
      * @param nodeRef a reference to a node having a content property, or <tt>null</tt>
      *      to just get a valid writer into a backing content store.
      * @param propertyQName the name of the property, which must be of type <b>content</b>
@@ -189,7 +188,7 @@ public interface ContentService
     /**
      * Gets a writer to a temporary location.  The longevity of the stored
      * temporary content is determined by the system.
-     * 
+     *
      * @return Returns a writer onto a temporary location
      */
     @Auditable
@@ -235,6 +234,16 @@ public interface ContentService
      */
     @Auditable(parameters = {"nodeRef", "validFor"})
     DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
+
+    /**
+     * Checks whether or not the current {@link ContentService} supports the provided {@link Set} storage classes
+     *
+     * @param storageClasses The storage classes that will be checked whether or not are supported
+     * @return true if the storage classes are supported, false otherwise.
+     */
+    default boolean isStorageClassesSupported(StorageClassSet storageClassSet) {
+        return false;
+    }
 
     /**
      * @return Returns the complete {@link Set} of supported storage classes by this {@link ContentService}

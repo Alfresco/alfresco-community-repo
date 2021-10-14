@@ -511,4 +511,19 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"type"})
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate, String displayNamePattern, String zoneName);
+
+    /**
+     * Check the current user has system administration authority.
+     *
+     * @return true if the currently authenticated user has the system administration authority, otherwise false
+     * @throws UnsupportedOperationException if the implementing class (i.e. external clients) doesn't provide an implementation for the {@code hasSysAdminAuthority} operation
+     *
+     * @since 7.1
+     */
+    @Auditable
+    // See PRODMAN-493 -> REPO-5659
+    default boolean hasSysAdminAuthority()
+    {
+        throw new UnsupportedOperationException("hasSysAdminAuthority");
+    }
 }

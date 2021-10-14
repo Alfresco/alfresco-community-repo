@@ -55,6 +55,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_AS_OF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD;
@@ -247,6 +248,9 @@ public class RecordProperties extends TestModel
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE)
     private Boolean recordSearchDispositionEventsEligible;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS)
+    private List<String> recordSearchDispositionEvents;
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
     private String recordSearchDispositionInstructions;

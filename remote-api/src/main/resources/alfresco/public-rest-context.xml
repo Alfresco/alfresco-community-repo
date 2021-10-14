@@ -942,8 +942,13 @@
         <property name="sites" ref="Sites" />
     </bean>
 
+    <bean id= "directAccessUrlHelper" class="org.alfresco.rest.api.DirectAccessUrlHelper">
+        <property name="restApiDirectUrlConfig" ref="restApiDirectUrlConfig" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 	
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
@@ -969,6 +974,7 @@
 
     <bean id="nodeVersionsRelation" class="org.alfresco.rest.api.nodes.NodeVersionsRelation" parent="baseNodeRelation">
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
     
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
@@ -989,8 +995,8 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">
         <property name="deletedNodes" ref="DeletedNodes" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
-
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
         <property name="quickShareLinks" ref="QuickShareLinks" />
@@ -1063,10 +1069,20 @@
         <property name="assistant" ref="apiAssistant" />
         <property name="enabled" value="${system.api.discovery.enabled}" />
         <property name="thumbnailService" ref="ThumbnailService" />
+        <property name="restApiDirectUrlConfig" ref="restApiDirectUrlConfig" />
+        <property name="contentService" ref="contentService" />
     </bean>
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">
         <property name="discovery" ref="webscript.org.alfresco.api.DiscoveryApiWebscript.get" />
+        <property name="repoHealthChecker" ref="repoHealthChecker" />
+    </bean>
+
+    <!-- REST API direct access URL configuration settings -->
+    <bean id="restApiDirectUrlConfig" class="org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig" init-method="init">
+        <property name="systemWideDirectUrlConfig" ref="systemWideDirectUrlConfig" />
+        <property name="enabled" value="#{T(Boolean).valueOf('${restApi.directAccessUrl.enabled}')}"/>
+        <property name="defaultExpiryTimeInSec" value="#{T(Integer).parseInt('${restApi.directAccessUrl.defaultExpiryTimeInSec}')}" />
     </bean>
 
     <!-- OpenCMIS -->
@@ -1123,6 +1139,7 @@
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="allowUnsecureCallbackJSONP" value="${allow.unsecure.callback.jsonp}"/>
     </bean>
 
     <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 
@@ -1409,6 +1426,7 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeRenditionsRelation">
         <property name="renditions" ref="Renditions" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <bean class="org.alfresco.rest.api.nodes.NodeVersionRenditionsRelation">
@@ -1421,6 +1439,7 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanRenditionsRelation">
         <property name="deletedNodes" ref="DeletedNodes"/>
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <!-- HeartBeat rest api renditions data collector -->

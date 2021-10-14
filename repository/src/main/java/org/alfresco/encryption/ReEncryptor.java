@@ -242,6 +242,12 @@ public class ReEncryptor implements ApplicationContextAware
             }
 
             @Override
+            public long getTotalEstimatedWorkSizeLong()
+            {
+                return properties.size();
+            }
+
+            @Override
             public Collection<NodePropertyEntity> getNextWork()
             {
                 List<NodePropertyEntity> sublist = new ArrayList<NodePropertyEntity>(chunkSize);

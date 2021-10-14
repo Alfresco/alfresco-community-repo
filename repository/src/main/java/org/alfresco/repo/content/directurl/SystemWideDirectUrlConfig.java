@@ -96,6 +96,7 @@ public class SystemWideDirectUrlConfig implements DirectUrlConfig
             logger.error("Disabling system-wide direct access URLs due to configuration error: " + ex.getMessage());
             setEnabled(false);
         }
+        logger.info("System-wide direct access URLs are " + (isEnabled() ? "enabled" : "disabled"));
     }
 
     /* Helper method to validate the system-wide direct access url configuration settings */

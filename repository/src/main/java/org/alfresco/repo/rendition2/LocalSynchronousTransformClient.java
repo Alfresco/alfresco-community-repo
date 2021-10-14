@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -120,21 +120,21 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
 
             if (logger.isDebugEnabled())
             {
-                logger.debug(TRANSFORM + " requested " + renditionName);
+                logger.debug(TRANSFORM + "requested " + renditionName);
             }
 
             transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
             if (logger.isDebugEnabled())
             {
-                logger.debug(TRANSFORM + " created " + renditionName);
+                logger.debug(TRANSFORM + "created " + renditionName);
             }
         }
         catch (Exception e)
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug(TRANSFORM + " failed " + renditionName, e);
+                logger.debug(TRANSFORM + "failed " + renditionName, e);
             }
             throw e;
         }

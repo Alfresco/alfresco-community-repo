@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 import org.alfresco.api.AlfrescoPublicApi;
 
@@ -36,7 +37,8 @@ public class DirectAccessUrl implements Serializable
     private static final long serialVersionUID = -881676208224414139L;
 
     private String contentUrl;
-    private Date expiresAt;
+    private Date expiryTime;
+    private boolean attachment;
 
     public String getContentUrl()
     {
@@ -48,13 +50,38 @@ public class DirectAccessUrl implements Serializable
         this.contentUrl = contentUrl;
     }
 
-    public Date getExpiresAt()
+    public Date getExpiryTime()
     {
-        return expiresAt;
+        return expiryTime;
     }
 
-    public void setExpiresAt(Date expiresAt)
+    public void setExpiryTime(Date expiryTime)
     {
-        this.expiresAt = expiresAt;
+        this.expiryTime = expiryTime;
+    }
+
+    public boolean isAttachment()
+    {
+        return attachment;
+    }
+
+    public void setAttachment(boolean attachment)
+    {
+        this.attachment = attachment;
+    }
+
+    @Override public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        DirectAccessUrl that = (DirectAccessUrl) obj;
+        return attachment == that.attachment && Objects.equals(contentUrl,
+                that.contentUrl) && Objects.equals(expiryTime, that.expiryTime);
+    }
+
+    @Override public int hashCode()
+    {
+        return Objects.hash(contentUrl, expiryTime, attachment);
     }
 }

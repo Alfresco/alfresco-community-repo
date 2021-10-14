@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,11 +25,13 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
+import org.alfresco.rest.api.DirectAccessUrlHelper;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
@@ -37,6 +39,8 @@ import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
@@ -45,7 +49,10 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
+
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -61,13 +68,19 @@ public class NodesEntityResource implements
         BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
 {
     private Nodes nodes;
+    private DirectAccessUrlHelper directAccessUrlHelper;
 
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
     }
 
-	@Override
+    public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
+    {
+        this.directAccessUrlHelper = directAccessUrlHelper;
+    }
+
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("nodes", this.nodes);
@@ -189,5 +202,27 @@ public class NodesEntityResource implements
         return nodes.unlock(nodeId, parameters);
     }
 
+    @Operation("request-direct-access-url")
+    @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiDescription(title = "Request content url",
+            description="Generates a direct access URL.",
+            successStatus = HttpServletResponse.SC_OK)
+    public DirectAccessUrl requestContentDirectUrl(String nodeId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
+    {
+        boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
+        Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+
+        DirectAccessUrl directAccessUrl;
+        try
+        {
+            directAccessUrl = nodes.requestContentDirectUrl(nodeRef, attachment, validFor);
+        }
+        catch (DirectAccessUrlDisabledException ex)
+        {
+            throw new DisabledServiceException(ex.getMessage());
+        }
+        return directAccessUrl;
+    }
 }
 

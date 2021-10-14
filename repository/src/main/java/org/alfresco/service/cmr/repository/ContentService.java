@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,11 @@
  */
 package org.alfresco.service.cmr.repository;
 
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
-
-import java.util.Date;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -156,18 +155,43 @@ public interface ContentService
     public ContentWriter getTempWriter();
 
     /**
-     * Gets a presigned URL to directly access a binary content. It is up to the
-     * content store if it can fulfil this request with an expiry time (in
-     * milliseconds) or not.
+     * Checks if the system and at least one store supports the retrieving of direct access URLs.
      *
-     * @param nodeRef
-     *            a reference to a node having a content property
-     * @param expiresAt
-     *            an optional expiry date, so the direct access url would become
-     *            invalid when the expiry date is reached
-     * @return A direct access URL object for a binary content or returns null if not supported
-     * @throws IllegalArgumentException if there is no binary content for the node
+     * @return {@code true} if direct access URLs retrieving is supported, {@code false} otherwise
      */
-    @Auditable(parameters = {"nodeRef", "expiresAt"})
-    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
+    boolean isContentDirectUrlEnabled();
+
+    /**
+     * Checks if the system and store supports the retrieving of a direct access {@code URL} for the given node.
+     *
+     * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
+     */
+    boolean isContentDirectUrlEnabled(NodeRef nodeRef);
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
+    {
+        return requestContentDirectUrl(nodeRef, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    @Auditable(parameters = {"nodeRef", "validFor"})
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
 }

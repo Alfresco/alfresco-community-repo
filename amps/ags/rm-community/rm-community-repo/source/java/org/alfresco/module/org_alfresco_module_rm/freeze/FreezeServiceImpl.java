@@ -43,6 +43,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -74,6 +76,32 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
     /** Hold service */
     private HoldService holdService;
+
+    /**
+     * Record Folder Service
+     */
+    private RecordFolderService recordFolderService;
+
+    /**
+     * Record Service
+     */
+    private RecordService recordService;
+
+    /**
+     * @param recordFolderService record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
 
     /**
      * @return File plan service
@@ -391,5 +419,25 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         // create hold
         return getHoldService().createHold(filePlan, holdName, reason, null);
+    }
+
+    /**
+     * Helper method to determine if a node is frozen or has frozen children
+     *
+     * @param nodeRef Node to be checked
+     * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
+     */
+    @Override
+    public boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
+    {
+        if (recordFolderService.isRecordFolder(nodeRef))
+        {
+            return isFrozen(nodeRef) || hasFrozenChildren(nodeRef);
+        }
+        else if (recordService.isRecord(nodeRef))
+        {
+            return isFrozen(nodeRef);
+        }
+        return Boolean.FALSE;
     }
 }

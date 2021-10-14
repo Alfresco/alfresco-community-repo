@@ -5,7 +5,7 @@
    </description>
    <url>/api/admin/jmxdump</url>
    <family>AdminConsoleHelper</family>
-   <authentication>admin</authentication>
+   <authentication>sysadmin</authentication>
    <transaction allow="readonly"/>
    <lifecycle>internal</lifecycle>
 </webscript>

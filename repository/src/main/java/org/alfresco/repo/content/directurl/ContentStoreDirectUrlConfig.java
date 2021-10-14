@@ -73,6 +73,7 @@ public class ContentStoreDirectUrlConfig extends AbstractDirectUrlConfig
             logger.error("Disabling content store direct access URLs due to configuration error: " + ex.getMessage());
             setEnabled(false);
         }
+        logger.info("Content store direct access URLs are " + (isEnabled() ? "enabled" : "disabled"));
     }
 
     /* Helper method to validate the content direct access url configuration settings */

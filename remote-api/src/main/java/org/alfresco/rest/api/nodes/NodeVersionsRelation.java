@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,16 +26,22 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.rest.api.DirectAccessUrlHelper;
+import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -46,6 +52,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -80,6 +87,12 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
 {
     protected VersionService versionService;
     protected BehaviourFilter behaviourFilter;
+    private DirectAccessUrlHelper directAccessUrlHelper;
+
+    public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
+    {
+        this.directAccessUrlHelper = directAccessUrlHelper;
+    }
     
     @Override
     public void afterPropertiesSet()
@@ -287,5 +300,33 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             return vh.getVersion(versionLabelId);
         }
         return null;
+    }
+
+    @Operation("request-direct-access-url")
+    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiDescription(title = "Request content url",
+            description="Generates a direct access URL.",
+            successStatus = HttpServletResponse.SC_OK)
+    public DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
+    {
+        boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
+        Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        Version version = findVersion(nodeId, versionId);
+        if (version != null)
+        {
+            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
+
+            DirectAccessUrl directAccessUrl;
+            try
+            {
+                directAccessUrl = nodes.requestContentDirectUrl(versionNodeRef, attachment, validFor);
+            }
+            catch (DirectAccessUrlDisabledException ex)
+            {
+                throw new DisabledServiceException(ex.getMessage());
+            }
+            return directAccessUrl;
+        }
+        throw new EntityNotFoundException(nodeId+"-"+versionId);
     }
 }

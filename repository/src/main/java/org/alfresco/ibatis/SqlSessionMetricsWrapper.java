@@ -28,6 +28,7 @@ package org.alfresco.ibatis;
 import org.alfresco.metrics.db.DBMetricsReporter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
@@ -185,6 +186,45 @@ public class SqlSessionMetricsWrapper implements SqlSession
         try
         {
             return this.sqlSession.selectMap(statement, parameter, mapKey, rowBounds);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
+    }
+
+    @Override public <T> Cursor<T> selectCursor(String statement)
+    {
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
+    }
+
+    @Override public <T> Cursor<T> selectCursor(String statement, Object paremeter)
+    {
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement, paremeter);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
+    }
+
+    @Override public <T> Cursor<T> selectCursor(String statement, Object paramter, RowBounds rowBounds)
+    {
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement, paramter, rowBounds);
         }
         finally
         {

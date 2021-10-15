@@ -505,8 +505,8 @@ public class CachingContentStoreTest
     {
         try
         {
-            when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
-            cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);
+            when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
+            cachingStore.requestContentDirectUrl("url", true,"someFile", null, 30L);
             fail();
         }
         catch (UnsupportedOperationException e)
@@ -518,7 +518,7 @@ public class CachingContentStoreTest
     @Test
     public void getRequestContentDirectUrl()
     {
-        when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
-        cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);
+        when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
+        cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimeType", 30L);
     }
 }

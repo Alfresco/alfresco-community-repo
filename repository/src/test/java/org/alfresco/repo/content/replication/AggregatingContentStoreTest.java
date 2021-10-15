@@ -227,14 +227,14 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         UnsupportedContentUrlException unsupportedContentUrlExc = new UnsupportedContentUrlException(aggStore, "");
 
         // By default it is unsupported
-        DirectAccessUrl directAccessUrl = aggStore.requestContentDirectUrl("url", true, "anyfilename", 30L);
+        DirectAccessUrl directAccessUrl = aggStore.requestContentDirectUrl("url", true, "anyfilename", "anyMimetype", 30L);
         assertNull(directAccessUrl);
 
         // Direct access not supported
         try
         {
-            when(primaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any())).thenThrow(unsupportedExc);
-            when(secondaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any())).thenThrow(unsupportedExc);
+            when(primaryStoreMock.requestContentDirectUrl(any(), any(), any(), any(), any())).thenThrow(unsupportedExc);
+            when(secondaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any(), any())).thenThrow(unsupportedExc);
             aggStore.requestContentDirectUrl(eq("urlDANotSupported"), true, "anyfilename", 30L);
             fail();
         }
@@ -245,9 +245,9 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
 
         try
         {
-            when(primaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
-            when(secondaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any())).thenThrow(unsupportedExc);
-            aggStore.requestContentDirectUrl("urlDANotSupported", true, "anyfilename", 30L);
+            when(primaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
+            when(secondaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any(), any())).thenThrow(unsupportedExc);
+            aggStore.requestContentDirectUrl("urlDANotSupported", true, "anyfilename", "anyMimetype", 30L);
             fail();
         }
         catch (UnsupportedOperationException e)
@@ -257,9 +257,9 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
 
         try
         {
-            when(primaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any())).thenThrow(unsupportedExc);
-            when(secondaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
-            aggStore.requestContentDirectUrl("urlDANotSupported", true, "anyfilename", 30L);
+            when(primaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any(), any())).thenThrow(unsupportedExc);
+            when(secondaryStoreMock.requestContentDirectUrl(eq("urlDANotSupported"), any(), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
+            aggStore.requestContentDirectUrl("urlDANotSupported", true, "anyfilename", "anyMimetype", 30L);
             fail();
         }
         catch (UnsupportedOperationException e)
@@ -270,9 +270,9 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         // Content url not supported
         try
         {
-            when(primaryStoreMock.requestContentDirectUrl(eq("urlNotSupported"), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
-            when(secondaryStoreMock.requestContentDirectUrl(eq("urlNotSupported"), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
-            aggStore.requestContentDirectUrl("urlNotSupported", true, "anyfilename", 30L);
+            when(primaryStoreMock.requestContentDirectUrl(eq("urlNotSupported"), any(), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
+            when(secondaryStoreMock.requestContentDirectUrl(eq("urlNotSupported"), any(), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
+            aggStore.requestContentDirectUrl("urlNotSupported", true, "anyfilename", "anyMimetype", 30L);
             fail();
         }
         catch (UnsupportedContentUrlException e)
@@ -280,31 +280,31 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
             // Expected
         }
 
-        when(primaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any())).thenReturn(new DirectAccessUrl());
-        when(secondaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any())).thenThrow(unsupportedExc);
-        directAccessUrl = aggStore.requestContentDirectUrl("urlPriSupported", true, "anyfilename", 30L);
+        when(primaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any(), any())).thenReturn(new DirectAccessUrl());
+        when(secondaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any(), any())).thenThrow(unsupportedExc);
+        directAccessUrl = aggStore.requestContentDirectUrl("urlPriSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
 
-        when(primaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any())).thenReturn(new DirectAccessUrl());
-        when(secondaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
-        directAccessUrl = aggStore.requestContentDirectUrl("urlPriSupported", true, "anyfilename", 30L);
+        when(primaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any(), any())).thenReturn(new DirectAccessUrl());
+        when(secondaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
+        directAccessUrl = aggStore.requestContentDirectUrl("urlPriSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
 
-        when(primaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any())).thenThrow(unsupportedExc);
-        when(secondaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any())).thenReturn(new DirectAccessUrl());
-        directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", 30L);
+        when(primaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any(), any())).thenThrow(unsupportedExc);
+        when(secondaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any(), any())).thenReturn(new DirectAccessUrl());
+        directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
 
-        when(primaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
-        when(secondaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any())).thenReturn(new DirectAccessUrl());
-        directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", 30L);
+        when(primaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any(), any())).thenThrow(unsupportedContentUrlExc);
+        when(secondaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any(), any())).thenReturn(new DirectAccessUrl());
+        directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
 
-        when(primaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any())).thenReturn(new DirectAccessUrl());
-        when(secondaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any())).thenReturn(new DirectAccessUrl());
-        directAccessUrl = aggStore.requestContentDirectUrl("urlPriSupported", true, "anyfilename", 30L);
+        when(primaryStoreMock.requestContentDirectUrl(eq("urlPriSupported"), any(), any(), any(), any())).thenReturn(new DirectAccessUrl());
+        when(secondaryStoreMock.requestContentDirectUrl(eq("urlSecSupported"), any(), any(), any(), any())).thenReturn(new DirectAccessUrl());
+        directAccessUrl = aggStore.requestContentDirectUrl("urlPriSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
-        directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", 30L);
+        directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
     }
 }

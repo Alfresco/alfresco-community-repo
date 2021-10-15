@@ -623,6 +623,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
         String contentUrl = getContentUrl(nodeRef);
         String fileName = getFileName(nodeRef);
+        String contentMimetype = getContentMimetype(nodeRef);
         validFor = adjustValidFor(validFor);
 
         DirectAccessUrl directAccessUrl = null;
@@ -630,7 +631,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             try
             {
-                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, contentMimetype, validFor);
             }
             catch (UnsupportedOperationException ex)
             {
@@ -651,6 +652,19 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
 
         return contentData.getContentUrl();
+    }
+
+    protected String getContentMimetype(NodeRef nodeRef) 
+    {
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+
+        // check that the URL is available
+        if (contentData == null || contentData.getMimetype() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        return contentData.getMimetype();
     }
 
     protected String getFileName(NodeRef nodeRef)

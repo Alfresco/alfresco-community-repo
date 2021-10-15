@@ -188,7 +188,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          </tr>
          <#list result.children as n>
          <tr>
-            <td><a href="#" onclick="AdminConsole_childClick('${n.childRef}');return false;">${n.QName}</a></td>
+            <td><a href="#" onclick="AdminConsole_childClick('${n.childRef}');return false;">${n.QName?html}</a></td>
             <td><a href="#" onclick="AdminConsole_childClick('${n.childRef}');return false;">${n.childRef}</a></td>
             <td>${n.primary?string}</td>
             <td>${n.typeQName}</td>
@@ -222,7 +222,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          </tr>
          <#list result.parents as p>
          <tr>
-            <td>${p.name.prefixedName}</td>
+            <td>${p.name.prefixedName?html}</td>
             <td>${p.parentTypeName.prefixedName}</td>
             <td><a href="#" onclick="AdminConsole_parentClick('${p.parentRef}');return false;">${p.parentRef}</a></td></td>
             <td>${p.primary?string}</td>
@@ -280,7 +280,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
       <@section label=msg("nodebrowser.permissions") />
       <table id="perminfo-table" class="node">
          <tr><td>${msg("nodebrowser.inherits")}: ${result.permissions.inherit?string}</td></tr>
-         <tr><td>${msg("nodebrowser.owner")}: ${result.permissions.owner!""}</td></tr>
+         <tr><td>${msg("nodebrowser.owner")}: <#if result.permissions.owner??>${result.permissions.owner?html}<#else></#if></td></tr>
       </table>
       <table id="permissions-table" class="node grid">
          <tr>
@@ -291,7 +291,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          <#list result.permissions.entries as p>
          <tr>
             <td>${p.permission}</td>
-            <td>${p.authority}</td>
+            <td>${p.authority?html}</td>
             <td>${p.accessStatus}</td>
          </tr>
          </#list>

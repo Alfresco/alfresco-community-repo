@@ -280,7 +280,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
       <@section label=msg("nodebrowser.permissions") />
       <table id="perminfo-table" class="node">
          <tr><td>${msg("nodebrowser.inherits")}: ${result.permissions.inherit?string}</td></tr>
-         <tr><td>${msg("nodebrowser.owner")}: <#if result.permissions.owner??>${result.permissions.owner?html}<#else></#if></td></tr>
+         <tr><td>${msg("nodebrowser.owner")}: <#if result.permissions.owner??>${result.permissions.owner?html}</#if></td></tr>
       </table>
       <table id="permissions-table" class="node grid">
          <tr>

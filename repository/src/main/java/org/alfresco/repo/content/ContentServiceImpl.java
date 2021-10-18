@@ -658,8 +658,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
-        // check that the URL is available
-        if (contentData == null || contentData.getMimetype() == null)
+        // check that the content is available
+        if (contentData == null)
         {
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
         }

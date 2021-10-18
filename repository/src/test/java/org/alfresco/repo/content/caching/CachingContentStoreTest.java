@@ -506,7 +506,7 @@ public class CachingContentStoreTest
         try
         {
             when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
-            cachingStore.requestContentDirectUrl("url", true,"someFile", null, 30L);
+            cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimetype", 30L);
             fail();
         }
         catch (UnsupportedOperationException e)

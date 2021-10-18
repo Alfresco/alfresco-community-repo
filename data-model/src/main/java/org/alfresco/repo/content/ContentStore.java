@@ -287,7 +287,8 @@ public interface ContentStore
      */
     default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
-        return requestContentDirectUrl(contentUrl, attachment, fileName, null, validFor);
+        throw new UnsupportedOperationException(
+                "Retrieving direct access URLs is not supported by this content store.");
     }
 
     /**
@@ -304,7 +305,6 @@ public interface ContentStore
      */
     default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
     {
-        throw new UnsupportedOperationException(
-                "Retrieving direct access URLs is not supported by this content store.");
+        return requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
     }
 }

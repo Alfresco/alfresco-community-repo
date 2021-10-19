@@ -25,7 +25,10 @@
  */
 package org.alfresco.repo.content.replication;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -36,11 +39,11 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.content.caching.CachingContentStore;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,9 +67,10 @@ import org.apache.commons.logging.LogFactory;
  * @see CachingContentStore
  */
 public class AggregatingContentStore extends AbstractContentStore
-{    
+{
     private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
-    
+    public static final String REPLICATING_CONTENT_STORE_NOT_INITIALISED = "ReplicatingContentStore not initialised";
+
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
     
@@ -134,7 +138,7 @@ public class AggregatingContentStore extends AbstractContentStore
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
         
         // get a read lock so that we are sure that no replication is underway
@@ -169,11 +173,12 @@ public class AggregatingContentStore extends AbstractContentStore
         }     
     }
 
+    @Override
     public boolean exists(String contentUrl)
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
 
         // get a read lock so that we are sure that no replication is underway
@@ -239,12 +244,11 @@ public class AggregatingContentStore extends AbstractContentStore
         }
     }
 
+    @Override
     public ContentWriter getWriter(ContentContext ctx)
     {
         // get the writer
-        ContentWriter writer = primaryStore.getWriter(ctx);
-                
-        return writer;
+        return primaryStore.getWriter(ctx);
     }
 
     /**
@@ -253,6 +257,7 @@ public class AggregatingContentStore extends AbstractContentStore
      * 
      * @return Returns the value returned by the delete on the primary store.
      */
+    @Override
     public boolean delete(String contentUrl) throws ContentIOException
     {
         // delete on the primary store
@@ -268,6 +273,7 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * @return Returns {@code true} if at least one store supports direct access URLs
      */
+    @Override
     public boolean isContentDirectUrlEnabled()
     {
         // Check the primary store
@@ -294,6 +300,7 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * @return Returns {@code true} if at least one store supports direct access URL for node
      */
+    @Override
     public boolean isContentDirectUrlEnabled(String contentUrl)
     {
         // Check the primary store
@@ -317,11 +324,12 @@ public class AggregatingContentStore extends AbstractContentStore
         return isContentDirectUrlEnabled;
     }
 
+    @Override
     public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
         if (primaryStore == null)
         {
-            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
 
         // get a read lock so that we are sure that no replication is underway
@@ -397,6 +405,47 @@ public class AggregatingContentStore extends AbstractContentStore
         }
         finally
         {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    @Experimental
+    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+        if (primaryStore == null) {
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
+        }
+
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        try {
+            Optional<Map<String, String>> objectStoragePropertiesMap = Optional.empty();
+            // Check the primary store
+            try {
+                objectStoragePropertiesMap = Optional.of(primaryStore.getObjectStorageProperties(contentUrl));
+            } catch (UnsupportedContentUrlException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Primary store could not handle content URL: " + contentUrl);
+                }
+            }
+
+            if (objectStoragePropertiesMap.isEmpty()) {// the content is not in the primary store so we have to go looking for it
+                for (ContentStore store : secondaryStores) {
+                    try {
+                        objectStoragePropertiesMap = Optional.of(store.getObjectStorageProperties(contentUrl));
+                    } catch (UnsupportedContentUrlException e) {
+                        logger.debug("Secondary store " + store + " could not handle content URL: " + contentUrl);
+                    }
+
+                    if (objectStoragePropertiesMap.isPresent()) {
+                        return objectStoragePropertiesMap.get();
+                    }
+                }
+                throw new UnsupportedContentUrlException(this, contentUrl);
+            }
+            return objectStoragePropertiesMap.orElse(Collections.emptyMap());
+
+        } finally {
             readLock.unlock();
         }
     }

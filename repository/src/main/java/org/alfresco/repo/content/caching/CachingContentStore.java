@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.caching;
 
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -35,12 +36,12 @@ import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -64,10 +65,10 @@ import org.springframework.context.ApplicationEventPublisherAware;
  */
 public class CachingContentStore implements ContentStore, ApplicationEventPublisherAware, BeanNameAware
 {
-    private final static Log log = LogFactory.getLog(CachingContentStore.class);
+    private static final Log log = LogFactory.getLog(CachingContentStore.class);
     // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
-    private final static int numLocks = 256;
-    private final static ReentrantReadWriteLock[] locks; 
+    private static final int NUM_LOCKS = 256;
+    private static final ReentrantReadWriteLock[] locks;
     private ContentStore backingStore;
     private ContentCache cache;
     private QuotaManagerStrategy quota = new UnlimitedQuotaStrategy();
@@ -78,8 +79,8 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     
     static
     {
-        locks = new ReentrantReadWriteLock[numLocks];
-        for (int i = 0; i < numLocks; i++)
+        locks = new ReentrantReadWriteLock[NUM_LOCKS];
+        for (int i = 0; i < NUM_LOCKS; i++)
         {
             locks[i] = new ReentrantReadWriteLock();
         }
@@ -381,6 +382,12 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         }
     }
 
+    @Override
+    @Experimental
+    public Map<String, String> getObjectStorageProperties(final String contentUrl) {
+        return backingStore.getObjectStorageProperties(contentUrl);
+    }
+
     /**
      * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool rather than
      * per URL, so some contention is expected.
@@ -395,7 +402,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     
     private int lockIndex(String url)
     {
-        return url.hashCode() & (numLocks - 1);
+        return url.hashCode() & (NUM_LOCKS - 1);
     }
     
     @Required
@@ -481,6 +488,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isContentDirectUrlEnabled()
     {
         return backingStore.isContentDirectUrlEnabled();
@@ -489,6 +497,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isContentDirectUrlEnabled(String contentUrl)
     {
         return backingStore.isContentDirectUrlEnabled(contentUrl);
@@ -497,6 +506,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
     {
         return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName);
@@ -505,6 +515,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
         return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);

@@ -27,15 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.admin;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -60,23 +51,35 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Base class for RM admin services
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordsManagementAdminBase implements RecordsManagementCustomModel
-{
+public class RecordsManagementAdminBase implements RecordsManagementCustomModel {
     /** Logger */
     protected Log logger = LogFactory.getLog(this.getClass());
 
     /** Constants */
     private static final String SOURCE_TARGET_ID_SEPARATOR = "__";
-    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "records_management_custom_model");
+
+    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF =
+            new NodeRef(
+                    StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "records_management_custom_model");
 
     /** I18N */
     private static final String MSG_CUSTOM_MODEL_NOT_FOUND = "rm.admin.custom-model-not-found";
+
     private static final String MSG_CUSTOM_MODEL_NO_CONTENT = "rm.admin.custom-model-no-content";
     private static final String MSG_ERROR_WRITE_CUSTOM_MODEL = "rm.admin.error-write-custom-model";
     private static final String MSG_ERROR_SPLIT_ID = "rm.admin.error-split-id";
@@ -101,8 +104,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @return The dictionary service instance
      */
-    protected DictionaryService getDictionaryService()
-    {
+    protected DictionaryService getDictionaryService() {
         return this.dictionaryService;
     }
 
@@ -111,8 +113,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @return The node service instance
      */
-    protected NodeService getNodeService()
-    {
+    protected NodeService getNodeService() {
         return this.nodeService;
     }
 
@@ -121,8 +122,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @return The content service instance
      */
-    protected ContentService getContentService()
-    {
+    protected ContentService getContentService() {
         return this.contentService;
     }
 
@@ -131,8 +131,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @return The namespace service instance
      */
-    protected NamespaceService getNamespaceService()
-    {
+    protected NamespaceService getNamespaceService() {
         return this.namespaceService;
     }
 
@@ -141,8 +140,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @return The dictionary repository bootstrap instance
      */
-    protected DictionaryRepositoryBootstrap getDictionaryRepositoryBootstrap()
-    {
+    protected DictionaryRepositoryBootstrap getDictionaryRepositoryBootstrap() {
         return this.dictionaryRepositoryBootstrap;
     }
 
@@ -151,8 +149,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @param dictionaryService The dictionary service instance
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
@@ -161,8 +158,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @param nodeService The node service instance
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -171,8 +167,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @param contentService The content service instance
      */
-    public void setContentService(ContentService contentService)
-    {
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
@@ -181,8 +176,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @param namespaceService The namespace service instance
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
@@ -191,8 +185,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @param dictionaryRepositoryBootstrap The dictionary repository bootstrap instance
      */
-    public void setDictionaryRepositoryBootstrap(DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap)
-    {
+    public void setDictionaryRepositoryBootstrap(
+            DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap) {
         this.dictionaryRepositoryBootstrap = dictionaryRepositoryBootstrap;
     }
 
@@ -201,13 +195,11 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      *
      * @return All custom associations
      */
-    protected Map<QName, AssociationDefinition> getCustomAssociations()
-    {
+    protected Map<QName, AssociationDefinition> getCustomAssociations() {
         Map<QName, AssociationDefinition> customAssociations = new HashMap<>();
 
         AspectDefinition aspectDefn = getDictionaryService().getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
-        if (aspectDefn != null)
-        {
+        if (aspectDefn != null) {
             customAssociations.putAll(aspectDefn.getAssociations());
         }
 
@@ -220,39 +212,37 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      * @param uri The URI of the model namespace
      * @return The node reference of the custom model
      */
-    protected NodeRef getCustomModelRef(String uri)
-    {
-        if ((uri.equals("")) || (uri.equals(RecordsManagementModel.RM_CUSTOM_URI)))
-        {
-            // note: short-cut for "rmc" currently assumes that RM custom model does not define additional namespaces
+    protected NodeRef getCustomModelRef(String uri) {
+        if ((uri.equals("")) || (uri.equals(RecordsManagementModel.RM_CUSTOM_URI))) {
+            // note: short-cut for "rmc" currently assumes that RM custom model does not define
+            // additional namespaces
             return RM_CUSTOM_MODEL_NODE_REF;
-        }
-        else
-        {
+        } else {
             // ALF-5875
             List<NodeRef> modelRefs = getDictionaryRepositoryBootstrap().getModelRefs();
 
-            for (NodeRef modelRef : modelRefs)
-            {
-                try
-                {
+            for (NodeRef modelRef : modelRefs) {
+                try {
                     M2Model model = readCustomContentModel(modelRef);
 
-                    for (M2Namespace namespace : model.getNamespaces())
-                    {
-                        if (namespace.getUri().equals(uri))
-                        {
+                    for (M2Namespace namespace : model.getNamespaces()) {
+                        if (namespace.getUri().equals(uri)) {
                             return modelRef;
                         }
                     }
-                }
-                catch (DictionaryException de)
-                {
-                    logger.warn("readCustomContentModel: skip model ("+modelRef+") whilst searching for uri ("+uri+"): ", de);
+                } catch (DictionaryException de) {
+                    logger.warn(
+                            "readCustomContentModel: skip model ("
+                                    + modelRef
+                                    + ") whilst searching for uri ("
+                                    + uri
+                                    + "): ",
+                            de);
                 }
             }
 
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_MODEL_NOT_FOUND, uri));
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_CUSTOM_MODEL_NOT_FOUND, uri));
         }
     }
 
@@ -262,33 +252,26 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      * @param modelNodeRef The node reference of the model
      * @return The deserialized model
      */
-    protected M2Model readCustomContentModel(NodeRef modelNodeRef)
-    {
-        ContentReader reader = getContentService().getReader(modelNodeRef, ContentModel.TYPE_CONTENT);
-        if (!reader.exists())
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_MODEL_NO_CONTENT, modelNodeRef.toString()));
+    protected M2Model readCustomContentModel(NodeRef modelNodeRef) {
+        ContentReader reader =
+                getContentService().getReader(modelNodeRef, ContentModel.TYPE_CONTENT);
+        if (!reader.exists()) {
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_CUSTOM_MODEL_NO_CONTENT, modelNodeRef.toString()));
         }
 
         InputStream contentIn = null;
         M2Model deserializedModel = null;
 
-        try
-        {
+        try {
             contentIn = reader.getContentInputStream();
             deserializedModel = M2Model.createModel(contentIn);
-        }
-        finally
-        {
-            try
-            {
-                if (contentIn != null)
-                {
+        } finally {
+            try {
+                if (contentIn != null) {
                     contentIn.close();
                 }
-            }
-            catch (IOException ignored)
-            {
+            } catch (IOException ignored) {
                 // Intentionally empty.
             }
         }
@@ -302,9 +285,9 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      * @param modelRef The node reference of the model
      * @param deserializedModel The deserialized model
      */
-    protected void writeCustomContentModel(NodeRef modelRef, M2Model deserializedModel)
-    {
-        ContentWriter writer = getContentService().getWriter(modelRef, ContentModel.TYPE_CONTENT, true);
+    protected void writeCustomContentModel(NodeRef modelRef, M2Model deserializedModel) {
+        ContentWriter writer =
+                getContentService().getWriter(modelRef, ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
 
@@ -312,16 +295,14 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
         deserializedModel.toXML(baos);
 
         String updatedModelXml;
-        try
-        {
+        try {
             updatedModelXml = baos.toString("UTF-8");
             writer.putContent(updatedModelXml);
             // putContent closes all resources.
             // so we don't have to.
-        }
-        catch (UnsupportedEncodingException uex)
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_WRITE_CUSTOM_MODEL, modelRef.toString()), uex);
+        } catch (UnsupportedEncodingException uex) {
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_ERROR_WRITE_CUSTOM_MODEL, modelRef.toString()), uex);
         }
     }
 
@@ -329,16 +310,16 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      * Checks if the given association definition title exists
      *
      * @param associationDefinitionTitle The association definition title
-     * @return <code>true</code> if the association definition title exists, <code>false</code> otherwise
+     * @return <code>true</code> if the association definition title exists, <code>false</code>
+     *     otherwise
      */
-    protected boolean existsTitle(String associationDefinitionTitle)
-    {
+    protected boolean existsTitle(String associationDefinitionTitle) {
         boolean existsLabel = false;
         Collection<AssociationDefinition> associationDefinitions = getCustomAssociations().values();
-        for (AssociationDefinition associationDefinition : associationDefinitions)
-        {
-            if (associationDefinition.getTitle(getDictionaryService()).equalsIgnoreCase(associationDefinitionTitle))
-            {
+        for (AssociationDefinition associationDefinition : associationDefinitions) {
+            if (associationDefinition
+                    .getTitle(getDictionaryService())
+                    .equalsIgnoreCase(associationDefinitionTitle)) {
                 existsLabel = true;
             }
         }
@@ -351,11 +332,11 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      * @param sourceTargetText The text to split into source text and target text
      * @return Splited association definition title which includes source text and target text
      */
-    protected String[] splitAssociationDefinitionTitle(String sourceTargetText)
-    {
-        if (!sourceTargetText.contains(SOURCE_TARGET_ID_SEPARATOR))
-        {
-            throw new IllegalArgumentException(I18NUtil.getMessage(MSG_ERROR_SPLIT_ID, sourceTargetText, SOURCE_TARGET_ID_SEPARATOR));
+    protected String[] splitAssociationDefinitionTitle(String sourceTargetText) {
+        if (!sourceTargetText.contains(SOURCE_TARGET_ID_SEPARATOR)) {
+            throw new IllegalArgumentException(
+                    I18NUtil.getMessage(
+                            MSG_ERROR_SPLIT_ID, sourceTargetText, SOURCE_TARGET_ID_SEPARATOR));
         }
 
         return sourceTargetText.split(SOURCE_TARGET_ID_SEPARATOR);
@@ -368,17 +349,14 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      * @param targetText The target text
      * @return The association definition title created from the source text and target text
      */
-    protected String composeAssociationDefinitionTitle(String sourceText, String targetText)
-    {
-        if (sourceText.contains(SOURCE_TARGET_ID_SEPARATOR))
-        {
-            throw new IllegalArgumentException("sourceId cannot contain '" + SOURCE_TARGET_ID_SEPARATOR + "': " + sourceText);
+    protected String composeAssociationDefinitionTitle(String sourceText, String targetText) {
+        if (sourceText.contains(SOURCE_TARGET_ID_SEPARATOR)) {
+            throw new IllegalArgumentException(
+                    "sourceId cannot contain '" + SOURCE_TARGET_ID_SEPARATOR + "': " + sourceText);
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(sourceText)
-            .append(SOURCE_TARGET_ID_SEPARATOR)
-            .append(targetText);
+        sb.append(sourceText).append(SOURCE_TARGET_ID_SEPARATOR).append(targetText);
 
         return sb.toString();
     }

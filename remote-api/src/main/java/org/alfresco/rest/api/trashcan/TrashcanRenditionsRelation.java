@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api.trashcan;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
@@ -49,70 +47,85 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
-@RelationshipResource(name = "renditions", entityResource = TrashcanEntityResource.class, title = "Node renditions via archived node")
+import javax.servlet.http.HttpServletResponse;
+
+@RelationshipResource(
+        name = "renditions",
+        entityResource = TrashcanEntityResource.class,
+        title = "Node renditions via archived node")
 public class TrashcanRenditionsRelation
-        implements RelationshipResourceAction.Read<Rendition>, RelationshipResourceAction.ReadById<Rendition>, RelationshipResourceBinaryAction.Read, InitializingBean
-{
+        implements RelationshipResourceAction.Read<Rendition>,
+                RelationshipResourceAction.ReadById<Rendition>,
+                RelationshipResourceBinaryAction.Read,
+                InitializingBean {
 
     private DeletedNodes deletedNodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
 
-    public void setDeletedNodes(DeletedNodes deletedNodes)
-    {
+    public void setDeletedNodes(DeletedNodes deletedNodes) {
         this.deletedNodes = deletedNodes;
     }
 
-    public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
-    {
+    public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper) {
         this.directAccessUrlHelper = directAccessUrlHelper;
     }
 
-    @WebApiDescription(title = "List renditions", description = "List available (created) renditions")
+    @WebApiDescription(
+            title = "List renditions",
+            description = "List available (created) renditions")
     @Override
-    public CollectionWithPagingInfo<Rendition> readAll(String nodeId, Parameters parameters)
-    {
+    public CollectionWithPagingInfo<Rendition> readAll(String nodeId, Parameters parameters) {
         return deletedNodes.getRenditions(nodeId, parameters);
     }
 
-    @WebApiDescription(title = "Retrieve rendition information", description = "Retrieve (created) rendition information")
+    @WebApiDescription(
+            title = "Retrieve rendition information",
+            description = "Retrieve (created) rendition information")
     @Override
-    public Rendition readById(String nodeId, String renditionId, Parameters parameters)
-    {
+    public Rendition readById(String nodeId, String renditionId, Parameters parameters) {
         return deletedNodes.getRendition(nodeId, renditionId, parameters);
     }
 
-    @WebApiDescription(title = "Download archived node rendition", description = "Download rendition for an archived node")
-    @BinaryProperties({ "content" })
+    @WebApiDescription(
+            title = "Download archived node rendition",
+            description = "Download rendition for an archived node")
+    @BinaryProperties({"content"})
     @Override
-    public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters)
-    {
+    public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters) {
         return deletedNodes.getContent(nodeId, renditionId, parameters);
     }
 
-    @Operation ("request-direct-access-url")
-    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
+    @Operation("request-direct-access-url")
+    @WebApiParam(
+            name = "directAccessUrlRequest",
+            title = "Request direct access url",
+            description = "Options for direct access url request",
+            kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiDescription(
+            title = "Request content url",
+            description = "Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)
-    public DirectAccessUrl requestContentDirectUrl(String originalNodeId, String renditionId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
-    {
+    public DirectAccessUrl requestContentDirectUrl(
+            String originalNodeId,
+            String renditionId,
+            DirectAccessUrlRequest directAccessUrlRequest,
+            Parameters parameters,
+            WithResponse withResponse) {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
         DirectAccessUrl directAccessUrl;
-        try
-        {
-            directAccessUrl = deletedNodes.requestContentDirectUrl(originalNodeId, renditionId, attachment, validFor);
-        }
-        catch (DirectAccessUrlDisabledException ex)
-        {
+        try {
+            directAccessUrl =
+                    deletedNodes.requestContentDirectUrl(
+                            originalNodeId, renditionId, attachment, validFor);
+        } catch (DirectAccessUrlDisabledException ex) {
             throw new DisabledServiceException(ex.getMessage());
         }
         return directAccessUrl;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         ParameterCheck.mandatory("deletedNodes", this.deletedNodes);
     }
 }

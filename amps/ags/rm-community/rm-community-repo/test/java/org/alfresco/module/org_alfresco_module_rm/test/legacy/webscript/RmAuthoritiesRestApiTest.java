@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -48,14 +43,18 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteReque
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * REST API Tests for adding/removing users/groups to/from a role
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
-{
+public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase {
     /** URL for the REST APIs */
     private static final String RM_CHILDREN_URL = "/api/rm/%s/roles/%s/authorities/%s";
 
@@ -64,6 +63,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
 
     /** Constant for users and groups */
     private static final String USER_WITH_CAPABILITY = GUID.generate();
+
     private static final String USER_WITHOUT_CAPABILITY = GUID.generate();
     private static final String ROLE_INCLUDING_CAPABILITY = GUID.generate();
     private static final String ROLE_NOT_INCLUDING_CAPABILITY = GUID.generate();
@@ -71,54 +71,67 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     private static final String GROUP_TO_ADD_TO_ROLE = GUID.generate();
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#setupTestData()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#setupTestData()
      */
     @Override
-    protected void setupTestData()
-    {
+    protected void setupTestData() {
         super.setupTestData();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Object>() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        AuthenticationUtil.setFullyAuthenticatedUser(
+                                AuthenticationUtil.getSystemUserName());
 
-                // Create test user WITH required capability
-                createUser(USER_WITH_CAPABILITY);
-                // Create test role
-                Set<Capability> capabilities = new HashSet<>(2);
-                capabilities.add(capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
-                capabilities.add(capabilityService.getCapability(RMPermissionModel.MANAGE_ACCESS_CONTROLS));
-                filePlanRoleService.createRole(filePlan, ROLE_INCLUDING_CAPABILITY, ROLE_INCLUDING_CAPABILITY, capabilities);
-                // Add user to the role
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_INCLUDING_CAPABILITY, USER_WITH_CAPABILITY);
+                        // Create test user WITH required capability
+                        createUser(USER_WITH_CAPABILITY);
+                        // Create test role
+                        Set<Capability> capabilities = new HashSet<>(2);
+                        capabilities.add(
+                                capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
+                        capabilities.add(
+                                capabilityService.getCapability(
+                                        RMPermissionModel.MANAGE_ACCESS_CONTROLS));
+                        filePlanRoleService.createRole(
+                                filePlan,
+                                ROLE_INCLUDING_CAPABILITY,
+                                ROLE_INCLUDING_CAPABILITY,
+                                capabilities);
+                        // Add user to the role
+                        filePlanRoleService.assignRoleToAuthority(
+                                filePlan, ROLE_INCLUDING_CAPABILITY, USER_WITH_CAPABILITY);
 
-                // Create test user WITHOUT required capability
-                createUser(USER_WITHOUT_CAPABILITY);
-                // Create test role
-                filePlanRoleService.createRole(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, ROLE_NOT_INCLUDING_CAPABILITY, new HashSet<>(1));
-                // Add user to the role
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, USER_WITHOUT_CAPABILITY);
+                        // Create test user WITHOUT required capability
+                        createUser(USER_WITHOUT_CAPABILITY);
+                        // Create test role
+                        filePlanRoleService.createRole(
+                                filePlan,
+                                ROLE_NOT_INCLUDING_CAPABILITY,
+                                ROLE_NOT_INCLUDING_CAPABILITY,
+                                new HashSet<>(1));
+                        // Add user to the role
+                        filePlanRoleService.assignRoleToAuthority(
+                                filePlan, ROLE_NOT_INCLUDING_CAPABILITY, USER_WITHOUT_CAPABILITY);
 
-                // Create a test user to add to role
-                createUser(USER_TO_ADD_TO_ROLE);
+                        // Create a test user to add to role
+                        createUser(USER_TO_ADD_TO_ROLE);
 
-                // Create a group to add to role
-                createGroup(GROUP_TO_ADD_TO_ROLE);
+                        // Create a group to add to role
+                        createGroup(GROUP_TO_ADD_TO_ROLE);
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#tearDownImpl()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#tearDownImpl()
      */
     @Override
-    protected void tearDownImpl()
-    {
+    protected void tearDownImpl() {
         super.tearDownImpl();
 
         // Delete test user WITH required capability
@@ -144,8 +157,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @throws IOException
      * @throws JSONException
      */
-    public void testRmAddRemoveUser() throws IOException, JSONException
-    {
+    public void testRmAddRemoveUser() throws IOException, JSONException {
         // Do the positive test with a user with the needed capabilities
         AuthenticationUtil.setFullyAuthenticatedUser(USER_WITH_CAPABILITY);
 
@@ -181,8 +193,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @throws IOException
      * @throws JSONException
      */
-    public void testRmAddRemoveGroup() throws IOException, JSONException
-    {
+    public void testRmAddRemoveGroup() throws IOException, JSONException {
         // Do the positive test with a user with the needed capabilities
         AuthenticationUtil.setFullyAuthenticatedUser(USER_WITH_CAPABILITY);
 
@@ -217,8 +228,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return Returns the user name which will be added/removed to/from the role
      */
-    private String getTestUserName()
-    {
+    private String getTestUserName() {
         return authorityService.getName(AuthorityType.USER, USER_TO_ADD_TO_ROLE);
     }
 
@@ -227,8 +237,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return Returns the user group which will be added/removed to/from the role
      */
-    private String getTestGroupName()
-    {
+    private String getTestGroupName() {
         return authorityService.getName(AuthorityType.GROUP, GROUP_TO_ADD_TO_ROLE);
     }
 
@@ -237,9 +246,9 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return Returns a set of groups assigned to a role
      */
-    private Set<String> getGroupsAssignedToRole()
-    {
-        return filePlanRoleService.getGroupsAssignedToRole(filePlan, FilePlanRoleService.ROLE_SECURITY_OFFICER);
+    private Set<String> getGroupsAssignedToRole() {
+        return filePlanRoleService.getGroupsAssignedToRole(
+                filePlan, FilePlanRoleService.ROLE_SECURITY_OFFICER);
     }
 
     /**
@@ -247,9 +256,9 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return Returns a set of users assigned to a role
      */
-    private Set<String> getUsersAssignedToRole()
-    {
-        return filePlanRoleService.getUsersAssignedToRole(filePlan, FilePlanRoleService.ROLE_SECURITY_OFFICER);
+    private Set<String> getUsersAssignedToRole() {
+        return filePlanRoleService.getUsersAssignedToRole(
+                filePlan, FilePlanRoleService.ROLE_SECURITY_OFFICER);
     }
 
     /**
@@ -257,8 +266,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return Returns a formatted nodeRef string
      */
-    private String getFormattedFilePlanString()
-    {
+    private String getFormattedFilePlanString() {
         StoreRef storeRef = filePlan.getStoreRef();
         String storeType = storeRef.getProtocol();
         String storeId = storeRef.getIdentifier();
@@ -280,9 +288,12 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @param authorityName The name of the authority which should be added/removed to/from a role
      * @return Returns a formatted url string
      */
-    private String getFormattedUrlString(String authorityName)
-    {
-        return String.format(RM_CHILDREN_URL, getFormattedFilePlanString(), FilePlanRoleService.ROLE_SECURITY_OFFICER, authorityName);
+    private String getFormattedUrlString(String authorityName) {
+        return String.format(
+                RM_CHILDREN_URL,
+                getFormattedFilePlanString(),
+                FilePlanRoleService.ROLE_SECURITY_OFFICER,
+                authorityName);
     }
 
     /**
@@ -293,9 +304,11 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    private Response postRequestSuccess(String url) throws UnsupportedEncodingException, IOException
-    {
-        return sendRequest(new PostRequest(url, new JSONObject().toString(), APPLICATION_JSON), Status.STATUS_OK);
+    private Response postRequestSuccess(String url)
+            throws UnsupportedEncodingException, IOException {
+        return sendRequest(
+                new PostRequest(url, new JSONObject().toString(), APPLICATION_JSON),
+                Status.STATUS_OK);
     }
 
     /**
@@ -306,9 +319,11 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    private Response postRequestFailure(String url) throws UnsupportedEncodingException, IOException
-    {
-        return sendRequest(new PostRequest(url, new JSONObject().toString(), APPLICATION_JSON), Status.STATUS_INTERNAL_SERVER_ERROR);
+    private Response postRequestFailure(String url)
+            throws UnsupportedEncodingException, IOException {
+        return sendRequest(
+                new PostRequest(url, new JSONObject().toString(), APPLICATION_JSON),
+                Status.STATUS_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -318,8 +333,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @return Returns the response from the server
      * @throws IOException
      */
-    private Response deleteRequestSuccess(String url) throws IOException
-    {
+    private Response deleteRequestSuccess(String url) throws IOException {
         return sendRequest(new DeleteRequest(url), Status.STATUS_OK);
     }
 
@@ -330,8 +344,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @return Returns the response from the server
      * @throws IOException
      */
-    private Response deleteRequestFailure(String url) throws IOException
-    {
+    private Response deleteRequestFailure(String url) throws IOException {
         return sendRequest(new DeleteRequest(url), Status.STATUS_INTERNAL_SERVER_ERROR);
     }
 
@@ -341,8 +354,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      * @param response The server response
      * @throws UnsupportedEncodingException
      */
-    private void checkContent(Response response) throws UnsupportedEncodingException
-    {
+    private void checkContent(Response response) throws UnsupportedEncodingException {
         String contentAsString = response.getContentAsString();
         assertNotNull(contentAsString);
         assertTrue(contentAsString.contains("{}"));

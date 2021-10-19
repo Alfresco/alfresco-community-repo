@@ -35,8 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class Hold
-{
+public class Hold {
     /** Hold name */
     private String name;
 
@@ -49,8 +48,7 @@ public class Hold
      * @param name The name of the hold
      * @param nodeRef The {@link NodeRef} of the hold
      */
-    public Hold(String name, NodeRef nodeRef)
-    {
+    public Hold(String name, NodeRef nodeRef) {
         this.name = name;
         this.nodeRef = nodeRef;
     }
@@ -60,8 +58,7 @@ public class Hold
      *
      * @return The name of the hold
      */
-    public String getName()
-    {
+    public String getName() {
         return this.name;
     }
 
@@ -70,8 +67,7 @@ public class Hold
      *
      * @return The {@link NodeRef} of the hold
      */
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return this.nodeRef;
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,86 +26,74 @@
 
 package org.alfresco.repo.action.constraint;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-
 /**
  * Enumerated type parameter constraint
- * 
+ *
  * @author Roy Wetherall
  */
-public class EnumParameterConstraint extends BaseParameterConstraint
-{
+public class EnumParameterConstraint extends BaseParameterConstraint {
     /** Enum class name */
     private String enumClassName;
 
     /** Enum clss */
     private Class<?> enumClass;
-    
+
     /**
      * Set the enum class name
-     * 
+     *
      * @param enumClassName enum class name
      */
-    public void setEnumClassName(String enumClassName)
-    {
+    public void setEnumClassName(String enumClassName) {
         this.enumClassName = enumClassName;
     }
-    
-    /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
-     */
-    protected Map<String, String> getAllowableValuesImpl()
-    {                  
+
+    /** @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues() */
+    protected Map<String, String> getAllowableValuesImpl() {
         // Get the enum class
         Class<?> enumClass = getEnumClass();
-                                           
+
         Object[] enumValues = enumClass.getEnumConstants();
         Map<String, String> allowableValues = new LinkedHashMap<String, String>(enumValues.length);
-        
-        for (Object enumValue : enumValues)
-        {
+
+        for (Object enumValue : enumValues) {
             // Look up the I18N value
             String displayLabel = getI18NLabel(enumValue.toString());
-            
+
             // Add to the map of allowed values
-            allowableValues.put(enumValue.toString(), displayLabel);                    
-        } 
-        
+            allowableValues.put(enumValue.toString(), displayLabel);
+        }
+
         return allowableValues;
-    }    
-    
+    }
+
     /**
      * Get the enum class
-     * 
+     *
      * @return Class
      */
-    private Class<?> getEnumClass()
-    {
-        if (this.enumClass == null)
-        {        
-            try
-            {   
+    private Class<?> getEnumClass() {
+        if (this.enumClass == null) {
+            try {
                 // Check that a enum class name has specified
-                if (enumClassName == null || enumClassName.length() == 0)
-                {
+                if (enumClassName == null || enumClassName.length() == 0) {
                     throw new AlfrescoRuntimeException("No enum class has been defined");
                 }
-                
+
                 // Get the enum class
                 Class<?> enumClass = Class.forName(enumClassName);
-                
+
                 // Check that the class is an enum class
-                if (enumClass.isEnum() == true)
-                {
+                if (enumClass.isEnum() == true) {
                     this.enumClass = enumClass;
                 }
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new AlfrescoRuntimeException("Unable to find enum class " + this.enumClassName, e);
+            } catch (ClassNotFoundException e) {
+                throw new AlfrescoRuntimeException(
+                        "Unable to find enum class " + this.enumClassName, e);
             }
         }
         return this.enumClass;

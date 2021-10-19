@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
@@ -76,19 +72,21 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 
-/**
- * @author Roy Wetherall
- */
-public class BaseRMWebScriptTestCase extends BaseWebScriptTest
-{
-	/** Common test utils */
-	protected CommonRMTestUtils utils;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-	/** Application context */
-	protected ApplicationContext applicationContext;
+/** @author Roy Wetherall */
+public class BaseRMWebScriptTestCase extends BaseWebScriptTest {
+    /** Common test utils */
+    protected CommonRMTestUtils utils;
 
-	 /** Services */
+    /** Application context */
+    protected ApplicationContext applicationContext;
+
+    /** Services */
     protected NodeService nodeService;
+
     protected ContentService contentService;
     protected DictionaryService dictionaryService;
     protected RetryingTransactionHelper retryingTransactionHelper;
@@ -104,6 +102,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     /** RM Services */
     protected DispositionService dispositionService;
+
     protected RecordsManagementEventService eventService;
     protected RecordsManagementAdminService adminService;
     protected RecordsManagementActionService actionService;
@@ -119,12 +118,13 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     /** test data */
     protected String siteId;
+
     protected StoreRef storeRef;
     protected NodeRef rootNodeRef;
     protected SiteInfo siteInfo;
     protected NodeRef folder;
     protected NodeRef filePlan;
-    protected NodeRef recordSeries;			// A category with no disposition schedule
+    protected NodeRef recordSeries; // A category with no disposition schedule
     protected NodeRef recordCategory;
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef recordFolder;
@@ -134,19 +134,14 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     /** admin user name */
     protected static final String ADMIN_USER = "admin";
 
-    /**
-     * Indicates whether the test collaboration site should be created
-     * or not.
-     */
-    protected boolean isCollaborationSiteTest()
-    {
+    /** Indicates whether the test collaboration site should be created or not. */
+    protected boolean isCollaborationSiteTest() {
         return false;
     }
 
     @Override
-    protected void setUp() throws Exception
-    {
-    	super.setUp();
+    protected void setUp() throws Exception {
+        super.setUp();
 
         // Initialise the service beans
         initServices();
@@ -155,74 +150,81 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         setupTestData();
     }
 
-    /**
-     * Initialise the service beans.
-     */
-    protected void initServices()
-    {
-    	applicationContext = getServer().getApplicationContext();
+    /** Initialise the service beans. */
+    protected void initServices() {
+        applicationContext = getServer().getApplicationContext();
 
-    	// Common test utils
-    	utils = new CommonRMTestUtils(applicationContext);
+        // Common test utils
+        utils = new CommonRMTestUtils(applicationContext);
 
         // Get services
-        nodeService = (NodeService)applicationContext.getBean("NodeService");
-        contentService = (ContentService)applicationContext.getBean("ContentService");
-        retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
-        namespaceService = (NamespaceService)applicationContext.getBean("NamespaceService");
-        searchService = (SearchService)applicationContext.getBean("SearchService");
-        policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
-        dictionaryService = (DictionaryService)applicationContext.getBean("DictionaryService");
-        siteService = (SiteService)applicationContext.getBean("SiteService");
-        authorityService = (AuthorityService)applicationContext.getBean("AuthorityService");
-        authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
-        personService = (PersonService)applicationContext.getBean("PersonService");
-        transactionService = (TransactionService)applicationContext.getBean("TransactionService");
-        taggingService = (TaggingService)applicationContext.getBean("TaggingService");
+        nodeService = (NodeService) applicationContext.getBean("NodeService");
+        contentService = (ContentService) applicationContext.getBean("ContentService");
+        retryingTransactionHelper =
+                (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+        namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
+        searchService = (SearchService) applicationContext.getBean("SearchService");
+        policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
+        dictionaryService = (DictionaryService) applicationContext.getBean("DictionaryService");
+        siteService = (SiteService) applicationContext.getBean("SiteService");
+        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+        authenticationService =
+                (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
+        personService = (PersonService) applicationContext.getBean("PersonService");
+        transactionService = (TransactionService) applicationContext.getBean("TransactionService");
+        taggingService = (TaggingService) applicationContext.getBean("TaggingService");
 
         // Get RM services
-        dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
-        eventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
-        adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
-        actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
-        rmSearchService = (RecordsManagementSearchService)applicationContext.getBean("RecordsManagementSearchService");
-        filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
-        filePlanPermissionService = (FilePlanPermissionService)applicationContext.getBean("FilePlanPermissionService");
-        auditService = (RecordsManagementAuditService)applicationContext.getBean("RecordsManagementAuditService");
-        capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
-        vitalRecordService = (VitalRecordService)applicationContext.getBean("VitalRecordService");
-        filePlanService = (FilePlanService)applicationContext.getBean("FilePlanService");
-        recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
-        caveatConfigService = (RMCaveatConfigService)applicationContext.getBean("CaveatConfigService");
+        dispositionService = (DispositionService) applicationContext.getBean("DispositionService");
+        eventService =
+                (RecordsManagementEventService)
+                        applicationContext.getBean("RecordsManagementEventService");
+        adminService =
+                (RecordsManagementAdminService)
+                        applicationContext.getBean("RecordsManagementAdminService");
+        actionService =
+                (RecordsManagementActionService)
+                        applicationContext.getBean("RecordsManagementActionService");
+        rmSearchService =
+                (RecordsManagementSearchService)
+                        applicationContext.getBean("RecordsManagementSearchService");
+        filePlanRoleService =
+                (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
+        filePlanPermissionService =
+                (FilePlanPermissionService) applicationContext.getBean("FilePlanPermissionService");
+        auditService =
+                (RecordsManagementAuditService)
+                        applicationContext.getBean("RecordsManagementAuditService");
+        capabilityService = (CapabilityService) applicationContext.getBean("CapabilityService");
+        vitalRecordService = (VitalRecordService) applicationContext.getBean("VitalRecordService");
+        filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
+        recordFolderService =
+                (RecordFolderService) applicationContext.getBean("RecordFolderService");
+        caveatConfigService =
+                (RMCaveatConfigService) applicationContext.getBean("CaveatConfigService");
     }
 
-    /**
-     * @see junit.framework.TestCase#tearDown()
-     */
+    /** @see junit.framework.TestCase#tearDown() */
     @Override
-    protected void tearDown() throws Exception
-    {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+    protected void tearDown() throws Exception {
+        retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Object>() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        // As system user
+                        AuthenticationUtil.setFullyAuthenticatedUser(
+                                AuthenticationUtil.getSystemUserName());
 
-                // Do the tear down
-                tearDownImpl();
+                        // Do the tear down
+                        tearDownImpl();
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
     }
 
-    /**
-     * Tear down implementation
-     */
-    protected void tearDownImpl()
-    {
+    /** Tear down implementation */
+    protected void tearDownImpl() {
         // Delete the folder
         nodeService.deleteNode(folder);
 
@@ -230,48 +232,42 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         siteService.deleteSite(siteId);
 
         // Delete the collaboration site (if required)
-        if (isCollaborationSiteTest())
-        {
+        if (isCollaborationSiteTest()) {
             siteService.deleteSite(collabSiteId);
         }
     }
 
-    /**
-     * Setup test data for tests
-     */
-    protected void setupTestData()
-    {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                setupTestDataImpl();
-                return null;
-            }
-        });
+    /** Setup test data for tests */
+    protected void setupTestData() {
+        retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Object>() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        AuthenticationUtil.setFullyAuthenticatedUser(
+                                AuthenticationUtil.getAdminUserName());
+                        setupTestDataImpl();
+                        return null;
+                    }
+                });
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Object>() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        // As system user
+                        AuthenticationUtil.setFullyAuthenticatedUser(
+                                AuthenticationUtil.getSystemUserName());
 
-                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, ADMIN_USER);
+                        filePlanRoleService.assignRoleToAuthority(
+                                filePlan, FilePlanRoleService.ROLE_ADMIN, ADMIN_USER);
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
     }
 
-    /**
-     * Impl of test data setup
-     */
-    protected void setupTestDataImpl()
-    {
+    /** Impl of test data setup */
+    protected void setupTestDataImpl() {
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);
 
@@ -279,22 +275,34 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         String containerName = "RM2_" + System.currentTimeMillis();
         Map<QName, Serializable> containerProps = new HashMap<>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
-        folder = nodeService.createNode(
-              rootNodeRef,
-              ContentModel.ASSOC_CHILDREN,
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
-              ContentModel.TYPE_FOLDER,
-              containerProps).getChildRef();
+        folder =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName(
+                                        NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
+                                ContentModel.TYPE_FOLDER,
+                                containerProps)
+                        .getChildRef();
         assertNotNull("Could not create base folder", folder);
 
         // Create the site
         siteId = getRMSiteId();
-        siteInfo = siteService.createSite("rm-site-dashboard", siteId, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
+        siteInfo =
+                siteService.createSite(
+                        "rm-site-dashboard",
+                        siteId,
+                        "title",
+                        "descrition",
+                        SiteVisibility.PUBLIC,
+                        RecordsManagementModel.TYPE_RM_SITE);
         filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
 
         recordSeries = filePlanService.createRecordCategory(filePlan, "recordSeries");
-        assertNotNull("Could not create record category with no disposition schedule", recordSeries);
+        assertNotNull(
+                "Could not create record category with no disposition schedule", recordSeries);
 
         recordCategory = filePlanService.createRecordCategory(recordSeries, "rmContainer");
         assertNotNull("Could not create record category", recordCategory);
@@ -312,49 +320,48 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         assertNotNull("Could not create rm folder 2", recordFolder2);
 
         // Create collaboration data
-        if (isCollaborationSiteTest())
-        {
+        if (isCollaborationSiteTest()) {
             setupCollaborationSiteTestData();
         }
     }
 
-    protected void setupCollaborationSiteTestData()
-    {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+    protected void setupCollaborationSiteTestData() {
+        retryingTransactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Object>() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        // As system user
+                        AuthenticationUtil.setFullyAuthenticatedUser(
+                                AuthenticationUtil.getAdminUserName());
 
-                setupCollaborationSiteTestDataImpl();
+                        setupCollaborationSiteTestDataImpl();
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
     }
 
-    protected void setupCollaborationSiteTestDataImpl()
-    {
+    protected void setupCollaborationSiteTestDataImpl() {
         // create collaboration site
         collabSiteId = GUID.generate();
-        siteService.createSite("preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
-        NodeRef documentLibrary = SiteServiceImpl.getSiteContainer(
-                collabSiteId,
-                SiteService.DOCUMENT_LIBRARY,
-                true,
-                siteService,
-                transactionService,
-                taggingService);
+        siteService.createSite(
+                "preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
+        NodeRef documentLibrary =
+                SiteServiceImpl.getSiteContainer(
+                        collabSiteId,
+                        SiteService.DOCUMENT_LIBRARY,
+                        true,
+                        siteService,
+                        transactionService,
+                        taggingService);
 
-        assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary);
+        assertNotNull(
+                "Collaboration site document library component was not successfully created.",
+                documentLibrary);
     }
 
-    protected void createUser(String userName)
-    {
-        if (!authenticationService.authenticationExists(userName))
-        {
+    protected void createUser(String userName) {
+        if (!authenticationService.authenticationExists(userName)) {
             authenticationService.createAuthentication(userName, "PWD".toCharArray());
 
             PropertyMap ppOne = new PropertyMap(4);
@@ -369,32 +376,25 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         }
     }
 
-    protected void deleteUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName))
-        {
+    protected void deleteUser(String userName) {
+        if (authenticationService.authenticationExists(userName)) {
             personService.deletePerson(userName);
         }
     }
 
-    protected void createGroup(String groupName)
-    {
-        if (!authorityService.authorityExists(groupName))
-        {
+    protected void createGroup(String groupName) {
+        if (!authorityService.authorityExists(groupName)) {
             authorityService.createAuthority(AuthorityType.GROUP, groupName);
         }
     }
 
-    protected void deleteGroup(String groupName)
-    {
-        if (authorityService.authorityExists(groupName))
-        {
+    protected void deleteGroup(String groupName) {
+        if (authorityService.authorityExists(groupName)) {
             authorityService.deleteAuthority(groupName, true);
         }
     }
-    
-    protected String getRMSiteId()
-    {
-    	return GUID.generate();
+
+    protected String getRMSiteId() {
+        return GUID.generate();
     }
 }

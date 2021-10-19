@@ -18,51 +18,30 @@
  */
 package org.alfresco.util;
 
-/**
- * @author Andy
- *
- */
-public interface TriggerBeanSPI
-{
+/** @author Andy */
+public interface TriggerBeanSPI {
 
-    /**
-     * @return int
-     */
+    /** @return int */
     int getRepeatCount();
 
-    /**
-     * @param repeatCount int
-     */
+    /** @param repeatCount int */
     void setRepeatCount(int repeatCount);
 
-    /**
-     * @return long
-     */
+    /** @return long */
     long getRepeatInterval();
 
-    /**
-     * @param repeatInterval long
-     */
+    /** @param repeatInterval long */
     void setRepeatInterval(long repeatInterval);
 
-    /**
-     * @param repeatIntervalMinutes long
-     */
+    /** @param repeatIntervalMinutes long */
     void setRepeatIntervalMinutes(long repeatIntervalMinutes);
 
-    /**
-     * @return long
-     */
+    /** @return long */
     long getStartDelay();
 
-    /**
-     * @param startDelay long
-     */
+    /** @param startDelay long */
     void setStartDelay(long startDelay);
 
-    /**
-     * @param startDelayMinutes long
-     */
+    /** @param startDelayMinutes long */
     void setStartDelayMinutes(long startDelayMinutes);
-
 }

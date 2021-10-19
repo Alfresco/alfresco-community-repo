@@ -26,37 +26,33 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Encapsulates the elements of an upload request
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */
-public class UploadInfo
-{
+public class UploadInfo {
     private String fileName;
     private String nodeType;
     private String relativePath;
     private Content content;
     private Map<String, Object> properties;
 
-    public UploadInfo(FormData formData)
-    {
+    public UploadInfo(FormData formData) {
         properties = new HashMap<>();
 
-        for (FormData.FormField field : formData.getFields())
-        {
-            switch (field.getName().toLowerCase())
-            {
+        for (FormData.FormField field : formData.getFields()) {
+            switch (field.getName().toLowerCase()) {
                 case "name":
                     fileName = getStringOrNull(field.getValue());
                     break;
@@ -67,61 +63,51 @@ public class UploadInfo
                     relativePath = getStringOrNull(field.getValue());
                     break;
                 case "filedata":
-                    if (field.getIsFile())
-                    {
+                    if (field.getIsFile()) {
                         fileName = (fileName != null ? fileName : field.getFilename());
                         content = field.getContent();
                     }
                     break;
 
                 default:
-                {
-                    final String propName = field.getName();
-                    if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1)
                     {
-                        properties.put(propName, field.getValue());
+                        final String propName = field.getName();
+                        if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1) {
+                            properties.put(propName, field.getValue());
+                        }
                     }
-                }
             }
         }
 
-        if (StringUtils.isBlank(fileName) || content == null)
-        {
+        if (StringUtils.isBlank(fileName) || content == null) {
             throw new InvalidArgumentException("Required parameters are missing");
         }
     }
 
-    private String getStringOrNull(String value)
-    {
-        if (StringUtils.isNotEmpty(value))
-        {
+    private String getStringOrNull(String value) {
+        if (StringUtils.isNotEmpty(value)) {
             return value.equalsIgnoreCase("null") ? null : value;
         }
         return null;
     }
 
-    public String getFileName()
-    {
+    public String getFileName() {
         return fileName;
     }
 
-    public String getNodeType()
-    {
+    public String getNodeType() {
         return nodeType;
     }
 
-    public String getRelativePath()
-    {
+    public String getRelativePath() {
         return relativePath;
     }
 
-    public Content getContent()
-    {
+    public Content getContent() {
         return content;
     }
 
-    public Map<String, Object> getProperties()
-    {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 }

@@ -36,37 +36,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Ana Bozianu
  * @since 2.6
  */
-public abstract class UnfiledChild extends RMNode
-{
+public abstract class UnfiledChild extends RMNode {
     public static final String PARAM_IS_UNFILED_RECORD_FOLDER = "isUnfiledRecordFolder";
     public static final String PARAM_IS_RECORD = "isRecord";
 
     protected Boolean isUnfiledRecordFolder;
     protected Boolean isRecord;
 
-    @JsonProperty (PARAM_IS_UNFILED_RECORD_FOLDER)
-    public Boolean getIsUnfiledRecordFolder()
-    {
+    @JsonProperty(PARAM_IS_UNFILED_RECORD_FOLDER)
+    public Boolean getIsUnfiledRecordFolder() {
         return isUnfiledRecordFolder;
     }
 
     @JsonIgnore
-    public void setIsUnfiledRecordFolder(Boolean isUnfiledRecordFolder)
-    {
+    public void setIsUnfiledRecordFolder(Boolean isUnfiledRecordFolder) {
         this.isUnfiledRecordFolder = isUnfiledRecordFolder;
     }
 
-    @JsonProperty (PARAM_IS_RECORD)
-    public Boolean getIsRecord()
-    {
+    @JsonProperty(PARAM_IS_RECORD)
+    public Boolean getIsRecord() {
         return isRecord;
     }
 
     @JsonIgnore
-    public void setIsRecord(Boolean isRecord)
-    {
+    public void setIsRecord(Boolean isRecord) {
         this.isRecord = isRecord;
     }
-
-
 }

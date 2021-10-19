@@ -27,15 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -62,13 +53,21 @@ import org.springframework.extensions.webscripts.servlet.FormData.FormField;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.util.FileCopyUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Imports an ACP file into a records management container.
  *
  * @author Gavin Cornwell
  */
-public class ImportPost extends DeclarativeWebScript
-{
+public class ImportPost extends DeclarativeWebScript {
     /** Logger */
     private static Log logger = LogFactory.getLog(ImportPost.class);
 
@@ -84,11 +83,8 @@ public class ImportPost extends DeclarativeWebScript
     protected FilePlanRoleService filePlanRoleService;
     protected FilePlanService filePlanService;
 
-    /**
-     * @param nodeService
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -97,8 +93,7 @@ public class ImportPost extends DeclarativeWebScript
      *
      * @param dictionaryService The DictionaryService instance
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
@@ -107,159 +102,141 @@ public class ImportPost extends DeclarativeWebScript
      *
      * @param importerService The ImporterService
      */
-    public void setImporterService(ImporterService importerService)
-    {
+    public void setImporterService(ImporterService importerService) {
         this.importerService = importerService;
     }
 
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
+    /** @param filePlanRoleService file plan role service */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) {
         this.filePlanRoleService = filePlanRoleService;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         // Unwrap to a WebScriptServletRequest if we have one
         WebScriptServletRequest webScriptServletRequest = null;
         WebScriptRequest current = req;
-        do
-        {
-            if (current instanceof WebScriptServletRequest)
-            {
+        do {
+            if (current instanceof WebScriptServletRequest) {
                 webScriptServletRequest = (WebScriptServletRequest) current;
                 current = null;
-            }
-            else if (current instanceof WrappingWebScriptRequest)
-            {
+            } else if (current instanceof WrappingWebScriptRequest) {
                 current = ((WrappingWebScriptRequest) req).getNext();
-            }
-            else
-            {
+            } else {
                 current = null;
             }
-        }
-        while (current != null);
+        } while (current != null);
 
         // get the content type of request and ensure it's multipart/form-data
         String contentType = req.getContentType();
-        if (MULTIPART_FORMDATA.equals(contentType) && webScriptServletRequest != null)
-        {
+        if (MULTIPART_FORMDATA.equals(contentType) && webScriptServletRequest != null) {
             String nodeRef = req.getParameter(PARAM_DESTINATION);
 
-            if (nodeRef == null || nodeRef.length() == 0)
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                            "Mandatory 'destination' parameter was not provided in form data");
+            if (nodeRef == null || nodeRef.length() == 0) {
+                throw new WebScriptException(
+                        Status.STATUS_BAD_REQUEST,
+                        "Mandatory 'destination' parameter was not provided in form data");
             }
 
             // create and check noderef
             final NodeRef destination = new NodeRef(nodeRef);
-            if (nodeService.exists(destination))
-            {
+            if (nodeService.exists(destination)) {
                 // check the destination is an RM container
-                if (!nodeService.hasAspect(destination, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
-                    !dictionaryService.isSubClass(nodeService.getType(destination), ContentModel.TYPE_FOLDER))
-                {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                                "NodeRef '" + destination + "' does not represent an Records Management container node.");
+                if (!nodeService.hasAspect(
+                                destination, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)
+                        || !dictionaryService.isSubClass(
+                                nodeService.getType(destination), ContentModel.TYPE_FOLDER)) {
+                    throw new WebScriptException(
+                            Status.STATUS_BAD_REQUEST,
+                            "NodeRef '"
+                                    + destination
+                                    + "' does not represent an Records Management container node.");
                 }
-            }
-            else
-            {
-                status.setCode(HttpServletResponse.SC_NOT_FOUND,
-                            "NodeRef '" + destination + "' does not exist.");
+            } else {
+                status.setCode(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "NodeRef '" + destination + "' does not exist.");
             }
 
             // as there is no 'import capability' and the RM admin user is different from
             // the DM admin user (meaning the webscript 'admin' authentication can't be used)
             // perform a manual check here to ensure the current user has the RM admin role.
-            boolean isAdmin = filePlanRoleService.hasRMAdminRole(
-                        filePlanService.getFilePlan(destination),
-                        AuthenticationUtil.getRunAsUser());
-            if (!isAdmin)
-            {
+            boolean isAdmin =
+                    filePlanRoleService.hasRMAdminRole(
+                            filePlanService.getFilePlan(destination),
+                            AuthenticationUtil.getRunAsUser());
+            if (!isAdmin) {
                 throw new WebScriptException(Status.STATUS_FORBIDDEN, "Access Denied");
             }
 
             File acpFile = null;
-            try
-            {
+            try {
                 // create a temporary file representing uploaded ACP file
                 FormField acpContent = webScriptServletRequest.getFileField(PARAM_ARCHIVE);
-                if (acpContent == null)
-                {
+                if (acpContent == null) {
                     acpContent = webScriptServletRequest.getFileField(PARAM_FILEDATA);
-                    if (acpContent == null)
-                    {
-                        throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    if (acpContent == null) {
+                        throw new WebScriptException(
+                                Status.STATUS_BAD_REQUEST,
                                 "Mandatory 'archive' file content was not provided in form data");
                     }
                 }
 
-                acpFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, "." + ACPExportPackageHandler.ACP_EXTENSION);
+                acpFile =
+                        TempFileProvider.createTempFile(
+                                TEMP_FILE_PREFIX, "." + ACPExportPackageHandler.ACP_EXTENSION);
 
                 // copy contents of uploaded file to temp ACP file
                 FileOutputStream fos = new FileOutputStream(acpFile);
                 // NOTE: this method closes both streams
                 FileCopyUtils.copy(acpContent.getInputStream(), fos);
 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Importing uploaded ACP (" + acpFile.getAbsolutePath() + ") into " + nodeRef);
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Importing uploaded ACP ("
+                                    + acpFile.getAbsolutePath()
+                                    + ") into "
+                                    + nodeRef);
                 }
 
                 // setup the import handler
-                final ACPImportPackageHandler importHandler = new ACPImportPackageHandler(acpFile, "UTF-8");
+                final ACPImportPackageHandler importHandler =
+                        new ACPImportPackageHandler(acpFile, "UTF-8");
 
                 // import the ACP file as the system user
-                AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-                {
-                     public NodeRef doWork()
-                     {
-                         importerService.importView(importHandler, new Location(destination), null, null);
-                         return null;
-                     }
-                }, AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.runAs(
+                        new RunAsWork<NodeRef>() {
+                            public NodeRef doWork() {
+                                importerService.importView(
+                                        importHandler, new Location(destination), null, null);
+                                return null;
+                            }
+                        },
+                        AuthenticationUtil.getSystemUserName());
 
                 // create and return model
                 Map<String, Object> model = new HashMap<>(1);
                 model.put("success", true);
                 return model;
-            }
-            catch (FileNotFoundException fnfe)
-            {
-                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                            "Failed to import ACP file", fnfe);
-            }
-            catch (IOException ioe)
-            {
-                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                            "Failed to import ACP file", ioe);
-            }
-            finally
-            {
-                if (acpFile != null)
-                {
+            } catch (FileNotFoundException fnfe) {
+                throw new WebScriptException(
+                        Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to import ACP file", fnfe);
+            } catch (IOException ioe) {
+                throw new WebScriptException(
+                        Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to import ACP file", ioe);
+            } finally {
+                if (acpFile != null) {
                     acpFile.delete();
                 }
             }
-        }
-        else
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Request is not " + MULTIPART_FORMDATA + " encoded");
+        } else {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Request is not " + MULTIPART_FORMDATA + " encoded");
         }
     }
 }

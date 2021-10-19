@@ -36,8 +36,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ServletContextAware;
 
-import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -50,50 +48,67 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import javax.servlet.ServletContext;
+import javax.sql.DataSource;
+
 /**
  * A collector of data related to the meta-data for the Alfresco stack.
+ *
  * <ul>
- *  <li>Collector ID: <b>acs.repository.info</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>repoName:</b> Int number of active models. {@link Descriptor#getName()}</li>
- *          <li><b>version: Object which contains version information:</b>
- *              <ul>
- *                  <li>full: String - The full version number. {@link Descriptor#getVersion()}</li>
- *                  <li>servicePack: String - The major and minor version, e.g. <u>1.2</u>.3</li>
- *                  <li>major: String - The major version number, e.g. <u>1</u>.2.3. {@link Descriptor#getVersionMajor()}</li>
- *                  <li>minor: String - The minor version number, e.g. 1.<u>2</u>.3. {@link Descriptor#getVersionMinor()}</li>
- *                  <li>patch: String - The version revision number, e.g. 1.2.<u>3</u>. {@link Descriptor#getVersionRevision()}</li>
- *                  <li>hotfix: String - The version label. {@link Descriptor#getVersionLabel()}</li>
- *                  <li>build: String - The string which identifies the build. {@link Descriptor#getVersionBuild()}</li>
- *              </ul>
- *          </li>
- *          <li><b>schema:</b> Int - The schema number. {@link Descriptor#getSchema()}</li>
- *          <li><b>edition:</b> String - The edition. {@link Descriptor#getEdition()}</li>
- *          <li><b>deploymentMethod:</b> String - The deployment method used to deploy this Alfresco instance. {@link DeploymentMethodProvider#getDeploymentMethod()}</li>
- *          <li><b>osVendor:</b> String - The name of the Operating System vendor. {@link System#getProperty(String)}</li>
- *          <li><b>osVersion:</b> String - The version of the Operating System. {@link System#getProperty(String)}</li>
- *          <li><b>osArch:</b> String - The architecture of the Operating System. {@link System#getProperty(String)}</li>
- *          <li><b>javaVendor:</b> String - The name of the Java vendor. {@link System#getProperty(String)}</li>
- *          <li><b>javaVersion:</b> String - The version of Java used. {@link System#getProperty(String)}</li>
- *          <li><b>userLanguage:</b> String - The language which this instance was installed with. {@link Locale#getLanguage()} </li>
- *          <li><b>userTimezone:</b> String - The timezone ID for this Alfresco instance. e.g. Europe/Athens {@link TimeZone#getID()} </li>
- *          <li><b>userUTCOffset:</b> String - The UTC offset of the timezone for this Alfresco instance. e.g. +03.00 {@link OffsetDateTime#getOffset()} </li>
- *          <li><b>db: Object which contains database information:</b>
- *              <ul>
- *                  <li>vendor: String - The vendor of the database. {@link DatabaseMetaData#getDatabaseProductName()}</li>
- *                  <li>version: String - The version of the database used. {@link DatabaseMetaData#getDatabaseProductVersion()}</li>
- *                  <li>driverName: String - The name of the database driver. {@link DatabaseMetaData#getDriverName()}</li>
- *                  <li>driverVersion: String - The version of the driver used. {@link DatabaseMetaData#getDriverVersion()}</li>
- *              </ul>
- *          </li>
- *      </ul>
- *  </li>
+ *   <li>Collector ID: <b>acs.repository.info</b>
+ *   <li>Data:
+ *       <ul>
+ *         <li><b>repoName:</b> Int number of active models. {@link Descriptor#getName()}
+ *         <li><b>version: Object which contains version information:</b>
+ *             <ul>
+ *               <li>full: String - The full version number. {@link Descriptor#getVersion()}
+ *               <li>servicePack: String - The major and minor version, e.g. <u>1.2</u>.3
+ *               <li>major: String - The major version number, e.g. <u>1</u>.2.3. {@link
+ *                   Descriptor#getVersionMajor()}
+ *               <li>minor: String - The minor version number, e.g. 1.<u>2</u>.3. {@link
+ *                   Descriptor#getVersionMinor()}
+ *               <li>patch: String - The version revision number, e.g. 1.2.<u>3</u>. {@link
+ *                   Descriptor#getVersionRevision()}
+ *               <li>hotfix: String - The version label. {@link Descriptor#getVersionLabel()}
+ *               <li>build: String - The string which identifies the build. {@link
+ *                   Descriptor#getVersionBuild()}
+ *             </ul>
+ *         <li><b>schema:</b> Int - The schema number. {@link Descriptor#getSchema()}
+ *         <li><b>edition:</b> String - The edition. {@link Descriptor#getEdition()}
+ *         <li><b>deploymentMethod:</b> String - The deployment method used to deploy this Alfresco
+ *             instance. {@link DeploymentMethodProvider#getDeploymentMethod()}
+ *         <li><b>osVendor:</b> String - The name of the Operating System vendor. {@link
+ *             System#getProperty(String)}
+ *         <li><b>osVersion:</b> String - The version of the Operating System. {@link
+ *             System#getProperty(String)}
+ *         <li><b>osArch:</b> String - The architecture of the Operating System. {@link
+ *             System#getProperty(String)}
+ *         <li><b>javaVendor:</b> String - The name of the Java vendor. {@link
+ *             System#getProperty(String)}
+ *         <li><b>javaVersion:</b> String - The version of Java used. {@link
+ *             System#getProperty(String)}
+ *         <li><b>userLanguage:</b> String - The language which this instance was installed with.
+ *             {@link Locale#getLanguage()}
+ *         <li><b>userTimezone:</b> String - The timezone ID for this Alfresco instance. e.g.
+ *             Europe/Athens {@link TimeZone#getID()}
+ *         <li><b>userUTCOffset:</b> String - The UTC offset of the timezone for this Alfresco
+ *             instance. e.g. +03.00 {@link OffsetDateTime#getOffset()}
+ *         <li><b>db: Object which contains database information:</b>
+ *             <ul>
+ *               <li>vendor: String - The vendor of the database. {@link
+ *                   DatabaseMetaData#getDatabaseProductName()}
+ *               <li>version: String - The version of the database used. {@link
+ *                   DatabaseMetaData#getDatabaseProductVersion()}
+ *               <li>driverName: String - The name of the database driver. {@link
+ *                   DatabaseMetaData#getDriverName()}
+ *               <li>driverVersion: String - The version of the driver used. {@link
+ *                   DatabaseMetaData#getDriverVersion()}
+ *             </ul>
+ *       </ul>
  * </ul>
  */
-public class InfoDataCollector extends HBBaseDataCollector implements InitializingBean,
-        ServletContextAware
-{
+public class InfoDataCollector extends HBBaseDataCollector
+        implements InitializingBean, ServletContextAware {
     /** The logger. */
     private static final Log logger = LogFactory.getLog(InfoDataCollector.class);
 
@@ -109,40 +124,37 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
     private ServletContext servletContext;
 
-    public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                             HeartBeatJobScheduler hbJobScheduler)
-    {
+    public InfoDataCollector(
+            String collectorId,
+            String collectorVersion,
+            String cronExpression,
+            HeartBeatJobScheduler hbJobScheduler) {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO)
-    {
+    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO) {
         this.serverDescriptorDAO = serverDescriptorDAO;
     }
 
-    public void setDeploymentMethodProvider(DeploymentMethodProvider deploymentMethodProvider)
-    {
+    public void setDeploymentMethodProvider(DeploymentMethodProvider deploymentMethodProvider) {
         this.deploymentMethodProvider = deploymentMethodProvider;
     }
 
-    public void setDataSource(DataSource dataSource)
-    {
+    public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    @Override public void setServletContext(ServletContext servletContext)
-    {
+    @Override
+    public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
-    
+
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "serverDescriptorDAO", serverDescriptorDAO);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
         PropertyCheck.mandatory(this, "deploymentMethodProvider", deploymentMethodProvider);
@@ -150,8 +162,7 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
     }
 
     @Override
-    public List<HBData> collectData()
-    {
+    public List<HBData> collectData() {
         logger.debug("Preparing repository info data...");
 
         final Descriptor serverDescriptor = this.serverDescriptorDAO.getDescriptor();
@@ -161,21 +172,23 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
         Map<String, Object> version = new HashMap<>();
         version.put("full", serverDescriptor.getVersion());
-        version.put("servicePack", serverDescriptor.getVersionMajor() + "." + serverDescriptor.getVersionMinor());
+        version.put(
+                "servicePack",
+                serverDescriptor.getVersionMajor() + "." + serverDescriptor.getVersionMinor());
         version.put("major", serverDescriptor.getVersionMajor());
         version.put("minor", serverDescriptor.getVersionMinor());
         version.put("patch", serverDescriptor.getVersionRevision());
         version.put("build", serverDescriptor.getVersionBuild());
 
         String hotfix = serverDescriptor.getVersionLabel();
-        if (hotfix != null && hotfix.length() > 0)
-        {
+        if (hotfix != null && hotfix.length() > 0) {
             version.put("hotfix", hotfix.startsWith(".") ? hotfix.substring(1) : hotfix);
         }
         infoValues.put("version", version);
         infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
         infoValues.put("edition", serverDescriptor.getEdition());
-        infoValues.put("deploymentMethod", deploymentMethodProvider.getDeploymentMethod().toString());
+        infoValues.put(
+                "deploymentMethod", deploymentMethodProvider.getDeploymentMethod().toString());
 
         infoValues.put("osVendor", System.getProperty("os.name"));
         infoValues.put("osVersion", System.getProperty("os.version"));
@@ -185,36 +198,33 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
         infoValues.put("userLanguage", Locale.getDefault().getLanguage());
         infoValues.put("userTimezone", TimeZone.getDefault().getID());
-        infoValues.put("userUTCOffset", OffsetDateTime.now().getOffset().getId().replaceAll("Z","+00.00"));
+        infoValues.put(
+                "userUTCOffset",
+                OffsetDateTime.now().getOffset().getId().replaceAll("Z", "+00.00"));
 
-        if(servletContext != null)
-        {
+        if (servletContext != null) {
             infoValues.put("serverInfo", servletContext.getServerInfo());
-        }
-        else
-            infoValues.put("serverInfo", null);
-                
-        try (Connection con = dataSource.getConnection())
-        {
+        } else infoValues.put("serverInfo", null);
+
+        try (Connection con = dataSource.getConnection()) {
             DatabaseMetaData dbmeta = con.getMetaData();
             Map<String, Object> db = new HashMap<>();
             db.put("vendor", dbmeta.getDatabaseProductName());
             db.put("version", dbmeta.getDatabaseProductVersion());
             db.put("driverName", dbmeta.getDriverName());
             db.put("driverVersion", dbmeta.getDriverVersion());
-            infoValues.put("db", db); 
-        }
-        catch (SQLException e)
-        {
+            infoValues.put("db", db);
+        } catch (SQLException e) {
             // No need to log exception if the data cannot be retrieved
         }
-                                
-        HBData infoData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                infoValues);
+
+        HBData infoData =
+                new HBData(
+                        this.currentRepoDescriptorDAO.getDescriptor().getId(),
+                        this.getCollectorId(),
+                        this.getCollectorVersion(),
+                        new Date(),
+                        infoValues);
 
         return Arrays.asList(infoData);
     }

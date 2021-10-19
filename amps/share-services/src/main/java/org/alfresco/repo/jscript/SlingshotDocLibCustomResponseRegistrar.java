@@ -27,44 +27,36 @@ import java.util.Map;
  *
  * @author Will Abson
  */
-public final class SlingshotDocLibCustomResponseRegistrar
-{
+public final class SlingshotDocLibCustomResponseRegistrar {
     private Map<String, Object> responsesMap;
     private String key;
     private Object value;
 
-    public String getKey()
-    {
+    public String getKey() {
         return key;
     }
 
-    public void setKey(String key)
-    {
+    public void setKey(String key) {
         this.key = key;
     }
 
-    public Object getValue()
-    {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(Object value)
-    {
+    public void setValue(Object value) {
         this.value = value;
     }
 
-    public Map<String, Object> getResponsesMap()
-    {
+    public Map<String, Object> getResponsesMap() {
         return responsesMap;
     }
 
-    public void setResponsesMap(Map<String, Object> responsesMap)
-    {
+    public void setResponsesMap(Map<String, Object> responsesMap) {
         this.responsesMap = responsesMap;
     }
 
-    public void addCustomResponse()
-    {
+    public void addCustomResponse() {
         responsesMap.put(key, value);
     }
 }

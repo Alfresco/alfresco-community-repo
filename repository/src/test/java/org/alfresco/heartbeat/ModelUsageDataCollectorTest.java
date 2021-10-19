@@ -25,6 +25,13 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -40,18 +47,8 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * @author eknizat
- */
-public class ModelUsageDataCollectorTest
-{
+/** @author eknizat */
+public class ModelUsageDataCollectorTest {
 
     private ModelUsageDataCollector usageModelCollector;
     private HBDataCollectorService mockCollectorService;
@@ -60,8 +57,7 @@ public class ModelUsageDataCollectorTest
     private HeartBeatJobScheduler mockScheduler;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
         mockScheduler = mock(HeartBeatJobScheduler.class);
@@ -75,11 +71,18 @@ public class ModelUsageDataCollectorTest
         when(customModelService.getCustomModelsInfo()).thenReturn(mockCustomModelsInfo);
 
         TransactionService mockTransactionService = mock(TransactionService.class);
-        RetryingTransactionHelper mockRetryingTransactionHelper = mock(RetryingTransactionHelper.class);
-        when(mockRetryingTransactionHelper.doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean())).thenReturn(mockCustomModelsInfo);
-        when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
+        RetryingTransactionHelper mockRetryingTransactionHelper =
+                mock(RetryingTransactionHelper.class);
+        when(mockRetryingTransactionHelper.doInTransaction(
+                        any(RetryingTransactionHelper.RetryingTransactionCallback.class),
+                        anyBoolean()))
+                .thenReturn(mockCustomModelsInfo);
+        when(mockTransactionService.getRetryingTransactionHelper())
+                .thenReturn(mockRetryingTransactionHelper);
 
-        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model","1.0", "0 0 0 ? * *", mockScheduler);
+        usageModelCollector =
+                new ModelUsageDataCollector(
+                        "acs.repository.usage.model", "1.0", "0 0 0 ? * *", mockScheduler);
 
         usageModelCollector.setHbDataCollectorService(mockCollectorService);
         usageModelCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
@@ -90,10 +93,8 @@ public class ModelUsageDataCollectorTest
     }
 
     @Test
-    public void testHBDataFields()
-    {
-        for(HBData data : this.collectedData)
-        {
+    public void testHBDataFields() {
+        for (HBData data : this.collectedData) {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
             assertNotNull(data.getSchemaVersion());
@@ -103,24 +104,19 @@ public class ModelUsageDataCollectorTest
     }
 
     @Test
-    public void testModelUsageDataIsCollected()
-    {
+    public void testModelUsageDataIsCollected() {
         HBData modelUsage = grabDataByCollectorId(usageModelCollector.getCollectorId());
         assertNotNull("Model usage data missing.", modelUsage);
 
-        Map<String,Object> data = modelUsage.getData();
+        Map<String, Object> data = modelUsage.getData();
         assertTrue(data.containsKey("numOfActiveModels"));
         assertTrue(data.containsKey("numOfActiveTypes"));
         assertTrue(data.containsKey("numOfActiveAspects"));
-
     }
 
-    private HBData grabDataByCollectorId(String collectorId)
-    {
-        for (HBData d : this.collectedData)
-        {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
-            {
+    private HBData grabDataByCollectorId(String collectorId) {
+        for (HBData d : this.collectedData) {
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId)) {
                 return d;
             }
         }

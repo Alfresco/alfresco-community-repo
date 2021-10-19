@@ -27,11 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.report;
 
-import java.util.Set;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+
+import java.util.Set;
 
 /**
  * Report service.
@@ -40,12 +40,11 @@ import org.alfresco.service.namespace.QName;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface ReportService
-{
+public interface ReportService {
     /**
      * Register a report generator with the report service.
      *
-     * @param reportGenerator   report generator
+     * @param reportGenerator report generator
      */
     void registerReportGenerator(ReportGenerator reportGenerator);
 
@@ -59,9 +58,9 @@ public interface ReportService
     /**
      * Generate a report of the given type and reported upon node reference.
      *
-     * @param reportType            report type
-     * @param reportedUponNodeRef   reported upon node reference
-     * @return {@link Report}       generated report
+     * @param reportType report type
+     * @param reportedUponNodeRef reported upon node reference
+     * @return {@link Report} generated report
      */
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef);
 
@@ -69,11 +68,10 @@ public interface ReportService
      * Generate a report for a specified mimetype.
      *
      * @see #generateReport(QName, NodeRef)
-     *
-     * @param reportType            report type
-     * @param reportedUponNodeRef   report upon node reference
-     * @param mimetype              report mimetype
-     * @return {@link Report}       generated report
+     * @param reportType report type
+     * @param reportedUponNodeRef report upon node reference
+     * @param mimetype report mimetype
+     * @return {@link Report} generated report
      */
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype);
 
@@ -81,9 +79,9 @@ public interface ReportService
      * File report in the given destination. If the given node reference is a file plan node
      * reference the report will be filed in the unfiled records container.
      *
-     * @param nodeRef   node reference
-     * @param report    report
-     * @return NodeRef  node reference of the filed report
+     * @param nodeRef node reference
+     * @param report report
+     * @return NodeRef node reference of the filed report
      */
     NodeRef fileReport(NodeRef nodeRef, Report report);
 }

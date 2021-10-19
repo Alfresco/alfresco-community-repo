@@ -35,8 +35,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Collections;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -55,108 +53,134 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
+
 /**
  * API tests for rejecting records
+ *
  * @author Ross Gale
  * @since 3.1
  */
-public class RejectRecordTests extends BaseRMRestTest
-{
-    private final static String REJECT_REASON = "Just because";
+public class RejectRecordTests extends BaseRMRestTest {
+    private static final String REJECT_REASON = "Just because";
     private SiteModel publicSite;
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder, linkRecordFolder;
 
-    @Autowired
-    private RecordsAPI recordsAPI;
-    @Autowired
-    private RulesAPI rulesAPI;
+    @Autowired private RecordsAPI recordsAPI;
+    @Autowired private RulesAPI rulesAPI;
 
-    @BeforeClass (alwaysRun = true)
-    public void setUp()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void setUp() {
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
         linkRecordFolder = createFolder(recordCategory.getId(), getRandomName("linkRecordFolder"));
     }
 
-    /**
-     * Test that when rejecting a linked record that the link is also removed
-     */
+    /** Test that when rejecting a linked record that the link is also removed */
     @Test
     @AlfrescoTest(jira = "RM-6869")
-    public void rejectLinkedRecord()
-    {
+    public void rejectLinkedRecord() {
         STEP("Create a document in the collaboration site");
-        FileModel testFile = dataContent.usingSite(publicSite)
-                                        .usingAdmin()
-                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile =
+                dataContent
+                        .usingSite(publicSite)
+                        .usingAdmin()
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a location parameter value");
-        Record record = getRestAPIFactory().getFilesAPI()
-                                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
-                                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
+        Record record =
+                getRestAPIFactory()
+                        .getFilesAPI()
+                        .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
+                        .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Link record to new folder");
-        RecordBodyFile linkRecordBody = RecordBodyFile.builder().targetParentId(linkRecordFolder.getId()).build();
+        RecordBodyFile linkRecordBody =
+                RecordBodyFile.builder().targetParentId(linkRecordFolder.getId()).build();
         getRestAPIFactory().getRecordsAPI().fileRecord(linkRecordBody, record.getId());
 
         STEP("Verify the linked record has been added");
-        assertTrue(isMatchingRecordInRecordFolder(testFile, linkRecordFolder), "Linked record not created");
+        assertTrue(
+                isMatchingRecordInRecordFolder(testFile, linkRecordFolder),
+                "Linked record not created");
 
         STEP("Reject record");
-        recordsAPI.rejectRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), record.getName(), REJECT_REASON);
+        recordsAPI.rejectRecord(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword(),
+                record.getName(),
+                REJECT_REASON);
 
         STEP("Check record has been rejected");
-        assertFalse(isMatchingRecordInRecordFolder(testFile, recordFolder), "Record rejection failure");
+        assertFalse(
+                isMatchingRecordInRecordFolder(testFile, recordFolder), "Record rejection failure");
 
         STEP("Verify the linked record has been removed");
-        assertFalse(isMatchingRecordInRecordFolder(testFile, linkRecordFolder), "Record link not removed");
+        assertFalse(
+                isMatchingRecordInRecordFolder(testFile, linkRecordFolder),
+                "Record link not removed");
     }
 
-    /**
-     * Test that rejecting a completed record is not possible
-     */
+    /** Test that rejecting a completed record is not possible */
     @Test
     @AlfrescoTest(jira = "RM-6881")
-    public void rejectCompletedRecord()
-    {
+    public void rejectCompletedRecord() {
         STEP("Create a document in the collaboration site");
-        FileModel testFile = dataContent.usingSite(publicSite)
-                                        .usingAdmin()
-                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile =
+                dataContent
+                        .usingSite(publicSite)
+                        .usingAdmin()
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create a record folder with a reject rule");
-        RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
-        RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
-                                                      .applyToChildren(true).rejectReason(REJECT_REASON)
-                                                      .actions(Collections.singletonList(ActionsOnRule.REJECT.getActionValue()));
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
-
+        RecordCategoryChild folderWithRule =
+                createFolder(recordCategory.getId(), getRandomName("recordFolder"));
+        RuleDefinition ruleDefinition =
+                RuleDefinition.createNewRule()
+                        .title("name")
+                        .description("description")
+                        .applyToChildren(true)
+                        .rejectReason(REJECT_REASON)
+                        .actions(Collections.singletonList(ActionsOnRule.REJECT.getActionValue()));
+        rulesAPI.createRule(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword(),
+                NODE_PREFIX + folderWithRule.getId(),
+                ruleDefinition);
 
         STEP("Declare document as record to Unfiled Records folder");
-        Record record = getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
+        Record record =
+                getRestAPIFactory()
+                        .getFilesAPI()
+                        .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Complete, then file the record to the folder with rule");
         completeRecord(record.getId());
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(folderWithRule.getId()).build();
+        RecordBodyFile recordBodyFile =
+                RecordBodyFile.builder().targetParentId(folderWithRule.getId()).build();
         getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, record.getId());
         assertStatusCode(CREATED);
 
         STEP("Check record hasn't been rejected through rule");
-        assertTrue(isMatchingRecordInRecordFolder(testFile, folderWithRule), "Record rejection succeeded!");
+        assertTrue(
+                isMatchingRecordInRecordFolder(testFile, folderWithRule),
+                "Record rejection succeeded!");
 
         STEP("Reject record directly through api");
-        recordsAPI.rejectRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), SC_INTERNAL_SERVER_ERROR,
-                record.getName(), REJECT_REASON);
+        recordsAPI.rejectRecord(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword(),
+                SC_INTERNAL_SERVER_ERROR,
+                record.getName(),
+                REJECT_REASON);
     }
 
-    @AfterClass (alwaysRun = true)
-    public void cleanUp()
-    {
+    @AfterClass(alwaysRun = true)
+    public void cleanUp() {
         deleteRecordCategory(recordCategory.getId());
         dataSite.deleteSite(publicSite);
     }

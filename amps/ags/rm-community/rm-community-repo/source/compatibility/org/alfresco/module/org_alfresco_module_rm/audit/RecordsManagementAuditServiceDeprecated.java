@@ -27,13 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Map;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * Deprecated records management audit interface methods.
@@ -43,17 +43,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @deprecated as of 2.1, see {@link RecordsManagementAuditService}.
  */
 @AlfrescoPublicApi
-public interface RecordsManagementAuditServiceDeprecated
-{
-    /**
-     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#stopAuditLog(NodeRef)}
-     */
+public interface RecordsManagementAuditServiceDeprecated {
+    /** @deprecated as of 2.1, see {@link RecordsManagementAuditService#stopAuditLog(NodeRef)} */
     @Deprecated
     void stop();
 
-    /**
-     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#clearAuditLog(NodeRef)}
-     */
+    /** @deprecated as of 2.1, see {@link RecordsManagementAuditService#clearAuditLog(NodeRef)} */
     @Deprecated
     void clear();
 
@@ -64,20 +59,17 @@ public interface RecordsManagementAuditServiceDeprecated
     boolean isEnabled();
 
     /**
-     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#getDateAuditLogLastStarted(NodeRef)}
+     * @deprecated as of 2.1, see {@link
+     *     RecordsManagementAuditService#getDateAuditLogLastStarted(NodeRef)}
      */
     @Deprecated
     Date getDateLastStarted();
 
-    /**
-     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#getDateLastStopped()}
-     */
+    /** @deprecated as of 2.1, see {@link RecordsManagementAuditService#getDateLastStopped()} */
     Date getDateLastStopped();
 
-    /**
-     * @deprecated as of 2.1
-     */
+    /** @deprecated as of 2.1 */
     @Deprecated
-    void auditRMAction(RecordsManagementAction action, NodeRef nodeRef, Map<String, Serializable> parameters);
-
+    void auditRMAction(
+            RecordsManagementAction action, NodeRef nodeRef, Map<String, Serializable> parameters);
 }

@@ -32,8 +32,7 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class FilePlanComponentAlias
-{
+public class FilePlanComponentAlias {
     public static final String FILE_PLAN_ALIAS = "-filePlan-";
     public static final String TRANSFERS_ALIAS = "-transfers-";
     public static final String UNFILED_RECORDS_CONTAINER_ALIAS = "-unfiled-";

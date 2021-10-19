@@ -25,13 +25,6 @@
  */
 package org.alfresco.repo.node;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeArchiveNodePolicy;
@@ -63,7 +56,6 @@ import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
 import org.alfresco.repo.policy.AssociationPolicyDelegate;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -85,28 +77,33 @@ import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
- * Provides common functionality for
- * {@link org.alfresco.service.cmr.repository.NodeService} implementations.
- * <p>
- * Some of the overloaded simpler versions of methods are implemented by passing
- * through the defaults as required.
- * <p>
- * The callback handling is also provided as a convenience for implementations.
- * 
+ * Provides common functionality for {@link org.alfresco.service.cmr.repository.NodeService}
+ * implementations.
+ *
+ * <p>Some of the overloaded simpler versions of methods are implemented by passing through the
+ * defaults as required.
+ *
+ * <p>The callback handling is also provided as a convenience for implementations.
+ *
  * @author Derek Hulley
  */
-public abstract class AbstractNodeServiceImpl implements NodeService
-{
-    /**
-     * The logger
-     */
+public abstract class AbstractNodeServiceImpl implements NodeService {
+    /** The logger */
     private static Log logger = LogFactory.getLog(AbstractNodeServiceImpl.class);
-    
+
     /** a uuid identifying this unique instance */
     private String uuid;
     /** controls policy delegates */
     private PolicyComponent policyComponent;
+
     protected DictionaryService dictionaryService;
     protected TransactionService transactionService;
     protected TenantService tenantService;
@@ -134,142 +131,157 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private ClassPolicyDelegate<OnAddAspectPolicy> onAddAspectDelegate;
     private ClassPolicyDelegate<BeforeRemoveAspectPolicy> beforeRemoveAspectDelegate;
     private ClassPolicyDelegate<OnRemoveAspectPolicy> onRemoveAspectDelegate;
-    private AssociationPolicyDelegate<OnCreateChildAssociationPolicy> onCreateChildAssociationDelegate;
-    private AssociationPolicyDelegate<BeforeDeleteChildAssociationPolicy> beforeDeleteChildAssociationDelegate;
-    private AssociationPolicyDelegate<OnDeleteChildAssociationPolicy> onDeleteChildAssociationDelegate;
+    private AssociationPolicyDelegate<OnCreateChildAssociationPolicy>
+            onCreateChildAssociationDelegate;
+    private AssociationPolicyDelegate<BeforeDeleteChildAssociationPolicy>
+            beforeDeleteChildAssociationDelegate;
+    private AssociationPolicyDelegate<OnDeleteChildAssociationPolicy>
+            onDeleteChildAssociationDelegate;
     private AssociationPolicyDelegate<OnCreateAssociationPolicy> onCreateAssociationDelegate;
-    private AssociationPolicyDelegate<BeforeDeleteAssociationPolicy> beforeDeleteAssociationDelegate;
+    private AssociationPolicyDelegate<BeforeDeleteAssociationPolicy>
+            beforeDeleteAssociationDelegate;
     private AssociationPolicyDelegate<OnDeleteAssociationPolicy> onDeleteAssociationDelegate;
 
-    /**
-     * 
-     */
-    protected AbstractNodeServiceImpl()
-    {
+    /** */
+    protected AbstractNodeServiceImpl() {
         this.uuid = GUID.generate();
     }
 
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
+    public void setPolicyComponent(PolicyComponent policyComponent) {
         this.policyComponent = policyComponent;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
-    
-    public void setTransactionService(TransactionService transactionService)
-    {
+
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
-    
-    public void setTenantService(TenantService tenantService)
-    {
+
+    public void setTenantService(TenantService tenantService) {
         this.tenantService = tenantService;
     }
-    
-    public void setStoresToIgnorePolicies(Set<String> storesToIgnorePolicies)
-    {
+
+    public void setStoresToIgnorePolicies(Set<String> storesToIgnorePolicies) {
         this.storesToIgnorePolicies = storesToIgnorePolicies;
     }
 
-    /**
-     * Checks equality by type and uuid
-     */
-    public boolean equals(Object obj)
-    {
-        if (obj == null)
-        {
+    /** Checks equality by type and uuid */
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
-        }
-        else if (!(obj instanceof AbstractNodeServiceImpl))
-        {
+        } else if (!(obj instanceof AbstractNodeServiceImpl)) {
             return false;
         }
         AbstractNodeServiceImpl that = (AbstractNodeServiceImpl) obj;
         return this.uuid.equals(that.uuid);
     }
-    
-    /**
-     * @see #uuid
-     */
-    public int hashCode()
-    {
+
+    /** @see #uuid */
+    public int hashCode() {
         return uuid.hashCode();
     }
 
-    /**
-     * Registers the node policies as well as node indexing behaviour
-     */
-    public void init()
-    {
+    /** Registers the node policies as well as node indexing behaviour */
+    public void init() {
         // Register the various policies
-        beforeCreateStoreDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeCreateStorePolicy.class);
-        onCreateStoreDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnCreateStorePolicy.class);
-        beforeCreateNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeCreateNodePolicy.class);
-        onCreateNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnCreateNodePolicy.class);
-        beforeMoveNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeMoveNodePolicy.class);
-        onMoveNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnMoveNodePolicy.class);
-        beforeUpdateNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeUpdateNodePolicy.class);
-        onUpdateNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdateNodePolicy.class);
-        onSetNodeTypeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnSetNodeTypePolicy.class);
-        beforeSetNodeTypeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeSetNodeTypePolicy.class);
-        onUpdatePropertiesDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdatePropertiesPolicy.class);
-        beforeDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeDeleteNodePolicy.class);
-        beforeArchiveNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeArchiveNodePolicy.class);
-        onDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnDeleteNodePolicy.class);
-        onRestoreNodePolicy = policyComponent.registerClassPolicy(NodeServicePolicies.OnRestoreNodePolicy.class);
-        
-        beforeAddAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeAddAspectPolicy.class);
-        onAddAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnAddAspectPolicy.class);
-        beforeRemoveAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeRemoveAspectPolicy.class);
-        onRemoveAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnRemoveAspectPolicy.class);
-        
-        onCreateChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.class);
-        beforeDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeDeleteChildAssociationPolicy.class);
-        onDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnDeleteChildAssociationPolicy.class);
-        
-        onCreateAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateAssociationPolicy.class);
-        beforeDeleteAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeDeleteAssociationPolicy.class);
-        onDeleteAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnDeleteAssociationPolicy.class);
+        beforeCreateStoreDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeCreateStorePolicy.class);
+        onCreateStoreDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnCreateStorePolicy.class);
+        beforeCreateNodeDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeCreateNodePolicy.class);
+        onCreateNodeDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnCreateNodePolicy.class);
+        beforeMoveNodeDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.BeforeMoveNodePolicy.class);
+        onMoveNodeDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnMoveNodePolicy.class);
+        beforeUpdateNodeDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeUpdateNodePolicy.class);
+        onUpdateNodeDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdateNodePolicy.class);
+        onSetNodeTypeDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnSetNodeTypePolicy.class);
+        beforeSetNodeTypeDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeSetNodeTypePolicy.class);
+        onUpdatePropertiesDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.OnUpdatePropertiesPolicy.class);
+        beforeDeleteNodeDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeDeleteNodePolicy.class);
+        beforeArchiveNodeDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeArchiveNodePolicy.class);
+        onDeleteNodeDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnDeleteNodePolicy.class);
+        onRestoreNodePolicy =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnRestoreNodePolicy.class);
+
+        beforeAddAspectDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeAddAspectPolicy.class);
+        onAddAspectDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnAddAspectPolicy.class);
+        beforeRemoveAspectDelegate =
+                policyComponent.registerClassPolicy(
+                        NodeServicePolicies.BeforeRemoveAspectPolicy.class);
+        onRemoveAspectDelegate =
+                policyComponent.registerClassPolicy(NodeServicePolicies.OnRemoveAspectPolicy.class);
+
+        onCreateChildAssociationDelegate =
+                policyComponent.registerAssociationPolicy(
+                        NodeServicePolicies.OnCreateChildAssociationPolicy.class);
+        beforeDeleteChildAssociationDelegate =
+                policyComponent.registerAssociationPolicy(
+                        NodeServicePolicies.BeforeDeleteChildAssociationPolicy.class);
+        onDeleteChildAssociationDelegate =
+                policyComponent.registerAssociationPolicy(
+                        NodeServicePolicies.OnDeleteChildAssociationPolicy.class);
+
+        onCreateAssociationDelegate =
+                policyComponent.registerAssociationPolicy(
+                        NodeServicePolicies.OnCreateAssociationPolicy.class);
+        beforeDeleteAssociationDelegate =
+                policyComponent.registerAssociationPolicy(
+                        NodeServicePolicies.BeforeDeleteAssociationPolicy.class);
+        onDeleteAssociationDelegate =
+                policyComponent.registerAssociationPolicy(
+                        NodeServicePolicies.OnDeleteAssociationPolicy.class);
     }
-    
-    private boolean ignorePolicy(StoreRef storeRef)
-    {
+
+    private boolean ignorePolicy(StoreRef storeRef) {
         return (storesToIgnorePolicies.contains(tenantService.getBaseName(storeRef).toString()));
     }
-    
-    private boolean ignorePolicy(NodeRef nodeRef)
-    {
-        return (storesToIgnorePolicies.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()));
+
+    private boolean ignorePolicy(NodeRef nodeRef) {
+        return (storesToIgnorePolicies.contains(
+                tenantService.getBaseName(nodeRef.getStoreRef()).toString()));
     }
-    
-    /**
-     * @see NodeServicePolicies.BeforeCreateStorePolicy#beforeCreateStore(QName,
-     *      StoreRef)
-     */
-    protected void invokeBeforeCreateStore(QName nodeTypeQName, StoreRef storeRef)
-    {
-        if (ignorePolicy(storeRef))
-        {
+
+    /** @see NodeServicePolicies.BeforeCreateStorePolicy#beforeCreateStore(QName, StoreRef) */
+    protected void invokeBeforeCreateStore(QName nodeTypeQName, StoreRef storeRef) {
+        if (ignorePolicy(storeRef)) {
             return;
         }
-        
-        NodeServicePolicies.BeforeCreateStorePolicy policy = this.beforeCreateStoreDelegate.get(nodeTypeQName);
+
+        NodeServicePolicies.BeforeCreateStorePolicy policy =
+                this.beforeCreateStoreDelegate.get(nodeTypeQName);
         policy.beforeCreateStore(nodeTypeQName, storeRef);
     }
 
-    /**
-     * @see NodeServicePolicies.OnCreateStorePolicy#onCreateStore(NodeRef)
-     */
-    protected void invokeOnCreateStore(NodeRef rootNodeRef)
-    {
-        if (ignorePolicy(rootNodeRef))
-        {
+    /** @see NodeServicePolicies.OnCreateStorePolicy#onCreateStore(NodeRef) */
+    protected void invokeOnCreateStore(NodeRef rootNodeRef) {
+        if (ignorePolicy(rootNodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(rootNodeRef);
         // execute policy for node type and aspects
@@ -278,71 +290,71 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * @see NodeServicePolicies.BeforeCreateNodePolicy#beforeCreateNode(NodeRef,
-     *      QName, QName, QName)
+     * @see NodeServicePolicies.BeforeCreateNodePolicy#beforeCreateNode(NodeRef, QName, QName,
+     *     QName)
      */
-    protected void invokeBeforeCreateNode(NodeRef parentNodeRef, QName assocTypeQName, QName assocQName, QName childNodeTypeQName)
-    {
-        if (ignorePolicy(parentNodeRef))
-        {
+    protected void invokeBeforeCreateNode(
+            NodeRef parentNodeRef,
+            QName assocTypeQName,
+            QName assocQName,
+            QName childNodeTypeQName) {
+        if (ignorePolicy(parentNodeRef)) {
             return;
         }
-        
+
         // execute policy for node type
-        NodeServicePolicies.BeforeCreateNodePolicy policy = beforeCreateNodeDelegate.get(childNodeTypeQName);
+        NodeServicePolicies.BeforeCreateNodePolicy policy =
+                beforeCreateNodeDelegate.get(childNodeTypeQName);
         policy.beforeCreateNode(parentNodeRef, assocTypeQName, assocQName, childNodeTypeQName);
     }
 
-    /**
-     * @see NodeServicePolicies.OnCreateNodePolicy#onCreateNode(ChildAssociationRef)
-     */
-    protected void invokeOnCreateNode(ChildAssociationRef childAssocRef)
-    {
+    /** @see NodeServicePolicies.OnCreateNodePolicy#onCreateNode(ChildAssociationRef) */
+    protected void invokeOnCreateNode(ChildAssociationRef childAssocRef) {
         NodeRef childNodeRef = childAssocRef.getChildRef();
-        
-        if (ignorePolicy(childNodeRef))
-        {
+
+        if (ignorePolicy(childNodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnCreateNodePolicy policy = onCreateNodeDelegate.get(childNodeRef, qnames);
+        NodeServicePolicies.OnCreateNodePolicy policy =
+                onCreateNodeDelegate.get(childNodeRef, qnames);
         policy.onCreateNode(childAssocRef);
     }
-    
+
     /**
      * @see NodeServicePolicies.BeforeMoveNodePolicy#beforeMoveNode(ChildAssociationRef, NodeRef)
      */
-    protected void invokeBeforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef)
-    {
+    protected void invokeBeforeMoveNode(
+            ChildAssociationRef oldChildAssocRef, NodeRef newParentRef) {
         NodeRef childNodeRef = oldChildAssocRef.getChildRef();
-        
-        if (ignorePolicy(childNodeRef))
-        {
+
+        if (ignorePolicy(childNodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeMoveNodePolicy policy = beforeMoveNodeDelegate.get(childNodeRef, qnames);
+        NodeServicePolicies.BeforeMoveNodePolicy policy =
+                beforeMoveNodeDelegate.get(childNodeRef, qnames);
         policy.beforeMoveNode(oldChildAssocRef, newParentRef);
     }
-    
+
     /**
-     * @see NodeServicePolicies.OnMoveNodePolicy#onMoveNode(ChildAssociationRef, ChildAssociationRef)
+     * @see NodeServicePolicies.OnMoveNodePolicy#onMoveNode(ChildAssociationRef,
+     *     ChildAssociationRef)
      */
-    protected void invokeOnMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
-    {
+    protected void invokeOnMoveNode(
+            ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef) {
         NodeRef childNodeRef = newChildAssocRef.getChildRef();
-        
-        if (ignorePolicy(childNodeRef))
-        {
+
+        if (ignorePolicy(childNodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
         // execute policy for node type and aspects
@@ -350,414 +362,363 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         policy.onMoveNode(oldChildAssocRef, newChildAssocRef);
     }
 
-    /**
-     * @see NodeServicePolicies.BeforeUpdateNodePolicy#beforeUpdateNode(NodeRef)
-     */
-    protected void invokeBeforeUpdateNode(NodeRef nodeRef)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.BeforeUpdateNodePolicy#beforeUpdateNode(NodeRef) */
+    protected void invokeBeforeUpdateNode(NodeRef nodeRef) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeUpdateNodePolicy policy = beforeUpdateNodeDelegate.get(nodeRef, qnames);
+        NodeServicePolicies.BeforeUpdateNodePolicy policy =
+                beforeUpdateNodeDelegate.get(nodeRef, qnames);
         policy.beforeUpdateNode(nodeRef);
     }
 
-    /**
-     * @see NodeServicePolicies.OnUpdateNodePolicy#onUpdateNode(NodeRef)
-     */
-    protected void invokeOnUpdateNode(NodeRef nodeRef)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.OnUpdateNodePolicy#onUpdateNode(NodeRef) */
+    protected void invokeOnUpdateNode(NodeRef nodeRef) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
         NodeServicePolicies.OnUpdateNodePolicy policy = onUpdateNodeDelegate.get(nodeRef, qnames);
         policy.onUpdateNode(nodeRef);
     }
-    
-    /**
-     * @see NodeServicePolicies.OnSetNodeTypePolicy#onSetNodeType(NodeRef, QName, QName)
-     */
-    protected void invokeOnSetType(NodeRef nodeRef, QName oldType, QName newType)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+
+    /** @see NodeServicePolicies.OnSetNodeTypePolicy#onSetNodeType(NodeRef, QName, QName) */
+    protected void invokeOnSetType(NodeRef nodeRef, QName oldType, QName newType) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
         NodeServicePolicies.OnSetNodeTypePolicy policy = onSetNodeTypeDelegate.get(nodeRef, qnames);
         policy.onSetNodeType(nodeRef, oldType, newType);
     }
-    
-    /**
-     * @see NodeServicePolicies.BeforeSetNodeTypePolicy#beforeSetNodeType(NodeRef, QName, QName)
-     */
-    protected void invokeBeforeSetType(NodeRef nodeRef, QName oldType, QName newType)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+
+    /** @see NodeServicePolicies.BeforeSetNodeTypePolicy#beforeSetNodeType(NodeRef, QName, QName) */
+    protected void invokeBeforeSetType(NodeRef nodeRef, QName oldType, QName newType) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeSetNodeTypePolicy policy = beforeSetNodeTypeDelegate.get(nodeRef, qnames);
+        NodeServicePolicies.BeforeSetNodeTypePolicy policy =
+                beforeSetNodeTypeDelegate.get(nodeRef, qnames);
         policy.beforeSetNodeType(nodeRef, oldType, newType);
     }
-    
-    /**
-     * @see NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
-     */
+
+    /** @see NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map) */
     protected void invokeOnUpdateProperties(
-            NodeRef nodeRef,
-            Map<QName, Serializable> before,
-            Map<QName, Serializable> after)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+            NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // Some logging so we can see which properties have been modified
-        if (logger.isDebugEnabled() == true)
-        {
-            if (before == null)
-            {
-                logger.debug("The properties are being set for the first time.  (nodeRef=" + nodeRef.toString() + ")");
-            }
-            else if (after == null)
-            {
-                logger.debug("All the properties are being cleared.  (nodeRef=" + nodeRef.toString() + ")");                
-            }
-            else
-            {
-                logger.debug("The following properties have been updated:  (nodeRef=" + nodeRef.toString() + ")");
-                for (Map.Entry<QName, Serializable> entry : after.entrySet())
-                {
+        if (logger.isDebugEnabled() == true) {
+            if (before == null) {
+                logger.debug(
+                        "The properties are being set for the first time.  (nodeRef="
+                                + nodeRef.toString()
+                                + ")");
+            } else if (after == null) {
+                logger.debug(
+                        "All the properties are being cleared.  (nodeRef="
+                                + nodeRef.toString()
+                                + ")");
+            } else {
+                logger.debug(
+                        "The following properties have been updated:  (nodeRef="
+                                + nodeRef.toString()
+                                + ")");
+                for (Map.Entry<QName, Serializable> entry : after.entrySet()) {
                     Serializable beforeValue = before.get(entry.getKey());
-                    if (beforeValue == null)
-                    {
+                    if (beforeValue == null) {
                         // Property has been set for the first time
-                        logger.debug("   - The property " + entry.getKey().toString() + " has been set for the first time.");
-                    }
-                    else
-                    {
+                        logger.debug(
+                                "   - The property "
+                                        + entry.getKey().toString()
+                                        + " has been set for the first time.");
+                    } else {
                         // Compare the before and after value
-                        if (beforeValue.equals(entry.getValue()) == false)
-                        {
-                            logger.debug("   - The property " + entry.getKey().toString() + " has been updated.");
+                        if (beforeValue.equals(entry.getValue()) == false) {
+                            logger.debug(
+                                    "   - The property "
+                                            + entry.getKey().toString()
+                                            + " has been updated.");
                         }
                     }
-                    
                 }
             }
-            
         }
-                
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnUpdatePropertiesPolicy policy = onUpdatePropertiesDelegate.get(nodeRef, qnames);
+        NodeServicePolicies.OnUpdatePropertiesPolicy policy =
+                onUpdatePropertiesDelegate.get(nodeRef, qnames);
         policy.onUpdateProperties(nodeRef, before, after);
     }
 
-    /**
-     * @see NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(NodeRef)
-     */
-    protected void invokeBeforeDeleteNode(NodeRef nodeRef)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(NodeRef) */
+    protected void invokeBeforeDeleteNode(NodeRef nodeRef) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeDeleteNodePolicy policy = beforeDeleteNodeDelegate.get(nodeRef, qnames);
+        NodeServicePolicies.BeforeDeleteNodePolicy policy =
+                beforeDeleteNodeDelegate.get(nodeRef, qnames);
         policy.beforeDeleteNode(nodeRef);
     }
 
-    /**
-     * @see NodeServicePolicies.BeforeArchiveNodePolicy
-     */
-    protected void invokeBeforeArchiveNode(NodeRef nodeRef)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.BeforeArchiveNodePolicy */
+    protected void invokeBeforeArchiveNode(NodeRef nodeRef) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
+
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeArchiveNodePolicy policy = beforeArchiveNodeDelegate.get(nodeRef, qnames);
+        NodeServicePolicies.BeforeArchiveNodePolicy policy =
+                beforeArchiveNodeDelegate.get(nodeRef, qnames);
         policy.beforeArchiveNode(nodeRef);
     }
 
-    /**
-     * @see NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(ChildAssociationRef, boolean)
-     */
-    protected void invokeOnDeleteNode(ChildAssociationRef childAssocRef, QName childNodeTypeQName, Set<QName> childAspectQnames, boolean isArchivedNode)
-    {
+    /** @see NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(ChildAssociationRef, boolean) */
+    protected void invokeOnDeleteNode(
+            ChildAssociationRef childAssocRef,
+            QName childNodeTypeQName,
+            Set<QName> childAspectQnames,
+            boolean isArchivedNode) {
         NodeRef childNodeRef = childAssocRef.getChildRef();
-        
+
         Set<QName> qnames = null;
-        
-        if (ignorePolicy(childNodeRef))
-        {
+
+        if (ignorePolicy(childNodeRef)) {
             // special case
-            if (childAspectQnames.contains(ContentModel.ASPECT_VERSIONABLE) || childNodeTypeQName.equals(ContentModel.ASPECT_VERSIONABLE))
-            {
+            if (childAspectQnames.contains(ContentModel.ASPECT_VERSIONABLE)
+                    || childNodeTypeQName.equals(ContentModel.ASPECT_VERSIONABLE)) {
                 qnames = new HashSet<QName>(1);
                 qnames.add(ContentModel.ASPECT_VERSIONABLE);
             }
-        }
-        else
-        {
+        } else {
             // get qnames to invoke against
             qnames = new HashSet<QName>(childAspectQnames.size() + 1);
             qnames.addAll(childAspectQnames);
             qnames.add(childNodeTypeQName);
         }
-        
-        if (qnames != null)
-        {
+
+        if (qnames != null) {
             // execute policy for node type and aspects
-            NodeServicePolicies.OnDeleteNodePolicy policy = onDeleteNodeDelegate.get(childAssocRef.getChildRef(), qnames);
+            NodeServicePolicies.OnDeleteNodePolicy policy =
+                    onDeleteNodeDelegate.get(childAssocRef.getChildRef(), qnames);
             policy.onDeleteNode(childAssocRef, isArchivedNode);
         }
     }
 
-    /**
-     * @see NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(ChildAssociationRef)
-     */
-    protected void invokeOnRestoreNode(ChildAssociationRef childAssocRef)
-    {
+    /** @see NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(ChildAssociationRef) */
+    protected void invokeOnRestoreNode(ChildAssociationRef childAssocRef) {
         NodeRef childNodeRef = childAssocRef.getChildRef();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnRestoreNodePolicy policy = onRestoreNodePolicy.get(childAssocRef.getChildRef(), qnames);
+        NodeServicePolicies.OnRestoreNodePolicy policy =
+                onRestoreNodePolicy.get(childAssocRef.getChildRef(), qnames);
         policy.onRestoreNode(childAssocRef);
     }
-    
-    /**
-     * @see NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(NodeRef,
-     *      QName)
-     */
-    protected void invokeBeforeAddAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+
+    /** @see NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(NodeRef, QName) */
+    protected void invokeBeforeAddAspect(NodeRef nodeRef, QName aspectTypeQName) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
-        NodeServicePolicies.BeforeAddAspectPolicy policy = beforeAddAspectDelegate.get(nodeRef, aspectTypeQName);
+
+        NodeServicePolicies.BeforeAddAspectPolicy policy =
+                beforeAddAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.beforeAddAspect(nodeRef, aspectTypeQName);
     }
 
-    /**
-     * @see NodeServicePolicies.OnAddAspectPolicy#onAddAspect(NodeRef, QName)
-     */
-    protected void invokeOnAddAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.OnAddAspectPolicy#onAddAspect(NodeRef, QName) */
+    protected void invokeOnAddAspect(NodeRef nodeRef, QName aspectTypeQName) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
-        NodeServicePolicies.OnAddAspectPolicy policy = onAddAspectDelegate.get(nodeRef, aspectTypeQName);
+
+        NodeServicePolicies.OnAddAspectPolicy policy =
+                onAddAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.onAddAspect(nodeRef, aspectTypeQName);
     }
 
-    /**
-     * @see NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(NodeRef,
-     *      QName)
-     */
-    protected void invokeBeforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(NodeRef, QName) */
+    protected void invokeBeforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
-        NodeServicePolicies.BeforeRemoveAspectPolicy policy = beforeRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
+
+        NodeServicePolicies.BeforeRemoveAspectPolicy policy =
+                beforeRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.beforeRemoveAspect(nodeRef, aspectTypeQName);
     }
 
-    /**
-     * @see NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(NodeRef,
-     *      QName)
-     */
-    protected void invokeOnRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (ignorePolicy(nodeRef))
-        {
+    /** @see NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(NodeRef, QName) */
+    protected void invokeOnRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) {
+        if (ignorePolicy(nodeRef)) {
             return;
         }
-        
-        NodeServicePolicies.OnRemoveAspectPolicy policy = onRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
+
+        NodeServicePolicies.OnRemoveAspectPolicy policy =
+                onRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.onRemoveAspect(nodeRef, aspectTypeQName);
     }
-    
+
     /**
-     * @see NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef, boolean)
+     * @see
+     *     NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef,
+     *     boolean)
      */
-    protected void invokeOnCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
+    protected void invokeOnCreateChildAssociation(
+            ChildAssociationRef childAssocRef, boolean isNewNode) {
         // Get the parent reference and the assoc type qName
         NodeRef parentNodeRef = childAssocRef.getParentRef();
-        
-        if (ignorePolicy(parentNodeRef))
-        {
+
+        if (ignorePolicy(parentNodeRef)) {
             return;
         }
-        
+
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnCreateChildAssociationPolicy policy = onCreateChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
+        NodeServicePolicies.OnCreateChildAssociationPolicy policy =
+                onCreateChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
         policy.onCreateChildAssociation(childAssocRef, isNewNode);
     }
 
     /**
-     * @see NodeServicePolicies.BeforeDeleteChildAssociationPolicy#beforeDeleteChildAssociation(ChildAssociationRef)
+     * @see
+     *     NodeServicePolicies.BeforeDeleteChildAssociationPolicy#beforeDeleteChildAssociation(ChildAssociationRef)
      */
-    protected void invokeBeforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
-    {
+    protected void invokeBeforeDeleteChildAssociation(ChildAssociationRef childAssocRef) {
         NodeRef parentNodeRef = childAssocRef.getParentRef();
-        
-        if (ignorePolicy(parentNodeRef))
-        {
+
+        if (ignorePolicy(parentNodeRef)) {
             return;
         }
-        
+
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeDeleteChildAssociationPolicy policy = beforeDeleteChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
+        NodeServicePolicies.BeforeDeleteChildAssociationPolicy policy =
+                beforeDeleteChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
         policy.beforeDeleteChildAssociation(childAssocRef);
     }
 
     /**
-     * @see NodeServicePolicies.OnDeleteChildAssociationPolicy#onDeleteChildAssociation(ChildAssociationRef)
+     * @see
+     *     NodeServicePolicies.OnDeleteChildAssociationPolicy#onDeleteChildAssociation(ChildAssociationRef)
      */
-    protected void invokeOnDeleteChildAssociation(ChildAssociationRef childAssocRef)
-    {
+    protected void invokeOnDeleteChildAssociation(ChildAssociationRef childAssocRef) {
         NodeRef parentNodeRef = childAssocRef.getParentRef();
-        
-        if (ignorePolicy(parentNodeRef))
-        {
+
+        if (ignorePolicy(parentNodeRef)) {
             return;
         }
-        
+
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnDeleteChildAssociationPolicy policy = onDeleteChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
+        NodeServicePolicies.OnDeleteChildAssociationPolicy policy =
+                onDeleteChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
         policy.onDeleteChildAssociation(childAssocRef);
     }
 
-    /**
-     * @see NodeServicePolicies.OnCreateAssociationPolicy#onCreateAssociation(AssociationRef)
-     */
-    protected void invokeOnCreateAssociation(AssociationRef nodeAssocRef)
-    {
+    /** @see NodeServicePolicies.OnCreateAssociationPolicy#onCreateAssociation(AssociationRef) */
+    protected void invokeOnCreateAssociation(AssociationRef nodeAssocRef) {
         NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
-        
-        if (ignorePolicy(sourceNodeRef))
-        {
+
+        if (ignorePolicy(sourceNodeRef)) {
             return;
         }
-        
+
         QName assocTypeQName = nodeAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(sourceNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnCreateAssociationPolicy policy = onCreateAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
+        NodeServicePolicies.OnCreateAssociationPolicy policy =
+                onCreateAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
         policy.onCreateAssociation(nodeAssocRef);
     }
 
     /**
-     * @see NodeServicePolicies.BeforeDeleteAssociationPolicy#beforeDeleteAssociation(AssociationRef)
+     * @see
+     *     NodeServicePolicies.BeforeDeleteAssociationPolicy#beforeDeleteAssociation(AssociationRef)
      */
-    protected void invokeBeforeDeleteAssociation(AssociationRef nodeAssocRef)
-    {
+    protected void invokeBeforeDeleteAssociation(AssociationRef nodeAssocRef) {
         NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
-        
-        if (ignorePolicy(sourceNodeRef))
-        {
+
+        if (ignorePolicy(sourceNodeRef)) {
             return;
         }
-        
+
         QName assocTypeQName = nodeAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(sourceNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.BeforeDeleteAssociationPolicy policy = beforeDeleteAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
+        NodeServicePolicies.BeforeDeleteAssociationPolicy policy =
+                beforeDeleteAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
         policy.beforeDeleteAssociation(nodeAssocRef);
     }
 
-    /**
-     * @see NodeServicePolicies.OnDeleteAssociationPolicy#onDeleteAssociation(AssociationRef)
-     */
-    protected void invokeOnDeleteAssociation(AssociationRef nodeAssocRef)
-    {
+    /** @see NodeServicePolicies.OnDeleteAssociationPolicy#onDeleteAssociation(AssociationRef) */
+    protected void invokeOnDeleteAssociation(AssociationRef nodeAssocRef) {
         NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
-        
-        if (ignorePolicy(sourceNodeRef))
-        {
+
+        if (ignorePolicy(sourceNodeRef)) {
             return;
         }
-        
+
         QName assocTypeQName = nodeAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(sourceNodeRef);
         // execute policy for node type and aspects
-        NodeServicePolicies.OnDeleteAssociationPolicy policy = onDeleteAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
+        NodeServicePolicies.OnDeleteAssociationPolicy policy =
+                onDeleteAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
         policy.onDeleteAssociation(nodeAssocRef);
     }
 
     /**
      * Get all aspect and node type qualified names
-     * 
-     * @param nodeRef
-     *            the node we are interested in
-     * @return Returns a set of qualified names containing the node type and all
-     *         the node aspects, or null if the node no longer exists
+     *
+     * @param nodeRef the node we are interested in
+     * @return Returns a set of qualified names containing the node type and all the node aspects,
+     *     or null if the node no longer exists
      */
-    protected Set<QName> getTypeAndAspectQNames(NodeRef nodeRef)
-    {
+    protected Set<QName> getTypeAndAspectQNames(NodeRef nodeRef) {
         Set<QName> qnames = null;
-        try
-        {
+        try {
             Set<QName> aspectQNames = getAspects(nodeRef);
-            
+
             QName typeQName = getType(nodeRef);
-            
+
             qnames = new HashSet<QName>(aspectQNames.size() + 1);
             qnames.addAll(aspectQNames);
             qnames.add(typeQName);
-        }
-        catch (InvalidNodeRefException e)
-        {
+        } catch (InvalidNodeRefException e) {
             qnames = Collections.emptySet();
         }
         // done
@@ -765,92 +726,83 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * Fetches any pre-defined node uuid from the properties, but <b>does not generate a new uuid</b>.
-     * 
+     * Fetches any pre-defined node uuid from the properties, but <b>does not generate a new
+     * uuid</b>.
+     *
      * @param preCreationProperties the properties that will be applied to the node
-     * @return Returns the ID to create the node with, or <tt>null</tt> if a standard GUID should be used
+     * @return Returns the ID to create the node with, or <tt>null</tt> if a standard GUID should be
+     *     used
      */
-    protected String generateGuid(Map<QName, Serializable> preCreationProperties)
-    {
+    protected String generateGuid(Map<QName, Serializable> preCreationProperties) {
         String uuid = (String) preCreationProperties.get(ContentModel.PROP_NODE_UUID);
-        if (uuid != null && uuid.length() > 50)
-        {
-            throw new IllegalArgumentException("Explicit UUID may not be greater than 50 characters: " + uuid);
+        if (uuid != null && uuid.length() > 50) {
+            throw new IllegalArgumentException(
+                    "Explicit UUID may not be greater than 50 characters: " + uuid);
         }
         // done
         return uuid;
     }
-    
+
     /**
      * Defers to the pattern matching overload
-     * 
+     *
      * @see RegexQNamePattern#MATCH_ALL
      * @see NodeService#getParentAssocs(NodeRef, QNamePattern, QNamePattern)
      */
-    public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef) throws InvalidNodeRefException
-    {
+    public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef)
+            throws InvalidNodeRefException {
         return getParentAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL);
     }
 
     /**
      * Defers to the pattern matching overload
-     * 
+     *
      * @see RegexQNamePattern#MATCH_ALL
      * @see NodeService#getChildAssocs(NodeRef, QNamePattern, QNamePattern)
      */
-    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
-    {
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef)
+            throws InvalidNodeRefException {
         return getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL);
     }
-    
-    protected Map<QName, Serializable> getDefaultProperties(QName typeQName)
-    {
+
+    protected Map<QName, Serializable> getDefaultProperties(QName typeQName) {
         ClassDefinition classDefinition = this.dictionaryService.getClass(typeQName);
-        if (classDefinition == null)
-        {
+        if (classDefinition == null) {
             return Collections.emptyMap();
         }
         return getDefaultProperties(classDefinition);
     }
-    
+
     /**
      * Sets the default property values
-     * 
-     * @param classDefinition       the model type definition for which to get defaults
+     *
+     * @param classDefinition the model type definition for which to get defaults
      */
-    protected Map<QName, Serializable> getDefaultProperties(ClassDefinition classDefinition)
-    {
+    protected Map<QName, Serializable> getDefaultProperties(ClassDefinition classDefinition) {
         PropertyMap properties = new PropertyMap();
-        for (Map.Entry<QName, Serializable> entry : classDefinition.getDefaultValues().entrySet())
-        {
+        for (Map.Entry<QName, Serializable> entry : classDefinition.getDefaultValues().entrySet()) {
             Serializable value = entry.getValue();
-            
+
             // Check the type of the default property
             PropertyDefinition prop = this.dictionaryService.getProperty(entry.getKey());
-            if (prop == null)
-            {
+            if (prop == null) {
                 // dictionary doesn't have a default value present
                 continue;
             }
 
             // TODO: what other conversions are necessary here for other types of default values ?
-            
+
             // ensure that we deliver the property in the correct form
-            if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)
-            {
-                if (value instanceof String)
-                {
-                    if (((String)value).toUpperCase().equals("TRUE") == true)
-                    {
+            if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true) {
+                if (value instanceof String) {
+                    if (((String) value).toUpperCase().equals("TRUE") == true) {
                         value = Boolean.TRUE;
-                    }
-                    else if (((String)value).toUpperCase().equals("FALSE") == true)
-                    {
+                    } else if (((String) value).toUpperCase().equals("FALSE") == true) {
                         value = Boolean.FALSE;
                     }
                 }
             }
-            
+
             // Set the default value of the property
             properties.put(entry.getKey(), value);
         }
@@ -858,15 +810,13 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     @Override
-    public List<NodeRef> findNodes(FindNodeParameters params)
-    {
+    public List<NodeRef> findNodes(FindNodeParameters params) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
-    public final boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
-    {
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public final boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef) {
         return removeSecondaryChildAssociation(childAssocRef);
     }
 }

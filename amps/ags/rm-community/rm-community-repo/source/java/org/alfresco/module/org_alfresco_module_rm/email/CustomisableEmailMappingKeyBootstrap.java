@@ -35,19 +35,15 @@ import java.util.List;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class CustomisableEmailMappingKeyBootstrap
-{
+public class CustomisableEmailMappingKeyBootstrap {
     /** List of mappings to register as customisable */
     private List<String> customisable;
 
     /** Custom email mapping service */
     private CustomEmailMappingService customEmailMappingService;
 
-    /**
-     * @param customisable  list of mappings to register as customisable
-     */
-    public void setCustomisable(List<String> customisable)
-    {
+    /** @param customisable list of mappings to register as customisable */
+    public void setCustomisable(List<String> customisable) {
         this.customisable = customisable;
     }
 
@@ -56,18 +52,13 @@ public class CustomisableEmailMappingKeyBootstrap
      *
      * @param customEmailMappingService the custom email mapping service
      */
-    public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
-    {
+    public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService) {
         this.customEmailMappingService = customEmailMappingService;
     }
 
-    /**
-     * Bean initialisation method
-     */
-    public void init()
-    {
-        for (String customEmailMappingKey : customisable)
-        {
+    /** Bean initialisation method */
+    public void init() {
+        for (String customEmailMappingKey : customisable) {
             customEmailMappingService.registerEMailMappingKey(customEmailMappingKey);
         }
     }

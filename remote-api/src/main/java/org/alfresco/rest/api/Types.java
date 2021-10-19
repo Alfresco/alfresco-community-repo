@@ -30,11 +30,8 @@ import org.alfresco.rest.api.model.Type;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-/**
- * Types API
- */
-public interface Types
-{
+/** Types API */
+public interface Types {
     /**
      * Lists types
      *

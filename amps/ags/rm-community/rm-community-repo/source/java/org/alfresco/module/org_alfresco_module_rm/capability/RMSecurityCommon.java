@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
-import java.util.Map;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
@@ -50,19 +50,17 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
-
+import java.util.Map;
 
 /**
  * Common security functions.
  *
- * TODO move methods to the appropriate services
+ * <p>TODO move methods to the appropriate services
  *
  * @author Roy Wetherall
  * @since 2.0
  */
-public class RMSecurityCommon implements ApplicationContextAware
-{
+public class RMSecurityCommon implements ApplicationContextAware {
     /** No set value */
     protected static final int NOSET_VALUE = -100;
 
@@ -70,8 +68,9 @@ public class RMSecurityCommon implements ApplicationContextAware
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
 
     /** Services */
-    //This is the internal NodeService -- no permission checks
+    // This is the internal NodeService -- no permission checks
     protected NodeService nodeService;
+
     protected PermissionService permissionService;
     protected RMCaveatConfigComponent caveatConfigComponent;
     private FilePlanService filePlanService;
@@ -80,49 +79,36 @@ public class RMSecurityCommon implements ApplicationContextAware
     protected ApplicationContext applicationContext;
 
     /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     * @see
+     *     org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
-    {
-    	this.applicationContext = applicationContext;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param permissionService permission service
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
+    /** @param permissionService permission service */
+    public void setPermissionService(PermissionService permissionService) {
         this.permissionService = permissionService;
     }
 
-    /**
-     * @param caveatConfigComponent caveat config service
-     */
-    public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent)
-    {
+    /** @param caveatConfigComponent caveat config service */
+    public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent) {
         this.caveatConfigComponent = caveatConfigComponent;
     }
 
-    /**
-     * @return	FilePlanService	file plan service
-     */
-    protected FilePlanService getFilePlanService()
-    {
-    	if (filePlanService == null)
-    	{
-    		filePlanService = (FilePlanService)applicationContext.getBean("filePlanService");
-    	}
-		return filePlanService;
-	}
+    /** @return FilePlanService file plan service */
+    protected FilePlanService getFilePlanService() {
+        if (filePlanService == null) {
+            filePlanService = (FilePlanService) applicationContext.getBean("filePlanService");
+        }
+        return filePlanService;
+    }
 
     /**
      * Sets a value into the transaction cache
@@ -132,10 +118,10 @@ public class RMSecurityCommon implements ApplicationContextAware
      * @param value
      * @return
      */
-    protected int setTransactionCache(String prefix, NodeRef nodeRef, int value)
-    {
+    protected int setTransactionCache(String prefix, NodeRef nodeRef, int value) {
         String user = AuthenticationUtil.getRunAsUser();
-        AlfrescoTransactionSupport.bindResource(prefix + nodeRef.toString() + user, Integer.valueOf(value));
+        AlfrescoTransactionSupport.bindResource(
+                prefix + nodeRef.toString() + user, Integer.valueOf(value));
         return value;
     }
 
@@ -146,16 +132,13 @@ public class RMSecurityCommon implements ApplicationContextAware
      * @param nodeRef
      * @return
      */
-    protected int getTransactionCache(String prefix, NodeRef nodeRef)
-    {
+    protected int getTransactionCache(String prefix, NodeRef nodeRef) {
         int result = NOSET_VALUE;
-        StringBuffer key = new StringBuffer(prefix)
-                .append(nodeRef)
-                .append(AuthenticationUtil.getRunAsUser());
-        
-        Integer value = (Integer)AlfrescoTransactionSupport.getResource(key);
-        if (value != null)
-        {
+        StringBuffer key =
+                new StringBuffer(prefix).append(nodeRef).append(AuthenticationUtil.getRunAsUser());
+
+        Integer value = (Integer) AlfrescoTransactionSupport.getResource(key);
+        if (value != null) {
             result = value.intValue();
         }
         return result;
@@ -167,11 +150,9 @@ public class RMSecurityCommon implements ApplicationContextAware
      * @param nodeRef
      * @return
      */
-    public int checkRead(NodeRef nodeRef)
-    {
+    public int checkRead(NodeRef nodeRef) {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
-        if (nodeRef != null)
-        {
+        if (nodeRef != null) {
             // now we know the node - we can abstain for certain types and aspects (eg, rm)
             result = checkRead(nodeRef, false);
         }
@@ -186,30 +167,23 @@ public class RMSecurityCommon implements ApplicationContextAware
      * @param allowDMRead
      * @return
      */
-    public int checkRead(NodeRef nodeRef, boolean allowDMRead)
-    {
+    public int checkRead(NodeRef nodeRef, boolean allowDMRead) {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
 
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-        {
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)) {
             result = checkRmRead(nodeRef);
-        }
-        else if (allowDMRead)
-        {
+        } else if (allowDMRead) {
             // Check DM read for copy etc
             // DM does not grant - it can only deny
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-            {
-                if (logger.isDebugEnabled())
-                {
+            if (permissionService.hasPermission(nodeRef, PermissionService.READ)
+                    == AccessStatus.DENIED) {
+                if (logger.isDebugEnabled()) {
                     logger.debug("\t\tPermission is denied");
                     Thread.dumpStack();
                 }
                 result = AccessDecisionVoter.ACCESS_DENIED;
-            }
-            else
-            {
-                result =  AccessDecisionVoter.ACCESS_GRANTED;
+            } else {
+                result = AccessDecisionVoter.ACCESS_GRANTED;
             }
         }
 
@@ -219,187 +193,159 @@ public class RMSecurityCommon implements ApplicationContextAware
     /**
      * Core RM read check
      *
-     * @param nodeRef	node reference
-     * @return int		see {@link AccessDecisionVoter}
+     * @param nodeRef node reference
+     * @return int see {@link AccessDecisionVoter}
      */
-    public int checkRmRead(NodeRef nodeRef)
-    {
-    	int result = AccessDecisionVoter.ACCESS_ABSTAIN;
+    public int checkRmRead(NodeRef nodeRef) {
+        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
 
-    	Map<Pair<String, NodeRef>, Integer> transactionCache = TransactionalResourceHelper.getMap("rm.security.checkRMRead");
-    	Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), nodeRef);
+        Map<Pair<String, NodeRef>, Integer> transactionCache =
+                TransactionalResourceHelper.getMap("rm.security.checkRMRead");
+        Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), nodeRef);
 
-    	if (transactionCache.containsKey(key))
-    	{
-    		result = transactionCache.get(key);
-    	}
-    	else
-    	{
-	        if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
-	        {
-	            if (logger.isDebugEnabled())
-	            {
-	                logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-	            }
-	            result = AccessDecisionVoter.ACCESS_DENIED;
-	        }
-	        else
-	        {
-		        // Get the file plan for the node
-		        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-		        if (filePlan != null &&
-		            hasViewCapability(filePlan) == AccessStatus.DENIED)
-		        {
-		            if (logger.isDebugEnabled())
-		            {
-		                logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-		            }
-		            result = AccessDecisionVoter.ACCESS_DENIED;
-		        }
-		        else if (!caveatConfigComponent.hasAccess(nodeRef))
-		        {
-		            result = AccessDecisionVoter.ACCESS_DENIED;
-		        }
-		        else
-		        {
-		            result = AccessDecisionVoter.ACCESS_GRANTED;
-		        }
-	        }
+        if (transactionCache.containsKey(key)) {
+            result = transactionCache.get(key);
+        } else {
+            if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS)
+                    == AccessStatus.DENIED) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "\t\tUser does not have read record permission on node, access denied. "
+                                    + " (nodeRef="
+                                    + nodeRef.toString()
+                                    + ", user="
+                                    + AuthenticationUtil.getRunAsUser()
+                                    + ")");
+                }
+                result = AccessDecisionVoter.ACCESS_DENIED;
+            } else {
+                // Get the file plan for the node
+                NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
+                if (filePlan != null && hasViewCapability(filePlan) == AccessStatus.DENIED) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(
+                                "\t\tUser does not have view records capability permission on node,"
+                                        + " access denied. (filePlan="
+                                        + filePlan.toString()
+                                        + ", user="
+                                        + AuthenticationUtil.getRunAsUser()
+                                        + ")");
+                    }
+                    result = AccessDecisionVoter.ACCESS_DENIED;
+                } else if (!caveatConfigComponent.hasAccess(nodeRef)) {
+                    result = AccessDecisionVoter.ACCESS_DENIED;
+                } else {
+                    result = AccessDecisionVoter.ACCESS_GRANTED;
+                }
+            }
 
-	        // cache result
-	        transactionCache.put(key, result);
-    	}
+            // cache result
+            transactionCache.put(key, result);
+        }
 
-    	return result;
+        return result;
     }
 
     /**
      * Helper method to determine whether the current user has view capability on the file plan
      *
-     * @param  filePlan	file plan
+     * @param filePlan file plan
      * @return {@link AccessStatus}
      */
-    private AccessStatus hasViewCapability(NodeRef filePlan)
-    {
-    	Map<Pair<String, NodeRef>, AccessStatus> transactionCache = TransactionalResourceHelper.getMap("rm.security.hasViewCapability");
-    	Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), filePlan);
+    private AccessStatus hasViewCapability(NodeRef filePlan) {
+        Map<Pair<String, NodeRef>, AccessStatus> transactionCache =
+                TransactionalResourceHelper.getMap("rm.security.hasViewCapability");
+        Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), filePlan);
 
-    	if (transactionCache.containsKey(key))
-    	{
-    		return transactionCache.get(key);
-    	}
-    	else
-    	{
-    		AccessStatus result = permissionService.hasPermission(filePlan, ViewRecordsCapability.NAME);
-    		transactionCache.put(key, result);
-    		return result;
-    	}
+        if (transactionCache.containsKey(key)) {
+            return transactionCache.get(key);
+        } else {
+            AccessStatus result =
+                    permissionService.hasPermission(filePlan, ViewRecordsCapability.NAME);
+            transactionCache.put(key, result);
+            return result;
+        }
     }
 
     @SuppressWarnings("rawtypes")
-    protected NodeRef getTestNode(MethodInvocation invocation, Class[] params, int position, boolean parent)
-    {
+    protected NodeRef getTestNode(
+            MethodInvocation invocation, Class[] params, int position, boolean parent) {
         NodeRef testNodeRef = null;
-        if (position < 0)
-        {
-            if (logger.isDebugEnabled())
-            {
-            	logger.debug("\tNothing to test permission against.");
+        if (position < 0) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("\tNothing to test permission against.");
             }
             testNodeRef = null;
-        }
-        else if (StoreRef.class.isAssignableFrom(params[position]))
-        {
-            if (invocation.getArguments()[position] != null)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("\tPermission test against the store - using permissions on the root node");
+        } else if (StoreRef.class.isAssignableFrom(params[position])) {
+            if (invocation.getArguments()[position] != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "\tPermission test against the store - using permissions on the root"
+                                    + " node");
                 }
                 StoreRef storeRef = (StoreRef) invocation.getArguments()[position];
-                if (nodeService.exists(storeRef))
-                {
+                if (nodeService.exists(storeRef)) {
                     testNodeRef = nodeService.getRootNode(storeRef);
                 }
             }
-        }
-        else if (NodeRef.class.isAssignableFrom(params[position]))
-        {
+        } else if (NodeRef.class.isAssignableFrom(params[position])) {
             testNodeRef = (NodeRef) invocation.getArguments()[position];
-            if (parent)
-            {
+            if (parent) {
                 testNodeRef = nodeService.getPrimaryParent(testNodeRef).getParentRef();
-                if (logger.isDebugEnabled())
-                {
-                    if (nodeService.exists(testNodeRef))
-                    {
-                        logger.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                if (logger.isDebugEnabled()) {
+                    if (nodeService.exists(testNodeRef)) {
+                        logger.debug(
+                                "\tPermission test for parent on node "
+                                        + nodeService.getPath(testNodeRef));
+                    } else {
+                        logger.debug(
+                                "\tPermission test for parent on non-existing node " + testNodeRef);
                     }
-                    else
-                    {
-                        logger.debug("\tPermission test for parent on non-existing node " + testNodeRef);
-                    }
-                    logger.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                    logger.debug(
+                            "\tPermission test for parent on node "
+                                    + nodeService.getPath(testNodeRef));
                 }
-            }
-            else
-            {
-                if (logger.isDebugEnabled())
-                {
-                    if (nodeService.exists(testNodeRef))
-                    {
-                        logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                    }
-                    else
-                    {
+            } else {
+                if (logger.isDebugEnabled()) {
+                    if (nodeService.exists(testNodeRef)) {
+                        logger.debug(
+                                "\tPermission test on node " + nodeService.getPath(testNodeRef));
+                    } else {
                         logger.debug("\tPermission test on non-existing node " + testNodeRef);
                     }
                 }
             }
-        }
-        else if (ChildAssociationRef.class.isAssignableFrom(params[position]))
-        {
-            if (invocation.getArguments()[position] != null)
-            {
-                if (parent)
-                {
-                    testNodeRef = ((ChildAssociationRef) invocation.getArguments()[position]).getParentRef();
+        } else if (ChildAssociationRef.class.isAssignableFrom(params[position])) {
+            if (invocation.getArguments()[position] != null) {
+                if (parent) {
+                    testNodeRef =
+                            ((ChildAssociationRef) invocation.getArguments()[position])
+                                    .getParentRef();
+                } else {
+                    testNodeRef =
+                            ((ChildAssociationRef) invocation.getArguments()[position])
+                                    .getChildRef();
                 }
-                else
-                {
-                    testNodeRef = ((ChildAssociationRef) invocation.getArguments()[position]).getChildRef();
-                }
-                if (logger.isDebugEnabled())
-                {
-                    if (nodeService.exists(testNodeRef))
-                    {
-                        logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                    }
-                    else
-                    {
+                if (logger.isDebugEnabled()) {
+                    if (nodeService.exists(testNodeRef)) {
+                        logger.debug(
+                                "\tPermission test on node " + nodeService.getPath(testNodeRef));
+                    } else {
                         logger.debug("\tPermission test on non-existing node " + testNodeRef);
                     }
                 }
             }
-        }
-        else if (AssociationRef.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
-        {
-            if (parent)
-            {
+        } else if (AssociationRef.class.isAssignableFrom(params[position])
+                && invocation.getArguments()[position] != null) {
+            if (parent) {
                 testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getSourceRef();
-            }
-            else
-            {
+            } else {
                 testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getTargetRef();
             }
-            if (logger.isDebugEnabled())
-            {
-                if (nodeService.exists(testNodeRef))
-                {
+            if (logger.isDebugEnabled()) {
+                if (nodeService.exists(testNodeRef)) {
                     logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                }
-                else
-                {
+                } else {
                     logger.debug("\tPermission test on non-existing node " + testNodeRef);
                 }
             }

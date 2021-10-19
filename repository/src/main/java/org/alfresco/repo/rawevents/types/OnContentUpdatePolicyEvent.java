@@ -26,32 +26,27 @@
 package org.alfresco.repo.rawevents.types;
 
 /**
- * Event that is raised once per node when any of the content properties on the
- * node are changed; the specific properties are irrelevant. This is primarily
- * useful to determine when a new file is introduced into the system.
+ * Event that is raised once per node when any of the content properties on the node are changed;
+ * the specific properties are irrelevant. This is primarily useful to determine when a new file is
+ * introduced into the system.
  */
-public class OnContentUpdatePolicyEvent extends EventImpl
-{
+public class OnContentUpdatePolicyEvent extends EventImpl {
     private String nodeRef;
     private boolean newContent;
 
-    public String getNodeRef()
-    {
+    public String getNodeRef() {
         return nodeRef;
     }
 
-    public void setNodeRef(String nodeRef)
-    {
+    public void setNodeRef(String nodeRef) {
         this.nodeRef = nodeRef;
     }
 
-    public boolean isNewContent()
-    {
+    public boolean isNewContent() {
         return newContent;
     }
 
-    public void setNewContent(boolean newContent)
-    {
+    public void setNewContent(boolean newContent) {
         this.newContent = newContent;
     }
 }

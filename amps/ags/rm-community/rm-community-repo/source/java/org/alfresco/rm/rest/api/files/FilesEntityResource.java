@@ -56,9 +56,8 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Ana Bozianu
  * @since 2.6
  */
-@EntityResource(name="files", title = "Files")
-public class FilesEntityResource implements InitializingBean
-{
+@EntityResource(name = "files", title = "Files")
+public class FilesEntityResource implements InitializingBean {
     private ApiNodesModelFactory nodesModelFactory;
     private FilePlanComponentsApiUtils apiUtils;
     private AuthenticationUtil authenticationUtil;
@@ -67,54 +66,48 @@ public class FilesEntityResource implements InitializingBean
     private RecordService recordService;
     private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
-    {
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil) {
         this.authenticationUtil = authenticationUtil;
     }
 
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setRecordService(RecordService recordService)
-    {
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Operation("declare")
-    @WebApiDescription(title = "Declare as record", description="Declare a file as record.")
-    public Record declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
-    {
+    @WebApiDescription(title = "Declare as record", description = "Declare a file as record.")
+    public Record declareAsRecord(
+            String fileId, Void body, Parameters parameters, WithResponse withResponse) {
         // Get fileplan
-        NodeRef filePlan = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork()
-            {
-                return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            }
-        });
+        NodeRef filePlan =
+                authenticationUtil.runAsSystem(
+                        new RunAsWork<NodeRef>() {
+                            @Override
+                            public NodeRef doWork() {
+                                return filePlanService.getFilePlanBySiteId(
+                                        FilePlanService.DEFAULT_RM_SITE_ID);
+                            }
+                        });
 
         // default false (if not provided)
         boolean hideRecord = Boolean.valueOf(parameters.getParameter(Record.PARAM_HIDE_RECORD));
@@ -124,18 +117,16 @@ public class FilesEntityResource implements InitializingBean
 
         // Create the record
         NodeRef file = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, fileId);
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                recordService.createRecord(filePlan, file, targetRecordFolder, !hideRecord);
-                if (targetRecordFolder != null)
-                {
-                    recordService.file(file);
-                }
-                return null;
-            }
-        };
+        RetryingTransactionCallback<Void> callback =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() {
+                        recordService.createRecord(filePlan, file, targetRecordFolder, !hideRecord);
+                        if (targetRecordFolder != null) {
+                            recordService.file(file);
+                        }
+                        return null;
+                    }
+                };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Return record state
@@ -144,21 +135,20 @@ public class FilesEntityResource implements InitializingBean
     }
 
     /* Helper method to determine the target record folder, if given */
-    private NodeRef extractAndValidateTargetRecordFolder(Parameters parameters)
-    {
+    private NodeRef extractAndValidateTargetRecordFolder(Parameters parameters) {
         // Get record folder, if provided
         NodeRef targetParent = null;
         final String targetParentId = parameters.getParameter(RMNode.PARAM_PARENT_ID);
-        if (targetParentId != null)
-        {
-            targetParent = apiUtils.lookupAndValidateNodeType(targetParentId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+        if (targetParentId != null) {
+            targetParent =
+                    apiUtils.lookupAndValidateNodeType(
+                            targetParentId, RecordsManagementModel.TYPE_RECORD_FOLDER);
         }
         return targetParent;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
         ParameterCheck.mandatory("authenticationUtil", authenticationUtil);
         ParameterCheck.mandatory("filePlanService", filePlanService);

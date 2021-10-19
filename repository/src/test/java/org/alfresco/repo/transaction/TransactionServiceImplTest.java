@@ -25,10 +25,6 @@
  */
 package org.alfresco.repo.transaction;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
@@ -51,42 +47,45 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
 /**
  * @see org.alfresco.repo.transaction.TransactionServiceImpl
- *
  * @author Derek Hulley
  */
-public class TransactionServiceImplTest extends BaseSpringTest
-{
+public class TransactionServiceImplTest extends BaseSpringTest {
     private PlatformTransactionManager transactionManager;
     private TransactionServiceImpl transactionService;
     private NodeService nodeService;
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
 
-    private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "TransactionServiceImplTest");
+    private final QName vetoName =
+            QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "TransactionServiceImplTest");
     private static final String USER_ALFRESCO = "AlfrescoUser";
 
     private Dialect dialect;
 
     @Before
-    public void setUp() throws Exception
-    {
-        transactionManager = (PlatformTransactionManager) applicationContext.getBean("transactionManager");
+    public void setUp() throws Exception {
+        transactionManager =
+                (PlatformTransactionManager) applicationContext.getBean("transactionManager");
         transactionService = new TransactionServiceImpl();
         transactionService.setTransactionManager(transactionManager);
         transactionService.setAllowWrite(true, vetoName);
 
         nodeService = (NodeService) applicationContext.getBean("dbNodeService");
-        authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
+        authenticationService =
+                (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
         personService = (PersonService) applicationContext.getBean("PersonService");
 
         dialect = (Dialect) applicationContext.getBean("dialect");
     }
 
     @Test
-    public void testPropagatingTxn() throws Exception
-    {
+    public void testPropagatingTxn() throws Exception {
         // start a transaction
         UserTransaction txnOuter = transactionService.getUserTransaction();
         txnOuter.begin();
@@ -104,24 +103,24 @@ public class TransactionServiceImplTest extends BaseSpringTest
         txnInner.rollback();
 
         // check both transactions' status
-        assertEquals("Inner txn not marked rolled back", Status.STATUS_ROLLEDBACK, txnInner.getStatus());
-        assertEquals("Outer txn not marked for rolled back", Status.STATUS_MARKED_ROLLBACK, txnOuter.getStatus());
+        assertEquals(
+                "Inner txn not marked rolled back", Status.STATUS_ROLLEDBACK, txnInner.getStatus());
+        assertEquals(
+                "Outer txn not marked for rolled back",
+                Status.STATUS_MARKED_ROLLBACK,
+                txnOuter.getStatus());
 
-        try
-        {
+        try {
             txnOuter.commit();
             fail("Outer txn not marked for rollback");
-        }
-        catch (RollbackException e)
-        {
+        } catch (RollbackException e) {
             // expected
             txnOuter.rollback();
         }
     }
 
     @Test
-    public void testNonPropagatingTxn() throws Exception
-    {
+    public void testNonPropagatingTxn() throws Exception {
         // start a transaction
         UserTransaction txnOuter = transactionService.getUserTransaction();
         txnOuter.begin();
@@ -143,8 +142,7 @@ public class TransactionServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    public void testReadOnlyTxn() throws Exception
-    {
+    public void testReadOnlyTxn() throws Exception {
         // start a read-only transaction
         transactionService.setAllowWrite(false, vetoName);
 
@@ -152,78 +150,62 @@ public class TransactionServiceImplTest extends BaseSpringTest
         txn.begin();
 
         // do some writing
-        try
-        {
+        try {
             nodeService.createStore(
-                    StoreRef.PROTOCOL_WORKSPACE,
-                    getName() + "_" + System.currentTimeMillis());
+                    StoreRef.PROTOCOL_WORKSPACE, getName() + "_" + System.currentTimeMillis());
             txn.commit();
             fail("Read-only transaction wasn't detected");
-        }
-        catch (ReadOnlyServerException e)
-        {
+        } catch (ReadOnlyServerException e) {
             // This is now thrown at the lower layers, but it *is* possible for one of the later
-            // exceptions to get through: Fixed ALF-3884: Share does not report access denied exceptions correctly
+            // exceptions to get through: Fixed ALF-3884: Share does not report access denied
+            // exceptions correctly
             @SuppressWarnings("unused")
             int i = 0;
-        }
-        catch (InvalidDataAccessApiUsageException e)
-        {
+        } catch (InvalidDataAccessApiUsageException e) {
             // expected this ...
             @SuppressWarnings("unused")
             int i = 0;
-        }
-        catch (TransientDataAccessResourceException e)
-        {
-            // or this - for MySQL (java.sql.SQLException: Connection is read-only. Queries leading to data modification are not allowed.)
+        } catch (TransientDataAccessResourceException e) {
+            // or this - for MySQL (java.sql.SQLException: Connection is read-only. Queries leading
+            // to data modification are not allowed.)
             @SuppressWarnings("unused")
             int i = 0;
-        }
-        catch (IllegalStateException e)
-        {
+        } catch (IllegalStateException e) {
             // or this - for MS SQLServer, Oracle (via AbstractNodeDAOImpl.getCurrentTransaction)
             @SuppressWarnings("unused")
             int i = 0;
-        }
-        catch (Exception e)
-        {
-            // or this - for PostgreSQL (org.postgresql.util.PSQLException: ERROR: transaction is read-only)
-            if (dialect instanceof PostgreSQLDialect)
-            {
+        } catch (Exception e) {
+            // or this - for PostgreSQL (org.postgresql.util.PSQLException: ERROR: transaction is
+            // read-only)
+            if (dialect instanceof PostgreSQLDialect) {
                 // ALF-4226
                 @SuppressWarnings("unused")
                 int i = 0;
 
-            }
-            else
-            {
+            } else {
                 throw e;
             }
-        }
-        finally
-        {
+        } finally {
             transactionService.setAllowWrite(true, vetoName);
-            try
-            {
+            try {
                 txn.rollback();
+            } catch (Throwable e) {
             }
-            catch (Throwable e) {}
         }
     }
 
     /**
      * Test the write veto
+     *
      * @throws Exception
      */
     @Test
-    public void testReadOnlyVetoTxn() throws Exception
-    {
+    public void testReadOnlyVetoTxn() throws Exception {
 
         QName v1 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V1");
         QName v2 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V2");
         QName v3 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V2");
-        try
-        {
+        try {
             // start a read-only transaction
             transactionService.setAllowWrite(false, v1);
             transactionService.setAllowWrite(false, v2);
@@ -236,16 +218,11 @@ public class TransactionServiceImplTest extends BaseSpringTest
             transactionService.setAllowWrite(true, v1);
             assertTrue("v1 still read only", transactionService.getAllowWrite());
 
-            /**
-             * Remove non existent veto
-             */
+            /** Remove non existent veto */
             transactionService.setAllowWrite(true, v3);
             assertTrue("v3 veto", transactionService.getAllowWrite());
 
-
-        }
-        finally
-        {
+        } finally {
             transactionService.setAllowWrite(true, v1);
             transactionService.setAllowWrite(true, v2);
             transactionService.setAllowWrite(true, v3);
@@ -253,23 +230,26 @@ public class TransactionServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    public void testGetRetryingTransactionHelper()
-    {
-        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                return null;
-            }
-        };
+    public void testGetRetryingTransactionHelper() {
+        RetryingTransactionCallback<Object> callback =
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Throwable {
+                        return null;
+                    }
+                };
 
         // Ensure that we always get a new instance of the RetryingTransactionHelper
-        assertFalse("Retriers must be new instances",
-                transactionService.getRetryingTransactionHelper() == transactionService.getRetryingTransactionHelper());
+        assertFalse(
+                "Retriers must be new instances",
+                transactionService.getRetryingTransactionHelper()
+                        == transactionService.getRetryingTransactionHelper());
         // The same must apply when using the ServiceRegistry (ALF-18718)
-        ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        assertFalse("Retriers must be new instance when retrieved from ServiceRegistry",
-                serviceRegistry.getRetryingTransactionHelper() == serviceRegistry.getRetryingTransactionHelper());
+        ServiceRegistry serviceRegistry =
+                (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        assertFalse(
+                "Retriers must be new instance when retrieved from ServiceRegistry",
+                serviceRegistry.getRetryingTransactionHelper()
+                        == serviceRegistry.getRetryingTransactionHelper());
 
         transactionService.setAllowWrite(true, vetoName);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
@@ -277,13 +257,12 @@ public class TransactionServiceImplTest extends BaseSpringTest
 
         transactionService.setAllowWrite(false, vetoName);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
-        try
-        {
+        try {
             transactionService.getRetryingTransactionHelper().doInTransaction(callback, false);
-            fail("Expected AccessDeniedException when starting to write to a read-only transaction service.");
-        }
-        catch (AccessDeniedException e)
-        {
+            fail(
+                    "Expected AccessDeniedException when starting to write to a read-only"
+                            + " transaction service.");
+        } catch (AccessDeniedException e) {
             // Expected
         }
 
@@ -296,13 +275,11 @@ public class TransactionServiceImplTest extends BaseSpringTest
         transactionService.setAllowWrite(true, vetoName);
     }
 
-    private void createUser(String userName)
-    {
+    private void createUser(String userName) {
         // login as system user to create test user
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         // if user with given user name doesn't already exist then create user
-        if (!this.authenticationService.authenticationExists(userName))
-        {
+        if (!this.authenticationService.authenticationExists(userName)) {
             // create user
             this.authenticationService.createAuthentication(userName, "password".toCharArray());
 
@@ -322,30 +299,26 @@ public class TransactionServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    public void testSystemUserHasWritePermissionsInReadOnlyMode()
-    {
+    public void testSystemUserHasWritePermissionsInReadOnlyMode() {
         createUser(USER_ALFRESCO);
         // login as user
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ALFRESCO);
 
         // start a read-only transaction
         transactionService.setAllowWrite(false, vetoName);
-        try
-        {
-            Boolean isReadOnly = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-            {
-                public Boolean doWork() throws Exception
-                {
-                    return transactionService.isReadOnly();
-                }
-            }, AuthenticationUtil.getSystemUserName());
+        try {
+            Boolean isReadOnly =
+                    AuthenticationUtil.runAs(
+                            new AuthenticationUtil.RunAsWork<Boolean>() {
+                                public Boolean doWork() throws Exception {
+                                    return transactionService.isReadOnly();
+                                }
+                            },
+                            AuthenticationUtil.getSystemUserName());
             assertFalse("SystemUser must has write permissions in read-only mode", isReadOnly);
-        }
-        finally
-        {
+        } finally {
             transactionService.setAllowWrite(true, vetoName);
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
-
 }

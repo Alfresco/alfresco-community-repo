@@ -25,11 +25,8 @@
  */
 package org.alfresco.repo.security.person;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.alfresco.repo.security.person.PersonServiceImpl.CANNED_QUERY_PEOPLE_LIST;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
@@ -53,11 +50,14 @@ import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import static org.alfresco.repo.security.person.PersonServiceImpl.CANNED_QUERY_PEOPLE_LIST;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Category({DBTests.class})
-public class GetPeopleCannedQueryTest extends BaseSpringTest
-{
+public class GetPeopleCannedQueryTest extends BaseSpringTest {
     @Autowired
     @Qualifier("personServiceCannedQueryRegistry")
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
@@ -66,19 +66,12 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
     @Qualifier("PersonService")
     private PersonService personService;
 
-    @Autowired
-    private TransactionService transactionService;
+    @Autowired private TransactionService transactionService;
 
-    @Autowired
-    private NodeService nodeService;
+    @Autowired private NodeService nodeService;
 
     private Map<QName, Serializable> createDefaultProperties(
-            String userName,
-            String firstName,
-            String lastName,
-            String email,
-            String orgId)
-    {
+            String userName, String firstName, String lastName, String email, String orgId) {
         HashMap<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_FIRSTNAME, firstName);
@@ -89,28 +82,31 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
     }
 
     @Before
-    public void before()
-    {
+    public void before() {
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
         // cleanup all existing people, the test is sensitive to the user names
-        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-            for (NodeRef nodeRef : personService.getAllPeople())
-            {
-                String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
-                if (!uid.equals(AuthenticationUtil.getAdminUserName()) && !uid.equals(AuthenticationUtil.getGuestUserName()))
-                {
-                    personService.deletePerson(nodeRef);
-                }
-            }
-            return null;
-        });
-
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        () -> {
+                            for (NodeRef nodeRef : personService.getAllPeople()) {
+                                String uid =
+                                        DefaultTypeConverter.INSTANCE.convert(
+                                                String.class,
+                                                nodeService.getProperty(
+                                                        nodeRef, ContentModel.PROP_USERNAME));
+                                if (!uid.equals(AuthenticationUtil.getAdminUserName())
+                                        && !uid.equals(AuthenticationUtil.getGuestUserName())) {
+                                    personService.deletePerson(nodeRef);
+                                }
+                            }
+                            return null;
+                        });
     }
 
     @After
-    public void after()
-    {
+    public void after() {
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
@@ -119,220 +115,201 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
             final String pattern,
             final List<QName> filterProps,
             final boolean includeAdministrators,
-            final List<Pair<QName, Boolean>> sortProps)
-    {
-        GetPeopleCannedQueryFactory getPeopleCannedQueryFactory = (GetPeopleCannedQueryFactory) cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
-        final GetPeopleCannedQuery cq = (GetPeopleCannedQuery) getPeopleCannedQueryFactory
-                .getCannedQuery(
-                        personService.getPeopleContainer(),
-                        pattern,
-                        filterProps,
-                        null,
-                        null,
-                        includeAdministrators,
-                        sortProps,
-                        pagingRequest);
+            final List<Pair<QName, Boolean>> sortProps) {
+        GetPeopleCannedQueryFactory getPeopleCannedQueryFactory =
+                (GetPeopleCannedQueryFactory)
+                        cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
+        final GetPeopleCannedQuery cq =
+                (GetPeopleCannedQuery)
+                        getPeopleCannedQueryFactory.getCannedQuery(
+                                personService.getPeopleContainer(),
+                                pattern,
+                                filterProps,
+                                null,
+                                null,
+                                includeAdministrators,
+                                sortProps,
+                                pagingRequest);
 
         return transactionService.getRetryingTransactionHelper().doInTransaction(cq::execute, true);
     }
 
     @Test
-    public void testPeopleFiltering()
-    {
+    public void testPeopleFiltering() {
         int startPeopleNumber = personService.countPeople();
 
-        NodeRef person1 = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco1"));
+        NodeRef person1 =
+                personService.createPerson(
+                        createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco1"));
         personService.createPerson(createDefaultProperties("bc", "c", "C", "bc@bc", "alfresco2"));
         personService.createPerson(createDefaultProperties("yy", "B", "D", "yy@yy", "alfresco3"));
         personService.createPerson(createDefaultProperties("Yz", "yz", "B", "yz@yz", "alfresco4"));
-        personService.createPerson(createDefaultProperties("xx-middle-xx", "Middle", "Middle", "aa@aa", "alfresco5"));
-        personService.createPerson(createDefaultProperties("xx-xx-end", "End", "End", "aa@aa", "alfresco6"));
+        personService.createPerson(
+                createDefaultProperties("xx-middle-xx", "Middle", "Middle", "aa@aa", "alfresco5"));
+        personService.createPerson(
+                createDefaultProperties("xx-xx-end", "End", "End", "aa@aa", "alfresco6"));
 
         int newPeopleNumber = startPeopleNumber + 6;
-        assertEquals("There should be " + newPeopleNumber + " more people created",
-                newPeopleNumber, personService.countPeople());
+        assertEquals(
+                "There should be " + newPeopleNumber + " more people created",
+                newPeopleNumber,
+                personService.countPeople());
 
         PagingRequest pagingRequest = new PagingRequest(0, 100, null);
         pagingRequest.setRequestTotalCountMax(0);
 
-        CannedQueryResults<NodeRef> people = executeGetPeopleQuery(pagingRequest, null, null, false, null);
-        assertEquals("Administrators not filtered", newPeopleNumber - 1, people.getPagedResultCount());
+        CannedQueryResults<NodeRef> people =
+                executeGetPeopleQuery(pagingRequest, null, null, false, null);
+        assertEquals(
+                "Administrators not filtered", newPeopleNumber - 1, people.getPagedResultCount());
 
         List<QName> filters = new ArrayList<>(4);
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 2,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "y",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "y", filters, true, null)
+                        .getPagedResultCount());
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         filters.add(ContentModel.PROP_FIRSTNAME);
         filters.add(ContentModel.PROP_LASTNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 3,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "b",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "b", filters, true, null)
+                        .getPagedResultCount());
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 2,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "A",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "A", filters, true, null)
+                        .getPagedResultCount());
 
         personService.deletePerson(person1);
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "a",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "a", filters, true, null)
+                        .getPagedResultCount());
 
         // a* is the same as a
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "a*",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "a*", filters, true, null)
+                        .getPagedResultCount());
 
         // * means everyone
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         assertEquals(newPeopleNumber - 1, personService.countPeople());
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 newPeopleNumber - 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "*",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "*", filters, true, null)
+                        .getPagedResultCount());
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "*-middle-*",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "*-middle-*", filters, true, null)
+                        .getPagedResultCount());
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         // Each pattern is always wrapped in % on both sides
         // see FilterSortPersonEntity.setPattern
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "middle-*",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "middle-*", filters, true, null)
+                        .getPagedResultCount());
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "*-end",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "*-end", filters, true, null)
+                        .getPagedResultCount());
 
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "-end",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "-end", filters, true, null)
+                        .getPagedResultCount());
 
         // test SQL underscore
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "-mi__le-",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "-mi__le-", filters, true, null)
+                        .getPagedResultCount());
 
         // test SQL %
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "-mi%le-",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "-mi%le-", filters, true, null)
+                        .getPagedResultCount());
 
         // test *
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
-        assertEquals("Pattern filtering is not correct",
+        assertEquals(
+                "Pattern filtering is not correct",
                 1,
-                executeGetPeopleQuery(
-                        pagingRequest,
-                        "-mi*le-",
-                        filters,
-                        true,
-                        null).getPagedResultCount());
+                executeGetPeopleQuery(pagingRequest, "-mi*le-", filters, true, null)
+                        .getPagedResultCount());
     }
 
     @Test
-    public void testPeopleSortingPaging()
-    {
+    public void testPeopleSortingPaging() {
         int startPeopleNumber = personService.countPeople();
 
         NodeRef p1 = personService.getPerson(AuthenticationUtil.getAdminUserName());
         NodeRef p2 = personService.getPerson(AuthenticationUtil.getGuestUserName());
 
-        NodeRef p3 = personService.createPerson(createDefaultProperties("aa", "Dd", "Aa", "hh@hh", "alfresco1"));
-        NodeRef p4 = personService.createPerson(createDefaultProperties("cc", "Aa", "Cc", "dd@dd", "alfresco2"));
-        NodeRef p5 = personService.createPerson(createDefaultProperties("hh", "Cc", "Hh", "cc@cc", "alfresco3"));
-        NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Hh", "Bb", "bb@bb", "alfresco4"));
-        NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Bb", "Dd", "aa@aa", "alfresco5"));
+        NodeRef p3 =
+                personService.createPerson(
+                        createDefaultProperties("aa", "Dd", "Aa", "hh@hh", "alfresco1"));
+        NodeRef p4 =
+                personService.createPerson(
+                        createDefaultProperties("cc", "Aa", "Cc", "dd@dd", "alfresco2"));
+        NodeRef p5 =
+                personService.createPerson(
+                        createDefaultProperties("hh", "Cc", "Hh", "cc@cc", "alfresco3"));
+        NodeRef p6 =
+                personService.createPerson(
+                        createDefaultProperties("bb", "Hh", "Bb", "bb@bb", "alfresco4"));
+        NodeRef p7 =
+                personService.createPerson(
+                        createDefaultProperties("dd", "Bb", "Dd", "aa@aa", "alfresco5"));
 
         int newPeopleNumber = startPeopleNumber + 5;
-        assertEquals("There should be " + newPeopleNumber + " more people created",
-                newPeopleNumber, personService.countPeople());
+        assertEquals(
+                "There should be " + newPeopleNumber + " more people created",
+                newPeopleNumber,
+                personService.countPeople());
 
         // sort by user name
         List<Pair<QName, Boolean>> sort = new ArrayList<>(1);
@@ -348,7 +325,6 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
         assertEquals(p3, results.get(0));
         assertEquals(p1, results.get(1));
         assertEquals(p6, results.get(2));
-
 
         // page 2 (with total count)
         pr = new PagingRequest(2, 2, null);
@@ -398,7 +374,6 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
         assertEquals(p1, results.get(1));
         assertEquals(p7, results.get(2));
 
-
         // page 2 (with total count)
         pr = new PagingRequest(2, 2, null);
         pr.setRequestTotalCountMax(Integer.MAX_VALUE);
@@ -432,54 +407,54 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
         assertEquals(p6, results.get(0));
         assertEquals(new Pair<>(7, 7), ppr.getTotalResultCount());
 
-// TODO these tests fail on Oracle, see REPO-4138
+        // TODO these tests fail on Oracle, see REPO-4138
 
-//        // sort by email
-//        sort = new ArrayList<>(1);
-//        sort.add(new Pair<>(ContentModel.PROP_EMAIL, true));
-//
-//        // page 1
-//        pr = new PagingRequest(0, 2, null);
-//        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
-//        results = ppr.getPage();
-//        // The number in the page is always +1 for paged results
-//        // see PersonServiceImpl#getPeople
-//        assertEquals(3, results.size());
-//        assertEquals(p2, results.get(0));
-//        assertEquals(p7, results.get(1));
-//        assertEquals(p1, results.get(2));
-//
-//        // page 2 (with total count)
-//        pr = new PagingRequest(2, 2, null);
-//        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
-//
-//        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
-//        results = ppr.getPage();
-//        assertEquals(5, results.size());
-//        assertEquals(p1, results.get(0));
-//        assertEquals(p6, results.get(1));
-//        assertEquals(p5, results.get(2));
-//        assertEquals(p4, results.get(3));
-//        assertEquals(p3, results.get(4));
-//        assertEquals(new Pair<>(7, 7), ppr.getTotalResultCount());
-//
-//        // page 3
-//        pr = new PagingRequest(4, 2, null);
-//        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
-//        results = ppr.getPage();
-//        assertEquals(3, results.size());
-//        assertEquals(p5, results.get(0));
-//        assertEquals(p4, results.get(1));
-//        assertEquals(p3, results.get(2));
-//
-//        // page 4 (with total count)
-//        pr = new PagingRequest(6, 2, null);
-//        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
-//
-//        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
-//        results = ppr.getPage();
-//        assertEquals(1, results.size());
-//        assertEquals(p3, results.get(0));
-//        assertEquals(new Pair<>(7, 7), ppr.getTotalResultCount());
+        //        // sort by email
+        //        sort = new ArrayList<>(1);
+        //        sort.add(new Pair<>(ContentModel.PROP_EMAIL, true));
+        //
+        //        // page 1
+        //        pr = new PagingRequest(0, 2, null);
+        //        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
+        //        results = ppr.getPage();
+        //        // The number in the page is always +1 for paged results
+        //        // see PersonServiceImpl#getPeople
+        //        assertEquals(3, results.size());
+        //        assertEquals(p2, results.get(0));
+        //        assertEquals(p7, results.get(1));
+        //        assertEquals(p1, results.get(2));
+        //
+        //        // page 2 (with total count)
+        //        pr = new PagingRequest(2, 2, null);
+        //        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
+        //
+        //        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
+        //        results = ppr.getPage();
+        //        assertEquals(5, results.size());
+        //        assertEquals(p1, results.get(0));
+        //        assertEquals(p6, results.get(1));
+        //        assertEquals(p5, results.get(2));
+        //        assertEquals(p4, results.get(3));
+        //        assertEquals(p3, results.get(4));
+        //        assertEquals(new Pair<>(7, 7), ppr.getTotalResultCount());
+        //
+        //        // page 3
+        //        pr = new PagingRequest(4, 2, null);
+        //        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
+        //        results = ppr.getPage();
+        //        assertEquals(3, results.size());
+        //        assertEquals(p5, results.get(0));
+        //        assertEquals(p4, results.get(1));
+        //        assertEquals(p3, results.get(2));
+        //
+        //        // page 4 (with total count)
+        //        pr = new PagingRequest(6, 2, null);
+        //        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
+        //
+        //        ppr = executeGetPeopleQuery(pr, null, null, true, sort);
+        //        results = ppr.getPage();
+        //        assertEquals(1, results.size());
+        //        assertEquals(p3, results.get(0));
+        //        assertEquals(new Pair<>(7, 7), ppr.getTotalResultCount());
     }
 }

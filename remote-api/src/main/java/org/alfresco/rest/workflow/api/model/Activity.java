@@ -4,38 +4,37 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.workflow.api.model;
 
-import java.util.Date;
-
 import org.activiti.engine.history.HistoricActivityInstance;
+
+import java.util.Date;
 
 /**
  * Representation of an activity in the Activiti engine.
- * 
+ *
  * @author Tijs Rademakers
  */
-public class Activity
-{
+public class Activity {
     String id;
     String activityDefinitionId;
     String activityDefinitionName;
@@ -43,7 +42,7 @@ public class Activity
     Date startedAt;
     Date endedAt;
     Long durationInMs;
-    
+
     public Activity(HistoricActivityInstance activity) {
         this.id = activity.getId();
         this.activityDefinitionId = activity.getActivityId();
@@ -54,73 +53,59 @@ public class Activity
         this.durationInMs = activity.getDurationInMillis();
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getActivityDefinitionId()
-    {
+    public String getActivityDefinitionId() {
         return activityDefinitionId;
     }
 
-    public void setActivityDefinitionId(String activityDefinitionId)
-    {
+    public void setActivityDefinitionId(String activityDefinitionId) {
         this.activityDefinitionId = activityDefinitionId;
     }
 
-    public String getActivityDefinitionName()
-    {
+    public String getActivityDefinitionName() {
         return activityDefinitionName;
     }
 
-    public void setActivityDefinitionName(String activityDefinitionName)
-    {
+    public void setActivityDefinitionName(String activityDefinitionName) {
         this.activityDefinitionName = activityDefinitionName;
     }
 
-    public String getActivityDefinitionType()
-    {
+    public String getActivityDefinitionType() {
         return activityDefinitionType;
     }
 
-    public void setActivityDefinitionType(String activityDefinitionType)
-    {
+    public void setActivityDefinitionType(String activityDefinitionType) {
         this.activityDefinitionType = activityDefinitionType;
     }
 
-    public Date getStartedAt()
-    {
+    public Date getStartedAt() {
         return startedAt;
     }
 
-    public void setStartedAt(Date startedAt)
-    {
+    public void setStartedAt(Date startedAt) {
         this.startedAt = startedAt;
     }
 
-    public Date getEndedAt()
-    {
+    public Date getEndedAt() {
         return endedAt;
     }
 
-    public void setEndedAt(Date endedAt)
-    {
+    public void setEndedAt(Date endedAt) {
         this.endedAt = endedAt;
     }
 
-    public Long getDurationInMs()
-    {
+    public Long getDurationInMs() {
         return durationInMs;
     }
 
-    public void setDurationInMs(Long durationInMs)
-    {
+    public void setDurationInMs(Long durationInMs) {
         this.durationInMs = durationInMs;
     }
 }

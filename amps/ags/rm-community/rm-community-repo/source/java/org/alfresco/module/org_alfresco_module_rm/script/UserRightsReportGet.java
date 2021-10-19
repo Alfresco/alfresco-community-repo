@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -48,13 +41,19 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Implementation for Java backed webscript to return user rights report.
  *
  * @author Gavin Cornwell
  */
-public class UserRightsReportGet extends DeclarativeWebScript
-{
+public class UserRightsReportGet extends DeclarativeWebScript {
     protected AuthorityService authorityService;
     protected PersonService personService;
     protected NodeService nodeService;
@@ -66,8 +65,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
      *
      * @param authorityService AuthorityService instance
      */
-    public void setAuthorityService(AuthorityService authorityService)
-    {
+    public void setAuthorityService(AuthorityService authorityService) {
         this.authorityService = authorityService;
     }
 
@@ -76,8 +74,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
      *
      * @param personService PersonService instance
      */
-    public void setPersonService(PersonService personService)
-    {
+    public void setPersonService(PersonService personService) {
         this.personService = personService;
     }
 
@@ -86,39 +83,31 @@ public class UserRightsReportGet extends DeclarativeWebScript
      *
      * @param nodeService NodeService instance
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
+    /** @param filePlanRoleService file plan role service */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) {
         this.filePlanRoleService = filePlanRoleService;
     }
 
-    /**
-     * @param filePlanService	file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-		this.filePlanService = filePlanService;
-	}
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
+        this.filePlanService = filePlanService;
+    }
 
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        NodeRef filePlanNode = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+        NodeRef filePlanNode =
+                filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
 
-        if (filePlanNode == null)
-        {
-            status.setCode(HttpServletResponse.SC_BAD_REQUEST,
-                        "The default RM site could not be found.");
+        if (filePlanNode == null) {
+            status.setCode(
+                    HttpServletResponse.SC_BAD_REQUEST, "The default RM site could not be found.");
             return null;
         }
 
@@ -129,32 +118,35 @@ public class UserRightsReportGet extends DeclarativeWebScript
 
         // iterate over all the roles for the file plan and construct models
         Set<Role> roles = filePlanRoleService.getRoles(filePlanNode);
-        for (Role role : roles)
-        {
+        for (Role role : roles) {
             // get or create the RoleModel object for current role
             String roleName = role.getName();
             RoleModel roleModel = rolesMap.get(roleName);
-            if (roleModel == null)
-            {
+            if (roleModel == null) {
                 roleModel = new RoleModel(role);
                 rolesMap.put(roleName, roleModel);
             }
 
             // get the users for the current RM role
             String group = role.getRoleGroupName();
-            Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, group, false);
+            Set<String> users =
+                    authorityService.getContainedAuthorities(AuthorityType.USER, group, false);
             roleModel.setUsers(users);
 
             // setup a user model object for each user
-            for (String userName : users)
-            {
+            for (String userName : users) {
                 UserModel userModel = usersMap.get(userName);
-                if (userModel == null)
-                {
+                if (userModel == null) {
                     NodeRef userRef = this.personService.getPerson(userName);
-                    userModel = new UserModel(userName,
-                                (String)this.nodeService.getProperty(userRef, ContentModel.PROP_FIRSTNAME),
-                                (String)this.nodeService.getProperty(userRef, ContentModel.PROP_LASTNAME));
+                    userModel =
+                            new UserModel(
+                                    userName,
+                                    (String)
+                                            this.nodeService.getProperty(
+                                                    userRef, ContentModel.PROP_FIRSTNAME),
+                                    (String)
+                                            this.nodeService.getProperty(
+                                                    userRef, ContentModel.PROP_LASTNAME));
                     usersMap.put(userName, userModel);
                 }
 
@@ -162,31 +154,37 @@ public class UserRightsReportGet extends DeclarativeWebScript
             }
 
             // get the groups for the cuurent RM role
-            Set<String> groups = authorityService.getContainedAuthorities(AuthorityType.GROUP, group, false);
+            Set<String> groups =
+                    authorityService.getContainedAuthorities(AuthorityType.GROUP, group, false);
             roleModel.setGroups(groups);
 
             // setup a user model object for each user in each group
-            for (String groupName : groups)
-            {
+            for (String groupName : groups) {
                 GroupModel groupModel = groupsMap.get(groupName);
-                if (groupModel == null)
-                {
-                    groupModel = new GroupModel(groupName,
-                                authorityService.getAuthorityDisplayName(groupName));
+                if (groupModel == null) {
+                    groupModel =
+                            new GroupModel(
+                                    groupName, authorityService.getAuthorityDisplayName(groupName));
                     groupsMap.put(groupName, groupModel);
                 }
 
                 // get users in each group
-                Set<String> groupUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, groupName, true);
-                for (String userName : groupUsers)
-                {
+                Set<String> groupUsers =
+                        this.authorityService.getContainedAuthorities(
+                                AuthorityType.USER, groupName, true);
+                for (String userName : groupUsers) {
                     UserModel userModel = usersMap.get(userName);
-                    if (userModel == null)
-                    {
+                    if (userModel == null) {
                         NodeRef userRef = this.personService.getPerson(userName);
-                        userModel = new UserModel(userName,
-                                    (String)this.nodeService.getProperty(userRef, ContentModel.PROP_FIRSTNAME),
-                                    (String)this.nodeService.getProperty(userRef, ContentModel.PROP_LASTNAME));
+                        userModel =
+                                new UserModel(
+                                        userName,
+                                        (String)
+                                                this.nodeService.getProperty(
+                                                        userRef, ContentModel.PROP_FIRSTNAME),
+                                        (String)
+                                                this.nodeService.getProperty(
+                                                        userRef, ContentModel.PROP_LASTNAME));
                         usersMap.put(userName, userModel);
                     }
 
@@ -214,43 +212,39 @@ public class UserRightsReportGet extends DeclarativeWebScript
      *
      * @author Gavin Cornwell
      */
-    public class RoleModel extends Role
-    {
+    public class RoleModel extends Role {
         private Set<String> users = new HashSet<>(8);
         private Set<String> groups = new HashSet<>(8);
 
-        public RoleModel(Role role)
-        {
-            super(role.getName(), role.getDisplayLabel(), role.getCapabilities(), role.getRoleGroupName());
+        public RoleModel(Role role) {
+            super(
+                    role.getName(),
+                    role.getDisplayLabel(),
+                    role.getCapabilities(),
+                    role.getRoleGroupName());
         }
 
-        public void addUser(String username)
-        {
+        public void addUser(String username) {
             this.users.add(username);
         }
 
-        public void addGroup(String groupName)
-        {
+        public void addGroup(String groupName) {
             this.groups.add(groupName);
         }
 
-        public void setUsers(Set<String> users)
-        {
+        public void setUsers(Set<String> users) {
             this.users = users;
         }
 
-        public void setGroups(Set<String> groups)
-        {
+        public void setGroups(Set<String> groups) {
             this.groups = groups;
         }
 
-        public Set<String> getUsers()
-        {
+        public Set<String> getUsers() {
             return this.users;
         }
 
-        public Set<String> getGroups()
-        {
+        public Set<String> getGroups() {
             return this.groups;
         }
     }
@@ -260,16 +254,14 @@ public class UserRightsReportGet extends DeclarativeWebScript
      *
      * @author Gavin Cornwell
      */
-    public class UserModel
-    {
+    public class UserModel {
         private String userName;
         private String firstName;
         private String lastName;
         private Set<String> roles;
         private Set<String> groups;
 
-        public UserModel(String userName, String firstName, String lastName)
-        {
+        public UserModel(String userName, String firstName, String lastName) {
             this.userName = userName;
             this.firstName = firstName;
             this.lastName = lastName;
@@ -277,38 +269,31 @@ public class UserRightsReportGet extends DeclarativeWebScript
             this.groups = new HashSet<>(2);
         }
 
-        public String getUserName()
-        {
+        public String getUserName() {
             return this.userName;
         }
 
-        public String getFirstName()
-        {
+        public String getFirstName() {
             return this.firstName;
         }
 
-        public String getLastName()
-        {
+        public String getLastName() {
             return this.lastName;
         }
 
-        public Set<String> getRoles()
-        {
+        public Set<String> getRoles() {
             return this.roles;
         }
 
-        public Set<String> getGroups()
-        {
+        public Set<String> getGroups() {
             return this.groups;
         }
 
-        public void addRole(String roleName)
-        {
+        public void addRole(String roleName) {
             this.roles.add(roleName);
         }
 
-        public void addGroup(String groupName)
-        {
+        public void addGroup(String groupName) {
             this.groups.add(groupName);
         }
     }
@@ -318,36 +303,30 @@ public class UserRightsReportGet extends DeclarativeWebScript
      *
      * @author Gavin Cornwell
      */
-    public class GroupModel
-    {
+    public class GroupModel {
         private String name;
         private String label;
         private Set<String> users;
 
-        public GroupModel(String name, String label)
-        {
+        public GroupModel(String name, String label) {
             this.name = name;
             this.label = label;
             this.users = new HashSet<>(4);
         }
 
-        public String getName()
-        {
+        public String getName() {
             return this.name;
         }
 
-        public String getDisplayLabel()
-        {
+        public String getDisplayLabel() {
             return this.label;
         }
 
-        public Set<String> getUsers()
-        {
+        public Set<String> getUsers() {
             return this.users;
         }
 
-        public void addUser(String userName)
-        {
+        public void addUser(String userName) {
             this.users.add(userName);
         }
     }

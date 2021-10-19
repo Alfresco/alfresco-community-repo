@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.event2;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
 import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventData;
@@ -35,14 +33,16 @@ import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * Encapsulates child association events that occurred in a single transaction.
  *
  * @author Chris Shields
  * @author Sara Aspery
  */
-public class ChildAssociationEventConsolidator implements ChildAssociationEventSupportedPolicies
-{
+public class ChildAssociationEventConsolidator implements ChildAssociationEventSupportedPolicies {
     private final Deque<EventType> eventTypes;
 
     protected final ChildAssociationRef childAssociationRef;
@@ -50,8 +50,8 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
     private ChildAssociationResource resource;
     private final NodeResourceHelper helper;
 
-    public ChildAssociationEventConsolidator(ChildAssociationRef childAssociationRef, NodeResourceHelper helper)
-    {
+    public ChildAssociationEventConsolidator(
+            ChildAssociationRef childAssociationRef, NodeResourceHelper helper) {
         this.eventTypes = new ArrayDeque<>();
         this.childAssociationRef = childAssociationRef;
         this.helper = helper;
@@ -64,28 +64,27 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
      * @param eventInfo the object holding the event information
      * @return the {@link RepoEvent} instance
      */
-    public RepoEvent<DataAttributes<ChildAssociationResource>> getRepoEvent(EventInfo eventInfo)
-    {
+    public RepoEvent<DataAttributes<ChildAssociationResource>> getRepoEvent(EventInfo eventInfo) {
         EventType eventType = getDerivedEvent();
 
         DataAttributes<ChildAssociationResource> eventData = buildEventData(eventInfo, resource);
 
         return RepoEvent.<DataAttributes<ChildAssociationResource>>builder()
-                    .setId(eventInfo.getId())
-                    .setSource(eventInfo.getSource())
-                    .setTime(eventInfo.getTimestamp())
-                    .setType(eventType.getType())
-                    .setData(eventData)
-                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
-                    .build();
+                .setId(eventInfo.getId())
+                .setSource(eventInfo.getSource())
+                .setTime(eventInfo.getTimestamp())
+                .setType(eventType.getType())
+                .setData(eventData)
+                .setDataschema(EventJSONSchema.getSchemaV1(eventType))
+                .build();
     }
 
-    protected DataAttributes<ChildAssociationResource> buildEventData(EventInfo eventInfo, ChildAssociationResource resource)
-    {
+    protected DataAttributes<ChildAssociationResource> buildEventData(
+            EventInfo eventInfo, ChildAssociationResource resource) {
         return EventData.<ChildAssociationResource>builder()
-                    .setEventGroupId(eventInfo.getTxnId())
-                    .setResource(resource)
-                    .build();
+                .setEventGroupId(eventInfo.getTxnId())
+                .setResource(resource)
+                .build();
     }
 
     /**
@@ -94,8 +93,8 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
      * @param childAssociationRef ChildAssociationRef
      */
     @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssociationRef, boolean isNewNode)
-    {
+    public void onCreateChildAssociation(
+            ChildAssociationRef childAssociationRef, boolean isNewNode) {
         eventTypes.add(EventType.CHILD_ASSOC_CREATED);
         resource = buildChildAssociationResource(childAssociationRef);
     }
@@ -106,14 +105,13 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
      * @param childAssociationRef ChildAssociationRef
      */
     @Override
-    public void beforeDeleteChildAssociation(ChildAssociationRef childAssociationRef)
-    {
+    public void beforeDeleteChildAssociation(ChildAssociationRef childAssociationRef) {
         eventTypes.add(EventType.CHILD_ASSOC_DELETED);
         resource = buildChildAssociationResource(childAssociationRef);
     }
 
-    private ChildAssociationResource buildChildAssociationResource(ChildAssociationRef childAssociationRef)
-    {
+    private ChildAssociationResource buildChildAssociationResource(
+            ChildAssociationRef childAssociationRef) {
         String parentId = childAssociationRef.getParentRef().getId();
         String childId = childAssociationRef.getChildRef().getId();
         String assocQName = helper.getQNamePrefixString(childAssociationRef.getQName());
@@ -121,40 +119,32 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
         return new ChildAssociationResource(parentId, childId, assocType, assocQName);
     }
 
-    /**
-     * @return a derived event for a transaction.
-     */
-    private EventType getDerivedEvent()
-    {
-        if (isTemporaryChildAssociation())
-        {
+    /** @return a derived event for a transaction. */
+    private EventType getDerivedEvent() {
+        if (isTemporaryChildAssociation()) {
             // This event will be filtered out, but we set the correct
             // event type anyway for debugging purposes
             return EventType.CHILD_ASSOC_DELETED;
-        }
-        else if (eventTypes.contains(EventType.CHILD_ASSOC_CREATED))
-        {
+        } else if (eventTypes.contains(EventType.CHILD_ASSOC_CREATED)) {
             return EventType.CHILD_ASSOC_CREATED;
-        }
-        else if (eventTypes.getLast() == EventType.CHILD_ASSOC_DELETED)
-        {
+        } else if (eventTypes.getLast() == EventType.CHILD_ASSOC_DELETED) {
             return EventType.CHILD_ASSOC_DELETED;
-        }
-        else
-        {
+        } else {
             // Default to first event
             return eventTypes.getFirst();
         }
     }
 
     /**
-     * Whether or not the child association has been created and then deleted, i.e. a temporary child association.
+     * Whether or not the child association has been created and then deleted, i.e. a temporary
+     * child association.
      *
-     * @return {@code true} if the child association has been created and then deleted, otherwise false
+     * @return {@code true} if the child association has been created and then deleted, otherwise
+     *     false
      */
-    public boolean isTemporaryChildAssociation()
-    {
-        return eventTypes.contains(EventType.CHILD_ASSOC_CREATED) && eventTypes.getLast() == EventType.CHILD_ASSOC_DELETED;
+    public boolean isTemporaryChildAssociation() {
+        return eventTypes.contains(EventType.CHILD_ASSOC_CREATED)
+                && eventTypes.getLast() == EventType.CHILD_ASSOC_DELETED;
     }
 
     /**
@@ -162,8 +152,7 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
      *
      * @return QName the child association type
      */
-    public QName getChildAssocType()
-    {
+    public QName getChildAssocType() {
         return childAssociationRef.getTypeQName();
     }
 
@@ -172,8 +161,7 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
      *
      * @return Deque<EventType> queue of event types
      */
-    public Deque<EventType> getEventTypes()
-    {
+    public Deque<EventType> getEventTypes() {
         return eventTypes;
     }
 }

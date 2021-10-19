@@ -27,21 +27,19 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
-import java.util.Date;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+import java.util.Date;
+
 /**
- * Class to represent the parameters for a Records Management
- * audit log query.
+ * Class to represent the parameters for a Records Management audit log query.
  *
  * @author Gavin Cornwell
  */
 @AlfrescoPublicApi
-public final class RecordsManagementAuditQueryParameters
-{
+public final class RecordsManagementAuditQueryParameters {
     private int maxEntries = Integer.MAX_VALUE;
     private String user;
     private NodeRef nodeRef;
@@ -50,151 +48,107 @@ public final class RecordsManagementAuditQueryParameters
     private String event;
     private QName property;
 
-    /**
-     * Default constructor.
-     */
-    public RecordsManagementAuditQueryParameters()
-    {
-        //Default constructor
+    /** Default constructor. */
+    public RecordsManagementAuditQueryParameters() {
+        // Default constructor
     }
 
-    /**
-     *
-     * @return The username to filter by
-     */
-    public String getUser()
-    {
+    /** @return The username to filter by */
+    public String getUser() {
         return this.user;
     }
 
     /**
-     * Restricts the retrieved audit trail to entries made by
-     * the provided user.
+     * Restricts the retrieved audit trail to entries made by the provided user.
      *
      * @param user The username to filter by
      */
-    public void setUser(String user)
-    {
+    public void setUser(String user) {
         this.user = user;
     }
 
-    /**
-     *
-     * @return The maximum number of audit log entries to retrieve
-     */
-    public int getMaxEntries()
-    {
+    /** @return The maximum number of audit log entries to retrieve */
+    public int getMaxEntries() {
         return this.maxEntries;
     }
 
     /**
-     * Restricts the retrieved audit trail to the last
-     * <code>maxEntries</code> entries.
+     * Restricts the retrieved audit trail to the last <code>maxEntries</code> entries.
      *
      * @param maxEntries Maximum number of entries
      */
-    public void setMaxEntries(int maxEntries)
-    {
+    public void setMaxEntries(int maxEntries) {
         this.maxEntries = maxEntries;
     }
 
-    /**
-     *
-     * @return The node to get entries for
-     */
-    public NodeRef getNodeRef()
-    {
+    /** @return The node to get entries for */
+    public NodeRef getNodeRef() {
         return this.nodeRef;
     }
 
     /**
-     * Restricts the retrieved audit trail to only those entries
-     * created by the give node.
+     * Restricts the retrieved audit trail to only those entries created by the give node.
      *
      * @param nodeRef The node to get entries for
      */
-    public void setNodeRef(NodeRef nodeRef)
-    {
+    public void setNodeRef(NodeRef nodeRef) {
         this.nodeRef = nodeRef;
     }
 
-    /**
-     *
-     * @return The date to retrieve entries from
-     */
-    public Date getDateFrom()
-    {
+    /** @return The date to retrieve entries from */
+    public Date getDateFrom() {
         return this.dateFrom;
     }
 
     /**
-     * Restricts the retrieved audit trail to only those entries
-     * that occurred after the given date.
+     * Restricts the retrieved audit trail to only those entries that occurred after the given date.
      *
      * @param dateFrom Date to retrieve entries after
      */
-    public void setDateFrom(Date dateFrom)
-    {
+    public void setDateFrom(Date dateFrom) {
         this.dateFrom = dateFrom;
     }
 
-    /**
-     *
-     * @return The date to retrive entries to
-     */
-    public Date getDateTo()
-    {
+    /** @return The date to retrive entries to */
+    public Date getDateTo() {
         return this.dateTo;
     }
 
     /**
-     * Restricts the retrieved audit trail to only those entries
-     * that occurred before the given date.
+     * Restricts the retrieved audit trail to only those entries that occurred before the given
+     * date.
      *
      * @param dateTo Date to retrieve entries before
      */
-    public void setDateTo(Date dateTo)
-    {
+    public void setDateTo(Date dateTo) {
         this.dateTo = dateTo;
     }
 
-    /**
-     *
-     * @return The event to retrive entries for
-     */
-    public String getEvent()
-    {
+    /** @return The event to retrive entries for */
+    public String getEvent() {
         return this.event;
     }
 
     /**
-     * Restricts the retrieved audit trail to only those entries
-     * that match the given event string.
+     * Restricts the retrieved audit trail to only those entries that match the given event string.
      *
      * @param event Event to retrieve entries for
      */
-    public void setEvent(String event)
-    {
+    public void setEvent(String event) {
         this.event = event;
     }
 
-    /**
-     *
-     * @return The property to retrieve entries for
-     */
-    public QName getProperty()
-    {
+    /** @return The property to retrieve entries for */
+    public QName getProperty() {
         return this.property;
     }
 
     /**
-     * Restricts the audit trail to only those entries that involve
-     * the given property.
+     * Restricts the audit trail to only those entries that involve the given property.
      *
      * @param property The property to retrieve entries for
      */
-    public void setProperty(QName property)
-    {
+    public void setProperty(QName property) {
         this.property = property;
     }
 
@@ -202,15 +156,24 @@ public final class RecordsManagementAuditQueryParameters
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder(super.toString());
 
-        builder.append(" (nodeRef='").append(nodeRef).append("', user='")
-        .append(user).append("', dateFrom='").append(dateFrom)
-        .append("', dateTo='").append(dateTo).append("', maxEntries='")
-        .append(maxEntries).append("', event='").append(event)
-        .append("', property='").append(property).append("')");
+        builder.append(" (nodeRef='")
+                .append(nodeRef)
+                .append("', user='")
+                .append(user)
+                .append("', dateFrom='")
+                .append(dateFrom)
+                .append("', dateTo='")
+                .append(dateTo)
+                .append("', maxEntries='")
+                .append(maxEntries)
+                .append("', event='")
+                .append(event)
+                .append("', property='")
+                .append(property)
+                .append("')");
 
         return builder.toString();
     }

@@ -32,28 +32,25 @@ import org.alfresco.error.AlfrescoRuntimeException;
  *
  * @author adavis
  */
-public class RenditionService2Exception extends AlfrescoRuntimeException
-{
+public class RenditionService2Exception extends AlfrescoRuntimeException {
     private static final long serialVersionUID = -8212685737533192728L;
 
     /**
      * Constructs a Rendition Service 2 Exception with the specified message.
      *
-     * @param message   the message string
+     * @param message the message string
      */
-    public RenditionService2Exception(String message)
-    {
+    public RenditionService2Exception(String message) {
         super(message);
-   }
+    }
 
     /**
      * Constructs a Rendition Service Exception 2 with the specified message and source exception.
      *
-     * @param message   the message string
-     * @param source    the source exception
+     * @param message the message string
+     * @param source the source exception
      */
-    public RenditionService2Exception(String message, Throwable source)
-    {
+    public RenditionService2Exception(String message, Throwable source) {
         super(message, source);
     }
 }

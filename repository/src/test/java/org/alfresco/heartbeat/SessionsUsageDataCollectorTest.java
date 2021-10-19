@@ -25,6 +25,12 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.admin.RepoServerMgmtMBean;
@@ -37,14 +43,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-public class SessionsUsageDataCollectorTest
-{
+public class SessionsUsageDataCollectorTest {
     private SessionsUsageDataCollector sessionsUsageDataCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
@@ -55,8 +54,7 @@ public class SessionsUsageDataCollectorTest
     private static final int TICKET_NON_EXPIRED = 10;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
         mockScheduler = mock(HeartBeatJobScheduler.class);
@@ -67,7 +65,9 @@ public class SessionsUsageDataCollectorTest
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        sessionsUsageDataCollector = new SessionsUsageDataCollector("acs.repository.usage.sessions","1.0","0 0 0/1 ? * *", mockScheduler);
+        sessionsUsageDataCollector =
+                new SessionsUsageDataCollector(
+                        "acs.repository.usage.sessions", "1.0", "0 0 0/1 ? * *", mockScheduler);
         sessionsUsageDataCollector.setHbDataCollectorService(mockCollectorService);
         sessionsUsageDataCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         sessionsUsageDataCollector.setRepoServerMgmt(repoServerMgmtMBean);
@@ -76,10 +76,8 @@ public class SessionsUsageDataCollectorTest
     }
 
     @Test
-    public void testHBDataFields()
-    {
-        for (HBData data : this.collectedData)
-        {
+    public void testHBDataFields() {
+        for (HBData data : this.collectedData) {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
             assertNotNull(data.getSchemaVersion());
@@ -89,22 +87,19 @@ public class SessionsUsageDataCollectorTest
     }
 
     @Test
-    public void testSystemUsageDataIsCollected()
-    {
+    public void testSystemUsageDataIsCollected() {
         HBData sessionsUsage = grabDataByCollectorId(sessionsUsageDataCollector.getCollectorId());
         assertNotNull("Sessions usage data missing.", sessionsUsage);
 
-        Map<String,Object> data = sessionsUsage.getData();
+        Map<String, Object> data = sessionsUsage.getData();
         assertTrue(data.containsKey("activeTickets"));
-        assertEquals("Wrong number of active tickets", TICKET_NON_EXPIRED, data.get("activeTickets"));
+        assertEquals(
+                "Wrong number of active tickets", TICKET_NON_EXPIRED, data.get("activeTickets"));
     }
 
-    private HBData grabDataByCollectorId(String collectorId)
-    {
-        for (HBData d : this.collectedData)
-        {
-            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
-            {
+    private HBData grabDataByCollectorId(String collectorId) {
+        for (HBData d : this.collectedData) {
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId)) {
                 return d;
             }
         }

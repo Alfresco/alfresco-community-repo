@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,12 +26,6 @@
 package org.alfresco.util.schemacomp;
 
 import static java.util.Locale.ENGLISH;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
@@ -43,51 +37,50 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-public class SchemaDifferenceHelper
-{
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SchemaDifferenceHelper {
     private static Log logger = LogFactory.getLog(SchemaDifferenceHelper.class);
 
     private Dialect dialect;
     private PatchService patchService;
     private List<SchemaUpgradeScriptPatch> optionalUpgradePatches;
-    private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+    private ResourcePatternResolver rpr =
+            new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
 
-    public SchemaDifferenceHelper(Dialect dialect, PatchService patchService)
-    {
+    public SchemaDifferenceHelper(Dialect dialect, PatchService patchService) {
         this.dialect = dialect;
         this.patchService = patchService;
         this.optionalUpgradePatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
     }
 
-    public SchemaDifferenceHelper(Dialect dialect, PatchService patchService,
-            List<SchemaUpgradeScriptPatch> upgradePatches)
-    {
+    public SchemaDifferenceHelper(
+            Dialect dialect,
+            PatchService patchService,
+            List<SchemaUpgradeScriptPatch> upgradePatches) {
         this.dialect = dialect;
         this.patchService = patchService;
         this.optionalUpgradePatches = upgradePatches;
     }
 
-    public void addUpgradeScriptPatch(SchemaUpgradeScriptPatch patch)
-    {
-        if (patch.isIgnored())
-        {
+    public void addUpgradeScriptPatch(SchemaUpgradeScriptPatch patch) {
+        if (patch.isIgnored()) {
             this.optionalUpgradePatches.add(patch);
         }
     }
 
-    public String findPatchCausingDifference(Result result)
-    {
+    public String findPatchCausingDifference(Result result) {
         String problemText = describe(result);
-        for (SchemaUpgradeScriptPatch patch : optionalUpgradePatches)
-        {
-            if (!isPatchApplied(patch))
-            {
+        for (SchemaUpgradeScriptPatch patch : optionalUpgradePatches) {
+            if (!isPatchApplied(patch)) {
                 List<String> problemPatterns = getProblemsPatterns(patch);
-                for (String problemPattern : problemPatterns)
-                {
-                    if (problemText.matches(problemPattern))
-                    { 
-                        return patch.getId(); 
+                for (String problemPattern : problemPatterns) {
+                    if (problemText.matches(problemPattern)) {
+                        return patch.getId();
                     }
                 }
             }
@@ -96,41 +89,36 @@ public class SchemaDifferenceHelper
         return null;
     }
 
-    private boolean isPatchApplied(SchemaUpgradeScriptPatch patch)
-    {
+    private boolean isPatchApplied(SchemaUpgradeScriptPatch patch) {
         return patchService.getPatch(patch.getId()) != null;
     }
 
-    protected Resource getDialectResource(String resourceUrl)
-    {
-        if(resourceUrl == null)
-        {
+    protected Resource getDialectResource(String resourceUrl) {
+        if (resourceUrl == null) {
             return null;
         }
 
         return DialectUtil.getDialectResource(rpr, dialect.getClass(), resourceUrl);
     }
 
-    private List<String> getProblemsPatterns(SchemaUpgradeScriptPatch patch)
-    {
+    private List<String> getProblemsPatterns(SchemaUpgradeScriptPatch patch) {
         List<String> optionalProblems = new ArrayList<>();
         String problemFileUrl = patch.getProblemPatternsFileUrl();
         Resource problemFile = getDialectResource(problemFileUrl);
 
-        if (problemFile != null)
-        {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(problemFile.getInputStream(), StandardCharsets.UTF_8))) 
-            {
+        if (problemFile != null) {
+            try (BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    problemFile.getInputStream(), StandardCharsets.UTF_8))) {
                 String line = reader.readLine();
-                while (line != null)
-                {
-                   optionalProblems.add(line);
-                   line = reader.readLine();
+                while (line != null) {
+                    optionalProblems.add(line);
+                    line = reader.readLine();
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.error("Error while parsing problems patterns for patch " + patch.getId() + ex);
+            } catch (Exception ex) {
+                logger.error(
+                        "Error while parsing problems patterns for patch " + patch.getId() + ex);
             }
         }
 
@@ -143,8 +131,7 @@ public class SchemaDifferenceHelper
      * @param result The result of a differencing or validation operation.
      * @return Comparison result description message in the default system language.
      */
-    protected String describe(Result result)
-    {
+    protected String describe(Result result) {
         return result.describe(ENGLISH);
     }
 }

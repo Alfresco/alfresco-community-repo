@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl;
@@ -42,6 +40,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.springframework.beans.factory.BeanNameAware;
 
+import java.util.List;
+
 /**
  * RM v2.1 patch to change the record inheritance of permissions.
  *
@@ -50,8 +50,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv21RecordInheritancePatch extends RMv21PatchComponent
-                                         implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
+        implements BeanNameAware, RecordsManagementModel, DOD5015Model {
     /** file plan permission service */
     private FilePlanPermissionServiceImpl filePlanPermissionServiceImpl;
 
@@ -67,76 +66,56 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     /** node DAO */
     private NodeDAO nodeDAO;
 
-    /**
-     * @param patchDAO  patch DAO
-     */
-    public void setPatchDAO(PatchDAO patchDAO)
-    {
+    /** @param patchDAO patch DAO */
+    public void setPatchDAO(PatchDAO patchDAO) {
         this.patchDAO = patchDAO;
     }
 
-    /**
-     * @param qnameDAO  qname DAO
-     */
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
+    /** @param qnameDAO qname DAO */
+    public void setQnameDAO(QNameDAO qnameDAO) {
         this.qnameDAO = qnameDAO;
     }
 
-    /**
-     * @param nodeDAO   node DAO
-     */
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
+    /** @param nodeDAO node DAO */
+    public void setNodeDAO(NodeDAO nodeDAO) {
         this.nodeDAO = nodeDAO;
     }
 
-    /**
-     * @param filePlanPermissionServiceImpl file plan permission service implementation
-     */
-    public void setFilePlanPermissionServiceImpl(FilePlanPermissionServiceImpl filePlanPermissionServiceImpl)
-    {
+    /** @param filePlanPermissionServiceImpl file plan permission service implementation */
+    public void setFilePlanPermissionServiceImpl(
+            FilePlanPermissionServiceImpl filePlanPermissionServiceImpl) {
         this.filePlanPermissionServiceImpl = filePlanPermissionServiceImpl;
     }
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
+    /** @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal() */
     @Override
-    protected void executePatch()
-    {
+    protected void executePatch() {
         Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_RECORD);
-        if (aspectPair != null)
-        {
-            List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+        if (aspectPair != null) {
+            List<Long> records =
+                    patchDAO.getNodesByAspectQNameId(
+                            aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
 
-            if (LOGGER.isDebugEnabled())
-            {
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("  ... updating " + records.size() + " records");
             }
 
-            for (Long record : records)
-            {
+            for (Long record : records) {
                 Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
                 NodeRef recordNodeRef = recordPair.getSecond();
 
-                if (LOGGER.isDebugEnabled())
-                {
+                if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("  ... updating record " + recordNodeRef.toString());
 
                     // get the primary parent
                     ChildAssociationRef assoc = nodeService.getPrimaryParent(recordNodeRef);
                     NodeRef parent = assoc.getParentRef();
-                    if (parent != null)
-                    {
+                    if (parent != null) {
                         filePlanPermissionServiceImpl.setupPermissions(parent, recordNodeRef);
                     }
                 }

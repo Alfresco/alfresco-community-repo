@@ -18,72 +18,67 @@
  */
 package org.alfresco.query;
 
+import org.alfresco.util.Pair;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.util.Pair;
-
 /**
  * Details for canned queries supporting sorted results
- * 
+ *
  * @author Derek Hulley
  * @since 4.0
  */
-public class CannedQuerySortDetails
-{
+public class CannedQuerySortDetails {
     /**
      * Sort ordering for the sort pairs.
+     *
      * @author Derek Hulley
      * @since 4.0
      */
-    public static enum SortOrder
-    {
+    public static enum SortOrder {
         ASCENDING,
         DESCENDING
     }
-    
+
     private final List<Pair<? extends Object, SortOrder>> sortPairs;
-    
+
     /**
      * Construct the sort details with a variable number of sort pairs.
-     * <p/>
-     * Sorting is done by:<br/>
-     * <b>key:</b> the key type to sort on<br/>
-     * <b>sortOrder:</b> the ordering of values associated with the key<br/>
-     * 
-     * @param sortPairs             the sort pairs, which will be applied in order
+     *
+     * <p>Sorting is done by:<br>
+     * <b>key:</b> the key type to sort on<br>
+     * <b>sortOrder:</b> the ordering of values associated with the key<br>
+     *
+     * @param sortPairs the sort pairs, which will be applied in order
      */
-    public CannedQuerySortDetails(Pair<? extends Object, SortOrder> ... sortPairs)
-    {
+    public CannedQuerySortDetails(Pair<? extends Object, SortOrder>... sortPairs) {
         this.sortPairs = Collections.unmodifiableList(Arrays.asList(sortPairs));
     }
-    
+
     /**
      * Construct the sort details from a list of sort pairs.
-     * <p/>
-     * Sorting is done by:<br/>
-     * <b>key:</b> the key type to sort on<br/>
-     * <b>sortOrder:</b> the ordering of values associated with the key<br/>
-     * 
-     * @param sortPairs             the sort pairs, which will be applied in order
+     *
+     * <p>Sorting is done by:<br>
+     * <b>key:</b> the key type to sort on<br>
+     * <b>sortOrder:</b> the ordering of values associated with the key<br>
+     *
+     * @param sortPairs the sort pairs, which will be applied in order
      */
-    public CannedQuerySortDetails(List<Pair<? extends Object, SortOrder>> sortPairs)
-    {
+    public CannedQuerySortDetails(List<Pair<? extends Object, SortOrder>> sortPairs) {
         this.sortPairs = Collections.unmodifiableList(sortPairs);
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "CannedQuerySortDetails [sortPairs=" + sortPairs + "]";
     }
 
     /**
-     * Get the sort definitions.  The instance will become unmodifiable after this has been called.
+     * Get the sort definitions. The instance will become unmodifiable after this has been called.
      */
-    public List<Pair<? extends Object, SortOrder>> getSortPairs()
-    {
+    public List<Pair<? extends Object, SortOrder>> getSortPairs() {
         return Collections.unmodifiableList(sortPairs);
     }
 }

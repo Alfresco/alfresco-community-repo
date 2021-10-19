@@ -4,28 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api.tests;
-
-import java.util.Map;
 
 import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
@@ -63,57 +61,51 @@ import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateT
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterpriseOpenCMISTCKTest
-{
+import java.util.Map;
+
+public abstract class AbstractEnterpriseOpenCMIS11TCKTest
+        extends AbstractEnterpriseOpenCMISTCKTest {
     @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
-    public void testCMISTCKBasics() throws Exception
-    {
+    public void testCMISTCKBasics() throws Exception {
         BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
         JUnitHelper.run(basicsTestGroup);
     }
 
     @Test
-    public void testCMISTCKCRUD() throws Exception
-    {
+    public void testCMISTCKCRUD() throws Exception {
         CRUDTestGroup crudTestGroup = new CRUDTestGroup();
         JUnitHelper.run(crudTestGroup);
     }
 
     @Test
-    public void testCMISTCKVersioning() throws Exception
-    {
+    public void testCMISTCKVersioning() throws Exception {
         OverrideVersioningTestGroup versioningTestGroup = new OverrideVersioningTestGroup();
         JUnitHelper.run(versioningTestGroup);
     }
 
     @Test
-    public void testCMISTCKFiling() throws Exception
-    {
+    public void testCMISTCKFiling() throws Exception {
         FilingTestGroup filingTestGroup = new FilingTestGroup();
         JUnitHelper.run(filingTestGroup);
     }
 
     @Test
-    public void testCMISTCKControl() throws Exception
-    {
+    public void testCMISTCKControl() throws Exception {
         ControlTestGroup controlTestGroup = new ControlTestGroup();
         JUnitHelper.run(controlTestGroup);
     }
 
     @Test
     @Category({LuceneTests.class, RedundantTests.class})
-    public void testCMISTCKQuery() throws Exception
-    {
+    public void testCMISTCKQuery() throws Exception {
         OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();
         JUnitHelper.run(queryTestGroup);
     }
-    
-    class OverrideVersioningTestGroup extends AbstractSessionTestGroup
-    {
+
+    class OverrideVersioningTestGroup extends AbstractSessionTestGroup {
         @Override
-        public void init(Map<String, String> parameters) throws Exception
-        {
+        public void init(Map<String, String> parameters) throws Exception {
             super.init(parameters);
 
             setName("Versioning Test Group");
@@ -123,15 +115,13 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
             addTest(new VersionDeleteTest());
             addTest(new VersioningStateCreateTest());
             // relies on Solr being available
-//            addTest(new CheckedOutTest());
+            //            addTest(new CheckedOutTest());
         }
     }
-       
-    class OverrideCRUDTestGroup extends AbstractSessionTestGroup
-    {
+
+    class OverrideCRUDTestGroup extends AbstractSessionTestGroup {
         @Override
-        public void init(Map<String, String> parameters) throws Exception
-        {
+        public void init(Map<String, String> parameters) throws Exception {
             super.init(parameters);
 
             setName("CRUD Test Group");
@@ -157,11 +147,9 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
         }
     }
 
-    public class OverrideQueryTestGroup extends AbstractSessionTestGroup
-    {
+    public class OverrideQueryTestGroup extends AbstractSessionTestGroup {
         @Override
-        public void init(Map<String, String> parameters) throws Exception
-        {
+        public void init(Map<String, String> parameters) throws Exception {
             super.init(parameters);
 
             setName("Query Test Group");
@@ -169,7 +157,7 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
 
             addTest(new QuerySmokeTest());
             // The test fails on Lucene see MNT-11223
-//            addTest(new QueryRootFolderTest());
+            //            addTest(new QueryRootFolderTest());
             addTest(new QueryForObjectCustom());
             addTest(new QueryLikeTestCustom());
             addTest(new QueryInFolderTestCustom());

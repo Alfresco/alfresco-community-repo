@@ -25,20 +25,17 @@
  */
 package org.alfresco.service.namespace;
 
-import java.util.Collection;
-
 import junit.framework.TestCase;
 
-public class DynamicNameSpaceResolverTest extends TestCase
-{
+import java.util.Collection;
 
-    public DynamicNameSpaceResolverTest()
-    {
+public class DynamicNameSpaceResolverTest extends TestCase {
+
+    public DynamicNameSpaceResolverTest() {
         super();
     }
 
-    public void testOne()
-    {
+    public void testOne() {
         DynamicNamespacePrefixResolver dnpr = new DynamicNamespacePrefixResolver(null);
         dnpr.registerNamespace("one", "http:/namespace/one");
         dnpr.registerNamespace("two", "http:/namespace/two");
@@ -60,13 +57,9 @@ public class DynamicNameSpaceResolverTest extends TestCase
         assertEquals(0, dnpr.getPrefixes("http:/namespace/four").size());
         assertEquals(1, dnpr.getPrefixes("http:/namespace/two").size());
         assertEquals(2, dnpr.getPrefixes("http:/namespace/one").size());
-
-
     }
 
-
-    public void testTwo()
-    {
+    public void testTwo() {
         DynamicNamespacePrefixResolver dnpr1 = new DynamicNamespacePrefixResolver(null);
         dnpr1.registerNamespace("one", "http:/namespace/one");
         dnpr1.registerNamespace("two", "http:/namespace/two");
@@ -112,9 +105,9 @@ public class DynamicNameSpaceResolverTest extends TestCase
         assertEquals(1, dnpr2.getPrefixes("http:/namespace/seven").size());
     }
 
-    public void testGetters()
-    {
-        DynamicNamespacePrefixResolver dnpr = new DynamicNamespacePrefixResolver(new QNameTest.MockNamespacePrefixResolver());
+    public void testGetters() {
+        DynamicNamespacePrefixResolver dnpr =
+                new DynamicNamespacePrefixResolver(new QNameTest.MockNamespacePrefixResolver());
 
         dnpr.registerNamespace("one", "http:/namespace/one");
         dnpr.registerNamespace("two", "http:/namespace/two");
@@ -144,5 +137,4 @@ public class DynamicNameSpaceResolverTest extends TestCase
         assertTrue(uris.contains("http:/namespace/five"));
         assertTrue(uris.contains("http:/namespace/six"));
     }
-
 }

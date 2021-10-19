@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -49,14 +45,17 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Abstract base class for records management related form filter
- * implementations.
+ * Abstract base class for records management related form filter implementations.
  *
  * @author Gavin Cornwell
  */
-public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilter<ItemType, NodeRef>
-{
+public abstract class RecordsManagementFormFilter<ItemType>
+        extends AbstractFilter<ItemType, NodeRef> {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementFormFilter.class);
 
@@ -75,8 +74,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
      *
      * @param namespaceService The NamespaceService instance
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
@@ -85,8 +83,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
      *
      * @param nodeService The NodeService instance
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -95,8 +92,8 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
      *
      * @param rmServiceRegistry The RecordsManagementServiceRegistry instance
      */
-    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry rmServiceRegistry)
-    {
+    public void setRecordsManagementServiceRegistry(
+            RecordsManagementServiceRegistry rmServiceRegistry) {
         this.rmServiceRegistry = rmServiceRegistry;
     }
 
@@ -105,24 +102,17 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
      *
      * @param rmAdminService The RecordsManagementAdminService instance
      */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
-    {
+    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService) {
         this.rmAdminService = rmAdminService;
     }
 
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
+    /** @param recordService record service */
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    /** @param dictionaryService dictionary service */
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
@@ -133,12 +123,10 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
      * @param props
      * @param setId
      */
-    protected void addPropertyFieldsToGroup(Form form, Map<QName, PropertyDefinition> props, String setId, String setLabel)
-    {
-        if (props != null)
-        {
-            for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet())
-            {
+    protected void addPropertyFieldsToGroup(
+            Form form, Map<QName, PropertyDefinition> props, String setId, String setLabel) {
+        if (props != null) {
+            for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet()) {
                 PropertyDefinition prop = entry.getValue();
 
                 String id = form.getItem().getId();
@@ -147,47 +135,51 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
                 Serializable value = nodeService.getProperty(nodeRef, entry.getKey());
 
                 FieldGroup group = new FieldGroup(setId, setLabel, false, false, null);
-                Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService, dictionaryService);
+                Field field =
+                        FieldUtils.makePropertyField(
+                                prop, value, group, namespaceService, dictionaryService);
 
                 form.addField(field);
 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Adding custom property .. " + prop.getName().toString() + " .. with value " + value + ".. to group .. " + setId);
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Adding custom property .. "
+                                    + prop.getName().toString()
+                                    + " .. with value "
+                                    + value
+                                    + ".. to group .. "
+                                    + setId);
                 }
             }
         }
     }
 
     /**
-     * @see
-     * org.alfresco.repo.forms.processor.Filter#beforePersist(java.lang.Object,
-     * org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.Filter#beforePersist(java.lang.Object,
+     *     org.alfresco.repo.forms.FormData)
      */
-    public void beforePersist(ItemType item, FormData data)
-    {
+    public void beforePersist(ItemType item, FormData data) {
         // ignored
     }
 
     /**
-     * @see
-     * org.alfresco.repo.forms.processor.Filter#beforeGenerate(java.lang.Object,
-     * java.util.List, java.util.List, org.alfresco.repo.forms.Form,
-     * java.util.Map)
+     * @see org.alfresco.repo.forms.processor.Filter#beforeGenerate(java.lang.Object,
+     *     java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
      */
-    public void beforeGenerate(ItemType item, List<String> fields, List<String> forcedFields, Form form,
-                Map<String, Object> context)
-    {
+    public void beforeGenerate(
+            ItemType item,
+            List<String> fields,
+            List<String> forcedFields,
+            Form form,
+            Map<String, Object> context) {
         // ignored
     }
 
     /**
-     * @see
-     * org.alfresco.repo.forms.processor.Filter#afterPersist(java.lang.Object,
-     * org.alfresco.repo.forms.FormData, java.lang.Object)
+     * @see org.alfresco.repo.forms.processor.Filter#afterPersist(java.lang.Object,
+     *     org.alfresco.repo.forms.FormData, java.lang.Object)
      */
-    public void afterPersist(ItemType item, FormData data, NodeRef persistedObject)
-    {
+    public void afterPersist(ItemType item, FormData data, NodeRef persistedObject) {
         // ignored
     }
 }

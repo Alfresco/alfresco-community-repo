@@ -33,8 +33,7 @@ package org.alfresco.rest.rm.community.model.user;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public enum UserRoles
-{
+public enum UserRoles {
     IN_PLACE_WRITERS("ExtendedWriters", "In-Place Writers"),
     ROLE_RM_ADMIN("Administrator", "Records Management Administrator"),
     ROLE_RM_MANAGER("RecordsManager", "Records Management Manager"),
@@ -45,11 +44,8 @@ public enum UserRoles
     public final String roleId;
     public final String displayName;
 
-    UserRoles(String roleId, String displayName)
-    {
+    UserRoles(String roleId, String displayName) {
         this.roleId = roleId;
         this.displayName = displayName;
     }
-
-
 }

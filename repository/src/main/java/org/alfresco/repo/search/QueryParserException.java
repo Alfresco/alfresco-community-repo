@@ -26,26 +26,16 @@
 package org.alfresco.repo.search;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.http.HttpStatus;
 
-import java.util.List;
-
-/**
- * @author Andy
- *
- */
-public class QueryParserException extends AlfrescoRuntimeException
-{
+/** @author Andy */
+public class QueryParserException extends AlfrescoRuntimeException {
     /** Serial version UUID. */
     private static final long serialVersionUID = 4886993838297301968L;
     /** Http Status Code that should be returned by Remote API. */
     private int httpStatusCode;
 
-    /**
-     * @param msgId
-     */
-    public QueryParserException(String msgId)
-    {
+    /** @param msgId */
+    public QueryParserException(String msgId) {
         super(msgId);
     }
 
@@ -53,8 +43,7 @@ public class QueryParserException extends AlfrescoRuntimeException
      * @param msgId
      * @param msgParams
      */
-    public QueryParserException(String msgId, Object[] msgParams)
-    {
+    public QueryParserException(String msgId, Object[] msgParams) {
         super(msgId, msgParams);
     }
 
@@ -62,8 +51,7 @@ public class QueryParserException extends AlfrescoRuntimeException
      * @param msgId
      * @param cause
      */
-    public QueryParserException(String msgId, Throwable cause)
-    {
+    public QueryParserException(String msgId, Throwable cause) {
         super(msgId, cause);
     }
 
@@ -72,8 +60,7 @@ public class QueryParserException extends AlfrescoRuntimeException
      * @param msgParams
      * @param cause
      */
-    public QueryParserException(String msgId, Object[] msgParams, Throwable cause)
-    {
+    public QueryParserException(String msgId, Object[] msgParams, Throwable cause) {
         super(msgId, msgParams, cause);
     }
 
@@ -83,14 +70,12 @@ public class QueryParserException extends AlfrescoRuntimeException
      * @param msgId Message for the exception
      * @param httpStatusCode Status code to return for exception
      */
-    public QueryParserException(String msgId, int httpStatusCode)
-    {
+    public QueryParserException(String msgId, int httpStatusCode) {
         super(msgId);
         this.httpStatusCode = httpStatusCode;
     }
 
-    public int getHttpStatusCode()
-    {
+    public int getHttpStatusCode() {
         return httpStatusCode;
     }
 }

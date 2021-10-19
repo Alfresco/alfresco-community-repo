@@ -18,198 +18,167 @@
  */
 package org.alfresco.util.registry;
 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.alfresco.api.AlfrescoPublicApi;   
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
-
 /**
- * An generic registry of objects held by name.  This is effectively a strongly-typed,
- * synchronized map. 
- * 
+ * An generic registry of objects held by name. This is effectively a strongly-typed, synchronized
+ * map.
+ *
  * @author Derek Hulley
  * @since 3.2
  */
 @AlfrescoPublicApi
-public class NamedObjectRegistry<T>
-{
+public class NamedObjectRegistry<T> {
     private static final Log logger = LogFactory.getLog(NamedObjectRegistry.class);
-    
+
     private final ReentrantReadWriteLock.ReadLock readLock;
     private final ReentrantReadWriteLock.WriteLock writeLock;
-    
+
     private Class<T> storageType;
     private Pattern namePattern;
     private final Map<String, T> objects;
 
-    /**
-     * Default constructor.  The {@link #setStorageType(Class)} method must be called.
-     */
-    public NamedObjectRegistry()
-    {
+    /** Default constructor. The {@link #setStorageType(Class)} method must be called. */
+    public NamedObjectRegistry() {
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         readLock = lock.readLock();
         writeLock = lock.writeLock();
-        this.namePattern = null;                            // Deliberately null
-        this.storageType = null;                            // Deliberately null
+        this.namePattern = null; // Deliberately null
+        this.storageType = null; // Deliberately null
         this.objects = new HashMap<String, T>(13);
     }
-    
+
     /**
      * Constructor that takes care of {@link #setStorageType(Class)}.
-     * 
+     *
      * @see #setStorageType(Class)
      */
-    public NamedObjectRegistry(Class<T> type)
-    {
+    public NamedObjectRegistry(Class<T> type) {
         this();
         setStorageType(type);
     }
 
     /**
-     * Set the type of class that the registry holds.  Any attempt to register a
-     * an instance of another type will be rejected.
-     * 
-     * @param clazz                     the type to store
+     * Set the type of class that the registry holds. Any attempt to register a an instance of
+     * another type will be rejected.
+     *
+     * @param clazz the type to store
      */
-    public void setStorageType(Class<T> clazz)
-    {
+    public void setStorageType(Class<T> clazz) {
         writeLock.lock();
-        try
-        {
+        try {
             this.storageType = clazz;
-        }
-        finally
-        {
+        } finally {
             writeLock.unlock();
         }
     }
 
     /**
      * Optionally set a pattern to which all object names must conform
-     * @param namePattern   a regular expression
+     *
+     * @param namePattern a regular expression
      */
-    public void setNamePattern(String namePattern)
-    {
+    public void setNamePattern(String namePattern) {
         writeLock.lock();
-        try
-        {
+        try {
             this.namePattern = Pattern.compile(namePattern);
-        }
-        catch (PatternSyntaxException e)
-        {
+        } catch (PatternSyntaxException e) {
             throw new AlfrescoRuntimeException(
-                    "Regular expression compilation failed for property 'namePrefix': " + e.getMessage(),
+                    "Regular expression compilation failed for property 'namePrefix': "
+                            + e.getMessage(),
                     e);
-        }
-        finally
-        {
+        } finally {
             writeLock.unlock();
         }
     }
 
     /**
      * Register a named object instance.
-     * 
-     * @param name          the name of the object
-     * @param object        the instance to register, which correspond to the type
+     *
+     * @param name the name of the object
+     * @param object the instance to register, which correspond to the type
      */
-    public void register(String name, T object)
-    {
+    public void register(String name, T object) {
         ParameterCheck.mandatoryString("name", name);
         ParameterCheck.mandatory("object", object);
-        
-        if (!storageType.isAssignableFrom(object.getClass()))
-        {
+
+        if (!storageType.isAssignableFrom(object.getClass())) {
             throw new IllegalArgumentException(
                     "This NameObjectRegistry only accepts objects of type " + storageType);
         }
         writeLock.lock();
-        try
-        {
-            if (storageType == null)
-            {
+        try {
+            if (storageType == null) {
                 throw new IllegalStateException(
                         "The registry has not been configured (setStorageType not yet called yet)");
             }
-            if (namePattern != null)
-            {
-                if (!namePattern.matcher(name).matches())
-                {
+            if (namePattern != null) {
+                if (!namePattern.matcher(name).matches()) {
                     throw new IllegalArgumentException(
-                            "Object name '" + name + "' does not match required pattern: " + namePattern);
+                            "Object name '"
+                                    + name
+                                    + "' does not match required pattern: "
+                                    + namePattern);
                 }
             }
             T prevObject = objects.put(name, object);
-            if (prevObject != null && prevObject != object)
-            {
+            if (prevObject != null && prevObject != object) {
                 logger.warn(
-                        "Overwriting name object in registry: \n" +
-                        "   Previous: " + prevObject + "\n" +
-                        "   New:      " + object);
+                        "Overwriting name object in registry: \n"
+                                + "   Previous: "
+                                + prevObject
+                                + "\n"
+                                + "   New:      "
+                                + object);
             }
-        }
-        finally
-        {
+        } finally {
             writeLock.unlock();
         }
     }
-    
+
     /**
      * Get a named object if it has been registered
-     * 
-     * @param name          the name of the object to retrieve
-     * @return              Returns the instance of the object, which will necessarily
-     *                      be of the correct type, or <tt>null</tt>
+     *
+     * @param name the name of the object to retrieve
+     * @return Returns the instance of the object, which will necessarily be of the correct type, or
+     *     <tt>null</tt>
      */
-    public T getNamedObject(String name)
-    {
+    public T getNamedObject(String name) {
         readLock.lock();
-        try
-        {
+        try {
             // Get it
             return objects.get(name);
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
-    
-    /**
-     * @return              Returns a copy of the map of instances 
-     */
-    public Map<String, T> getAllNamedObjects()
-    {
+
+    /** @return Returns a copy of the map of instances */
+    public Map<String, T> getAllNamedObjects() {
         readLock.lock();
-        try
-        {
+        try {
             // Get it
             return new HashMap<String, T>(objects);
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
-    
-    public void reset()
-    {
+
+    public void reset() {
         writeLock.lock();
-        try
-        {
-            if (storageType == null)
-            objects.clear();
-        }
-        finally
-        {
+        try {
+            if (storageType == null) objects.clear();
+        } finally {
             writeLock.unlock();
         }
     }

@@ -20,13 +20,11 @@ package org.alfresco.httpclient;
 
 /**
  * HTTP GET Request
- * 
+ *
  * @since 4.0
  */
-public class GetRequest extends Request
-{
-    public GetRequest(String uri)
-    {
+public class GetRequest extends Request {
+    public GetRequest(String uri) {
         super("get", uri);
     }
 }

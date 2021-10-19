@@ -38,104 +38,94 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  * @author Roy Wetherall
  * @since 2.0
  */
-public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
-{
+public class CustomEMailMappingServiceImplTest extends BaseRMTestCase {
     private CustomEmailMappingService eMailMappingService;
 
     @Override
-    protected void initServices()
-    {
+    protected void initServices() {
         super.initServices();
 
-        eMailMappingService = (CustomEmailMappingService)applicationContext.getBean("customEmailMappingService");
+        eMailMappingService =
+                (CustomEmailMappingService) applicationContext.getBean("customEmailMappingService");
     }
 
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         eMailMappingService.registerEMailMappingKey("EmailMappingKeyTest1");
         eMailMappingService.registerEMailMappingKey("EmailMappingKeyTest2");
     }
 
-    public void testCRUD() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // Check the initial custom mapping size
-                assertTrue(checkCustomMappingsSize(20));
+    public void testCRUD() throws Exception {
+        doTestInTransaction(
+                new Test<Void>() {
+                    public Void run() {
+                        // Check the initial custom mapping size
+                        assertTrue(checkCustomMappingsSize(20));
 
-                String firstKey = eMailMappingService.getEmailMappingKeys().get(0);
+                        String firstKey = eMailMappingService.getEmailMappingKeys().get(0);
 
-                // Add a custom mapping
-                eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace");
+                        // Add a custom mapping
+                        eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace");
 
-                // Check the new size
-                assertTrue(checkCustomMappingsSize(21));
+                        // Check the new size
+                        assertTrue(checkCustomMappingsSize(21));
 
-                // Check the new added custom mapping
-                CustomMapping monkeyMapping = getCustomMapping(firstKey, "cm:monkeyFace");
-                assertNotNull(monkeyMapping);
-                assertEquals(firstKey, monkeyMapping.getFrom());
-                assertEquals("cm:monkeyFace", monkeyMapping.getTo());
+                        // Check the new added custom mapping
+                        CustomMapping monkeyMapping = getCustomMapping(firstKey, "cm:monkeyFace");
+                        assertNotNull(monkeyMapping);
+                        assertEquals(firstKey, monkeyMapping.getFrom());
+                        assertEquals("cm:monkeyFace", monkeyMapping.getTo());
 
-                // Delete the new added custom mapping
-                eMailMappingService.deleteCustomMapping(firstKey, "cm:monkeyFace");
+                        // Delete the new added custom mapping
+                        eMailMappingService.deleteCustomMapping(firstKey, "cm:monkeyFace");
 
-                // Check the size after deletion
-                assertTrue(checkCustomMappingsSize(20));
+                        // Check the size after deletion
+                        assertTrue(checkCustomMappingsSize(20));
 
-                // Check the custom mapping after deletion if it exists
-                assertNull(getCustomMapping(firstKey, "cm:monkeyFace"));
+                        // Check the custom mapping after deletion if it exists
+                        assertNull(getCustomMapping(firstKey, "cm:monkeyFace"));
 
-                // Check the email mapping keys size
-                // There are 6 "standard" EmailMappingKeys + 2 CustomEmailMappingKeys are added on setUp
-                assertTrue(checkEmailMappingKeysSize(8));
+                        // Check the email mapping keys size
+                        // There are 6 "standard" EmailMappingKeys + 2 CustomEmailMappingKeys are
+                        // added on setUp
+                        assertTrue(checkEmailMappingKeysSize(8));
 
-                try
-                {
-                    eMailMappingService.addCustomMapping(" ", "cm:monkeyFace");
-                    fail("Should not get here. Invalid data.");
-                }
-                catch (AlfrescoRuntimeException are)
-                {
-                    assertNotNull(are);  //Must throw this exception
-                    assertTrue(are.getMessage().contains("Invalid values for"));
-                }
+                        try {
+                            eMailMappingService.addCustomMapping(" ", "cm:monkeyFace");
+                            fail("Should not get here. Invalid data.");
+                        } catch (AlfrescoRuntimeException are) {
+                            assertNotNull(are); // Must throw this exception
+                            assertTrue(are.getMessage().contains("Invalid values for"));
+                        }
 
-                try
-                {
-                    eMailMappingService.addCustomMapping("monkey", " ");
-                    fail("Should not get here. Invalid data.");
-                }
-                catch (AlfrescoRuntimeException are)
-                {
-                    assertNotNull(are);  //Must throw this exception
-                    assertTrue(are.getMessage().contains("Invalid values for"));
-                }
+                        try {
+                            eMailMappingService.addCustomMapping("monkey", " ");
+                            fail("Should not get here. Invalid data.");
+                        } catch (AlfrescoRuntimeException are) {
+                            assertNotNull(are); // Must throw this exception
+                            assertTrue(are.getMessage().contains("Invalid values for"));
+                        }
 
-                eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace"); //valid key
+                        eMailMappingService.addCustomMapping(
+                                firstKey, "cm:monkeyFace"); // valid key
 
-                return null;
-            }
-        }, ADMIN_USER);
+                        return null;
+                    }
+                },
+                ADMIN_USER);
     }
 
-    private CustomMapping getCustomMapping(String from, String to)
-    {
+    private CustomMapping getCustomMapping(String from, String to) {
         CustomMapping result = null;
-        for (CustomMapping customMapping : eMailMappingService.getCustomMappings())
-        {
-            if (customMapping.getFrom().equalsIgnoreCase(from) && customMapping.getTo().equalsIgnoreCase(to))
-            {
+        for (CustomMapping customMapping : eMailMappingService.getCustomMappings()) {
+            if (customMapping.getFrom().equalsIgnoreCase(from)
+                    && customMapping.getTo().equalsIgnoreCase(to)) {
                 result = customMapping;
                 break;
             }
@@ -143,13 +133,11 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
         return result;
     }
 
-    private boolean checkCustomMappingsSize(int expected)
-    {
+    private boolean checkCustomMappingsSize(int expected) {
         return expected == eMailMappingService.getCustomMappings().size();
     }
 
-    private boolean checkEmailMappingKeysSize(int expected)
-    {
+    private boolean checkEmailMappingKeysSize(int expected) {
         return expected == eMailMappingService.getEmailMappingKeys().size();
     }
 }

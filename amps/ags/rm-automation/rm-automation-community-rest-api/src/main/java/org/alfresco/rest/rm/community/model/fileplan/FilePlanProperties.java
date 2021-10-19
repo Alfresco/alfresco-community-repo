@@ -35,13 +35,13 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for file plan properties
@@ -54,29 +54,28 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilePlanProperties extends TestModel
-{
+public class FilePlanProperties extends TestModel {
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty (required = true, value = PROPERTIES_COMPONENT_ID)
+    @JsonProperty(required = true, value = PROPERTIES_COMPONENT_ID)
     private String componentd;
 
-    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty(required = true, value = PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty (PROPERTIES_COUNT)
+    @JsonProperty(PROPERTIES_COUNT)
     private Integer count;
 
-    @JsonProperty (PROPERTIES_TITLE)
+    @JsonProperty(PROPERTIES_TITLE)
     private String title;
 
-    @JsonProperty (PROPERTIES_DESCRIPTION)
+    @JsonProperty(PROPERTIES_DESCRIPTION)
     private String description;
 }

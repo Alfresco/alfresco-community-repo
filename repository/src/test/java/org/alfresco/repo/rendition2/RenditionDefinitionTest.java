@@ -36,6 +36,9 @@ import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,21 +46,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
- * Tests that the replacement {@link RenditionDefinition2} generates the same {@link TransformationOptions} as the
- * original {@link RenditionDefinition} and that there are the same definitions available.
+ * Tests that the replacement {@link RenditionDefinition2} generates the same {@link
+ * TransformationOptions} as the original {@link RenditionDefinition} and that there are the same
+ * definitions available.
  *
  * @deprecated will be removed when the original {@link RenditionService} is removed.
- *
  * @author adavis
  */
 @Deprecated
-public class RenditionDefinitionTest extends BaseSpringTest
-{
+public class RenditionDefinitionTest extends BaseSpringTest {
     private RenditionServiceImpl renditionService;
     private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
     private TransformationOptionsConverter transformationOptionsConverter;
@@ -65,35 +64,33 @@ public class RenditionDefinitionTest extends BaseSpringTest
     private AuthenticationComponent authenticationComponent;
 
     @Before
-    public void setUp() throws Exception
-    {
-        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("AuthenticationComponent");
+    public void setUp() throws Exception {
+        authenticationComponent =
+                (AuthenticationComponent) applicationContext.getBean("AuthenticationComponent");
         renditionService = (RenditionServiceImpl) applicationContext.getBean("renditionService");
-        renditionDefinitionRegistry2 = (RenditionDefinitionRegistry2) applicationContext.getBean("renditionDefinitionRegistry2");
-        transformationOptionsConverter = (TransformationOptionsConverter) applicationContext.getBean("transformOptionsConverter");
+        renditionDefinitionRegistry2 =
+                (RenditionDefinitionRegistry2)
+                        applicationContext.getBean("renditionDefinitionRegistry2");
+        transformationOptionsConverter =
+                (TransformationOptionsConverter)
+                        applicationContext.getBean("transformOptionsConverter");
         authenticationComponent.setSystemUserAsCurrentUser();
     }
 
     @After
-    public void tearDown() throws Exception
-    {
-        try
-        {
+    public void tearDown() throws Exception {
+        try {
             authenticationComponent.clearCurrentSecurityContext();
-        }
-        catch (Throwable e)
-        {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
-    private RenditionDefinition getRenditionDefinition(List<RenditionDefinition> renditionDefinitions, String renditionName)
-    {
-        for (RenditionDefinition renditionDefinition: renditionDefinitions)
-        {
+    private RenditionDefinition getRenditionDefinition(
+            List<RenditionDefinition> renditionDefinitions, String renditionName) {
+        for (RenditionDefinition renditionDefinition : renditionDefinitions) {
             String name = renditionDefinition.getRenditionName().getLocalName();
-            if (name.equals(renditionName))
-            {
+            if (name.equals(renditionName)) {
                 return renditionDefinition;
             }
         }
@@ -101,78 +98,97 @@ public class RenditionDefinitionTest extends BaseSpringTest
     }
 
     @Test
-    public void testGetRenderingEngineDefinition() throws Exception
-    {
+    public void testGetRenderingEngineDefinition() throws Exception {
         ThumbnailRenditionConvertor converter = new ThumbnailRenditionConvertor();
-        List<RenditionDefinition> renditionDefinitions = new ArrayList(renditionService.loadRenditionDefinitions());
+        List<RenditionDefinition> renditionDefinitions =
+                new ArrayList(renditionService.loadRenditionDefinitions());
         Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNames();
 
-        for (String renditionName: renditionNames)
-        {
-            System.out.println("renditionName="+renditionName);
+        for (String renditionName : renditionNames) {
+            System.out.println("renditionName=" + renditionName);
 
-            RenditionDefinition definition = getRenditionDefinition(renditionDefinitions, renditionName);
-            assertNotNull("There is no RenditionDefinition for "+renditionName, definition);
+            RenditionDefinition definition =
+                    getRenditionDefinition(renditionDefinitions, renditionName);
+            assertNotNull("There is no RenditionDefinition for " + renditionName, definition);
             renditionDefinitions.remove(definition);
 
             ThumbnailDefinition thumbnailDefinition = converter.convert(definition);
-            TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
+            TransformationOptions transformationOptions =
+                    thumbnailDefinition.getTransformationOptions();
 
-            RenditionDefinition2 definition2 = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+            RenditionDefinition2 definition2 =
+                    renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
             Map<String, String> options = definition2.getTransformOptions();
-            TransformationOptions transformationOptions2 = transformationOptionsConverter.getTransformationOptions(renditionName, options);
-            Map<String, String> options2 = transformationOptionsConverter.getOptions(transformationOptions2, null, null);
-            transformationOptions2.setUse(null); // The use is not set in the original until much later
+            TransformationOptions transformationOptions2 =
+                    transformationOptionsConverter.getTransformationOptions(renditionName, options);
+            Map<String, String> options2 =
+                    transformationOptionsConverter.getOptions(transformationOptions2, null, null);
+            transformationOptions2.setUse(
+                    null); // The use is not set in the original until much later
 
-            // The original pdf and webpreview thumbnails are wrong, as they don't include the 'limits' and in the
-            // case of pdf used the wrong TransformationOptions subclass, so this code only checks the type rather
+            // The original pdf and webpreview thumbnails are wrong, as they don't include the
+            // 'limits' and in the
+            // case of pdf used the wrong TransformationOptions subclass, so this code only checks
+            // the type rather
             // than checking transformationOptions is equal to transformationOptions2.
-            if (!renditionName.equals("pdf") && !renditionName.equals("webpreview"))
-            {
-                // MNT-22409: We no longer have system.thumbnail.definition.default.pageLimit=1 as a default.
-                // It is -1 (unlimited), but to compensate for that the new OOTB renditions defined in
-                // 0100-baseRenditions now have startPage and endPage transform options. The following code modifies
-                //  the transformationOptions so that they will be the same if there are no bugs. 
-                Collection<TransformationSourceOptions> sourceOptionsList = transformationOptions2.getSourceOptionsList();
-                if (sourceOptionsList != null && sourceOptionsList.size() == 1)
-                {
+            if (!renditionName.equals("pdf") && !renditionName.equals("webpreview")) {
+                // MNT-22409: We no longer have system.thumbnail.definition.default.pageLimit=1 as a
+                // default.
+                // It is -1 (unlimited), but to compensate for that the new OOTB renditions defined
+                // in
+                // 0100-baseRenditions now have startPage and endPage transform options. The
+                // following code modifies
+                //  the transformationOptions so that they will be the same if there are no bugs.
+                Collection<TransformationSourceOptions> sourceOptionsList =
+                        transformationOptions2.getSourceOptionsList();
+                if (sourceOptionsList != null && sourceOptionsList.size() == 1) {
                     TransformationSourceOptions sourceOptions = sourceOptionsList.iterator().next();
-                    if (sourceOptions instanceof PagedSourceOptions)
-                    {
-                        PagedSourceOptions pagedSourceOptions = (PagedSourceOptions)sourceOptions;
-                        if (pagedSourceOptions.getStartPageNumber() == 1 && pagedSourceOptions.getEndPageNumber() == 1)
-                        {
-                            if (transformationOptions.getSourceOptionsList() == null)
-                            {
+                    if (sourceOptions instanceof PagedSourceOptions) {
+                        PagedSourceOptions pagedSourceOptions = (PagedSourceOptions) sourceOptions;
+                        if (pagedSourceOptions.getStartPageNumber() == 1
+                                && pagedSourceOptions.getEndPageNumber() == 1) {
+                            if (transformationOptions.getSourceOptionsList() == null) {
                                 transformationOptions.setSourceOptionsList(sourceOptionsList);
                             }
                         }
                     }
                 }
 
-                assertEquals("The TransformationOptions used in transforms for " + renditionName + " should be the same",
-                        transformationOptions.toStringAll(), transformationOptions2.toStringAll());
-                assertEquals("The transformationOptionsConverter back to the newer format was not the same for " +
-                                renditionName, options, options2);
-            }
-            else
-            {
-                assertEquals("The converted class for "+renditionName+" should be the same as before",
-                        transformationOptions.getClass(), transformationOptions2.getClass());
-                assertEquals("The converted class for "+renditionName+" should be SWFTransformationOptions",
-                        SWFTransformationOptions.class, transformationOptions2.getClass());
+                assertEquals(
+                        "The TransformationOptions used in transforms for "
+                                + renditionName
+                                + " should be the same",
+                        transformationOptions.toStringAll(),
+                        transformationOptions2.toStringAll());
+                assertEquals(
+                        "The transformationOptionsConverter back to the newer format was not the"
+                                + " same for "
+                                + renditionName,
+                        options,
+                        options2);
+            } else {
+                assertEquals(
+                        "The converted class for "
+                                + renditionName
+                                + " should be the same as before",
+                        transformationOptions.getClass(),
+                        transformationOptions2.getClass());
+                assertEquals(
+                        "The converted class for "
+                                + renditionName
+                                + " should be SWFTransformationOptions",
+                        SWFTransformationOptions.class,
+                        transformationOptions2.getClass());
             }
         }
 
-        if (!renditionDefinitions.isEmpty())
-        {
+        if (!renditionDefinitions.isEmpty()) {
             StringJoiner sj = new StringJoiner(", ");
-            for (RenditionDefinition renditionDefinition : renditionDefinitions)
-            {
+            for (RenditionDefinition renditionDefinition : renditionDefinitions) {
                 String name = renditionDefinition.getRenditionName().getLocalName();
                 sj.add(name);
             }
-            fail("There is no RenditionDefinition2 for existing RenditionDefinitions "+sj);
+            fail("There is no RenditionDefinition2 for existing RenditionDefinitions " + sj);
         }
     }
 }

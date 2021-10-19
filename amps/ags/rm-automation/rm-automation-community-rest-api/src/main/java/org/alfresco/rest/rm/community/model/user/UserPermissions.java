@@ -28,20 +28,18 @@ package org.alfresco.rest.rm.community.model.user;
 
 /**
  * Constants for RM user capabilities
- * 
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
-public enum UserPermissions
-{
+public enum UserPermissions {
     PERMISSION_FILING("Filing"),
     PERMISSION_READ_RECORDS("ReadRecords"),
     PERMISSION_FILE_RECORDS("FileRecords");
 
     public final String permissionId;
 
-    UserPermissions(String permissionId)
-    {
+    UserPermissions(String permissionId) {
         this.permissionId = permissionId;
     }
 }

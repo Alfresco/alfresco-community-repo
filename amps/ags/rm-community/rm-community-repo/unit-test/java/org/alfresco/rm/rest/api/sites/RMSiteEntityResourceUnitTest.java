@@ -37,10 +37,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -56,14 +52,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Unit Test class for RMSiteEntityResource.
  *
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class RMSiteEntityResourceUnitTest extends BaseUnitTest
-{
+public class RMSiteEntityResourceUnitTest extends BaseUnitTest {
     private static final String NON_RM_SITE_ID = "not_rm";
 
     private static final String PERMANENT_PARAMETER = "permanent";
@@ -74,21 +73,17 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
 
     private static final String RM_SITE_TITLE = "RM Site Title";
 
-    @Mock
-    private RMSites mockedRMSites;
+    @Mock private RMSites mockedRMSites;
 
-    @InjectMocks
-    private RMSiteEntityResource rmSiteEntityResource;
+    @InjectMocks private RMSiteEntityResource rmSiteEntityResource;
 
     @Before
-    public void before()
-    {
+    public void before() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void create() throws Exception
-    {
+    public void create() throws Exception {
         RMSite rmSite = new RMSite();
         rmSite.setTitle(RM_SITE_TITLE);
         rmSite.setId(RM_SITE_ID);
@@ -109,8 +104,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void happyPathDelete() throws Exception
-    {
+    public void happyPathDelete() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         when(parameters.getParameter(PERMANENT_PARAMETER)).thenReturn(null);
@@ -119,44 +113,35 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void deleteNonRMSite() throws Exception
-    {
+    public void deleteNonRMSite() throws Exception {
         String siteId = NON_RM_SITE_ID;
         Params parameters = mock(Params.class);
         when(parameters.getParameter(PERMANENT_PARAMETER)).thenReturn(null);
-        try
-        {
+        try {
             rmSiteEntityResource.delete(siteId, parameters);
             fail("Expected ecxeption as siteId was different than rm");
-        }
-        catch(InvalidParameterException ex)
-        {
+        } catch (InvalidParameterException ex) {
             assertEquals("The Deletion is supported only for siteId = rm.", ex.getMessage());
         }
         verify(mockedRMSites, never()).deleteRMSite(siteId, parameters);
     }
 
     @Test
-    public void deleteRMSiteWithPermanentParam() throws Exception
-    {
+    public void deleteRMSiteWithPermanentParam() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         when(parameters.getParameter(PERMANENT_PARAMETER)).thenReturn(Boolean.toString(true));
-        try
-        {
+        try {
             rmSiteEntityResource.delete(siteId, parameters);
             fail("Expected ecxeption as parameter permanent was present in the request.");
-        }
-        catch(InvalidArgumentException ex)
-        {
+        } catch (InvalidArgumentException ex) {
             assertEquals("DELETE does not support parameter: permanent", ex.getMsgId());
         }
         verify(mockedRMSites, never()).deleteSite(siteId, parameters);
     }
 
     @Test
-    public void happyPathGet() throws Exception
-    {
+    public void happyPathGet() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         rmSiteEntityResource.readById(siteId, parameters);
@@ -164,156 +149,134 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void getNonRMSite() throws Exception
-    {
+    public void getNonRMSite() throws Exception {
         String siteId = NON_RM_SITE_ID;
         Params parameters = mock(Params.class);
-        try
-        {
+        try {
             rmSiteEntityResource.readById(siteId, parameters);
             fail("Expected ecxeption as siteId was different than rm");
-        }
-        catch(InvalidParameterException ex)
-        {
+        } catch (InvalidParameterException ex) {
             assertEquals("GET is supported only for siteId = rm.", ex.getMessage());
         }
         verify(mockedRMSites, never()).getRMSite(siteId);
     }
 
     @Test
-    public void happyPathUpdate() throws Exception
-    {
+    public void happyPathUpdate() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
         rmSiteEntityResource.update(siteId, site, parameters);
-        verify(mockedRMSites, times(1)).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, times(1))
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 
     @Test
-    public void updateNonRMSite() throws Exception
-    {
+    public void updateNonRMSite() throws Exception {
         String siteId = NON_RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
-        try
-        {
+        try {
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as siteId was different than rm");
-        }
-        catch(InvalidParameterException ex)
-        {
+        } catch (InvalidParameterException ex) {
             assertEquals("The Update is supported only for siteId = rm.", ex.getMessage());
         }
-        verify(mockedRMSites, never()).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, never())
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 
     @Test
-    public void updateRMSiteId() throws Exception
-    {
+    public void updateRMSiteId() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
         site.setId("newSiteID");
-        try
-        {
+        try {
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site id cannot be changed.");
-        }
-        catch(InvalidArgumentException ex)
-        {
+        } catch (InvalidArgumentException ex) {
             assertEquals("Site update does not support field: id", ex.getMsgId());
         }
-        verify(mockedRMSites, never()).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, never())
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 
     @Test
-    public void updateRMSiteGuid() throws Exception
-    {
+    public void updateRMSiteGuid() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
         site.setGuid("newGUID");
-        try
-        {
+        try {
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site guid cannot be changed.");
-        }
-        catch(InvalidArgumentException ex)
-        {
+        } catch (InvalidArgumentException ex) {
             assertEquals("Site update does not support field: guid", ex.getMsgId());
         }
-        verify(mockedRMSites, never()).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, never())
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 
     @Test
-    public void updateRMSiteRole() throws Exception
-    {
+    public void updateRMSiteRole() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
         site.setRole("newRole");
-        try
-        {
+        try {
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site role cannot be changed.");
-        }
-        catch(InvalidArgumentException ex)
-        {
+        } catch (InvalidArgumentException ex) {
             assertEquals("Site update does not support field: role", ex.getMsgId());
         }
-        verify(mockedRMSites, never()).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, never())
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 
     @Test
-    public void updateRMSiteCompliance() throws Exception
-    {
+    public void updateRMSiteCompliance() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
         site.setCompliance(RMSiteCompliance.STANDARD);
-        try
-        {
+        try {
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site compliance cannot be changed.");
-        }
-        catch(InvalidArgumentException ex)
-        {
+        } catch (InvalidArgumentException ex) {
             assertEquals("Site update does not support field: compliance", ex.getMsgId());
         }
-        verify(mockedRMSites, never()).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, never())
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 
     @Test
-    public void updateRMSiteVisibility() throws Exception
-    {
+    public void updateRMSiteVisibility() throws Exception {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
         RMSite site = new RMSite();
         site.setTitle("New Title");
         site.setDescription("New Description");
         site.setVisibility(SiteVisibility.PRIVATE);
-        try
-        {
+        try {
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site visibility cannot be changed.");
-        }
-        catch(InvalidArgumentException ex)
-        {
+        } catch (InvalidArgumentException ex) {
             assertEquals("Site update does not support field: visibility", ex.getMsgId());
         }
-        verify(mockedRMSites, never()).updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
+        verify(mockedRMSites, never())
+                .updateRMSite(any(String.class), any(SiteUpdate.class), any(Parameters.class));
     }
 }

@@ -25,9 +25,12 @@
  */
 package org.alfresco.heartbeat.jobs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.alfresco.heartbeat.HBBaseDataCollector;
 import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.jobs.QuartzJobScheduler;
 import org.alfresco.repo.scheduler.AlfrescoSchedulerFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,19 +41,13 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class QuartzJobSchedulerTest
-{
+public class QuartzJobSchedulerTest {
 
     private Scheduler scheduler;
-    QuartzJobScheduler hbJobScheduler ;
+    QuartzJobScheduler hbJobScheduler;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         // Create scheduler
         SchedulerFactoryBean sfb = new SchedulerFactoryBean();
         sfb.setSchedulerFactoryClass(AlfrescoSchedulerFactory.class);
@@ -59,17 +56,11 @@ public class QuartzJobSchedulerTest
         scheduler = sfb.getScheduler();
         hbJobScheduler = createSimpleJobScheduler();
         hbJobScheduler.setScheduler(scheduler);
-
     }
 
-    /**
-     *
-     * Jobs are scheduled with cron expressions provided by collectors
-     *
-     */
+    /** Jobs are scheduled with cron expressions provided by collectors */
     @Test
-    public void testJobsScheduledWithDifferentCronExpressions() throws Exception
-    {
+    public void testJobsScheduledWithDifferentCronExpressions() throws Exception {
 
         final String cron1 = "0 0/1 * * * ?";
         final String cron2 = "0 0/2 * * * ?";
@@ -88,9 +79,21 @@ public class QuartzJobSchedulerTest
         hbJobScheduler.scheduleJob(c2);
         hbJobScheduler.scheduleJob(c3);
 
-        String testCron1 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName1, Scheduler.DEFAULT_GROUP))).getCronExpression();
-        String testCron2 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName2, Scheduler.DEFAULT_GROUP))).getCronExpression();
-        String testCron3 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName3, Scheduler.DEFAULT_GROUP))).getCronExpression();
+        String testCron1 =
+                ((CronTrigger)
+                                scheduler.getTrigger(
+                                        new TriggerKey(triggerName1, Scheduler.DEFAULT_GROUP)))
+                        .getCronExpression();
+        String testCron2 =
+                ((CronTrigger)
+                                scheduler.getTrigger(
+                                        new TriggerKey(triggerName2, Scheduler.DEFAULT_GROUP)))
+                        .getCronExpression();
+        String testCron3 =
+                ((CronTrigger)
+                                scheduler.getTrigger(
+                                        new TriggerKey(triggerName3, Scheduler.DEFAULT_GROUP)))
+                        .getCronExpression();
 
         assertEquals("Cron expression doesn't match", cron1, testCron1);
         assertEquals("Cron expression doesn't match", cron2, testCron2);
@@ -98,8 +101,7 @@ public class QuartzJobSchedulerTest
     }
 
     @Test
-    public void testUnscheduling() throws Exception
-    {
+    public void testUnscheduling() throws Exception {
         final String cron1 = "0 0/1 * * * ?";
         final String cron2 = "0 0/2 * * * ?";
         final String cron3 = "0 0/3 * * * ?";
@@ -118,69 +120,57 @@ public class QuartzJobSchedulerTest
         hbJobScheduler.unscheduleJob(c2);
 
         // 1 & 2 gone, 3 is still there
-        assertFalse(isJobScheduledForCollector(c1.getCollectorId(),scheduler));
-        assertFalse(isJobScheduledForCollector(c2.getCollectorId(),scheduler));
-        assertTrue(isJobScheduledForCollector(c3.getCollectorId(),scheduler));
+        assertFalse(isJobScheduledForCollector(c1.getCollectorId(), scheduler));
+        assertFalse(isJobScheduledForCollector(c2.getCollectorId(), scheduler));
+        assertTrue(isJobScheduledForCollector(c3.getCollectorId(), scheduler));
     }
 
-    @Test(expected=RuntimeException.class)
-    public void testInvalidCronExpression() throws Exception
-    {
+    @Test(expected = RuntimeException.class)
+    public void testInvalidCronExpression() throws Exception {
 
         // Register collector with invalid cron expression
         SimpleHBDataCollector c2 = new SimpleHBDataCollector("c2", "Ivalidcron");
         hbJobScheduler.scheduleJob(c2);
     }
 
-    private class SimpleHBDataCollector extends HBBaseDataCollector
-    {
+    private class SimpleHBDataCollector extends HBBaseDataCollector {
 
-        public SimpleHBDataCollector(String collectorId, String cron)
-        {
-            super(collectorId,"1.0",cron, hbJobScheduler);
+        public SimpleHBDataCollector(String collectorId, String cron) {
+            super(collectorId, "1.0", cron, hbJobScheduler);
         }
 
-        public List<HBData> collectData()
-        {
+        public List<HBData> collectData() {
             List<HBData> result = new LinkedList<>();
             result.add(new HBData("systemId2", this.getCollectorId(), "1", new Date()));
             return result;
         }
     }
 
-    private boolean isJobScheduledForCollector(String collectorId, Scheduler scheduler) throws Exception
-    {
+    private boolean isJobScheduledForCollector(String collectorId, Scheduler scheduler)
+            throws Exception {
         String jobName = "heartbeat-" + collectorId;
         String triggerName = jobName + "-Trigger";
         return scheduler.checkExists(new JobKey(jobName, Scheduler.DEFAULT_GROUP))
                 && scheduler.checkExists(new TriggerKey(triggerName, Scheduler.DEFAULT_GROUP));
     }
 
-    private QuartzJobScheduler createSimpleJobScheduler()
-    {
-        return new QuartzJobScheduler()
-        {
+    private QuartzJobScheduler createSimpleJobScheduler() {
+        return new QuartzJobScheduler() {
 
             @Override
-            protected JobDataMap getJobDetailMap(HBBaseDataCollector collector)
-            {
+            protected JobDataMap getJobDetailMap(HBBaseDataCollector collector) {
                 return new JobDataMap();
             }
 
             @Override
-            protected Class<? extends Job> getHeartBeatJobClass()
-            {
+            protected Class<? extends Job> getHeartBeatJobClass() {
                 return SimpleJob.class;
             }
         };
     }
 
-    private class SimpleJob implements Job
-    {
+    private class SimpleJob implements Job {
         @Override
-        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException
-        {
-
-        }
+        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {}
     }
 }

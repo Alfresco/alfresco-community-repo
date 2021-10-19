@@ -20,48 +20,36 @@ package org.alfresco.encryption.ssl;
 
 import org.alfresco.encryption.KeyStoreParameters;
 
-/**
- * 
- * @since 4.0
- *
- */
-public class SSLEncryptionParameters
-{
+/** @since 4.0 */
+public class SSLEncryptionParameters {
     private KeyStoreParameters keyStoreParameters;
     private KeyStoreParameters trustStoreParameters;
 
-    /**
-     *  Default constructor (for use by Spring)
-     */
-    public SSLEncryptionParameters()
-    {
+    /** Default constructor (for use by Spring) */
+    public SSLEncryptionParameters() {
         super();
     }
 
-    public SSLEncryptionParameters(KeyStoreParameters keyStoreParameters, KeyStoreParameters trustStoreParameters)
-    {
+    public SSLEncryptionParameters(
+            KeyStoreParameters keyStoreParameters, KeyStoreParameters trustStoreParameters) {
         super();
         this.keyStoreParameters = keyStoreParameters;
         this.trustStoreParameters = trustStoreParameters;
     }
 
-    public KeyStoreParameters getKeyStoreParameters()
-    {
+    public KeyStoreParameters getKeyStoreParameters() {
         return keyStoreParameters;
     }
-    
-    public KeyStoreParameters getTrustStoreParameters()
-    {
+
+    public KeyStoreParameters getTrustStoreParameters() {
         return trustStoreParameters;
     }
 
-    public void setKeyStoreParameters(KeyStoreParameters keyStoreParameters)
-    {
+    public void setKeyStoreParameters(KeyStoreParameters keyStoreParameters) {
         this.keyStoreParameters = keyStoreParameters;
     }
 
-    public void setTrustStoreParameters(KeyStoreParameters trustStoreParameters)
-    {
+    public void setTrustStoreParameters(KeyStoreParameters trustStoreParameters) {
         this.trustStoreParameters = trustStoreParameters;
     }
 }

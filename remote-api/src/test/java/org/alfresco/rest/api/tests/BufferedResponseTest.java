@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * Alfresco Remote API
@@ -26,6 +25,14 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.web.scripts.BufferedResponse;
+import org.alfresco.repo.web.scripts.TempOutputStream;
+import org.alfresco.util.TempFileProvider;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,22 +42,14 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.alfresco.repo.web.scripts.BufferedResponse;
-import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.util.TempFileProvider;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 /**
- * Test that BufferedResponse uses a temp file instead of buffering the entire output stream in memory
+ * Test that BufferedResponse uses a temp file instead of buffering the entire output stream in
+ * memory
  *
  * @author Andrei Zapodeanu
  * @author azapodeanu
  */
-public class BufferedResponseTest
-{
+public class BufferedResponseTest {
     private static final String TEMP_FOLDER_PATH = TempFileProvider.getTempDir().getAbsolutePath();
 
     private static final String TEMP_DIRECTORY_NAME = "testLargeFile";
@@ -62,66 +61,64 @@ public class BufferedResponseTest
     private static final Integer MAX_CONTENT_SIZE = 1024 * 1024 * 1024;
 
     @Before
-    public void createSourceFile() throws IOException
-    {
+    public void createSourceFile() throws IOException {
         createRandomFileInDirectory(TEMP_FOLDER_PATH, LARGE_FILE_NAME, LARGE_FILE_SIZE_BYTES);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         File largeFileSource = new File(TEMP_FOLDER_PATH, LARGE_FILE_NAME);
         largeFileSource.delete();
     }
 
     /**
-     * Test that the output stream creates a temp file to cache its content when file size was bigger than its memory threshold ( 5 > 4 MB )
-     * MNT-19833
+     * Test that the output stream creates a temp file to cache its content when file size was
+     * bigger than its memory threshold ( 5 > 4 MB ) MNT-19833
      */
     @Test
-    public void testOutputStream() throws IOException
-    {
+    public void testOutputStream() throws IOException {
         File bufferTempDirectory = TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME);
-        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory,
-            MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+        Supplier<TempOutputStream> streamFactory =
+                TempOutputStream.factory(
+                        bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         final long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
-        try (BufferedResponse response = new BufferedResponse(null, 0, streamFactory))
-        {
+        try (BufferedResponse response = new BufferedResponse(null, 0, streamFactory)) {
             copyFileToOutputStream(response);
-            final long countBeforeClose = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
+            final long countBeforeClose =
+                    countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
             response.getOutputStream().close();
-            final long countAfterClose = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
+            final long countAfterClose =
+                    countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
             Assert.assertEquals(countBefore + 1, countBeforeClose);
             Assert.assertEquals(countBefore + 1, countAfterClose);
         }
 
-        final long countAfterDestroy = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
+        final long countAfterDestroy =
+                countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
         Assert.assertEquals(countBefore, countAfterDestroy);
     }
 
-    private void copyFileToOutputStream(BufferedResponse response) throws IOException
-    {
+    private void copyFileToOutputStream(BufferedResponse response) throws IOException {
         File largeFileSource = new File(TEMP_FOLDER_PATH, LARGE_FILE_NAME);
         OutputStream testOutputStream = response.getOutputStream();
         Files.copy(largeFileSource.toPath(), testOutputStream);
     }
 
-    private void createRandomFileInDirectory(String path, String fileName, int size) throws IOException
-    {
+    private void createRandomFileInDirectory(String path, String fileName, int size)
+            throws IOException {
         String fullPath = new File(path, fileName).getPath();
-        RandomAccessFile file = new RandomAccessFile(fullPath,"rw");
+        RandomAccessFile file = new RandomAccessFile(fullPath, "rw");
         file.setLength(size);
         file.close();
     }
 
-    private long countFilesInDirectoryWithPrefix(File directory, String filePrefix) throws IOException
-    {
+    private long countFilesInDirectoryWithPrefix(File directory, String filePrefix)
+            throws IOException {
         Stream<File> fileStream = Arrays.stream(directory.listFiles());
-        return fileStream.filter( f -> f.getName().startsWith(filePrefix)).count();
+        return fileStream.filter(f -> f.getName().startsWith(filePrefix)).count();
     }
 }
-

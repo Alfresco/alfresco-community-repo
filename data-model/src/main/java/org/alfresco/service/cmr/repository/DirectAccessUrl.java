@@ -25,63 +25,57 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 @AlfrescoPublicApi
-public class DirectAccessUrl implements Serializable
-{
+public class DirectAccessUrl implements Serializable {
     private static final long serialVersionUID = -881676208224414139L;
 
     private String contentUrl;
     private Date expiryTime;
     private boolean attachment;
 
-    public String getContentUrl()
-    {
+    public String getContentUrl() {
         return contentUrl;
     }
 
-    public void setContentUrl(String contentUrl)
-    {
+    public void setContentUrl(String contentUrl) {
         this.contentUrl = contentUrl;
     }
 
-    public Date getExpiryTime()
-    {
+    public Date getExpiryTime() {
         return expiryTime;
     }
 
-    public void setExpiryTime(Date expiryTime)
-    {
+    public void setExpiryTime(Date expiryTime) {
         this.expiryTime = expiryTime;
     }
 
-    public boolean isAttachment()
-    {
+    public boolean isAttachment() {
         return attachment;
     }
 
-    public void setAttachment(boolean attachment)
-    {
+    public void setAttachment(boolean attachment) {
         this.attachment = attachment;
     }
 
-    @Override public boolean equals(Object obj)
-    {
+    @Override
+    public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
 
         DirectAccessUrl that = (DirectAccessUrl) obj;
-        return attachment == that.attachment && Objects.equals(contentUrl,
-                that.contentUrl) && Objects.equals(expiryTime, that.expiryTime);
+        return attachment == that.attachment
+                && Objects.equals(contentUrl, that.contentUrl)
+                && Objects.equals(expiryTime, that.expiryTime);
     }
 
-    @Override public int hashCode()
-    {
+    @Override
+    public int hashCode() {
         return Objects.hash(contentUrl, expiryTime, attachment);
     }
 }

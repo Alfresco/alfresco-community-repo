@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,28 +30,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -69,15 +59,22 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.UserTransaction;
+
 /**
- * Unit test for MNT-10966: 4.1.7 breaks onContentUpdate policies when using webdav
- * Implemented on base of PutMethodTest which was introduced by alex.mukha.
+ * Unit test for MNT-10966: 4.1.7 breaks onContentUpdate policies when using webdav Implemented on
+ * base of PutMethodTest which was introduced by alex.mukha.
  *
  * @author viachaslau.tsikhanovich, alex.mukha
  */
 @Category(LuceneTests.class)
-public class WebDAVonContentUpdateTest
-{
+public class WebDAVonContentUpdateTest {
     private static ApplicationContext ctx;
 
     private static final String TEST_DATA_FILE_NAME = "filewithdata.txt";
@@ -102,24 +99,23 @@ public class WebDAVonContentUpdateTest
     private NodeRef companyHomeNodeRef;
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
-	private boolean flag;
-	private int counter = 0;
+    private boolean flag;
+    private int counter = 0;
     private NamespaceService namespaceService;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception
-    {
-        ctx = ApplicationContextHelper.getApplicationContext(new String[]
-            {
-                "classpath:alfresco/application-context.xml",
-                "classpath:alfresco/web-scripts-application-context.xml",
-                "classpath:alfresco/remote-api-context.xml"
-            });
+    public static void setUpBeforeClass() throws Exception {
+        ctx =
+                ApplicationContextHelper.getApplicationContext(
+                        new String[] {
+                            "classpath:alfresco/application-context.xml",
+                            "classpath:alfresco/web-scripts-application-context.xml",
+                            "classpath:alfresco/remote-api-context.xml"
+                        });
     }
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         searchService = ctx.getBean("SearchService", SearchService.class);
         fileFolderService = ctx.getBean("FileFolderService", FileFolderService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
@@ -131,11 +127,13 @@ public class WebDAVonContentUpdateTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
-        InputStream testDataIS = getClass().getClassLoader().getResourceAsStream(TEST_DATA_FILE_NAME);
-        InputStream davLockInfoIS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_XML);
+        InputStream testDataIS =
+                getClass().getClassLoader().getResourceAsStream(TEST_DATA_FILE_NAME);
+        InputStream davLockInfoIS =
+                getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_XML);
         testDataFile = IOUtils.toByteArray(testDataIS);
         davLockInfoFile = IOUtils.toByteArray(davLockInfoIS);
         testDataIS.close();
@@ -146,8 +144,7 @@ public class WebDAVonContentUpdateTest
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         method = null;
         request = null;
         response = null;
@@ -157,44 +154,52 @@ public class WebDAVonContentUpdateTest
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
-    public void doOnContentUpdate(NodeRef nodeRef, boolean newContent)
-    {
+    public void doOnContentUpdate(NodeRef nodeRef, boolean newContent) {
         flag = true;
         ++counter;
     }
 
     /**
      * Put a content file and check that onContentUpdate fired
-     * <p>
-     * Lock the file
-     * <p>
-     * Put the contents
-     * <p>
-     * Unlock the node
+     *
+     * <p>Lock the file
+     *
+     * <p>Put the contents
+     *
+     * <p>Unlock the node
      */
     @Test
-    public void testUploadNewContentFiresContentUpdatePolicies() throws Exception
-    {
+    public void testUploadNewContentFiresContentUpdatePolicies() throws Exception {
         flag = false;
         counter = 0;
-        policyComponent.bindClassBehaviour(OnContentUpdatePolicy.QNAME, ContentModel.TYPE_CONTENT, new JavaBehaviour(this, "doOnContentUpdate"));
+        policyComponent.bindClassBehaviour(
+                OnContentUpdatePolicy.QNAME,
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "doOnContentUpdate"));
 
         String fileName = "file-" + GUID.generate();
         NodeRef fileNoderef = null;
 
-        try
-        {
+        try {
             executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoFile, null);
-            
-            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
-                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+
+            List<NodeRef> refs =
+                    searchService.selectNodes(
+                            nodeService.getRootNode(storeRef),
+                            "/app:company_home/cm:" + fileName,
+                            null,
+                            namespaceService,
+                            false);
             fileNoderef = refs.get(0);
 
-            assertEquals("File should be locked", LockStatus.LOCK_OWNER, lockService.getLockStatus(fileNoderef));
-        }
-        catch (Exception e)
-        {
-            fail("Failed to lock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            assertEquals(
+                    "File should be locked",
+                    LockStatus.LOCK_OWNER,
+                    lockService.getLockStatus(fileNoderef));
+        } catch (Exception e) {
+            fail(
+                    "Failed to lock a file: "
+                            + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
         }
 
         txn.commit();
@@ -202,28 +207,41 @@ public class WebDAVonContentUpdateTest
         txn.begin();
 
         // Construct IF HEADER
-        String lockToken = fileNoderef.getId() + WebDAV.LOCK_TOKEN_SEPERATOR + AuthenticationUtil.getAdminUserName();
+        String lockToken =
+                fileNoderef.getId()
+                        + WebDAV.LOCK_TOKEN_SEPERATOR
+                        + AuthenticationUtil.getAdminUserName();
         String lockHeaderValue = "(<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">)";
         HashMap<String, String> headers = new HashMap<String, String>();
         headers.put(WebDAV.HEADER_IF, lockHeaderValue);
-        try
-        {
+        try {
             executeMethod(WebDAV.METHOD_PUT, fileName, testDataFile, headers);
-            
+
             assertTrue("File does not exist.", nodeService.exists(fileNoderef));
-            assertEquals("Filename is not correct", fileName, nodeService.getProperty(fileNoderef, ContentModel.PROP_NAME));
-            assertTrue("Expected return status is " + HttpServletResponse.SC_NO_CONTENT + ", but returned is " + response.getStatus(),
+            assertEquals(
+                    "Filename is not correct",
+                    fileName,
+                    nodeService.getProperty(fileNoderef, ContentModel.PROP_NAME));
+            assertTrue(
+                    "Expected return status is "
+                            + HttpServletResponse.SC_NO_CONTENT
+                            + ", but returned is "
+                            + response.getStatus(),
                     HttpServletResponse.SC_NO_CONTENT == response.getStatus());
 
-            assertTrue("File should have NO_CONTENT aspect", nodeService.hasAspect(fileNoderef, ContentModel.ASPECT_NO_CONTENT));
-            InputStream updatedFileIS = fileFolderService.getReader(fileNoderef).getContentInputStream();
+            assertTrue(
+                    "File should have NO_CONTENT aspect",
+                    nodeService.hasAspect(fileNoderef, ContentModel.ASPECT_NO_CONTENT));
+            InputStream updatedFileIS =
+                    fileFolderService.getReader(fileNoderef).getContentInputStream();
             byte[] updatedFile = IOUtils.toByteArray(updatedFileIS);
             updatedFileIS.close();
-            assertTrue("The content has to be equal", ArrayUtils.isEquals(testDataFile, updatedFile));
-        }
-        catch (Exception e)
-        {
-            fail("Failed to upload a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            assertTrue(
+                    "The content has to be equal", ArrayUtils.isEquals(testDataFile, updatedFile));
+        } catch (Exception e) {
+            fail(
+                    "Failed to upload a file: "
+                            + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
         }
 
         txn.commit();
@@ -232,63 +250,66 @@ public class WebDAVonContentUpdateTest
 
         headers = new HashMap<String, String>();
         headers.put(WebDAV.HEADER_LOCK_TOKEN, "<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">");
-        try
-        {
+        try {
             executeMethod(WebDAV.METHOD_UNLOCK, fileName, null, headers);
 
-            assertTrue("Expected return status is " + HttpServletResponse.SC_NO_CONTENT + ", but returned is " + response.getStatus(),
+            assertTrue(
+                    "Expected return status is "
+                            + HttpServletResponse.SC_NO_CONTENT
+                            + ", but returned is "
+                            + response.getStatus(),
                     HttpServletResponse.SC_NO_CONTENT == response.getStatus());
-            assertFalse("File should not have NO_CONTENT aspect", nodeService.hasAspect(fileNoderef, ContentModel.ASPECT_NO_CONTENT));
-            assertEquals("File should be unlocked", LockStatus.NO_LOCK, lockService.getLockStatus(fileNoderef));
-        }
-        catch (Exception e)
-        {
-            fail("Failed to unlock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            assertFalse(
+                    "File should not have NO_CONTENT aspect",
+                    nodeService.hasAspect(fileNoderef, ContentModel.ASPECT_NO_CONTENT));
+            assertEquals(
+                    "File should be unlocked",
+                    LockStatus.NO_LOCK,
+                    lockService.getLockStatus(fileNoderef));
+        } catch (Exception e) {
+            fail(
+                    "Failed to unlock a file: "
+                            + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
         }
 
         assertTrue("onContentUpdate policies were not triggered", flag);
-        assertEquals("onContentUpdate policies should be triggered only once",  counter, 1);
+        assertEquals("onContentUpdate policies should be triggered only once", counter, 1);
 
-        if (fileNoderef != null)
-        {
+        if (fileNoderef != null) {
             nodeService.deleteNode(fileNoderef);
         }
     }
 
     /**
      * Executes WebDAV method for testing
-     * <p>
-     * Sets content to request from a test file
-     * 
-     * @param methodName Method name to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
-     * @param fileName the name of the file set to the context, can be used with path, i.e. "path/to/file/fileName.txt"
+     *
+     * <p>Sets content to request from a test file
+     *
+     * @param methodName Method name to prepare, should be initialized (PUT, LOCK, UNLOCK are
+     *     supported)
+     * @param fileName the name of the file set to the context, can be used with path, i.e.
+     *     "path/to/file/fileName.txt"
      * @param content If <b>not null</b> adds test content to the request
      * @param headers to set to request, can be null
      * @throws Exception
      */
-    private void executeMethod(String methodName, String fileName, byte[] content, Map<String, String> headers) throws Exception
-    {
-        if (methodName == WebDAV.METHOD_PUT)
-            method = new PutMethod();
-        else if (methodName == WebDAV.METHOD_LOCK)
-            method = new LockMethod();
-        else if (methodName == WebDAV.METHOD_UNLOCK)
-            method = new UnlockMethod();
-        if (method != null)
-        {
+    private void executeMethod(
+            String methodName, String fileName, byte[] content, Map<String, String> headers)
+            throws Exception {
+        if (methodName == WebDAV.METHOD_PUT) method = new PutMethod();
+        else if (methodName == WebDAV.METHOD_LOCK) method = new LockMethod();
+        else if (methodName == WebDAV.METHOD_UNLOCK) method = new UnlockMethod();
+        if (method != null) {
             request = new MockHttpServletRequest(methodName, "/alfresco/webdav/" + fileName);
             response = new MockHttpServletResponse();
             request.setServerPort(8080);
             request.setServletPath("/webdav");
-            if (content != null)
-            {
+            if (content != null) {
                 request.setContent(content);
             }
 
-            if (headers != null && !headers.isEmpty())
-            {
-                for (String key : headers.keySet())
-                {
+            if (headers != null && !headers.isEmpty()) {
+                for (String key : headers.keySet()) {
                     request.addHeader(key, headers.get(key));
                 }
             }

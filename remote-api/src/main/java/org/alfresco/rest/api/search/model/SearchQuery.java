@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,6 +28,7 @@ package org.alfresco.rest.api.search.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.FacetFormat;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
@@ -42,8 +43,7 @@ import java.util.List;
  *
  * @author Gethin James
  */
-public class SearchQuery
-{
+public class SearchQuery {
     private final Query query;
     private final Paging paging;
     private final List<String> include;
@@ -66,35 +66,36 @@ public class SearchQuery
     private final Localization localization;
     private final FacetFormat facetFormat;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
-                null,null, null, null, null,null, null, null, null,
-                null, null, null,null, null,null);
+    public static final SearchQuery EMPTY =
+            new SearchQuery(
+                    null, null, null, null, null, null, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null);
 
     @JsonCreator
-    public SearchQuery(@JsonProperty("query") Query query,
-                @JsonProperty("paging") Paging paging,
-                @JsonProperty("includeRequest") Boolean includeRequest,
-                @JsonProperty("include") List<String> include,
-                @JsonProperty("fields") List<String> fields,
-                @JsonProperty("sort") List<SortDef> sort,
-                @JsonProperty("templates") List<Template> templates,
-                @JsonProperty("defaults") Default defaults,
-                @JsonProperty("filterQueries")  List<FilterQuery> filterQueries,
-                @JsonProperty("facetFields") FacetFields facetFields,
-                @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
-                @JsonProperty("spellcheck") Spelling spellcheck,
-                @JsonProperty("scope") Scope scope,
-                @JsonProperty("limits")Limits limits,
-                @JsonProperty("highlight")GeneralHighlightParameters highlight,
-                @JsonProperty("facetIntervals")IntervalParameters facetIntervals,
-                @JsonProperty("pivots") List<Pivot> pivots,
-                @JsonProperty("stats") List<StatsRequestParameters> stats,
-                @JsonProperty("ranges") List<RangeParameters> ranges,
-                @JsonProperty("localization") Localization localization,
-                @JsonProperty("facetFormat") FacetFormat facetFormat)
-    {
+    public SearchQuery(
+            @JsonProperty("query") Query query,
+            @JsonProperty("paging") Paging paging,
+            @JsonProperty("includeRequest") Boolean includeRequest,
+            @JsonProperty("include") List<String> include,
+            @JsonProperty("fields") List<String> fields,
+            @JsonProperty("sort") List<SortDef> sort,
+            @JsonProperty("templates") List<Template> templates,
+            @JsonProperty("defaults") Default defaults,
+            @JsonProperty("filterQueries") List<FilterQuery> filterQueries,
+            @JsonProperty("facetFields") FacetFields facetFields,
+            @JsonProperty("facetQueries") List<FacetQuery> facetQueries,
+            @JsonProperty("spellcheck") Spelling spellcheck,
+            @JsonProperty("scope") Scope scope,
+            @JsonProperty("limits") Limits limits,
+            @JsonProperty("highlight") GeneralHighlightParameters highlight,
+            @JsonProperty("facetIntervals") IntervalParameters facetIntervals,
+            @JsonProperty("pivots") List<Pivot> pivots,
+            @JsonProperty("stats") List<StatsRequestParameters> stats,
+            @JsonProperty("ranges") List<RangeParameters> ranges,
+            @JsonProperty("localization") Localization localization,
+            @JsonProperty("facetFormat") FacetFormat facetFormat) {
         this.query = query;
-        this.includeRequest = includeRequest==null?false:includeRequest;
+        this.includeRequest = includeRequest == null ? false : includeRequest;
         this.paging = paging;
         this.include = include;
         this.fields = fields;
@@ -116,108 +117,87 @@ public class SearchQuery
         this.facetFormat = facetFormat;
     }
 
-    public Query getQuery()
-    {
+    public Query getQuery() {
         return query;
     }
 
-    public Paging getPaging()
-    {
+    public Paging getPaging() {
         return paging;
     }
 
-    public List<String> getInclude()
-    {
+    public List<String> getInclude() {
         return include;
     }
 
-    public List<String> getFields()
-    {
+    public List<String> getFields() {
         return fields;
     }
 
-    public List<SortDef> getSort()
-    {
+    public List<SortDef> getSort() {
         return sort;
     }
-    public List<Template> getTemplates()
-    {
+
+    public List<Template> getTemplates() {
         return templates;
     }
 
-    public Default getDefaults()
-    {
+    public Default getDefaults() {
         return defaults;
     }
 
-    public List<FilterQuery> getFilterQueries()
-    {
+    public List<FilterQuery> getFilterQueries() {
         return filterQueries;
     }
 
-    public List<FacetQuery> getFacetQueries()
-    {
+    public List<FacetQuery> getFacetQueries() {
         return facetQueries;
     }
 
-    public Spelling getSpellcheck()
-    {
+    public Spelling getSpellcheck() {
         return spellcheck;
     }
 
-    public Scope getScope()
-    {
+    public Scope getScope() {
         return scope;
     }
 
-    public FacetFields getFacetFields()
-    {
+    public FacetFields getFacetFields() {
         return facetFields;
     }
 
-    public GeneralHighlightParameters getHighlight()
-    {
+    public GeneralHighlightParameters getHighlight() {
         return highlight;
     }
 
-    public IntervalParameters getFacetIntervals()
-    {
+    public IntervalParameters getFacetIntervals() {
         return facetIntervals;
     }
 
-    public Limits getLimits()
-    {
+    public Limits getLimits() {
         return limits;
     }
 
-    public boolean includeRequest()
-    {
+    public boolean includeRequest() {
         return includeRequest;
     }
 
-    public List<Pivot> getPivots()
-    {
+    public List<Pivot> getPivots() {
         return pivots;
     }
 
-    public List<StatsRequestParameters> getStats()
-    {
+    public List<StatsRequestParameters> getStats() {
         return stats;
     }
 
-    public List<RangeParameters> getFacetRanges()
-    {
+    public List<RangeParameters> getFacetRanges() {
         return ranges;
     }
 
-    public Localization getLocalization()
-    {
+    public Localization getLocalization() {
         return localization;
     }
 
-    public FacetFormat getFacetFormat()
-    {
+    public FacetFormat getFacetFormat() {
         return facetFormat;
     }
-
 }

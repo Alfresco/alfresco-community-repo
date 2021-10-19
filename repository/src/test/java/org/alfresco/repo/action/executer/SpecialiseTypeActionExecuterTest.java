@@ -27,7 +27,6 @@ package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,51 +47,61 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Category(BaseSpringTestsCategory.class)
 @Transactional
-public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
-{
-    /**
-     * Id used to identify the test action created
-     */
-    private final static String ID = GUID.generate();
-    /**
-     * The specialise action executer
-     */
+public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest {
+    /** Id used to identify the test action created */
+    private static final String ID = GUID.generate();
+    /** The specialise action executer */
     private SpecialiseTypeActionExecuter executer;
-    /**
-     * The test node reference
-     */
+    /** The test node reference */
     private NodeRef nodeRef1;
+
     private NodeRef nodeRef2;
     private NodeRef nodeRef3;
 
-    /**
-     * Called at the beginning of all tests
-     */
-    @Before public void before() throws Exception
-    {
+    /** Called at the beginning of all tests */
+    @Before
+    public void before() throws Exception {
         super.before();
 
         // Create the node used for tests
-        this.nodeRef1 = this.nodeService
-            .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
+        this.nodeRef1 =
+                this.nodeService
+                        .createNode(
+                                this.rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}testnode"),
+                                ContentModel.TYPE_CONTENT)
+                        .getChildRef();
 
         // Create the node used for tests
-        this.nodeRef2 = this.nodeService
-            .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
+        this.nodeRef2 =
+                this.nodeService
+                        .createNode(
+                                this.rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}testnode"),
+                                ContentModel.TYPE_CONTENT)
+                        .getChildRef();
 
         // Create the node used for tests
-        this.nodeRef3 = this.nodeService
-            .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
+        this.nodeRef3 =
+                this.nodeService
+                        .createNode(
+                                this.rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}testnode"),
+                                ContentModel.TYPE_CONTENT)
+                        .getChildRef();
 
         // Get the executer instance
-        this.executer = (SpecialiseTypeActionExecuter) this.applicationContext.getBean(SpecialiseTypeActionExecuter.NAME);
+        this.executer =
+                (SpecialiseTypeActionExecuter)
+                        this.applicationContext.getBean(SpecialiseTypeActionExecuter.NAME);
     }
 
-    /**
-     * Test execution
-     */
-    @Test public void testExecution()
-    {
+    /** Test execution */
+    @Test
+    public void testExecution() {
         // check with "Admin" user
         {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -115,51 +124,54 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
             checkActionAgainAndExpectTypeToChange(action, nodeRef2);
         }
 
-        //Check with normal user
+        // Check with normal user
         {
-            //Create user as coordinator without administrator writes
+            // Create user as coordinator without administrator writes
             String userName = "bob" + GUID.generate();
             createUser(userName);
-            PermissionService permissionService = (PermissionService) applicationContext.getBean("PermissionService");
-            permissionService.setPermission(nodeRef3, userName, PermissionService.COORDINATOR, true);
+            PermissionService permissionService =
+                    (PermissionService) applicationContext.getBean("PermissionService");
+            permissionService.setPermission(
+                    nodeRef3, userName, PermissionService.COORDINATOR, true);
 
             AuthenticationUtil.setFullyAuthenticatedUser(userName);
 
             // Check the type of the node
             ActionImpl action = checkActionToChangeNodeType(nodeRef3);
 
-            try
-            {
+            try {
                 // Execute the action again
-                action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
+                action.setParameterValue(
+                        SpecialiseTypeActionExecuter.PARAM_TYPE_NAME,
+                        ContentModel.TYPE_DICTIONARY_MODEL);
                 this.executer.execute(action, this.nodeRef3);
 
-                fail("The creation should NOT succeed because the code is not executed but Admin or System user/role");
-            }
-            catch (InvalidTypeException ex)
-            {
+                fail(
+                        "The creation should NOT succeed because the code is not executed but Admin"
+                                + " or System user/role");
+            } catch (InvalidTypeException ex) {
             }
         }
     }
 
-    private void checkActionAgainAndExpectTypeToChange(ActionImpl action, NodeRef nodeRef)
-    {
+    private void checkActionAgainAndExpectTypeToChange(ActionImpl action, NodeRef nodeRef) {
         // Execute the action again
-        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
+        action.setParameterValue(
+                SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
         this.executer.execute(action, nodeRef);
 
         // Check that the node's type has now been changed
         assertEquals(ContentModel.TYPE_DICTIONARY_MODEL, this.nodeService.getType(nodeRef));
     }
 
-    private ActionImpl checkActionToChangeNodeType(NodeRef nodeRef)
-    {
+    private ActionImpl checkActionToChangeNodeType(NodeRef nodeRef) {
         // Check the type of the node
         assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(nodeRef));
 
         // Execute the action
         ActionImpl action = new ActionImpl(null, ID, SpecialiseTypeActionExecuter.NAME, null);
-        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_FOLDER);
+        action.setParameterValue(
+                SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_FOLDER);
         this.executer.execute(action, nodeRef);
 
         // Check that the node's type has not been changed since it would not be a specialisation

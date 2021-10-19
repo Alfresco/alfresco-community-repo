@@ -32,11 +32,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -61,11 +56,13 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * @author mpopa
- */
-public class ConfigurationDataCollectorTest
-{
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/** @author mpopa */
+public class ConfigurationDataCollectorTest {
     private ConfigurationDataCollector configurationCollector;
     private HBDataCollectorService mockCollectorService;
     private SpringExtensionBundle smartFoldersBundle;
@@ -76,16 +73,18 @@ public class ConfigurationDataCollectorTest
     private static final ServerMode SERVER_MODE = ServerMode.PRODUCTION;
     private static final String INSTALLED_MODULE_ID_1 = "installedID1";
     private static final String INSTALLED_MODULE_ID_2 = "installedID2";
-    private static final ModuleVersionNumber INSTALLED_MODULE_VERSION_1 = new ModuleVersionNumber("1.0");
-    private static final ModuleVersionNumber INSTALLED_MODULE_VERSION_2 = new ModuleVersionNumber("2.0");
+    private static final ModuleVersionNumber INSTALLED_MODULE_VERSION_1 =
+            new ModuleVersionNumber("1.0");
+    private static final ModuleVersionNumber INSTALLED_MODULE_VERSION_2 =
+            new ModuleVersionNumber("2.0");
     private static final String MISSING_MODULE_ID_1 = "missingID1";
-    private static final ModuleVersionNumber MISSING_MODULE_VERSION_1 = new ModuleVersionNumber("3.0");
+    private static final ModuleVersionNumber MISSING_MODULE_VERSION_1 =
+            new ModuleVersionNumber("3.0");
     private static final String AUDIT_APP_NAME = "auditapp1";
     private static final boolean AUDIT_APP_ENABLED = true;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         smartFoldersBundle = mock(SpringExtensionBundle.class);
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockServerDescriptorDAO = mock(DescriptorDAO.class);
@@ -101,13 +100,17 @@ public class ConfigurationDataCollectorTest
         RepoUsageComponent mockRepoUsageComponent = mock(RepoUsageComponent.class);
         ServerModeProvider mockServerModeProvider = mock(ServerModeProvider.class);
         when(mockServerModeProvider.getServerMode()).thenReturn(SERVER_MODE);
-        ChildApplicationContextFactory mockFileServerSubsystem = mock(ChildApplicationContextFactory.class);
+        ChildApplicationContextFactory mockFileServerSubsystem =
+                mock(ChildApplicationContextFactory.class);
         WebDavService mockWebDavService = mock(WebDavService.class);
         ThumbnailService mockThumbnailService = mock(ThumbnailService.class);
-        ChildApplicationContextFactory mockActivitiesFeedSubsystem = mock(ChildApplicationContextFactory.class);
+        ChildApplicationContextFactory mockActivitiesFeedSubsystem =
+                mock(ChildApplicationContextFactory.class);
         WorkflowAdminService mockWorkflowAdminService = mock(WorkflowAdminService.class);
-        ChildApplicationContextFactory mockInboundSMTPSubsystem = mock(ChildApplicationContextFactory.class);
-        ChildApplicationContextFactory mockImapSubsystem = mock(ChildApplicationContextFactory.class);
+        ChildApplicationContextFactory mockInboundSMTPSubsystem =
+                mock(ChildApplicationContextFactory.class);
+        ChildApplicationContextFactory mockImapSubsystem =
+                mock(ChildApplicationContextFactory.class);
         ChildApplicationContextFactory mockReplication = mock(ChildApplicationContextFactory.class);
 
         // mock modules and module service
@@ -121,7 +124,8 @@ public class ConfigurationDataCollectorTest
         ModuleDetails mockMissingModule = mock(ModuleDetails.class);
         when(mockMissingModule.getId()).thenReturn(MISSING_MODULE_ID_1);
         when(mockMissingModule.getModuleVersionNumber()).thenReturn(MISSING_MODULE_VERSION_1);
-        when(mockModuleService.getAllModules()).thenReturn(Arrays.asList(mockInstalledModule1, mockInstalledModule2));
+        when(mockModuleService.getAllModules())
+                .thenReturn(Arrays.asList(mockInstalledModule1, mockInstalledModule2));
         when(mockModuleService.getMissingModules()).thenReturn(Arrays.asList(mockMissingModule));
 
         // mock audit applications and audit service
@@ -132,18 +136,26 @@ public class ConfigurationDataCollectorTest
         auditApps.put(AUDIT_APP_NAME, mockAuditApp);
 
         TransactionService mockTransactionService = mock(TransactionService.class);
-        RetryingTransactionHelper mockRetryingTransactionHelper = mock(RetryingTransactionHelper.class);
+        RetryingTransactionHelper mockRetryingTransactionHelper =
+                mock(RetryingTransactionHelper.class);
         // Mock transaction service calls
-        when(mockRetryingTransactionHelper
-                .doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean()))
-                .thenReturn(true) // First call made by the collector to get the server readOnly value via transformation service
+        when(mockRetryingTransactionHelper.doInTransaction(
+                        any(RetryingTransactionHelper.RetryingTransactionCallback.class),
+                        anyBoolean()))
+                .thenReturn(
+                        true) // First call made by the collector to get the server readOnly value
+                // via transformation service
                 .thenReturn(auditApps); // Second call to get the audit applications
-        when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
+        when(mockTransactionService.getRetryingTransactionHelper())
+                .thenReturn(mockRetryingTransactionHelper);
 
         // mock authentication chain
-        DefaultChildApplicationContextManager mockAuthenticationSubsystem = mock(DefaultChildApplicationContextManager.class);
+        DefaultChildApplicationContextManager mockAuthenticationSubsystem =
+                mock(DefaultChildApplicationContextManager.class);
 
-        configurationCollector = new ConfigurationDataCollector("acs.repository.configuration", "1.0", "0 0 0 ? * SUN", mockScheduler);
+        configurationCollector =
+                new ConfigurationDataCollector(
+                        "acs.repository.configuration", "1.0", "0 0 0 ? * SUN", mockScheduler);
         configurationCollector.setHbDataCollectorService(mockCollectorService);
         configurationCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         configurationCollector.setSmartFoldersBundle(smartFoldersBundle);
@@ -168,10 +180,8 @@ public class ConfigurationDataCollectorTest
     }
 
     @Test
-    public void testHBDataFields()
-    {
-        for(HBData data : this.collectedData)
-        {
+    public void testHBDataFields() {
+        for (HBData data : this.collectedData) {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
             assertNotNull(data.getSchemaVersion());
@@ -182,12 +192,11 @@ public class ConfigurationDataCollectorTest
     }
 
     @Test
-    public void testConfigurationDataIsCollected()
-    {
+    public void testConfigurationDataIsCollected() {
         HBData confData = grabDataByCollectorId(configurationCollector.getCollectorId());
         assertNotNull("Repository configuration data missing.", confData);
 
-        Map<String,Object> data = confData.getData();
+        Map<String, Object> data = confData.getData();
         assertTrue(data.containsKey("smartFoldersEnabled"));
 
         assertTrue(data.containsKey("db"));
@@ -204,48 +213,54 @@ public class ConfigurationDataCollectorTest
         assertTrue(data.containsKey("authenticationChain"));
 
         assertTrue(data.containsKey("replication"));
-        Map<String, Object> replication = (Map<String, Object>)((Map<String, Object>)data.get("replication"));
+        Map<String, Object> replication =
+                (Map<String, Object>) ((Map<String, Object>) data.get("replication"));
         assertTrue(replication.containsKey("enabled"));
         assertTrue(replication.containsKey("readOnly"));
 
         assertTrue(data.containsKey("module"));
-        Map<String, Object> installedModules = (Map<String, Object>)((Map<String, Object>)data.get("module")).get("installed");
+        Map<String, Object> installedModules =
+                (Map<String, Object>) ((Map<String, Object>) data.get("module")).get("installed");
         assertTrue(installedModules != null);
         assertEquals(2, installedModules.get("count"));
-        Map<String, Object> installedModulesList = (Map<String, Object>) installedModules.get("modules");
+        Map<String, Object> installedModulesList =
+                (Map<String, Object>) installedModules.get("modules");
         assertTrue(installedModulesList.containsKey(INSTALLED_MODULE_ID_1));
-        Map<String, Object> installedModulesInfo = (Map<String, Object>) installedModulesList.get(INSTALLED_MODULE_ID_1);
+        Map<String, Object> installedModulesInfo =
+                (Map<String, Object>) installedModulesList.get(INSTALLED_MODULE_ID_1);
         assertTrue(installedModulesInfo.containsKey("version"));
         assertEquals(INSTALLED_MODULE_VERSION_1.toString(), installedModulesInfo.get("version"));
 
         assertTrue(installedModulesList.containsKey(INSTALLED_MODULE_ID_2));
-        installedModulesInfo = (Map<String, Object>) installedModulesList.get(INSTALLED_MODULE_ID_2);
+        installedModulesInfo =
+                (Map<String, Object>) installedModulesList.get(INSTALLED_MODULE_ID_2);
         assertTrue(installedModulesInfo.containsKey("version"));
         assertEquals(INSTALLED_MODULE_VERSION_2.toString(), installedModulesInfo.get("version"));
 
-        Map<String, Object> missingModules = (Map<String, Object>)((Map<String, Object>)data.get("module")).get("missing");
+        Map<String, Object> missingModules =
+                (Map<String, Object>) ((Map<String, Object>) data.get("module")).get("missing");
         assertTrue(missingModules != null);
-        Map<String, Object> missingModulesList = (Map<String, Object>) missingModules.get("modules");
+        Map<String, Object> missingModulesList =
+                (Map<String, Object>) missingModules.get("modules");
         assertTrue(missingModulesList.containsKey(MISSING_MODULE_ID_1));
-        Map<String, Object> missingModulesInfo = (Map<String, Object>) missingModulesList.get(MISSING_MODULE_ID_1);
+        Map<String, Object> missingModulesInfo =
+                (Map<String, Object>) missingModulesList.get(MISSING_MODULE_ID_1);
         assertTrue(missingModulesInfo.containsKey("version"));
         assertEquals(MISSING_MODULE_VERSION_1.toString(), missingModulesInfo.get("version"));
 
         assertTrue(data.containsKey("audit"));
         assertTrue(((Map<String, Object>) data.get("audit")).containsKey("enabled"));
-        Map<String, Object> auditApps = (Map<String, Object>)((Map<String, Object>)data.get("audit")).get("apps");
+        Map<String, Object> auditApps =
+                (Map<String, Object>) ((Map<String, Object>) data.get("audit")).get("apps");
         assertTrue(auditApps != null);
         assertTrue(auditApps.containsKey(AUDIT_APP_NAME));
         Map<String, Object> auditAppInfo = (Map<String, Object>) auditApps.get(AUDIT_APP_NAME);
         assertEquals(AUDIT_APP_ENABLED, auditAppInfo.get("enabled"));
     }
 
-    private HBData grabDataByCollectorId(String collectorId)
-    {
-        for (HBData d : this.collectedData)
-        {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
-            {
+    private HBData grabDataByCollectorId(String collectorId) {
+        for (HBData d : this.collectedData) {
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId)) {
                 return d;
             }
         }

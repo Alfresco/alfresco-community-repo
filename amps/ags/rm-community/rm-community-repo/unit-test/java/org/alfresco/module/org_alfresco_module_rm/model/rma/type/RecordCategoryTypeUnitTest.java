@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
@@ -50,63 +49,61 @@ import org.mockito.MockitoAnnotations;
  *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
-public class RecordCategoryTypeUnitTest extends BaseUnitTest
-{
-    @Mock
-    private AuthenticationUtil mockAuthenticationUtil;
+public class RecordCategoryTypeUnitTest extends BaseUnitTest {
+    @Mock private AuthenticationUtil mockAuthenticationUtil;
 
-    @Mock
-    private VitalRecordService mockedVitalRecordService;
+    @Mock private VitalRecordService mockedVitalRecordService;
 
     private @InjectMocks RecordCategoryType recordCategoryType;
 
     @Before
-    public void setup()
-    {
+    public void setup() {
         MockitoAnnotations.initMocks(this);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
     }
 
     /**
-     * Given that we try to add types different than "rma:recordCategory" and "rma:recordFolder" to a record category,
-     * Then IntegrityException is thrown.
+     * Given that we try to add types different than "rma:recordCategory" and "rma:recordFolder" to
+     * a record category, Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
-    public void testCreateNonAceptedTypes() throws Exception
-    {
-        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
+    public void testCreateNonAceptedTypes() throws Exception {
+        NodeRef recordCategoryNodeRef =
+                AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
         QName type = AlfMock.generateQName();
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
+        ChildAssociationRef childAssocRef =
+                generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
         recordCategoryType.onCreateChildAssociation(childAssocRef, true);
     }
 
     /**
-     * Given that we try to add "rma:recordCategory" type to a record category,
-     * Then operation is successful.
+     * Given that we try to add "rma:recordCategory" type to a record category, Then operation is
+     * successful.
      */
     @Test
-    public void testCreateRecordCategory() throws Exception
-    {
-        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
+    public void testCreateRecordCategory() throws Exception {
+        NodeRef recordCategoryNodeRef =
+                AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
+        ChildAssociationRef childAssocRef =
+                generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
         recordCategoryType.onCreateChildAssociation(childAssocRef, true);
     }
 
     /**
-     * Given that we try to add "rma:recordFolder" type to a record category,
-     * Then operation is successful.
+     * Given that we try to add "rma:recordFolder" type to a record category, Then operation is
+     * successful.
      */
     @Test
-    public void testCreateRecordFolder() throws Exception
-    {
-        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
+    public void testCreateRecordFolder() throws Exception {
+        NodeRef recordCategoryNodeRef =
+                AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
+        ChildAssociationRef childAssocRef =
+                generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
         recordCategoryType.onCreateChildAssociation(childAssocRef, true);
     }
 }

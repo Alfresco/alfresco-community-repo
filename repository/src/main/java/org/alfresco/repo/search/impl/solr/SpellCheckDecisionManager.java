@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,25 +26,27 @@
 
 package org.alfresco.repo.search.impl.solr;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * 1. If the actual query contains one or more misspelled terms which leads to no hits, and if a suggestion is available, the spellcheck manager, auto-executes the suggested term in the background and returns: Searched for London instead of Lndon.
- * 2. If the actual query contains a rare term resulting in a few hits and suggestions are available and have more hits, the manager returns “didYouMean”…
- * 3. If the actual query contains a correctly spelled term, but also suggestions are available and they have a fewer or equal hits as the actual query term. In this case, the manager just returns the Solr response.
+ * 1. If the actual query contains one or more misspelled terms which leads to no hits, and if a
+ * suggestion is available, the spellcheck manager, auto-executes the suggested term in the
+ * background and returns: Searched for London instead of Lndon. 2. If the actual query contains a
+ * rare term resulting in a few hits and suggestions are available and have more hits, the manager
+ * returns “didYouMean”… 3. If the actual query contains a correctly spelled term, but also
+ * suggestions are available and they have a fewer or equal hits as the actual query term. In this
+ * case, the manager just returns the Solr response.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
  */
-public class SpellCheckDecisionManager
-{
+public class SpellCheckDecisionManager {
     private static final Log logger = LogFactory.getLog(SpellCheckDecisionManager.class);
 
     private static final String COLLATION = "collation";
@@ -52,11 +54,12 @@ public class SpellCheckDecisionManager
     private String url;
     private JSONObject spellCheckJsonValue;
 
-    public SpellCheckDecisionManager(JSONObject resultJson, String origURL, JSONObject reguestJsonBody,
-                String spellCheckParams)
-    {
-        try
-        {
+    public SpellCheckDecisionManager(
+            JSONObject resultJson,
+            String origURL,
+            JSONObject reguestJsonBody,
+            String spellCheckParams) {
+        try {
             List<String> collationQueriesList = new ArrayList<>();
             JSONObject response = resultJson.getJSONObject("response");
             long numberFound = response.getLong("numFound");
@@ -67,26 +70,25 @@ public class SpellCheckDecisionManager
             JSONArray suggestions = spellcheck.getJSONArray("suggestions");
 
             JSONArray collations = null;
-            /**
-            * A top level collations key will be present in Solr 6 only.
-            **/
-            if(spellcheck.has("collations"))
-            {
+            /** A top level collations key will be present in Solr 6 only. */
+            if (spellcheck.has("collations")) {
                 collations = spellcheck.getJSONArray("collations");
             }
 
             /*
-            * If the top level collations array exists use it, we are talking to Solr 6. Otherwise use the suggestions
-            * array, we are talking to Solr4.
-            */
+             * If the top level collations array exists use it, we are talking to Solr 6. Otherwise use the suggestions
+             * array, we are talking to Solr4.
+             */
 
-            JSONArray jsonArray = (collations!=null) ? collations : suggestions;
+            JSONArray jsonArray = (collations != null) ? collations : suggestions;
 
             /*
-            * The code below will work for both Solr 4 and Solr 6.
-            */
+             * The code below will work for both Solr 4 and Solr 6.
+             */
 
-            for (int key = 0, value = 1, length = jsonArray.length(); value < length; key += 2, value += 2) {
+            for (int key = 0, value = 1, length = jsonArray.length();
+                    value < length;
+                    key += 2, value += 2) {
                 String jsonName = jsonArray.getString(key);
 
                 if (COLLATION.equals(jsonName)) {
@@ -97,7 +99,9 @@ public class SpellCheckDecisionManager
                     if (collate) {
                         reguestJsonBody.put("query", valueJsonObject.getString("collationQuery"));
                         spellCheckJsonValue = new JSONObject();
-                        spellCheckJsonValue.put("searchInsteadFor", valueJsonObject.getString("collationQueryString"));
+                        spellCheckJsonValue.put(
+                                "searchInsteadFor",
+                                valueJsonObject.getString("collationQueryString"));
                         break;
                     } else if (collationHit > numberFound) {
                         collationQueriesList.add(valueJsonObject.getString("collationQueryString"));
@@ -114,34 +118,23 @@ public class SpellCheckDecisionManager
             } else {
                 spellCheckJsonValue = new JSONObject();
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.info(e.getMessage());
         }
     }
 
-    /**
-     * @return the collate
-     */
-    public boolean isCollate()
-    {
+    /** @return the collate */
+    public boolean isCollate() {
         return this.collate;
     }
 
-    /**
-     * @return the url
-     */
-    public String getUrl()
-    {
+    /** @return the url */
+    public String getUrl() {
         return this.url;
     }
 
-    /**
-     * @return the spellCheckJsonValue
-     */
-    public JSONObject getSpellCheckJsonValue()
-    {
+    /** @return the spellCheckJsonValue */
+    public JSONObject getSpellCheckJsonValue() {
         return this.spellCheckJsonValue;
     }
 }

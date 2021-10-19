@@ -31,12 +31,12 @@ import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExce
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.WebScriptException;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Base hold web script with content unit test.
@@ -44,29 +44,20 @@ import org.springframework.extensions.webscripts.WebScriptException;
  * @author Roy Wetherall
  * @since 2.2
  */
-public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebScriptUnitTest
-{
-    /**
-     * Helper method to build JSON content to send to hold webscripts.
-     */
-    protected String buildContent(List<NodeRef> nodeRefs, List<NodeRef> holds)
-    {
+public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebScriptUnitTest {
+    /** Helper method to build JSON content to send to hold webscripts. */
+    protected String buildContent(List<NodeRef> nodeRefs, List<NodeRef> holds) {
         StringBuilder builder = new StringBuilder(255);
         builder.append("{");
 
-        if (nodeRefs != null)
-        {
+        if (nodeRefs != null) {
             builder.append("'nodeRefs':[");
 
             boolean bFirst = true;
-            for (NodeRef nodeRef : nodeRefs)
-            {
-                if (!bFirst)
-                {
+            for (NodeRef nodeRef : nodeRefs) {
+                if (!bFirst) {
                     builder.append(",");
-                }
-                else
-                {
+                } else {
                     bFirst = false;
                 }
 
@@ -76,24 +67,18 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
             builder.append("]");
         }
 
-        if (nodeRefs != null && holds != null)
-        {
+        if (nodeRefs != null && holds != null) {
             builder.append(",");
         }
 
-        if (holds != null)
-        {
+        if (holds != null) {
             builder.append("'holds':[");
 
             boolean bFirst = true;
-            for (NodeRef hold : holds)
-            {
-                if (!bFirst)
-                {
+            for (NodeRef hold : holds) {
+                if (!bFirst) {
                     builder.append(",");
-                }
-                else
-                {
+                } else {
                     bFirst = false;
                 }
 
@@ -108,13 +93,10 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
         return builder.toString();
     }
 
-    /**
-     * Test for expected exception when invalid JSON sent
-     */
+    /** Test for expected exception when invalid JSON sent */
     @SuppressWarnings("unchecked")
     @Test
-    public void sendInvalidJSON() throws Exception
-    {
+    public void sendInvalidJSON() throws Exception {
         // invalid JSON
         String content = "invalid JSON";
 
@@ -126,13 +108,10 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
         executeWebScript(Collections.EMPTY_MAP, content);
     }
 
-    /**
-     * Test for expected exception when one of the holds doesn't exist.
-     */
+    /** Test for expected exception when one of the holds doesn't exist. */
     @SuppressWarnings("unchecked")
     @Test
-    public void holdDoesNotExist() throws Exception
-    {
+    public void holdDoesNotExist() throws Exception {
         // setup interactions
         when(mockedNodeService.exists(eq(hold1NodeRef))).thenReturn(false);
 
@@ -147,14 +126,10 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
         executeWebScript(Collections.EMPTY_MAP, content);
     }
 
-    /**
-     * Test for expected exception when the item being added to the hold
-     * does not exist.
-     */
+    /** Test for expected exception when the item being added to the hold does not exist. */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeRefDoesNotExist() throws Exception
-    {
+    public void nodeRefDoesNotExist() throws Exception {
         // setup interactions
         when(mockedNodeService.exists(eq(record))).thenReturn(false);
 
@@ -169,14 +144,10 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
         executeWebScript(Collections.EMPTY_MAP, content);
     }
 
-    /**
-     * Test for expected exception when hold information is missing from
-     * sent JSON.
-     */
+    /** Test for expected exception when hold information is missing from sent JSON. */
     @SuppressWarnings("unchecked")
     @Test
-    public void holdMissingFromContent() throws Exception
-    {
+    public void holdMissingFromContent() throws Exception {
         // build content
         String content = buildContent(records, null);
 
@@ -188,14 +159,10 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
         executeWebScript(Collections.EMPTY_MAP, content);
     }
 
-    /**
-     * Test for expected exception when noderef information is missing
-     * from send JSON.
-     */
+    /** Test for expected exception when noderef information is missing from send JSON. */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeRefMissingFromContent() throws Exception
-    {
+    public void nodeRefMissingFromContent() throws Exception {
         // build content
         String content = buildContent(null, holds);
 
@@ -207,14 +174,10 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
         executeWebScript(Collections.EMPTY_MAP, content);
     }
 
-    /**
-     * Test for expected exception when adding an item to something
-     * that isn't a hold.
-     */
+    /** Test for expected exception when adding an item to something that isn't a hold. */
     @SuppressWarnings("unchecked")
     @Test
-    public void holdIsNotAHold() throws Exception
-    {
+    public void holdIsNotAHold() throws Exception {
         // build json content to send to server
         List<NodeRef> notAHold = Collections.singletonList(recordFolder);
         String content = buildContent(records, notAHold);
@@ -228,13 +191,12 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     }
 
     /**
-     * Test for expected exception when adding an item to a hold
-     * that isn't a record, record folder or active content.
+     * Test for expected exception when adding an item to a hold that isn't a record, record folder
+     * or active content.
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeRefIsNotARecordOrRecordFolderOrActiveContent() throws Exception
-    {
+    public void nodeRefIsNotARecordOrRecordFolderOrActiveContent() throws Exception {
         // build json content to send to server
         String content = buildContent(filePlanComponents, holds);
 

@@ -25,29 +25,26 @@
  */
 package org.alfresco.repo.event2.filter;
 
+import org.alfresco.service.namespace.QName;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.alfresco.service.namespace.QName;
 
 /**
  * Implementation of the node aspects filter.
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodeAspectFilter extends AbstractNodeEventFilter
-{
+public class NodeAspectFilter extends AbstractNodeEventFilter {
     private final List<String> nodeAspectsBlackList;
 
-    public NodeAspectFilter(String filteredNodeAspects)
-    {
+    public NodeAspectFilter(String filteredNodeAspects) {
         this.nodeAspectsBlackList = parseFilterList(filteredNodeAspects);
     }
 
     @Override
-    public Set<QName> getExcludedTypes()
-    {
+    public Set<QName> getExcludedTypes() {
         Set<QName> result = new HashSet<>();
 
         // add node aspects defined in repository.properties/alfresco-global.properties

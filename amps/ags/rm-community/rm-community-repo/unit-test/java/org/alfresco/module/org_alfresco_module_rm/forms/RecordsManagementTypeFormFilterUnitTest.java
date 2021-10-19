@@ -38,11 +38,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.forms.Field;
@@ -58,66 +53,60 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * RecordsManagementTypeFormFilter Unit Test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
-public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
-{
+public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest {
     private static final QName MY_CUSTOM_TYPE = generateQName(RM_URI);
-    
+
     @Mock private Form mockForm;
     @Mock private TypeDefinition mockTypeDefinition;
-    @Mock(name="recordsManagementAdminService") private RecordsManagementAdminService mockRecordsManagementAdminService;
-    
+
+    @Mock(name = "recordsManagementAdminService")
+    private RecordsManagementAdminService mockRecordsManagementAdminService;
+
     @Spy @InjectMocks RecordsManagementTypeFormFilter typeFormFilter;
 
-    /**
-     * Test addCustomRMProperties - no custom properties found
-     */
+    /** Test addCustomRMProperties - no custom properties found */
     @Test
-    public void testAddCustomRMPropertiesNoneFound()
-    {        
+    public void testAddCustomRMPropertiesNoneFound() {
         typeFormFilter.addCustomRMProperties(MY_CUSTOM_TYPE, mockForm);
-        verifyZeroInteractions(mockForm);        
+        verifyZeroInteractions(mockForm);
     }
-    
-    /**
-     * Test that non-customisable types are being treated correctly
-     */
+
+    /** Test that non-customisable types are being treated correctly */
     @Test
-    public void testAfterGenerateNotCustomisable()
-    {
+    public void testAfterGenerateNotCustomisable() {
         when(mockTypeDefinition.getName()).thenReturn(MY_CUSTOM_TYPE);
         when(mockRecordsManagementAdminService.isCustomisable(MY_CUSTOM_TYPE)).thenReturn(false);
-        
+
         typeFormFilter.afterGenerate(mockTypeDefinition, null, null, mockForm, null);
-        
+
         verify(typeFormFilter, never()).addCustomRMProperties(any(QName.class), any(Form.class));
     }
-    
-    /**
-     * Test that customisable types are being treated correctly
-     */
+
+    /** Test that customisable types are being treated correctly */
     @Test
-    public void testAfterGenerateCustomisable()
-    {
+    public void testAfterGenerateCustomisable() {
         when(mockTypeDefinition.getName()).thenReturn(MY_CUSTOM_TYPE);
         when(mockRecordsManagementAdminService.isCustomisable(MY_CUSTOM_TYPE)).thenReturn(true);
-        
+
         typeFormFilter.afterGenerate(mockTypeDefinition, null, null, mockForm, null);
-        
+
         verify(typeFormFilter, times(1)).addCustomRMProperties(any(QName.class), any(Form.class));
     }
-    
-    /**
-     * Test the default values for certain properties are being set correctly
-     */
+
+    /** Test the default values for certain properties are being set correctly */
     @Test
-    public void testDefaultFormValues()
-    {
+    public void testDefaultFormValues() {
         List<FieldDefinition> defs = new ArrayList<>(3);
         FieldDefinition idDef = mockFieldDefinition("rma:identifier");
         defs.add(idDef);
@@ -125,54 +114,45 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
         defs.add(vrDef);
         FieldDefinition rpDef = mockFieldDefinition("rma:reviewPeriod");
         defs.add(rpDef);
-        
+
         when(mockForm.getFieldDefinitions()).thenReturn(defs);
-        
+
         typeFormFilter.afterGenerate(mockTypeDefinition, null, null, mockForm, null);
-        
+
         verify(mockedIdentifierService).generateIdentifier(any(QName.class), any(NodeRef.class));
         verify(idDef).setDefaultValue(anyString());
         verify(vrDef).setDefaultValue(Boolean.FALSE.toString());
         verify(rpDef).setDefaultValue("none|0");
     }
-    
-    /**
-     * Helper to mock field definition
-     */
-    private FieldDefinition mockFieldDefinition(String name)
-    {
+
+    /** Helper to mock field definition */
+    private FieldDefinition mockFieldDefinition(String name) {
         FieldDefinition def = mock(FieldDefinition.class);
         when(def.getName()).thenReturn(name);
         return def;
     }
-        
-    /**
-     * Test addCustomRMProperties - two custom properties found
-     */
+
+    /** Test addCustomRMProperties - two custom properties found */
     @Test
-    public void testAddCustomRMProperties()
-    {        
+    public void testAddCustomRMProperties() {
         // map of custom properties
         Map<QName, PropertyDefinition> properties = mockPropertyDefintionMap(2);
-        
+
         // setup rm admin service to return properties for my custom type
-        when(mockRecordsManagementAdminService.getCustomPropertyDefinitions(MY_CUSTOM_TYPE)).thenReturn(properties);
-        
+        when(mockRecordsManagementAdminService.getCustomPropertyDefinitions(MY_CUSTOM_TYPE))
+                .thenReturn(properties);
+
         // call method
         typeFormFilter.addCustomRMProperties(MY_CUSTOM_TYPE, mockForm);
-        
+
         // ensure that two custom properties have been added to the form
-        verify(mockForm, times(1)).addFields(anyListOf(Field.class));       
+        verify(mockForm, times(1)).addFields(anyListOf(Field.class));
     }
-    
-    /**
-     * Helper method to createa a mock property definition map
-     */
-    private Map<QName, PropertyDefinition> mockPropertyDefintionMap(int size)
-    {
+
+    /** Helper method to createa a mock property definition map */
+    private Map<QName, PropertyDefinition> mockPropertyDefintionMap(int size) {
         Map<QName, PropertyDefinition> properties = new HashMap<>(size);
-        for (int i = 0; i < size; i++)
-        {
+        for (int i = 0; i < size; i++) {
             QName name = generateQName(RM_URI);
             PropertyDefinition propDef = mock(PropertyDefinition.class);
             when(propDef.getName()).thenReturn(name);
@@ -180,7 +160,7 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
             when(mockDataTypeDefinition.getName()).thenReturn(DataTypeDefinition.TEXT);
             when(propDef.getDataType()).thenReturn(mockDataTypeDefinition);
             properties.put(name, propDef);
-        }        
-        return properties;        
+        }
+        return properties;
     }
 }

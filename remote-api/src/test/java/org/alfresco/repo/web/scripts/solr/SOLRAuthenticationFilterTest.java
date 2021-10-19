@@ -25,30 +25,22 @@ package org.alfresco.repo.web.scripts.solr;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static org.junit.Assert.assertEquals;
-
-public class SOLRAuthenticationFilterTest
-{
+public class SOLRAuthenticationFilterTest {
     @Test(expected = AlfrescoRuntimeException.class)
-    public void testSharedSecretNotConfigured() throws Exception
-    {
+    public void testSharedSecretNotConfigured() throws Exception {
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
         filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
         filter.afterPropertiesSet();
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
-    public void testSharedHeaderNotConfigured() throws Exception
-    {
+    public void testSharedHeaderNotConfigured() throws Exception {
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
         filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
         filter.setSharedSecret("shared-secret");
@@ -57,8 +49,7 @@ public class SOLRAuthenticationFilterTest
     }
 
     @Test
-    public void testHTTPSFilterAndSharedSecretSet() throws Exception
-    {
+    public void testHTTPSFilterAndSharedSecretSet() throws Exception {
         String headerKey = "test-header";
         String sharedSecret = "shared-secret";
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
@@ -79,8 +70,7 @@ public class SOLRAuthenticationFilterTest
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
-    public void testHTTPSFilterAndInsecureRequest() throws Exception
-    {
+    public void testHTTPSFilterAndInsecureRequest() throws Exception {
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
         filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.HTTPS.name());
         filter.afterPropertiesSet();
@@ -95,8 +85,7 @@ public class SOLRAuthenticationFilterTest
     }
 
     @Test
-    public void testNoAuthentication() throws Exception
-    {
+    public void testNoAuthentication() throws Exception {
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
         filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.NONE.name());
         filter.afterPropertiesSet();
@@ -111,8 +100,7 @@ public class SOLRAuthenticationFilterTest
     }
 
     @Test
-    public void testSharedSecretFilter() throws Exception
-    {
+    public void testSharedSecretFilter() throws Exception {
         String headerKey = "test-header";
         String sharedSecret = "shared-secret";
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
@@ -132,8 +120,7 @@ public class SOLRAuthenticationFilterTest
     }
 
     @Test
-    public void testSharedSecretDontMatch() throws Exception
-    {
+    public void testSharedSecretDontMatch() throws Exception {
         String headerKey = "test-header";
         String sharedSecret = "shared-secret";
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
@@ -150,12 +137,12 @@ public class SOLRAuthenticationFilterTest
 
         filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
         Mockito.verify(chain, Mockito.times(0)).doFilter(request, response);
-        Mockito.verify(response).sendError(Mockito.eq(HttpServletResponse.SC_FORBIDDEN), Mockito.anyString());
+        Mockito.verify(response)
+                .sendError(Mockito.eq(HttpServletResponse.SC_FORBIDDEN), Mockito.anyString());
     }
 
     @Test
-    public void testSharedHeaderNotPresent() throws Exception
-    {
+    public void testSharedHeaderNotPresent() throws Exception {
         String headerKey = "test-header";
         String sharedSecret = "shared-secret";
         SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
@@ -171,6 +158,7 @@ public class SOLRAuthenticationFilterTest
 
         filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
         Mockito.verify(chain, Mockito.times(0)).doFilter(request, response);
-        Mockito.verify(response).sendError(Mockito.eq(HttpServletResponse.SC_FORBIDDEN), Mockito.anyString());
+        Mockito.verify(response)
+                .sendError(Mockito.eq(HttpServletResponse.SC_FORBIDDEN), Mockito.anyString());
     }
 }

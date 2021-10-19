@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
@@ -43,15 +39,18 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Records management event PUT web script
  *
  * @author Roy Wetherall
  */
-public class RmEventPut extends RMEventBase
-{
-	/** Parameter names */
-	public static final String PARAM_EVENTNAME = "eventname";
+public class RmEventPut extends RMEventBase {
+    /** Parameter names */
+    public static final String PARAM_EVENTNAME = "eventname";
 
     /** Records management event service */
     private RecordsManagementEventService rmEventService;
@@ -61,36 +60,34 @@ public class RmEventPut extends RMEventBase
      *
      * @param rmEventService
      */
-    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
-    {
+    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService) {
         this.rmEventService = rmEventService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         ParameterCheck.mandatory("req", req);
 
         Map<String, Object> model = new HashMap<>();
         JSONObject json = null;
-        try
-        {
+        try {
             // Convert the request content to JSON
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
             // Check the event name
             Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
             String eventName = templateVars.get(PARAM_EVENTNAME);
-            if (eventName == null ||
-                eventName.isEmpty() ||
-                !rmEventService.existsEvent(eventName))
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided.");
+            if (eventName == null
+                    || eventName.isEmpty()
+                    || !rmEventService.existsEvent(eventName)) {
+                throw new WebScriptException(
+                        Status.STATUS_NOT_FOUND, "No event name was provided.");
             }
 
             // Check the event display label
@@ -103,52 +100,41 @@ public class RmEventPut extends RMEventBase
 
             // Check if the event can be edited or not
             RecordsManagementEvent event = null;
-            if (canEditEvent(eventDisplayLabel, eventName, eventType))
-            {
+            if (canEditEvent(eventDisplayLabel, eventName, eventType)) {
                 // Create event
                 event = rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
-            }
-            else
-            {
+            } else {
                 // Get event
                 event = rmEventService.getEvent(eventName);
             }
 
             model.put("event", event);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+        } catch (IOException iox) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
+        } catch (JSONException je) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
         }
 
         return model;
     }
 
     /**
-     * Helper method for checking if an event can be edited or not. Throws an
-     * error if an event with the same display label already exists.
+     * Helper method for checking if an event can be edited or not. Throws an error if an event with
+     * the same display label already exists.
      *
      * @param eventDisplayLabel The display label of the event
      * @param eventName The name of the event
      * @param eventType The type of the event
      * @return true if the event can be edited, false otherwise
      */
-    private boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
-    {
+    private boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType) {
         boolean canEditEvent;
 
-        try
-        {
-           canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
-        }
-        catch (AlfrescoRuntimeException are)
-        {
+        try {
+            canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
+        } catch (AlfrescoRuntimeException are) {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, are.getLocalizedMessage(), are);
         }
 

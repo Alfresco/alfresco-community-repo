@@ -33,60 +33,59 @@ import java.util.List;
  * @author Derek Hulley
  * @since 3.2
  */
-public class IdsEntity
-{
+public class IdsEntity {
     private Long idOne;
     private Long idTwo;
     private Long idThree;
     private Long idFour;
     private List<Long> ids;
     private boolean ordered;
-    public Long getIdOne()
-    {
+
+    public Long getIdOne() {
         return idOne;
     }
-    public void setIdOne(Long id)
-    {
+
+    public void setIdOne(Long id) {
         this.idOne = id;
     }
-    public Long getIdTwo()
-    {
+
+    public Long getIdTwo() {
         return idTwo;
     }
-    public void setIdTwo(Long id)
-    {
+
+    public void setIdTwo(Long id) {
         this.idTwo = id;
     }
-    public Long getIdThree()
-    {
+
+    public Long getIdThree() {
         return idThree;
     }
-    public void setIdThree(Long idThree)
-    {
+
+    public void setIdThree(Long idThree) {
         this.idThree = idThree;
     }
-    public Long getIdFour()
-    {
+
+    public Long getIdFour() {
         return idFour;
     }
-    public void setIdFour(Long idFour)
-    {
+
+    public void setIdFour(Long idFour) {
         this.idFour = idFour;
     }
-    public List<Long> getIds()
-    {
+
+    public List<Long> getIds() {
         return ids;
     }
-    public void setIds(List<Long> ids)
-    {
+
+    public void setIds(List<Long> ids) {
         this.ids = ids;
     }
-    public boolean isOrdered()
-    {
+
+    public boolean isOrdered() {
         return ordered;
     }
-    public void setOrdered(boolean ordered)
-    {
+
+    public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
 }

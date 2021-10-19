@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
@@ -40,14 +38,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.util.List;
+
 /**
  * Action to add types to a record
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class AddRecordTypeAction extends RMActionExecuterAbstractBase
-{
+public class AddRecordTypeAction extends RMActionExecuterAbstractBase {
     /** Logger */
     private static Log logger = LogFactory.getLog(AddRecordTypeAction.class);
 
@@ -64,44 +63,43 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     public static final String NAME = "addRecordTypes";
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (eligibleForAction(actionedUponNodeRef))
-        {
-            for (String type : getRecordTypes(action))
-            {
-                getRecordService().addRecordType(actionedUponNodeRef, QName.createQName(type, getNamespaceService()));
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        if (eligibleForAction(actionedUponNodeRef)) {
+            for (String type : getRecordTypes(action)) {
+                getRecordService()
+                        .addRecordType(
+                                actionedUponNodeRef,
+                                QName.createQName(type, getNamespaceService()));
             }
-        }
-        else if (logger.isWarnEnabled())
-        {
-            logger.warn(I18NUtil.getMessage(MSG_ACTIONED_UPON_NOT_RECORD, this.getClass().getSimpleName(), actionedUponNodeRef.toString()));
+        } else if (logger.isWarnEnabled()) {
+            logger.warn(
+                    I18NUtil.getMessage(
+                            MSG_ACTIONED_UPON_NOT_RECORD,
+                            this.getClass().getSimpleName(),
+                            actionedUponNodeRef.toString()));
         }
     }
 
     /**
-     * Helper method to check the actioned upon node reference to decide to execute the action
-     * The preconditions are:
-     *  - The node must exist
-     *  - The node must not be frozen
-     *  - The node must be record
-     *  - The node must not be declared
+     * Helper method to check the actioned upon node reference to decide to execute the action The
+     * preconditions are: - The node must exist - The node must not be frozen - The node must be
+     * record - The node must not be declared
      *
      * @param actionedUponNodeRef node reference
-     * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
+     * @return Return true if the node reference passes all the preconditions for executing the
+     *     action, false otherwise
      */
-    private boolean eligibleForAction(NodeRef actionedUponNodeRef)
-    {
+    private boolean eligibleForAction(NodeRef actionedUponNodeRef) {
         boolean result = false;
-        if (getNodeService().exists(actionedUponNodeRef) &&
-                !getFreezeService().isFrozen(actionedUponNodeRef) &&
-                getRecordService().isRecord(actionedUponNodeRef) &&
-                !getRecordService().isDeclared(actionedUponNodeRef))
-        {
+        if (getNodeService().exists(actionedUponNodeRef)
+                && !getFreezeService().isFrozen(actionedUponNodeRef)
+                && getRecordService().isRecord(actionedUponNodeRef)
+                && !getRecordService().isDeclared(actionedUponNodeRef)) {
             result = true;
         }
         return result;
@@ -113,18 +111,22 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
      * @param action The action
      * @return An array of record types
      */
-    private String[] getRecordTypes(Action action)
-    {
+    private String[] getRecordTypes(Action action) {
         String recordTypes = (String) action.getParameterValue(PARAM_ADD_RECORD_TYPES);
         return recordTypes.split(DELIMITER);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_ADD_RECORD_TYPES, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_ADD_RECORD_TYPES)));
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_ADD_RECORD_TYPES,
+                        DataTypeDefinition.TEXT,
+                        true,
+                        getParamDisplayLabel(PARAM_ADD_RECORD_TYPES)));
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -40,47 +40,45 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A map that protects keys and values from accidental modification.
- * <p/>
- * Use this map when keys or values need to be protected against client modification.
- * For example, when a component pulls a map from a common resource it can wrap
- * the map with this class to prevent any accidental modification of the shared
- * resource.
- * <p/>
- * Upon first write to this map , the underlying map will be copied (selectively cloned),
- * the original map handle will be discarded and the copied map will be used.  Note that
- * the map copy process will also occur if any mutable value is in danger of being
- * exposed to client modification.  Therefore, methods that iterate and retrieve values
- * will also trigger the copy if any values are mutable.
- * 
- * @param <K>               the map key type (must extend {@link Serializable})
- * @param <V>               the map value type (must extend {@link Serializable})
- * 
+ *
+ * <p>Use this map when keys or values need to be protected against client modification. For
+ * example, when a component pulls a map from a common resource it can wrap the map with this class
+ * to prevent any accidental modification of the shared resource.
+ *
+ * <p>Upon first write to this map , the underlying map will be copied (selectively cloned), the
+ * original map handle will be discarded and the copied map will be used. Note that the map copy
+ * process will also occur if any mutable value is in danger of being exposed to client
+ * modification. Therefore, methods that iterate and retrieve values will also trigger the copy if
+ * any values are mutable.
+ *
+ * @param <K> the map key type (must extend {@link Serializable})
+ * @param <V> the map value type (must extend {@link Serializable})
  * @author Derek Hulley
  * @since 3.4.9
  * @since 4.0.1
  */
-public class ValueProtectingMap<K extends Serializable, V extends Serializable> implements Map<K, V>, Serializable
-{
+public class ValueProtectingMap<K extends Serializable, V extends Serializable>
+        implements Map<K, V>, Serializable {
     private static final long serialVersionUID = -9073485393875357605L;
-    
+
     /**
      * Default immutable classes:
-     * <li>String</li>
-     * <li>BigDecimal</li>
-     * <li>BigInteger</li>
-     * <li>Byte</li>
-     * <li>Double</li>
-     * <li>Float</li>
-     * <li>Integer</li>
-     * <li>Long</li>
-     * <li>Short</li>
-     * <li>Boolean</li>
-     * <li>Date</li>
-     * <li>Locale</li>
+     * <li>String
+     * <li>BigDecimal
+     * <li>BigInteger
+     * <li>Byte
+     * <li>Double
+     * <li>Float
+     * <li>Integer
+     * <li>Long
+     * <li>Short
+     * <li>Boolean
+     * <li>Date
+     * <li>Locale
      */
     public static final Set<Class<?>> DEFAULT_IMMUTABLE_CLASSES;
-    static
-    {
+
+    static {
         DEFAULT_IMMUTABLE_CLASSES = new HashSet<Class<?>>(13);
         DEFAULT_IMMUTABLE_CLASSES.add(String.class);
         DEFAULT_IMMUTABLE_CLASSES.add(BigDecimal.class);
@@ -95,64 +93,58 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
         DEFAULT_IMMUTABLE_CLASSES.add(Date.class);
         DEFAULT_IMMUTABLE_CLASSES.add(Locale.class);
     }
-    
+
     /**
      * Protect a specific value if it is considered mutable
-     * 
-     * @param <S>                   the type of the value, which must be {@link Serializable}
-     * @param value                 the value to protect if it is mutable (may be <tt>null</tt>)
-     * @param immutableClasses      a set of classes that can be considered immutable
-     *                              over and above the {@link #DEFAULT_IMMUTABLE_CLASSES default set}
-     * @return                      a cloned instance (via serialization) or the instance itself, if immutable
+     *
+     * @param <S> the type of the value, which must be {@link Serializable}
+     * @param value the value to protect if it is mutable (may be <tt>null</tt>)
+     * @param immutableClasses a set of classes that can be considered immutable over and above the
+     *     {@link #DEFAULT_IMMUTABLE_CLASSES default set}
+     * @return a cloned instance (via serialization) or the instance itself, if immutable
      */
     @SuppressWarnings("unchecked")
-    public static <S extends Serializable> S protectValue(S value, Set<Class<?>> immutableClasses)
-    {
-        if (!mustProtectValue(value, immutableClasses))
-        {
+    public static <S extends Serializable> S protectValue(S value, Set<Class<?>> immutableClasses) {
+        if (!mustProtectValue(value, immutableClasses)) {
             return value;
         }
         // We have to clone it
         // No worries about the return type; it has to be the same as we put into the serializer
         return (S) SerializationUtils.deserialize(SerializationUtils.serialize(value));
     }
-    
+
     /**
      * Utility method to check if values need to be cloned or not
-     * 
-     * @param <S>                   the type of the value, which must be {@link Serializable}
-     * @param value                 the value to check
-     * @param immutableClasses      a set of classes that can be considered immutable
-     *                              over and above the {@link #DEFAULT_IMMUTABLE_CLASSES default set}
-     * @return                      <tt>true</tt> if the value must <b>NOT</b> be given
-     *                              to the calling clients
+     *
+     * @param <S> the type of the value, which must be {@link Serializable}
+     * @param value the value to check
+     * @param immutableClasses a set of classes that can be considered immutable over and above the
+     *     {@link #DEFAULT_IMMUTABLE_CLASSES default set}
+     * @return <tt>true</tt> if the value must <b>NOT</b> be given to the calling clients
      */
-    public static <S extends Serializable> boolean mustProtectValue(S value, Set<Class<?>> immutableClasses)
-    {
-        if (value == null)
-        {
+    public static <S extends Serializable> boolean mustProtectValue(
+            S value, Set<Class<?>> immutableClasses) {
+        if (value == null) {
             return false;
         }
         Class<?> clazz = value.getClass();
-        return (
-                DEFAULT_IMMUTABLE_CLASSES.contains(clazz) == false &&
-                immutableClasses.contains(clazz) == false);
+        return (DEFAULT_IMMUTABLE_CLASSES.contains(clazz) == false
+                && immutableClasses.contains(clazz) == false);
     }
-    
+
     /**
      * Utility method to clone a map, preserving immutable instances
-     * 
-     * @param <K>                   the map key type, which must be {@link Serializable}
-     * @param <V>                   the map value type, which must be {@link Serializable}
-     * @param map                   the map to copy
-     * @param immutableClasses      a set of classes that can be considered immutable
-     *                              over and above the {@link #DEFAULT_IMMUTABLE_CLASSES default set}
+     *
+     * @param <K> the map key type, which must be {@link Serializable}
+     * @param <V> the map value type, which must be {@link Serializable}
+     * @param map the map to copy
+     * @param immutableClasses a set of classes that can be considered immutable over and above the
+     *     {@link #DEFAULT_IMMUTABLE_CLASSES default set}
      */
-    public static <K extends Serializable, V extends Serializable> Map<K, V> cloneMap(Map<K, V> map, Set<Class<?>> immutableClasses)
-    {
-        Map<K, V> copy = new HashMap<K, V>((int)(map.size() * 1.3));
-        for (Map.Entry<K, V> element : map.entrySet())
-        {
+    public static <K extends Serializable, V extends Serializable> Map<K, V> cloneMap(
+            Map<K, V> map, Set<Class<?>> immutableClasses) {
+        Map<K, V> copy = new HashMap<K, V>((int) (map.size() * 1.3));
+        for (Map.Entry<K, V> element : map.entrySet()) {
             K key = element.getKey();
             V value = element.getValue();
             // Clone as necessary
@@ -162,54 +154,45 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
         }
         return copy;
     }
-    
+
     private ReentrantReadWriteLock.ReadLock readLock;
     private ReentrantReadWriteLock.WriteLock writeLock;
-    
+
     private boolean cloned = false;
     private Map<K, V> map;
     private Set<Class<?>> immutableClasses;
-    
+
     /**
-     * Construct providing a protected map and using only the
-     * {@link #DEFAULT_IMMUTABLE_CLASSES default immutable classes}
-     * 
-     * @param protectedMap          the map to safeguard
+     * Construct providing a protected map and using only the {@link #DEFAULT_IMMUTABLE_CLASSES
+     * default immutable classes}
+     *
+     * @param protectedMap the map to safeguard
      */
-    public ValueProtectingMap(Map<K, V> protectedMap)
-    {
-        this (protectedMap, null);
+    public ValueProtectingMap(Map<K, V> protectedMap) {
+        this(protectedMap, null);
     }
-    
+
     /**
-     * Construct providing a protected map, complementing the set of
-     * {@link #DEFAULT_IMMUTABLE_CLASSES default immutable classes}
-     * 
-     * @param protectedMap          the map to safeguard
-     * @param immutableClasses      additional immutable classes
-     *                              over and above the {@link #DEFAULT_IMMUTABLE_CLASSES default set}
-     *                              (may be <tt>null</tt>
+     * Construct providing a protected map, complementing the set of {@link
+     * #DEFAULT_IMMUTABLE_CLASSES default immutable classes}
+     *
+     * @param protectedMap the map to safeguard
+     * @param immutableClasses additional immutable classes over and above the {@link
+     *     #DEFAULT_IMMUTABLE_CLASSES default set} (may be <tt>null</tt>
      */
-    public ValueProtectingMap(Map<K, V> protectedMap, Set<Class<?>> immutableClasses)
-    {
+    public ValueProtectingMap(Map<K, V> protectedMap, Set<Class<?>> immutableClasses) {
         // Unwrap any internal maps if given a value protecting map
-        if (protectedMap instanceof ValueProtectingMap)
-        {
+        if (protectedMap instanceof ValueProtectingMap) {
             ValueProtectingMap<K, V> mapTemp = (ValueProtectingMap<K, V>) protectedMap;
             this.map = mapTemp.map;
-        }
-        else
-        {
+        } else {
             this.map = protectedMap;
         }
-        
+
         this.cloned = false;
-        if (immutableClasses == null)
-        {
+        if (immutableClasses == null) {
             this.immutableClasses = Collections.emptySet();
-        }
-        else
-        {
+        } else {
             this.immutableClasses = new HashSet<Class<?>>(immutableClasses);
         }
         // Construct locks
@@ -217,35 +200,29 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
         this.readLock = lock.readLock();
         this.writeLock = lock.writeLock();
     }
-    
+
     /**
      * An unsafe method to use for anything except tests.
-     * 
-     * @return              the map that this instance is protecting
+     *
+     * @return the map that this instance is protecting
      */
-    /* protected */ Map<K, V> getProtectedMap()
-    {
+    /* protected */ Map<K, V> getProtectedMap() {
         return map;
     }
-    
+
     /**
      * Called by methods that need to force the map into a safe state.
-     * <p/>
-     * This method can be called without any locks being active.
+     *
+     * <p>This method can be called without any locks being active.
      */
-    private void cloneMap()
-    {
+    private void cloneMap() {
         readLock.lock();
-        try
-        {
+        try {
             // Check that it hasn't been copied already
-            if (cloned)
-            {
+            if (cloned) {
                 return;
             }
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
         /*
@@ -254,21 +231,17 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
          */
         // Put in a write lock before cloning the map
         writeLock.lock();
-        try
-        {
+        try {
             // Check that it hasn't been copied already
-            if (cloned)
-            {
+            if (cloned) {
                 return;
             }
-            
+
             Map<K, V> copy = ValueProtectingMap.cloneMap(map, immutableClasses);
             // Discard the original
             this.map = copy;
             this.cloned = true;
-        }
-        finally
-        {
+        } finally {
             writeLock.unlock();
         }
     }
@@ -276,102 +249,73 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
     /*
      * READ-ONLY METHODS
      */
-    
+
     @Override
-    public int size()
-    {
+    public int size() {
         readLock.lock();
-        try
-        {
+        try {
             return map.size();
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         readLock.lock();
-        try
-        {
+        try {
             return map.isEmpty();
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public boolean containsKey(Object key)
-    {
+    public boolean containsKey(Object key) {
         readLock.lock();
-        try
-        {
+        try {
             return map.containsKey(key);
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public boolean containsValue(Object value)
-    {
+    public boolean containsValue(Object value) {
         readLock.lock();
-        try
-        {
+        try {
             return map.containsValue(value);
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
-
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         readLock.lock();
-        try
-        {
+        try {
             return map.hashCode();
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         readLock.lock();
-        try
-        {
+        try {
             return map.equals(obj);
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         readLock.lock();
-        try
-        {
+        try {
             return map.toString();
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
@@ -381,16 +325,12 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
      */
 
     @Override
-    public V get(Object key)
-    {
+    public V get(Object key) {
         readLock.lock();
-        try
-        {
+        try {
             V value = map.get(key);
             return ValueProtectingMap.protectValue(value, immutableClasses);
-        }
-        finally
-        {
+        } finally {
             readLock.unlock();
         }
     }
@@ -400,50 +340,43 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
      */
 
     @Override
-    public V put(K key, V value)
-    {
+    public V put(K key, V value) {
         cloneMap();
         return map.put(key, value);
     }
 
     @Override
-    public V remove(Object key)
-    {
+    public V remove(Object key) {
         cloneMap();
         return map.remove(key);
     }
 
     @Override
-    public void putAll(Map<? extends K, ? extends V> m)
-    {
+    public void putAll(Map<? extends K, ? extends V> m) {
         cloneMap();
         map.putAll(m);
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
         cloneMap();
         map.clear();
     }
 
     @Override
-    public Set<K> keySet()
-    {
+    public Set<K> keySet() {
         cloneMap();
         return map.keySet();
     }
 
     @Override
-    public Collection<V> values()
-    {
+    public Collection<V> values() {
         cloneMap();
         return map.values();
     }
 
     @Override
-    public Set<Entry<K, V>> entrySet()
-    {
+    public Set<Entry<K, V>> entrySet() {
         cloneMap();
         return map.entrySet();
     }

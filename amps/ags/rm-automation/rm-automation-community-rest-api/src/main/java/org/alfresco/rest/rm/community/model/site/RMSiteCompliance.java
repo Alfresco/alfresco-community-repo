@@ -32,8 +32,7 @@ package org.alfresco.rest.rm.community.model.site;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public enum RMSiteCompliance
-{
+public enum RMSiteCompliance {
     STANDARD,
     DOD5015
 }

@@ -26,9 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
@@ -36,61 +35,68 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Delete record folder test.
- * 
+ *
  * @author Roxana Lucanu
  * @since 2.4
- *
  */
-public class DeleteRecordFolderTest extends BaseRMTestCase 
-{
+public class DeleteRecordFolderTest extends BaseRMTestCase {
     // delete a destroyed record folder
-    public void testDeleteDestroyedRecordFolder() throws Exception
-    {
+    public void testDeleteDestroyedRecordFolder() throws Exception {
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create folder
-                NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
+        final NodeRef testFolder =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create folder
+                                NodeRef testFolder =
+                                        recordFolderService.createRecordFolder(
+                                                rmContainer, "Peter Edward Francis");
 
-                // complete event
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
-                rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
+                                // complete event
+                                Map<String, Serializable> params = new HashMap<>(1);
+                                params.put(
+                                        CompleteEventAction.PARAM_EVENT_NAME,
+                                        CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, CompleteEventAction.NAME, params);
 
-                // cutoff folder
-                rmActionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
-                
-                // destroy folder
-                rmActionService.executeRecordsManagementAction(testFolder, DestroyAction.NAME);
+                                // cutoff folder
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, CutOffAction.NAME);
 
-                return testFolder;
-            }
+                                // destroy folder
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, DestroyAction.NAME);
 
-            @Override
-            public void test(NodeRef testFolder) throws Exception
-            {
-                // take a look at delete capability
-                Capability deleteCapability = capabilityService.getCapability("DeleteRecordFolder");
-                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, deleteCapability.evaluate(testFolder));
-            }
-        });
+                                return testFolder;
+                            }
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                fileFolderService.delete(testFolder);
-                return null;
-            }
-        });
+                            @Override
+                            public void test(NodeRef testFolder) throws Exception {
+                                // take a look at delete capability
+                                Capability deleteCapability =
+                                        capabilityService.getCapability("DeleteRecordFolder");
+                                assertEquals(
+                                        AccessDecisionVoter.ACCESS_GRANTED,
+                                        deleteCapability.evaluate(testFolder));
+                            }
+                        });
+
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        fileFolderService.delete(testFolder);
+                        return null;
+                    }
+                });
     }
-
 }

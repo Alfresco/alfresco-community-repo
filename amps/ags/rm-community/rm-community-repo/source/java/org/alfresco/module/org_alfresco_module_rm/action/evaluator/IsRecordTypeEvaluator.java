@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionConditionEvaluatorAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -39,20 +37,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+import java.util.List;
+
 /**
- * Records management IsRecordType evaluator that evaluates whether the record is of the specified type.
+ * Records management IsRecordType evaluator that evaluates whether the record is of the specified
+ * type.
  *
  * @author Craig Tan
  * @since 2.1
  */
-/**
- * @author ctan
- */
-public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvaluatorAbstractBase implements DOD5015Model
-{
-    /**
-     * Evaluator constants
-     */
+/** @author ctan */
+public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvaluatorAbstractBase
+        implements DOD5015Model {
+    /** Evaluator constants */
     public static final String NAME = "isRecordType";
 
     public static final String PARAM_RECORD_TYPE = "type";
@@ -64,19 +61,16 @@ public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvalu
      *
      * @param nodeService The node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     @Override
-    protected boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
-    {
+    protected boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef) {
         boolean result = false;
         String type = ((QName) actionCondition.getParameterValue(PARAM_RECORD_TYPE)).getLocalName();
 
-        if (type != null)
-        {
+        if (type != null) {
             result = nodeService.hasAspect(actionedUponNodeRef, QName.createQName(DOD_URI, type));
         }
 
@@ -84,9 +78,14 @@ public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvalu
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_RECORD_TYPE, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_RECORD_TYPE), false, "rm-ac-record-types"));
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_RECORD_TYPE,
+                        DataTypeDefinition.QNAME,
+                        true,
+                        getParamDisplayLabel(PARAM_RECORD_TYPE),
+                        false,
+                        "rm-ac-record-types"));
     }
-
 }

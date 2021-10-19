@@ -1,6 +1,9 @@
 package org.alfresco.tas.integration;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import io.restassured.RestAssured;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestPersonModel;
@@ -15,18 +18,20 @@ import org.testng.annotations.Test;
 
 import java.util.HashMap;
 
-import static org.alfresco.utility.report.log.Step.STEP;
-
-public class IntegrationWithWebScriptsTests extends IntegrationTest
-{
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.REST_API, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION,
-            TestGroup.REST_API }, executionType = ExecutionType.REGRESSION, description = "Verify when importing multiple users via CSV, if the password is not set in the CSV file, user will be disable")
-    public void verifyCSVUserImportDisableUserAndGivesRandomPasswordIfItIsMissing() throws Exception
-    {
+public class IntegrationWithWebScriptsTests extends IntegrationTest {
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.REST_API, TestGroup.FULL})
+    @TestRail(
+            section = {TestGroup.INTEGRATION, TestGroup.REST_API},
+            executionType = ExecutionType.REGRESSION,
+            description =
+                    "Verify when importing multiple users via CSV, if the password is not set in"
+                            + " the CSV file, user will be disable")
+    public void verifyCSVUserImportDisableUserAndGivesRandomPasswordIfItIsMissing()
+            throws Exception {
         STEP("1.Upload the CSV File that contains the users.");
-        restAPI.authenticateUser(dataUser.getAdminUser()).configureRequestSpec().addMultiPart("filedata",
-                Utility.getResourceTestDataFile("userCSV.csv"));
+        restAPI.authenticateUser(dataUser.getAdminUser())
+                .configureRequestSpec()
+                .addMultiPart("filedata", Utility.getResourceTestDataFile("userCSV.csv"));
         RestAssured.basePath = "alfresco";
         restAPI.configureRequestSpec().setBasePath(RestAssured.basePath);
         String fileCreationWebScript = "s/api/people/upload";
@@ -37,12 +42,24 @@ public class IntegrationWithWebScriptsTests extends IntegrationTest
         STEP("2.Verify that user1np is disabled and user2 is enabled");
         UserModel disabledUserPerson = new UserModel("MNT-171990-user-with-no-password", "user1");
         UserModel enabledUserPerson = new UserModel("MNT-171990-user-with-password", "user2");
-        RestPersonModel personModel = restAPI.authenticateUser(dataUser.getAdminUser()).withCoreAPI()
-                .usingUser(new UserModel(disabledUserPerson.getUsername(), disabledUserPerson.getPassword())).getPerson();
+        RestPersonModel personModel =
+                restAPI.authenticateUser(dataUser.getAdminUser())
+                        .withCoreAPI()
+                        .usingUser(
+                                new UserModel(
+                                        disabledUserPerson.getUsername(),
+                                        disabledUserPerson.getPassword()))
+                        .getPerson();
         restAPI.assertStatusCodeIs(HttpStatus.OK);
         personModel.assertThat().field("enabled").is("false");
-        personModel = restAPI.authenticateUser(dataUser.getAdminUser()).withCoreAPI()
-                .usingUser(new UserModel(enabledUserPerson.getUsername(), enabledUserPerson.getPassword())).getPerson();
+        personModel =
+                restAPI.authenticateUser(dataUser.getAdminUser())
+                        .withCoreAPI()
+                        .usingUser(
+                                new UserModel(
+                                        enabledUserPerson.getUsername(),
+                                        enabledUserPerson.getPassword()))
+                        .getPerson();
         restAPI.assertStatusCodeIs(HttpStatus.OK);
         personModel.assertThat().field("enabled").is("true");
 
@@ -50,23 +67,39 @@ public class IntegrationWithWebScriptsTests extends IntegrationTest
         HashMap<String, String> input = new HashMap<String, String>();
         input.put("enabled", "true");
         String putBody = JsonBodyGenerator.keyValueJson(input);
-        restAPI.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(disabledUserPerson).updatePerson(putBody);
+        restAPI.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingUser(disabledUserPerson)
+                .updatePerson(putBody);
         restAPI.assertStatusCodeIs(HttpStatus.OK);
 
-        STEP("4.Verify that the disabled user has a randomly generated password not the same as firstname(DOCS-2755)");
-        restAPI.authenticateUser(disabledUserPerson).withCoreAPI()
-                .usingUser(new UserModel(enabledUserPerson.getUsername(), enabledUserPerson.getPassword())).getPerson();
+        STEP(
+                "4.Verify that the disabled user has a randomly generated password not the same as"
+                        + " firstname(DOCS-2755)");
+        restAPI.authenticateUser(disabledUserPerson)
+                .withCoreAPI()
+                .usingUser(
+                        new UserModel(
+                                enabledUserPerson.getUsername(), enabledUserPerson.getPassword()))
+                .getPerson();
         restAPI.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
 
         STEP("5.Change the user password and try an Rest API call.");
         input = new HashMap<String, String>();
         input.put("password", "newPassword1");
         putBody = JsonBodyGenerator.keyValueJson(input);
-        restAPI.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(disabledUserPerson).updatePerson(putBody);
+        restAPI.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingUser(disabledUserPerson)
+                .updatePerson(putBody);
         restAPI.assertStatusCodeIs(HttpStatus.OK);
         disabledUserPerson = new UserModel(disabledUserPerson.getUsername(), "newPassword1");
-        restAPI.authenticateUser(disabledUserPerson).withCoreAPI()
-                .usingUser(new UserModel(enabledUserPerson.getUsername(), enabledUserPerson.getPassword())).getPerson();
+        restAPI.authenticateUser(disabledUserPerson)
+                .withCoreAPI()
+                .usingUser(
+                        new UserModel(
+                                enabledUserPerson.getUsername(), enabledUserPerson.getPassword()))
+                .getPerson();
         restAPI.assertStatusCodeIs(HttpStatus.OK);
 
         dataUser.usingAdmin().deleteUser(disabledUserPerson);

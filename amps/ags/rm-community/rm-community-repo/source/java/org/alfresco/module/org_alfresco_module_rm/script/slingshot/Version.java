@@ -39,8 +39,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public class Version
-{
+public class Version {
     /** The version policy */
     private String policy;
 
@@ -53,8 +52,7 @@ public class Version
      * @param policy The version policy
      * @param selected Is the version selected
      */
-    public Version(String policy, boolean selected)
-    {
+    public Version(String policy, boolean selected) {
         mandatoryString("policy", policy);
         mandatory("selected", selected);
 
@@ -67,8 +65,7 @@ public class Version
      *
      * @return The version policy
      */
-    public String getPolicy()
-    {
+    public String getPolicy() {
         return this.policy;
     }
 
@@ -77,8 +74,7 @@ public class Version
      *
      * @param policy The version policy
      */
-    private void setPolicy(String policy)
-    {
+    private void setPolicy(String policy) {
         this.policy = policy;
     }
 
@@ -87,18 +83,17 @@ public class Version
      *
      * @return <code>true</code> if the version is selected, <code>false</code> otherwise
      */
-    public boolean isSelected()
-    {
+    public boolean isSelected() {
         return this.selected;
     }
 
     /**
      * Sets the version as selected
      *
-     * @param selected <code>true</code> if the version should be selected, <code>false</code> otherwise
+     * @param selected <code>true</code> if the version should be selected, <code>false</code>
+     *     otherwise
      */
-    private void setSelected(boolean selected)
-    {
+    private void setSelected(boolean selected) {
         this.selected = selected;
     }
 }

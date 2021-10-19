@@ -25,18 +25,6 @@
  */
 package org.alfresco.repo.transaction;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;
@@ -66,20 +54,34 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.ConcurrencyFailureException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
 /**
  * Tests the transaction retrying behaviour with various failure modes.
  *
  * @see RetryingTransactionHelper
  * @see TransactionService
- *
  * @author Derek Hulley
  * @since 2.1
  */
-public class RetryingTransactionHelperTest extends BaseSpringTest
-{
-    private static Log logger = LogFactory.getLog("org.alfresco.repo.transaction.RetryingTransactionHelperTest");
+public class RetryingTransactionHelperTest extends BaseSpringTest {
+    private static Log logger =
+            LogFactory.getLog("org.alfresco.repo.transaction.RetryingTransactionHelperTest");
 
-    private static final QName PROP_CHECK_VALUE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "check_value");
+    private static final QName PROP_CHECK_VALUE =
+            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "check_value");
 
     private ServiceRegistry serviceRegistry;
     private AuthenticationComponent authenticationComponent;
@@ -93,12 +95,13 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     private NodeRef workingNodeRef;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         dialect = (Dialect) applicationContext.getBean("dialect");
 
-        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        serviceRegistry =
+                (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        authenticationComponent =
+                (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         txnHelper = transactionService.getRetryingTransactionHelper();
@@ -106,27 +109,32 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();
 
-        StoreRef storeRef = nodeService.createStore(
-                StoreRef.PROTOCOL_WORKSPACE,
-                "test-" + System.currentTimeMillis());
+        StoreRef storeRef =
+                nodeService.createStore(
+                        StoreRef.PROTOCOL_WORKSPACE, "test-" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
         // Create a node to work on
-        workingNodeRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()),
-                ContentModel.TYPE_CMOBJECT).getChildRef();
+        workingNodeRef =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName(
+                                        NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()),
+                                ContentModel.TYPE_CMOBJECT)
+                        .getChildRef();
     }
 
     @After
-    public void tearDown() throws Exception
-    {
-        try { authenticationComponent.clearCurrentSecurityContext(); } catch (Throwable e) {}
+    public void tearDown() throws Exception {
+        try {
+            authenticationComponent.clearCurrentSecurityContext();
+        } catch (Throwable e) {
+        }
     }
 
     @Test
-    public void testSetUp() throws Exception
-    {
+    public void testSetUp() throws Exception {
         assertNotNull(rootNodeRef);
         assertNotNull(workingNodeRef);
     }
@@ -134,13 +142,11 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     /**
      * Get the count, which is 0 to start each test
      *
-     * @return          Returns the current count
+     * @return Returns the current count
      */
-    private Long getCheckValue()
-    {
+    private Long getCheckValue() {
         Long checkValue = (Long) nodeService.getProperty(workingNodeRef, PROP_CHECK_VALUE);
-        if (checkValue == null)
-        {
+        if (checkValue == null) {
             checkValue = new Long(0);
             nodeService.setProperty(workingNodeRef, PROP_CHECK_VALUE, checkValue);
         }
@@ -150,10 +156,9 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     /**
      * Increment the test count, which is 0 to start each test
      *
-     * @return          Returns the current count
+     * @return Returns the current count
      */
-    private Long incrementCheckValue()
-    {
+    private Long incrementCheckValue() {
         Long checkValue = getCheckValue();
         checkValue = new Long(checkValue.longValue() + 1L);
         nodeService.setProperty(workingNodeRef, PROP_CHECK_VALUE, checkValue);
@@ -161,31 +166,26 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     }
 
     /**
-     * @return                          Never returns anything
-     * @throws InvalidNodeRefException  <b>ALWAYS</b>
+     * @return Never returns anything
+     * @throws InvalidNodeRefException <b>ALWAYS</b>
      */
-    private Long blowUp()
-    {
+    private Long blowUp() {
         NodeRef invalidNodeRef = new NodeRef(workingNodeRef.getStoreRef(), "BOGUS");
         nodeService.setProperty(invalidNodeRef, PROP_CHECK_VALUE, null);
         fail("Expected to generate an InvalidNodeRefException");
         return null;
     }
 
-    /**
-     * Check that it works without complications.
-     */
+    /** Check that it works without complications. */
     @Test
-    public void testSuccessNoRetry()
-    {
+    public void testSuccessNoRetry() {
         long beforeValue = getCheckValue();
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                return incrementCheckValue();
-            }
-        };
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        return incrementCheckValue();
+                    }
+                };
         long txnValue = txnHelper.doInTransaction(callback);
         long afterValue = getCheckValue();
         assertEquals("The value must have increased", beforeValue + 1, afterValue);
@@ -193,85 +193,89 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     }
 
     /**
-     * Check that the transaction state can be fetched in and around the transaction.
-     * This also checks that any mischievous attempts to manipulate the transaction
-     * (other than setRollback) are detected.
+     * Check that the transaction state can be fetched in and around the transaction. This also
+     * checks that any mischievous attempts to manipulate the transaction (other than setRollback)
+     * are detected.
      */
     @Test
-    public void testUserTransactionStatus()
-    {
+    public void testUserTransactionStatus() {
         UserTransaction txnBefore = RetryingTransactionHelper.getActiveUserTransaction();
         assertNull("Did not expect to get an active UserTransaction", txnBefore);
 
-        RetryingTransactionCallback<Long> callbackOuter = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                final UserTransaction txnOuter = RetryingTransactionHelper.getActiveUserTransaction();
-                assertNotNull("Expected an active UserTransaction", txnOuter);
-                assertEquals(
-                        "Should be read-write txn",
-                        TxnReadState.TXN_READ_WRITE, AlfrescoTransactionSupport.getTransactionReadState());
-                assertEquals("Expected state is active", Status.STATUS_ACTIVE, txnOuter.getStatus());
-                RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
-                {
-                    public Long execute() throws Throwable
-                    {
-                        UserTransaction txnInner = RetryingTransactionHelper.getActiveUserTransaction();
-                        assertNotNull("Expected an active UserTransaction", txnInner);
+        RetryingTransactionCallback<Long> callbackOuter =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        final UserTransaction txnOuter =
+                                RetryingTransactionHelper.getActiveUserTransaction();
+                        assertNotNull("Expected an active UserTransaction", txnOuter);
                         assertEquals(
-                                "Should be read-only txn",
-                                TxnReadState.TXN_READ_ONLY, AlfrescoTransactionSupport.getTransactionReadState());
-                        assertEquals("Expected state is active", Status.STATUS_ACTIVE, txnInner.getStatus());
-                        // Check blow up
-                        try
-                        {
-                            txnInner.commit();
-                            fail("Should not be able to commit the UserTransaction.  It is for info only.");
-                        }
-                        catch (Throwable e)
-                        {
-                            // Expected
-                        }
-                        // Force a rollback
-                        txnInner.setRollbackOnly();
-                        // Done
-                        return null;
+                                "Should be read-write txn",
+                                TxnReadState.TXN_READ_WRITE,
+                                AlfrescoTransactionSupport.getTransactionReadState());
+                        assertEquals(
+                                "Expected state is active",
+                                Status.STATUS_ACTIVE,
+                                txnOuter.getStatus());
+                        RetryingTransactionCallback<Long> callbackInner =
+                                new RetryingTransactionCallback<Long>() {
+                                    public Long execute() throws Throwable {
+                                        UserTransaction txnInner =
+                                                RetryingTransactionHelper
+                                                        .getActiveUserTransaction();
+                                        assertNotNull(
+                                                "Expected an active UserTransaction", txnInner);
+                                        assertEquals(
+                                                "Should be read-only txn",
+                                                TxnReadState.TXN_READ_ONLY,
+                                                AlfrescoTransactionSupport
+                                                        .getTransactionReadState());
+                                        assertEquals(
+                                                "Expected state is active",
+                                                Status.STATUS_ACTIVE,
+                                                txnInner.getStatus());
+                                        // Check blow up
+                                        try {
+                                            txnInner.commit();
+                                            fail(
+                                                    "Should not be able to commit the"
+                                                            + " UserTransaction.  It is for info"
+                                                            + " only.");
+                                        } catch (Throwable e) {
+                                            // Expected
+                                        }
+                                        // Force a rollback
+                                        txnInner.setRollbackOnly();
+                                        // Done
+                                        return null;
+                                    }
+                                };
+                        return txnHelper.doInTransaction(callbackInner, true, true);
                     }
                 };
-                return txnHelper.doInTransaction(callbackInner, true, true);
-            }
-        };
         txnHelper.doInTransaction(callbackOuter);
 
         UserTransaction txnAfter = RetryingTransactionHelper.getActiveUserTransaction();
         assertNull("Did not expect to get an active UserTransaction", txnAfter);
     }
 
-    /**
-     * Check that the retries happening for simple concurrency exceptions
-     */
+    /** Check that the retries happening for simple concurrency exceptions */
     @Test
-    public void testSuccessWithRetry()
-    {
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            private int maxCalls = 3;
-            private int callCount = 0;
-            public Long execute() throws Throwable
-            {
-                callCount++;
-                Long checkValue = incrementCheckValue();
-                if (callCount == maxCalls)
-                {
-                    return checkValue;
-                }
-                else
-                {
-                    throw new ConcurrencyFailureException("Testing");
-                }
-            }
-        };
+    public void testSuccessWithRetry() {
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    private int maxCalls = 3;
+                    private int callCount = 0;
+
+                    public Long execute() throws Throwable {
+                        callCount++;
+                        Long checkValue = incrementCheckValue();
+                        if (callCount == maxCalls) {
+                            return checkValue;
+                        } else {
+                            throw new ConcurrencyFailureException("Testing");
+                        }
+                    }
+                };
         long txnValue = txnHelper.doInTransaction(callback);
         assertEquals("Only one increment expected", 1, txnValue);
     }
@@ -280,27 +284,20 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
      * Checks that a non-retrying exception is passed out and that the transaction is rolled back.
      */
     @Test
-    public void testNonRetryingFailure()
-    {
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                incrementCheckValue();
-                return blowUp();
-            }
-        };
-        try
-        {
+    public void testNonRetryingFailure() {
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        incrementCheckValue();
+                        return blowUp();
+                    }
+                };
+        try {
             txnHelper.doInTransaction(callback);
             fail("Wrapper didn't generate an exception");
-        }
-        catch (InvalidNodeRefException e)
-        {
+        } catch (InvalidNodeRefException e) {
             // Correct
-        }
-        catch (Throwable e)
-        {
+        } catch (Throwable e) {
             fail("Incorrect exception from wrapper: " + e);
         }
         // Check that the value didn't change
@@ -309,147 +306,128 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     }
 
     /**
-     * Sometimes, exceptions or other states may cause the transaction to be marked for
-     * rollback without an exception being generated.  This tests that the exception stays
-     * absorbed and that another isn't generated, but that the transaction was rolled back
-     * properly.
+     * Sometimes, exceptions or other states may cause the transaction to be marked for rollback
+     * without an exception being generated. This tests that the exception stays absorbed and that
+     * another isn't generated, but that the transaction was rolled back properly.
      */
     @Test
-    public void testNonRetryingSilentRollback()
-    {
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                incrementCheckValue();
-                try
-                {
-                    return blowUp();
-                }
-                catch (InvalidNodeRefException e)
-                {
-                    // Expected, but absorbed
-                }
-                return null;
-            }
-        };
+    public void testNonRetryingSilentRollback() {
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        incrementCheckValue();
+                        try {
+                            return blowUp();
+                        } catch (InvalidNodeRefException e) {
+                            // Expected, but absorbed
+                        }
+                        return null;
+                    }
+                };
         txnHelper.doInTransaction(callback);
         long checkValue = getCheckValue();
         assertEquals("Check value should not have changed", 0, checkValue);
     }
 
-    /**
-     * Checks nesting of two transactions with <code>requiresNew == false</code>
-     */
+    /** Checks nesting of two transactions with <code>requiresNew == false</code> */
     @Test
-    public void testNestedWithPropagation()
-    {
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
-                {
-                    public Long execute() throws Throwable
-                    {
+    public void testNestedWithPropagation() {
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        RetryingTransactionCallback<Long> callbackInner =
+                                new RetryingTransactionCallback<Long>() {
+                                    public Long execute() throws Throwable {
+                                        incrementCheckValue();
+                                        incrementCheckValue();
+                                        return getCheckValue();
+                                    }
+                                };
+                        txnHelper.doInTransaction(callbackInner, false, false);
                         incrementCheckValue();
                         incrementCheckValue();
                         return getCheckValue();
                     }
                 };
-                txnHelper.doInTransaction(callbackInner, false, false);
-                incrementCheckValue();
-                incrementCheckValue();
-                return getCheckValue();
-            }
-        };
         long checkValue = txnHelper.doInTransaction(callback);
         assertEquals("Nesting requiresNew==false didn't work", 4, checkValue);
     }
 
-    /**
-     * Checks nesting of two transactions with <code>requiresNew == true</code>
-     */
+    /** Checks nesting of two transactions with <code>requiresNew == true</code> */
     @Test
-    public void testNestedWithoutPropagation()
-    {
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
-                {
-                    public Long execute() throws Throwable
-                    {
+    public void testNestedWithoutPropagation() {
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        RetryingTransactionCallback<Long> callbackInner =
+                                new RetryingTransactionCallback<Long>() {
+                                    public Long execute() throws Throwable {
+                                        incrementCheckValue();
+                                        incrementCheckValue();
+                                        return getCheckValue();
+                                    }
+                                };
+                        txnHelper.doInTransaction(callbackInner, false, true);
                         incrementCheckValue();
                         incrementCheckValue();
                         return getCheckValue();
                     }
                 };
-                txnHelper.doInTransaction(callbackInner, false, true);
-                incrementCheckValue();
-                incrementCheckValue();
-                return getCheckValue();
-            }
-        };
         long checkValue = txnHelper.doInTransaction(callback);
         assertEquals("Nesting requiresNew==true didn't work", 4, checkValue);
     }
 
     /**
-     * Checks nesting of two transactions with <code>requiresNew == true</code>,
-     * but where the two transactions get involved in a concurrency struggle.
-     * <p/>
-     * Note: skip test for non-MySQL
+     * Checks nesting of two transactions with <code>requiresNew == true</code>, but where the two
+     * transactions get involved in a concurrency struggle.
+     *
+     * <p>Note: skip test for non-MySQL
      */
     @Test
-    public void testNestedWithoutPropagationConcurrentUntilFailureMySQL() throws InterruptedException
-    {
-        final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
+    public void testNestedWithoutPropagationConcurrentUntilFailureMySQL()
+            throws InterruptedException {
+        final RetryingTransactionHelper txnHelperForTest =
+                transactionService.getRetryingTransactionHelper();
         txnHelperForTest.setMaxRetries(1);
 
-        if (! (dialect instanceof MySQLInnoDBDialect))
-        {
-            // NOOP - skip test for non-MySQL DB dialects to avoid hang if concurrently "nested" (in terms of Spring)
+        if (!(dialect instanceof MySQLInnoDBDialect)) {
+            // NOOP - skip test for non-MySQL DB dialects to avoid hang if concurrently "nested" (in
+            // terms of Spring)
             // since the initial transaction does not complete
             // see testConcurrencyRetryingNoFailure instead
-            logger.warn("NOTE: Skipping testNestedWithoutPropogationConcurrentUntilFailureMySQLOnly for dialect: "+dialect);
-        }
-        else
-        {
-            RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-            {
-                public Long execute() throws Throwable
-                {
-                    RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
-                    {
-                        public Long execute() throws Throwable
-                        {
+            logger.warn(
+                    "NOTE: Skipping testNestedWithoutPropogationConcurrentUntilFailureMySQLOnly for"
+                            + " dialect: "
+                            + dialect);
+        } else {
+            RetryingTransactionCallback<Long> callback =
+                    new RetryingTransactionCallback<Long>() {
+                        public Long execute() throws Throwable {
+                            RetryingTransactionCallback<Long> callbackInner =
+                                    new RetryingTransactionCallback<Long>() {
+                                        public Long execute() throws Throwable {
+                                            incrementCheckValue();
+                                            return getCheckValue();
+                                        }
+                                    };
                             incrementCheckValue();
+                            txnHelperForTest.doInTransaction(callbackInner, false, true);
                             return getCheckValue();
                         }
                     };
-                    incrementCheckValue();
-                    txnHelperForTest.doInTransaction(callbackInner, false, true);
-                    return getCheckValue();
-                }
-            };
-            try
-            {
+            try {
                 txnHelperForTest.doInTransaction(callback);
                 fail("Concurrent nested access not leading to failure");
-            }
-            catch (Throwable e)
-            {
-                Throwable validCause = ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
+            } catch (Throwable e) {
+                Throwable validCause =
+                        ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
                 assertNotNull("Unexpected cause of the failure", validCause);
             }
         }
     }
 
     @Test
-    public void testConcurrencyRetryingNoFailure() throws InterruptedException
-    {
+    public void testConcurrencyRetryingNoFailure() throws InterruptedException {
         Thread t1 = new Thread(new ConcurrentTransaction(5000));
         t1.start();
 
@@ -462,69 +440,61 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         t2.join();
     }
 
-    private class ConcurrentTransaction implements Runnable
-    {
+    private class ConcurrentTransaction implements Runnable {
         private long wait;
 
-        public ConcurrentTransaction(long wait)
-        {
+        public ConcurrentTransaction(long wait) {
             this.wait = wait;
         }
 
-        public void run()
-        {
+        public void run() {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-            final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
+            final RetryingTransactionHelper txnHelperForTest =
+                    transactionService.getRetryingTransactionHelper();
 
-            RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-            {
-                public Long execute() throws Throwable
-                {
-                    incrementCheckValue();
+            RetryingTransactionCallback<Long> callback =
+                    new RetryingTransactionCallback<Long>() {
+                        public Long execute() throws Throwable {
+                            incrementCheckValue();
 
-                    System.out.println("Wait started: "+Thread.currentThread()+" ("+wait+")");
-                    Thread.sleep(wait);
-                    System.out.println("Wait finished: "+Thread.currentThread()+" ("+wait+")");
+                            System.out.println(
+                                    "Wait started: " + Thread.currentThread() + " (" + wait + ")");
+                            Thread.sleep(wait);
+                            System.out.println(
+                                    "Wait finished: " + Thread.currentThread() + " (" + wait + ")");
 
-                    return getCheckValue();
-                }
-            };
-            try
-            {
-                System.out.println("Txn start: "+Thread.currentThread()+" ("+wait+")");
+                            return getCheckValue();
+                        }
+                    };
+            try {
+                System.out.println("Txn start: " + Thread.currentThread() + " (" + wait + ")");
                 txnHelperForTest.doInTransaction(callback);
-                System.out.println("Txn finish: "+Thread.currentThread()+" ("+wait+")");
-            }
-            catch (Throwable e)
-            {
-                Throwable validCause = ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
+                System.out.println("Txn finish: " + Thread.currentThread() + " (" + wait + ")");
+            } catch (Throwable e) {
+                Throwable validCause =
+                        ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
                 assertNotNull("Unexpected cause of the failure", validCause);
             }
         }
     }
 
     @Test
-    public void testZeroAndNegativeRetries()
-    {
+    public void testZeroAndNegativeRetries() {
         final MutableInt callCount = new MutableInt(0);
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                callCount.setValue(callCount.intValue() + 1);
-                throw new ConcurrentModificationException();
-            }
-        };
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        callCount.setValue(callCount.intValue() + 1);
+                        throw new ConcurrentModificationException();
+                    }
+                };
         // No retries
         callCount.setValue(0);
         txnHelper.setMaxRetries(0);
-        try
-        {
+        try {
             txnHelper.doInTransaction(callback);
-        }
-        catch (ConcurrentModificationException e)
-        {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
         assertEquals("Should have been called exactly once", 1, callCount.intValue());
@@ -532,60 +502,65 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         // Negative retries
         callCount.setValue(0);
         txnHelper.setMaxRetries(-1);
-        try
-        {
+        try {
             txnHelper.doInTransaction(callback);
-        }
-        catch (ConcurrentModificationException e)
-        {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
         assertEquals("Should have been called exactly once", 1, callCount.intValue());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void testTimeLimit()
-    {
+    public void testTimeLimit() {
         final RetryingTransactionHelper txnHelper = new RetryingTransactionHelper();
         txnHelper.setTransactionService(transactionService);
         txnHelper.setMaxExecutionMs(3000);
-        final List<Throwable> caughtExceptions = Collections.synchronizedList(new LinkedList<Throwable>());
+        final List<Throwable> caughtExceptions =
+                Collections.synchronizedList(new LinkedList<Throwable>());
 
         // Try submitting a request after a timeout
-        runThreads(txnHelper, caughtExceptions, new Pair(0, 1000), new Pair(0, 5000), new Pair(4000, 1000));
+        runThreads(
+                txnHelper,
+                caughtExceptions,
+                new Pair(0, 1000),
+                new Pair(0, 5000),
+                new Pair(4000, 1000));
         assertEquals("Expected 1 exception", 1, caughtExceptions.size());
-        assertTrue("Excpected TooBusyException", caughtExceptions.get(0) instanceof TooBusyException);
+        assertTrue(
+                "Excpected TooBusyException", caughtExceptions.get(0) instanceof TooBusyException);
 
         // Stay within timeout limits
         caughtExceptions.clear();
-        runThreads(txnHelper, caughtExceptions, new Pair(0, 1000), new Pair(0, 2000), new Pair(0, 1000), new Pair(1000, 1000), new Pair(1000, 2000), new Pair(2000, 1000));
-        if (caughtExceptions.size() > 0)
-        {
+        runThreads(
+                txnHelper,
+                caughtExceptions,
+                new Pair(0, 1000),
+                new Pair(0, 2000),
+                new Pair(0, 1000),
+                new Pair(1000, 1000),
+                new Pair(1000, 2000),
+                new Pair(2000, 1000));
+        if (caughtExceptions.size() > 0) {
             throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
         }
     }
 
     @Test
-    public void testALF_17631()
-    {
+    public void testALF_17631() {
         final MutableInt callCount = new MutableInt(0);
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
-        {
-            public Long execute() throws Throwable
-            {
-                callCount.setValue(callCount.intValue() + 1);
-                throw new InvalidNodeRefException(new NodeRef("test", "test", "test"));
-            }
-        };
+        RetryingTransactionCallback<Long> callback =
+                new RetryingTransactionCallback<Long>() {
+                    public Long execute() throws Throwable {
+                        callCount.setValue(callCount.intValue() + 1);
+                        throw new InvalidNodeRefException(new NodeRef("test", "test", "test"));
+                    }
+                };
 
         txnHelper.setMaxRetries(3);
-        try
-        {
+        try {
             txnHelper.doInTransaction(callback);
-        }
-        catch (InvalidNodeRefException e)
-        {
+        } catch (InvalidNodeRefException e) {
             // Expected
         }
         assertEquals("Should have been called exactly once", 1, callCount.intValue());
@@ -596,47 +571,38 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         extraExceptions.add(InvalidNodeRefException.class);
         txnHelper.setExtraExceptions(extraExceptions);
 
-        try
-        {
+        try {
             txnHelper.doInTransaction(callback);
-        }
-        catch (InvalidNodeRefException e)
-        {
+        } catch (InvalidNodeRefException e) {
             // Expected
         }
         assertEquals("Should have been called tree times", 3, callCount.intValue());
-
     }
 
     @Test
-    public void testForceWritable() throws Exception
-    {
+    public void testForceWritable() throws Exception {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
-        final RetryingTransactionCallback<Void> doNothingCallback = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                return null;
-            }
-        };
+        final RetryingTransactionCallback<Void> doNothingCallback =
+                new RetryingTransactionCallback<Void>() {
+                    @Override
+                    public Void execute() throws Throwable {
+                        return null;
+                    }
+                };
 
         TransactionServiceImpl txnService = (TransactionServiceImpl) transactionService;
         txnService.setAllowWrite(false, QName.createQName("{test}testForceWritable"));
-        try
-        {
-            final RetryingTransactionHelper vetoedTxnHelper = txnService.getRetryingTransactionHelper();
+        try {
+            final RetryingTransactionHelper vetoedTxnHelper =
+                    txnService.getRetryingTransactionHelper();
             // We can execute read-only
             vetoedTxnHelper.doInTransaction(doNothingCallback, true, false);
             // We fail on write
-            try
-            {
+            try {
                 vetoedTxnHelper.doInTransaction(doNothingCallback, false, false);
                 fail("Failed to prevent read-write txn in vetoed txn helper.");
-            }
-            catch (RuntimeException e)
-            {
+            } catch (RuntimeException e) {
                 // Expected
             }
 
@@ -644,62 +610,59 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
             // A failure would be one of the causes of MNT-11310.
             RetryingTransactionHelper forcedTxnHelper = txnService.getRetryingTransactionHelper();
             forcedTxnHelper.setForceWritable(true);
-            forcedTxnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    // Participate in the outer transaction
-                    vetoedTxnHelper.doInTransaction(doNothingCallback, false, false);
-                    return null;
-                }
-            }, false);
+            forcedTxnHelper.doInTransaction(
+                    new RetryingTransactionCallback<Void>() {
+                        @Override
+                        public Void execute() throws Throwable {
+                            // Participate in the outer transaction
+                            vetoedTxnHelper.doInTransaction(doNothingCallback, false, false);
+                            return null;
+                        }
+                    },
+                    false);
 
-            // However, if we attempt to force a new transaction, then the forcing should have no effect
-            try
-            {
-                forcedTxnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                {
-                    @Override
-                    public Void execute() throws Throwable
-                    {
-                        // Start a new transaction
-                        vetoedTxnHelper.doInTransaction(doNothingCallback, false, true);
-                        return null;
-                    }
-                }, false);
-                fail("Inner, non-propagating transactions should still fall foul of the write veto.");
-            }
-            catch (AccessDeniedException e)
-            {
+            // However, if we attempt to force a new transaction, then the forcing should have no
+            // effect
+            try {
+                forcedTxnHelper.doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            @Override
+                            public Void execute() throws Throwable {
+                                // Start a new transaction
+                                vetoedTxnHelper.doInTransaction(doNothingCallback, false, true);
+                                return null;
+                            }
+                        },
+                        false);
+                fail(
+                        "Inner, non-propagating transactions should still fall foul of the write"
+                                + " veto.");
+            } catch (AccessDeniedException e) {
                 // Expected
             }
-        }
-        finally
-        {
+        } finally {
             txnService.setAllowWrite(true, QName.createQName("{test}testForceWritable"));
         }
     }
 
     @Test
-    public void testStartNewTransaction() throws Exception
-    {
+    public void testStartNewTransaction() throws Exception {
         // MNT-10096
-        class CustomListenerAdapter extends TransactionListenerAdapter
-        {
+        class CustomListenerAdapter extends TransactionListenerAdapter {
             private String newTxnId;
 
             @Override
-            public void afterRollback()
-            {
-                newTxnId = txnHelper.doInTransaction(new RetryingTransactionCallback<String>()
-                {
-                    @Override
-                    public String execute() throws Throwable
-                    {
-                        return AlfrescoTransactionSupport.getTransactionId();
-                    }
-                }, true, false);
+            public void afterRollback() {
+                newTxnId =
+                        txnHelper.doInTransaction(
+                                new RetryingTransactionCallback<String>() {
+                                    @Override
+                                    public String execute() throws Throwable {
+                                        return AlfrescoTransactionSupport.getTransactionId();
+                                    }
+                                },
+                                true,
+                                false);
             }
         }
 
@@ -718,49 +681,40 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     private void runThreads(
             final RetryingTransactionHelper txnHelper,
             final List<Throwable> caughtExceptions,
-            final Pair<Integer, Integer>... startDurationPairs)
-    {
-        ExecutorService executorService = new ThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<Runnable>(10));
+            final Pair<Integer, Integer>... startDurationPairs) {
+        ExecutorService executorService =
+                new ThreadPoolExecutor(
+                        10, 10, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(10));
 
-        class Work implements Runnable
-        {
+        class Work implements Runnable {
             private final CountDownLatch startLatch;
             private final long endTime;
 
-            public Work(CountDownLatch startLatch, long endTime)
-            {
+            public Work(CountDownLatch startLatch, long endTime) {
                 this.startLatch = startLatch;
                 this.endTime = endTime;
             }
 
-            public void run()
-            {
-                try
-                {
-                    txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                    {
+            public void run() {
+                try {
+                    txnHelper.doInTransaction(
+                            new RetryingTransactionCallback<Void>() {
 
-                        public Void execute() throws Throwable
-                        {
-                            // Signal that we've started
-                            startLatch.countDown();
+                                public Void execute() throws Throwable {
+                                    // Signal that we've started
+                                    startLatch.countDown();
 
-                            long duration = endTime - System.currentTimeMillis();
-                            if (duration > 0)
-                            {
-                                Thread.sleep(duration);
-                            }
-                            return null;
-                        }
-                    });
-                }
-                catch (Throwable e)
-                {
+                                    long duration = endTime - System.currentTimeMillis();
+                                    if (duration > 0) {
+                                        Thread.sleep(duration);
+                                    }
+                                    return null;
+                                }
+                            });
+                } catch (Throwable e) {
                     caughtExceptions.add(e);
                     // We never got a chance to signal we had started so do it now
-                    if (startLatch.getCount() > 0)
-                    {
+                    if (startLatch.getCount() > 0) {
                         startLatch.countDown();
                     }
                 }
@@ -771,43 +725,31 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         // Schedule the transactions at their required start times
         long startTime = System.currentTimeMillis();
         long currentStart = 0;
-        for (Pair<Integer, Integer> pair : startDurationPairs)
-        {
+        for (Pair<Integer, Integer> pair : startDurationPairs) {
             int start = pair.getFirst();
             long now = System.currentTimeMillis();
             long then = startTime + start;
-            if (then > now)
-            {
-                try
-                {
+            if (then > now) {
+                try {
                     Thread.sleep(then - now);
-                }
-                catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
                 }
                 currentStart = start;
             }
             CountDownLatch startLatch = new CountDownLatch(1);
             Runnable work = new Work(startLatch, startTime + currentStart + pair.getSecond());
             executorService.execute(work);
-            try
-            {
+            try {
                 // Wait for the thread to get up and running. We need them starting in sequence
                 startLatch.await(60, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e)
-            {
+            } catch (InterruptedException e) {
             }
         }
         // Wait for the threads to have finished
         executorService.shutdown();
-        try
-        {
+        try {
             executorService.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
         }
-        catch (InterruptedException e)
-        {
-        }
-
     }
 }

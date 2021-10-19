@@ -27,8 +27,6 @@
 
 package org.alfresco.workflow.requestInfo;
 
-import java.util.List;
-
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
@@ -44,16 +42,16 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * Util class for the request info workflow
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public final class RequestInfoUtils
-{
-    private RequestInfoUtils()
-    {
+public final class RequestInfoUtils {
+    private RequestInfoUtils() {
         // Will not be called
     }
 
@@ -62,18 +60,18 @@ public final class RequestInfoUtils
      *
      * @return Returns the service registry
      */
-    public static ServiceRegistry getServiceRegistry()
-    {
+    public static ServiceRegistry getServiceRegistry() {
         ProcessEngineConfigurationImpl config = Context.getProcessEngineConfiguration();
-        if (config != null)
-        {
+        if (config != null) {
             // Fetch the registry that is injected in the activiti spring-configuration
-            ServiceRegistry registry = (ServiceRegistry) config.getBeans().get(ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            if (registry == null)
-            {
+            ServiceRegistry registry =
+                    (ServiceRegistry)
+                            config.getBeans().get(ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
+            if (registry == null) {
                 throw new AlfrescoRuntimeException(
-                        "Service-registry not present in ProcessEngineConfiguration beans, expected ServiceRegistry with key" +
-                                ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
+                        "Service-registry not present in ProcessEngineConfiguration beans, expected"
+                                + " ServiceRegistry with key"
+                                + ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
             }
             return registry;
         }
@@ -83,23 +81,22 @@ public final class RequestInfoUtils
     /**
      * Helper method to extract the record name from the task
      *
-     * @param delegateTask  The delegate task
-     * @return Returns the name of the record or an empty string if the record name could not be found
-               (may be because the record has been deleted in the mean time)
+     * @param delegateTask The delegate task
+     * @return Returns the name of the record or an empty string if the record name could not be
+     *     found (may be because the record has been deleted in the mean time)
      */
-    public static String getRecordName(DelegateTask delegateTask)
-    {
+    public static String getRecordName(DelegateTask delegateTask) {
         ParameterCheck.mandatory("delegateTask", delegateTask);
 
         String recordName = StringUtils.EMPTY;
 
         NodeService nodeService = getServiceRegistry().getNodeService();
-        ActivitiScriptNode scriptNode = (ActivitiScriptNode) delegateTask.getVariable("bpm_package");
+        ActivitiScriptNode scriptNode =
+                (ActivitiScriptNode) delegateTask.getVariable("bpm_package");
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(scriptNode.getNodeRef());
 
-        if (childAssocs.size() > 0)
-        {
-            NodeRef docRef= childAssocs.get(0).getChildRef();
+        if (childAssocs.size() > 0) {
+            NodeRef docRef = childAssocs.get(0).getChildRef();
             recordName = (String) nodeService.getProperty(docRef, ContentModel.PROP_NAME);
         }
 
@@ -109,38 +106,35 @@ public final class RequestInfoUtils
     /**
      * Helper method to extract the initiator from the task
      *
-     * @param delegateTask  The delegate task
-     * @return Returns the initiator of the workflow. First it will be checked if
-     * a rule creator exists, which means the the workflow was started via rule.
-     * In this case the creator of the rule will receive the review task.
-     * If a rule creator cannot be found the code will try to find the initiator
-     * of the workflow. If also this is not the case the admin user will be returned.
+     * @param delegateTask The delegate task
+     * @return Returns the initiator of the workflow. First it will be checked if a rule creator
+     *     exists, which means the the workflow was started via rule. In this case the creator of
+     *     the rule will receive the review task. If a rule creator cannot be found the code will
+     *     try to find the initiator of the workflow. If also this is not the case the admin user
+     *     will be returned.
      */
-    public static String getInitiator(DelegateTask delegateTask)
-    {
+    public static String getInitiator(DelegateTask delegateTask) {
         ParameterCheck.mandatory("delegateTask", delegateTask);
 
         String userName = null;
 
         String ruleCreator = (String) delegateTask.getVariable("rmwf_ruleCreator");
-        if (StringUtils.isBlank(ruleCreator))
-        {
-            ActivitiScriptNode initiator = (ActivitiScriptNode) delegateTask.getVariable("initiator");
-            if (initiator.exists())
-            {
-                userName = (String) initiator.getProperties().get(ContentModel.PROP_USERNAME.toString());
-            }
-            else
-            {
+        if (StringUtils.isBlank(ruleCreator)) {
+            ActivitiScriptNode initiator =
+                    (ActivitiScriptNode) delegateTask.getVariable("initiator");
+            if (initiator.exists()) {
+                userName =
+                        (String)
+                                initiator
+                                        .getProperties()
+                                        .get(ContentModel.PROP_USERNAME.toString());
+            } else {
                 userName = AuthenticationUtil.getAdminUserName();
             }
-        }
-        else
-        {
+        } else {
             userName = ruleCreator;
         }
 
         return userName;
     }
-
 }

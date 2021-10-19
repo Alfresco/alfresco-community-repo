@@ -29,31 +29,34 @@ package org.alfresco.rest.rm.community.search;
 
 import static org.testng.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-public class ShareLiveSearchTests extends BaseRMRestTest
-{
-    @Autowired
-    SearchAPI searchApi;
+import java.util.Arrays;
+import java.util.List;
+
+public class ShareLiveSearchTests extends BaseRMRestTest {
+    @Autowired SearchAPI searchApi;
 
     /**
-     * Given the RM site has been created When I search for "vital" Then the "Vital Records Due for Review" search
-     * object should not appear as a link in the quick search results drop down
+     * Given the RM site has been created When I search for "vital" Then the "Vital Records Due for
+     * Review" search object should not appear as a link in the quick search results drop down
      */
     @Test
     @AlfrescoTest(jira = "RM-5882")
-    public void liveSearchForVitalWord()
-    {
-        List<String> results = searchApi.liveSearchForDocumentsAsUser(getAdminUser().getUsername(), getAdminUser().getPassword(), "vital");
-        assertTrue(results.isEmpty() || results.stream().noneMatch("Vital Records due for Review"::equalsIgnoreCase),
-                    "Share Live Search should return 0 results when searching for RM Saved Search filter words, but it returned:"
-                                + Arrays.toString(results.toArray()));
+    public void liveSearchForVitalWord() {
+        List<String> results =
+                searchApi.liveSearchForDocumentsAsUser(
+                        getAdminUser().getUsername(), getAdminUser().getPassword(), "vital");
+        assertTrue(
+                results.isEmpty()
+                        || results.stream()
+                                .noneMatch("Vital Records due for Review"::equalsIgnoreCase),
+                "Share Live Search should return 0 results when searching for RM Saved Search"
+                        + " filter words, but it returned:"
+                        + Arrays.toString(results.toArray()));
     }
 }

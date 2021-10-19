@@ -4,29 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.web.scripts.subscriptions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,11 +39,11 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-/**
- * Subscription Service REST API tests
- */
-public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
-{
+import java.util.ArrayList;
+import java.util.List;
+
+/** Subscription Service REST API tests */
+public class SubscriptionServiceRestApiTest extends BaseWebScriptTest {
     public static final String USER_BOB = "bob";
     public static final String USER_TOM = "tom";
     public static final String USER_LISA = "lisa";
@@ -63,10 +60,10 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
     protected PersonService personService;
 
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         // Get the required services
-        personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
+        personService =
+                (PersonService) getServer().getApplicationContext().getBean("PersonService");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
@@ -76,20 +73,17 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         deletePerson(USER_BOB);
         deletePerson(USER_TOM);
         deletePerson(USER_LISA);
     }
 
-    protected void deletePerson(String userId)
-    {
+    protected void deletePerson(String userId) {
         personService.deletePerson(userId);
     }
 
-    protected NodeRef createPerson(String userId)
-    {
+    protected NodeRef createPerson(String userId) {
         deletePerson(userId);
 
         PropertyMap properties = new PropertyMap(5);
@@ -101,37 +95,39 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return personService.createPerson(properties);
     }
 
-    protected String getUrl(String urlPattern, String user)
-    {
+    protected String getUrl(String urlPattern, String user) {
         return urlPattern.replaceFirst("\\{userid\\}", user);
     }
 
-    protected void follow(String user1, String user2) throws Exception
-    {
+    protected void follow(String user1, String user2) throws Exception {
         JSONArray jsonUsers = new JSONArray();
         jsonUsers.put(user2);
 
         String url = getUrl(URL_FOLLOW, user1);
-        sendRequest(new PostRequest(url, jsonUsers.toString(), "application/json"), Status.STATUS_NO_CONTENT);
+        sendRequest(
+                new PostRequest(url, jsonUsers.toString(), "application/json"),
+                Status.STATUS_NO_CONTENT);
     }
 
-    protected void unfollow(String user1, String user2) throws Exception
-    {
+    protected void unfollow(String user1, String user2) throws Exception {
         JSONArray jsonUsers = new JSONArray();
         jsonUsers.put(user2);
 
         String url = getUrl(URL_UNFOLLOW, user1);
-        sendRequest(new PostRequest(url, jsonUsers.toString(), "application/json"), Status.STATUS_NO_CONTENT);
+        sendRequest(
+                new PostRequest(url, jsonUsers.toString(), "application/json"),
+                Status.STATUS_NO_CONTENT);
     }
 
-    protected boolean follows(String user1, String user2) throws Exception
-    {
+    protected boolean follows(String user1, String user2) throws Exception {
         JSONArray jsonUsers = new JSONArray();
         jsonUsers.put(user2);
 
         String url = getUrl(URL_FOLLOWS, user1);
-        Response response = sendRequest(new PostRequest(url, jsonUsers.toString(), "application/json"),
-                Status.STATUS_OK);
+        Response response =
+                sendRequest(
+                        new PostRequest(url, jsonUsers.toString(), "application/json"),
+                        Status.STATUS_OK);
 
         JSONArray resultArray = new JSONArray(response.getContentAsString());
         assertEquals(1, resultArray.length());
@@ -142,8 +138,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return resultObject.getBoolean(user2);
     }
 
-    protected int getFollowingCount(String user) throws Exception
-    {
+    protected int getFollowingCount(String user) throws Exception {
         String url = getUrl(URL_FOLLOWING_COUNT, user);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
@@ -153,8 +148,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return resultObject.getInt("count");
     }
 
-    protected int getFollowersCount(String user) throws Exception
-    {
+    protected int getFollowersCount(String user) throws Exception {
         String url = getUrl(URL_FOLLOWERS_COUNT, user);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
@@ -164,8 +158,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return resultObject.getInt("count");
     }
 
-    protected List<String> getFollowing(String user) throws Exception
-    {
+    protected List<String> getFollowing(String user) throws Exception {
         String url = getUrl(URL_FOLLOWING, user);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
@@ -175,8 +168,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         List<String> result = new ArrayList<String>();
         JSONArray people = resultObject.getJSONArray("people");
 
-        for (int i = 0; i < people.length(); i++)
-        {
+        for (int i = 0; i < people.length(); i++) {
             JSONObject person = people.getJSONObject(i);
             assertTrue(person.has("userName"));
             assertTrue(person.has("firstName"));
@@ -188,8 +180,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return result;
     }
 
-    protected List<String> getFollowers(String user) throws Exception
-    {
+    protected List<String> getFollowers(String user) throws Exception {
         String url = getUrl(URL_FOLLOWERS, user);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
@@ -199,8 +190,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         List<String> result = new ArrayList<String>();
         JSONArray people = resultObject.getJSONArray("people");
 
-        for (int i = 0; i < people.length(); i++)
-        {
+        for (int i = 0; i < people.length(); i++) {
             JSONObject person = people.getJSONObject(i);
             assertTrue(person.has("userName"));
             assertTrue(person.has("firstName"));
@@ -212,8 +202,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return result;
     }
 
-    protected boolean isSubscriptionListPrivate(String user) throws Exception
-    {
+    protected boolean isSubscriptionListPrivate(String user) throws Exception {
         String url = getUrl(URL_PRIVATE, user);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
@@ -223,29 +212,28 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         return resultObject.getBoolean("private");
     }
 
-    protected void setSubscriptionListPrivate(String user, boolean setPrivate) throws Exception
-    {
+    protected void setSubscriptionListPrivate(String user, boolean setPrivate) throws Exception {
         JSONObject privateObject = new JSONObject();
         privateObject.put("private", setPrivate);
 
         String url = getUrl(URL_PRIVATE, user);
-        Response response = sendRequest(new PutRequest(url, privateObject.toString(), "application/json"),
-                Status.STATUS_OK);
+        Response response =
+                sendRequest(
+                        new PutRequest(url, privateObject.toString(), "application/json"),
+                        Status.STATUS_OK);
 
         JSONObject resultObject = new JSONObject(response.getContentAsString());
         assertTrue(resultObject.has("private"));
         assertEquals(setPrivate, resultObject.getBoolean("private"));
     }
 
-    public void testFollow() throws Exception
-    {
+    public void testFollow() throws Exception {
         String userId1 = USER_BOB;
         String userId2 = USER_TOM;
         String userId3 = USER_LISA;
 
         // check follows first
-        if (follows(userId1, userId2))
-        {
+        if (follows(userId1, userId2)) {
             unfollow(userId1, userId2);
         }
         assertFalse(follows(userId1, userId2));
@@ -292,8 +280,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         assertFalse(follows(userId1, userId3));
     }
 
-    public void testPrivateList() throws Exception
-    {
+    public void testPrivateList() throws Exception {
         final String userId1 = USER_BOB;
 
         assertFalse(isSubscriptionListPrivate(userId1));

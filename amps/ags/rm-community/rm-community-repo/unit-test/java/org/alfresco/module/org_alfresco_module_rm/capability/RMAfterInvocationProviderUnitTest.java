@@ -27,18 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
-import static java.util.Arrays.asList;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.List;
+import static java.util.Arrays.asList;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
+
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -53,129 +52,138 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.util.List;
+
 /** Unit tests for {@link RMAfterInvocationProvider}. */
-public class RMAfterInvocationProviderUnitTest
-{
-	private static final NodeRef NODE_A = new NodeRef("test://node/a");
+public class RMAfterInvocationProviderUnitTest {
+    private static final NodeRef NODE_A = new NodeRef("test://node/a");
 
-	/** The class under test. */
-	@InjectMocks
-	private RMAfterInvocationProvider rmAfterInvocationProvider;
-	@Mock
-	private Authentication authentication;
-	@Mock
-	Object object;
-	@Mock
-	ConfigAttributeDefinition config;
-	@Mock
-	AuthenticationUtil authenticationUtil;
-	@Mock
-	NodeService nodeService;
-	@Mock
-	ChildAssociationRef childAssocRefA;
+    /** The class under test. */
+    @InjectMocks private RMAfterInvocationProvider rmAfterInvocationProvider;
 
-	/** Set up the mocks and common test data. */
-	@Before
-	public void setUp()
-	{
-		initMocks(this);
+    @Mock private Authentication authentication;
+    @Mock Object object;
+    @Mock ConfigAttributeDefinition config;
+    @Mock AuthenticationUtil authenticationUtil;
+    @Mock NodeService nodeService;
+    @Mock ChildAssociationRef childAssocRefA;
 
-		// Set up the nodes and associations.
-		when(nodeService.exists(NODE_A)).thenReturn(true);
-		when(childAssocRefA.getParentRef()).thenReturn(NODE_A);
+    /** Set up the mocks and common test data. */
+    @Before
+    public void setUp() {
+        initMocks(this);
 
-		// Create the config object for use by the tests.
-		ConfigAttribute configAttribute = mock(ConfigAttribute.class);
-		when(configAttribute.getAttribute()).thenReturn("AFTER_RM.test");
-		List<ConfigAttribute> configAttributes = asList(configAttribute);
-		when(config.getConfigAttributes()).thenReturn(configAttributes.iterator());
-	}
+        // Set up the nodes and associations.
+        when(nodeService.exists(NODE_A)).thenReturn(true);
+        when(childAssocRefA.getParentRef()).thenReturn(NODE_A);
 
-	/** Check that when all the results fit into a page then we get a response of "UNLIMITED". */
-	@Test
-	public void testDecide_resultSet_unlimited()
-	{
-		// The returned object is a search result set.
-		ResultSet returnedObject = mock(ResultSet.class);
-		ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
-		when(returnedObject.getResultSetMetaData()).thenReturn(resultSetMetaData);
+        // Create the config object for use by the tests.
+        ConfigAttribute configAttribute = mock(ConfigAttribute.class);
+        when(configAttribute.getAttribute()).thenReturn("AFTER_RM.test");
+        List<ConfigAttribute> configAttributes = asList(configAttribute);
+        when(config.getConfigAttributes()).thenReturn(configAttributes.iterator());
+    }
 
-		// Simulate a single result, and the user has access to it.
-		when(returnedObject.length()).thenReturn(1);
-		when(returnedObject.getNumberFound()).thenReturn(1L);
-		when(returnedObject.getNodeRef(0)).thenReturn(NODE_A);
-		when(returnedObject.getChildAssocRef(0)).thenReturn(childAssocRefA);
+    /** Check that when all the results fit into a page then we get a response of "UNLIMITED". */
+    @Test
+    public void testDecide_resultSet_unlimited() {
+        // The returned object is a search result set.
+        ResultSet returnedObject = mock(ResultSet.class);
+        ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
+        when(returnedObject.getResultSetMetaData()).thenReturn(resultSetMetaData);
 
-		// Set the page size to 1 and skip count to 0.
-		SearchParameters searchParameters = mock(SearchParameters.class);
-		when(searchParameters.getMaxItems()).thenReturn(1);
-		when(searchParameters.getSkipCount()).thenReturn(0);
-		when(searchParameters.getLanguage()).thenReturn("afts");
-		when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
+        // Simulate a single result, and the user has access to it.
+        when(returnedObject.length()).thenReturn(1);
+        when(returnedObject.getNumberFound()).thenReturn(1L);
+        when(returnedObject.getNodeRef(0)).thenReturn(NODE_A);
+        when(returnedObject.getChildAssocRef(0)).thenReturn(childAssocRefA);
 
-		// Call the method under test.
-		FilteringResultSet filteringResultSet = (FilteringResultSet) rmAfterInvocationProvider.decide(authentication, object, config, returnedObject);
+        // Set the page size to 1 and skip count to 0.
+        SearchParameters searchParameters = mock(SearchParameters.class);
+        when(searchParameters.getMaxItems()).thenReturn(1);
+        when(searchParameters.getSkipCount()).thenReturn(0);
+        when(searchParameters.getLanguage()).thenReturn("afts");
+        when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
 
-		assertEquals("Expected total of one result.", 1, filteringResultSet.getNumberFound());
-		assertEquals("Expected one result returned.", 1, filteringResultSet.length());
-		assertEquals("Expected that results were not limited by the page size.", LimitBy.UNLIMITED, filteringResultSet.getResultSetMetaData().getLimitedBy());
-	}
+        // Call the method under test.
+        FilteringResultSet filteringResultSet =
+                (FilteringResultSet)
+                        rmAfterInvocationProvider.decide(
+                                authentication, object, config, returnedObject);
 
-	/** Check that results can skipped due to the skip count. */
-	@Test
-	public void testDecide_resultSet_skipped()
-	{
-		// The returned object is a search result set.
-		ResultSet returnedObject = mock(ResultSet.class);
-		ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
-		when(returnedObject.getResultSetMetaData()).thenReturn(resultSetMetaData);
+        assertEquals("Expected total of one result.", 1, filteringResultSet.getNumberFound());
+        assertEquals("Expected one result returned.", 1, filteringResultSet.length());
+        assertEquals(
+                "Expected that results were not limited by the page size.",
+                LimitBy.UNLIMITED,
+                filteringResultSet.getResultSetMetaData().getLimitedBy());
+    }
 
-		// Simulate a single result that was skipped due to the skip count.
-		when(returnedObject.length()).thenReturn(0);
-		when(returnedObject.getNumberFound()).thenReturn(1L);
+    /** Check that results can skipped due to the skip count. */
+    @Test
+    public void testDecide_resultSet_skipped() {
+        // The returned object is a search result set.
+        ResultSet returnedObject = mock(ResultSet.class);
+        ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
+        when(returnedObject.getResultSetMetaData()).thenReturn(resultSetMetaData);
 
-		// Set the page size to 1 and skip count to 1 (so the result is skipped).
-		SearchParameters searchParameters = mock(SearchParameters.class);
-		when(searchParameters.getMaxItems()).thenReturn(1);
-		when(searchParameters.getSkipCount()).thenReturn(1);
-		when(searchParameters.getLanguage()).thenReturn("afts");
-		when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
+        // Simulate a single result that was skipped due to the skip count.
+        when(returnedObject.length()).thenReturn(0);
+        when(returnedObject.getNumberFound()).thenReturn(1L);
 
-		// Call the method under test.
-		FilteringResultSet filteringResultSet = (FilteringResultSet) rmAfterInvocationProvider.decide(authentication, object, config, returnedObject);
+        // Set the page size to 1 and skip count to 1 (so the result is skipped).
+        SearchParameters searchParameters = mock(SearchParameters.class);
+        when(searchParameters.getMaxItems()).thenReturn(1);
+        when(searchParameters.getSkipCount()).thenReturn(1);
+        when(searchParameters.getLanguage()).thenReturn("afts");
+        when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
 
-		assertEquals("Expected total of one result.", 1, filteringResultSet.getNumberFound());
-		assertEquals("Expected no results returned.", 0, filteringResultSet.length());
-		assertEquals("Expected that results were not limited by the page size.", LimitBy.UNLIMITED, filteringResultSet.getResultSetMetaData().getLimitedBy());
-	}
+        // Call the method under test.
+        FilteringResultSet filteringResultSet =
+                (FilteringResultSet)
+                        rmAfterInvocationProvider.decide(
+                                authentication, object, config, returnedObject);
 
-	/** Check that results can be limited by the page size. */
-	@Test
-	public void testDecide_resultSet_pageSize()
-	{
-		// The returned object is a search result set.
-		ResultSet returnedObject = mock(ResultSet.class);
-		ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
-		when(returnedObject.getResultSetMetaData()).thenReturn(resultSetMetaData);
+        assertEquals("Expected total of one result.", 1, filteringResultSet.getNumberFound());
+        assertEquals("Expected no results returned.", 0, filteringResultSet.length());
+        assertEquals(
+                "Expected that results were not limited by the page size.",
+                LimitBy.UNLIMITED,
+                filteringResultSet.getResultSetMetaData().getLimitedBy());
+    }
 
-		// Simulate a single result, and the user has access to it.
-		when(returnedObject.length()).thenReturn(1);
-		when(returnedObject.getNumberFound()).thenReturn(1L);
-		when(returnedObject.getNodeRef(0)).thenReturn(NODE_A);
-		when(returnedObject.getChildAssocRef(0)).thenReturn(childAssocRefA);
+    /** Check that results can be limited by the page size. */
+    @Test
+    public void testDecide_resultSet_pageSize() {
+        // The returned object is a search result set.
+        ResultSet returnedObject = mock(ResultSet.class);
+        ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
+        when(returnedObject.getResultSetMetaData()).thenReturn(resultSetMetaData);
 
-		// Set the page size to 0 and skip count to 0 (so the result is not in page).
-		SearchParameters searchParameters = mock(SearchParameters.class);
-		when(searchParameters.getMaxItems()).thenReturn(0);
-		when(searchParameters.getSkipCount()).thenReturn(0);
-		when(searchParameters.getLanguage()).thenReturn("afts");
-		when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
+        // Simulate a single result, and the user has access to it.
+        when(returnedObject.length()).thenReturn(1);
+        when(returnedObject.getNumberFound()).thenReturn(1L);
+        when(returnedObject.getNodeRef(0)).thenReturn(NODE_A);
+        when(returnedObject.getChildAssocRef(0)).thenReturn(childAssocRefA);
 
-		// Call the method under test.
-		FilteringResultSet filteringResultSet = (FilteringResultSet) rmAfterInvocationProvider.decide(authentication, object, config, returnedObject);
+        // Set the page size to 0 and skip count to 0 (so the result is not in page).
+        SearchParameters searchParameters = mock(SearchParameters.class);
+        when(searchParameters.getMaxItems()).thenReturn(0);
+        when(searchParameters.getSkipCount()).thenReturn(0);
+        when(searchParameters.getLanguage()).thenReturn("afts");
+        when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
 
-		assertEquals("Expected total of one result.", 1, filteringResultSet.getNumberFound());
-		assertEquals("Expected no results returned.", 0, filteringResultSet.length());
-		assertEquals("Expected that results were limited by page size.", LimitBy.FINAL_SIZE, filteringResultSet.getResultSetMetaData().getLimitedBy());
-	}
+        // Call the method under test.
+        FilteringResultSet filteringResultSet =
+                (FilteringResultSet)
+                        rmAfterInvocationProvider.decide(
+                                authentication, object, config, returnedObject);
+
+        assertEquals("Expected total of one result.", 1, filteringResultSet.getNumberFound());
+        assertEquals("Expected no results returned.", 0, filteringResultSet.length());
+        assertEquals(
+                "Expected that results were limited by page size.",
+                LimitBy.FINAL_SIZE,
+                filteringResultSet.getResultSetMetaData().getLimitedBy());
+    }
 }

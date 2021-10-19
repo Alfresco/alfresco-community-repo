@@ -11,170 +11,259 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetTypesTests extends RestTest
-{
+public class GetTypesTests extends RestTest {
 
     private UserModel regularUser;
 
-    @BeforeClass(alwaysRun=true)
-    public void dataPreparation() throws Exception
-    {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception {
         regularUser = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
             description = "Verify user get types and gets status code OK (200)")
-    public void getTypes() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .getTypes();
+    public void getTypes() throws Exception {
+        RestTypesCollection types =
+                restClient.authenticateUser(regularUser).withModelAPI().getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         types.assertThat()
-            .entriesListCountIs(100)
-            .and().entriesListContains("id", "cm:content")
-            .and().entriesListContains("id", "cm:systemfolder")
-            .and().entriesListContains("id", "cm:folder");
+                .entriesListCountIs(100)
+                .and()
+                .entriesListContains("id", "cm:content")
+                .and()
+                .entriesListContains("id", "cm:systemfolder")
+                .and()
+                .entriesListContains("id", "cm:folder");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
             description = "Should filter types using namespace uri and gets status code OK (200)")
-    public void getTypeByNamespaceUri() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("where=(namespaceUri matches('http://www.alfresco.org/model.*'))")
-                .getTypes();
+    public void getTypeByNamespaceUri() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams(
+                                "where=(namespaceUri matches('http://www.alfresco.org/model.*'))")
+                        .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         types.assertThat().entriesListCountIs(100);
 
-        types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("where=(not namespaceUri matches('http://www.alfresco.org/model.*'))")
-                .getTypes();
+        types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams(
+                                "where=(not namespaceUri"
+                                        + " matches('http://www.alfresco.org/model.*'))")
+                        .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         types.assertThat().entriesListCountIs(0);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
             description = "Should filter types using modelId and gets status code OK (200)")
-    public void getTypeByModelsIds() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("where=(modelId in ('cm:contentmodel', 'smf:smartFolder'))")
-                .getTypes();
+    public void getTypeByModelsIds() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams("where=(modelId in ('cm:contentmodel', 'smf:smartFolder'))")
+                        .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        types.getPagination().assertThat().fieldsCount().is(5).and()
-                .field("totalItems").isLessThan(65).and()
-                .field("maxItems").is(100).and()
-                .field("skipCount").isGreaterThan(0).and()
-                .field("hasMoreItems").is(false);
+        types.getPagination()
+                .assertThat()
+                .fieldsCount()
+                .is(5)
+                .and()
+                .field("totalItems")
+                .isLessThan(65)
+                .and()
+                .field("maxItems")
+                .is(100)
+                .and()
+                .field("skipCount")
+                .isGreaterThan(0)
+                .and()
+                .field("hasMoreItems")
+                .is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
-            description = "Should filter types using modelId with subtypes and gets status code OK (200)")
-    public void getTypeByModelsIdsWithIncludeSubTypes() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("where=(modelId in ('cm:contentmodel INCLUDESUBTYPES', 'smf:smartFolder INCLUDESUBTYPES'))")
-                .getTypes();
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
+            description =
+                    "Should filter types using modelId with subtypes and gets status code OK (200)")
+    public void getTypeByModelsIdsWithIncludeSubTypes() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams(
+                                "where=(modelId in ('cm:contentmodel INCLUDESUBTYPES',"
+                                        + " 'smf:smartFolder INCLUDESUBTYPES'))")
+                        .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        types.getPagination().assertThat().fieldsCount().is(5).and()
-                .field("totalItems").isGreaterThan(65).and()
-                .field("maxItems").is(100).and()
-                .field("skipCount").isGreaterThan(0).and()
-                .field("hasMoreItems").is(false);
+        types.getPagination()
+                .assertThat()
+                .fieldsCount()
+                .is(5)
+                .and()
+                .field("totalItems")
+                .isGreaterThan(65)
+                .and()
+                .field("maxItems")
+                .is(100)
+                .and()
+                .field("skipCount")
+                .isGreaterThan(0)
+                .and()
+                .field("hasMoreItems")
+                .is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
             description = "Should filter types using parentId and gets status code OK (200)")
-    public void getTypeByParentId() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("where=(parentId in ('cm:content'))")
-                .getTypes();
+    public void getTypeByParentId() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams("where=(parentId in ('cm:content'))")
+                        .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        types.getPagination().assertThat().fieldsCount().is(5).and()
-                .field("totalItems").isGreaterThan(40).and()
-                .field("hasMoreItems").is(false);
+        types.getPagination()
+                .assertThat()
+                .fieldsCount()
+                .is(5)
+                .and()
+                .field("totalItems")
+                .isGreaterThan(40)
+                .and()
+                .field("hasMoreItems")
+                .is(false);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
-            description = "Should get Type with association, properties and mandatory types and gets status code OK (200)")
-    public void getTypeIncludeParams() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("include=properties,mandatoryAspects,associations")
-                .getTypes();
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
+            description =
+                    "Should get Type with association, properties and mandatory types and gets"
+                            + " status code OK (200)")
+    public void getTypeIncludeParams() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams("include=properties,mandatoryAspects,associations")
+                        .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        for (RestAbstractClassModel type : types.getEntries())
-        {
-            type.onModel().assertThat()
-                    .field("associations").isNotNull().and()
-                    .field("properties").isNotNull().and()
-                    .field("mandatoryAspects").isNotNull();
+        for (RestAbstractClassModel type : types.getEntries()) {
+            type.onModel()
+                    .assertThat()
+                    .field("associations")
+                    .isNotNull()
+                    .and()
+                    .field("properties")
+                    .isNotNull()
+                    .and()
+                    .field("mandatoryAspects")
+                    .isNotNull();
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.MODEL }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
             description = "Should verify the query errors with possible options")
-    public void verifyTypesQueryError() throws Exception
-    {
-        restClient.authenticateUser(regularUser).withModelAPI()
+    public void verifyTypesQueryError() throws Exception {
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(modelId in (' ')")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(modelId in ('cm:contentmodel INCLUDESUBTYPES',))")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(modelId in ('cm:contentmodel INCLUDESUBASPECTS'))")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(parentId in (' ')")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(parentId in ('cm:titled',))")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(parentId in ('cm:titled',))&include=properties")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(namespaceUri matches('*'))")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
-        restClient.authenticateUser(regularUser).withModelAPI()
+        restClient
+                .authenticateUser(regularUser)
+                .withModelAPI()
                 .usingParams("where=(parentId in ('cm:titled'))&include=properties")
                 .getTypes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.MODEL}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets types with high skipCount and maxItems parameter applied")
-    public void getPaginationParameter() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser)
-                .withModelAPI()
-                .usingParams("maxItems=10&skipCount=10")
-                .getTypes();
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
+            description =
+                    "Verify if any user gets types with high skipCount and maxItems parameter"
+                            + " applied")
+    public void getPaginationParameter() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams("maxItems=10&skipCount=10")
+                        .getTypes();
         types.assertThat().entriesListCountIs(10);
         types.assertThat().paginationField("hasMoreItems").is("true");
         types.assertThat().paginationField("skipCount").is("10");
@@ -182,14 +271,20 @@ public class GetTypesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.MODEL}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets types with hasMoreItems applied bases on skip count and maxItems")
-    public void getHighPaginationQuery() throws Exception
-    {
-        RestTypesCollection types = restClient.authenticateUser(regularUser).withModelAPI()
-                .usingParams("maxItems=10&skipCount=150")
-                .getTypes();
+    @Test(groups = {TestGroup.REST_API, TestGroup.MODEL, TestGroup.REGRESSION})
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.MODEL},
+            executionType = ExecutionType.REGRESSION,
+            description =
+                    "Verify if any user gets types with hasMoreItems applied bases on skip count"
+                            + " and maxItems")
+    public void getHighPaginationQuery() throws Exception {
+        RestTypesCollection types =
+                restClient
+                        .authenticateUser(regularUser)
+                        .withModelAPI()
+                        .usingParams("maxItems=10&skipCount=150")
+                        .getTypes();
         types.assertThat().entriesListCountIs(0);
         types.assertThat().paginationField("hasMoreItems").is("false");
         types.assertThat().paginationField("skipCount").is("150");

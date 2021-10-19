@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.site.SiteService;
@@ -41,32 +36,31 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * RM saved searches GET web script
  *
  * @author Roy Wetherall
  */
-public class RMSavedSearchesGet extends DeclarativeWebScript
-{
+public class RMSavedSearchesGet extends DeclarativeWebScript {
     /** Records management search service */
     protected RecordsManagementSearchService recordsManagementSearchService;
 
     /** Site service */
     protected SiteService siteService;
 
-    /**
-     * @param recordsManagementSearchService    records management search service
-     */
-    public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
-    {
+    /** @param recordsManagementSearchService records management search service */
+    public void setRecordsManagementSearchService(
+            RecordsManagementSearchService recordsManagementSearchService) {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
 
-    /**
-     * @param siteService   site service
-     */
-    public void setSiteService(SiteService siteService)
-    {
+    /** @param siteService site service */
+    public void setSiteService(SiteService siteService) {
         this.siteService = siteService;
     }
 
@@ -74,28 +68,24 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         // create model object with the lists model
         Map<String, Object> model = new HashMap<>(13);
 
         // Get the site id and confirm it is valid
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String siteId = templateVars.get("site");
-        if (siteId == null || siteId.length() == 0)
-        {
+        if (siteId == null || siteId.length() == 0) {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Site id not provided.");
         }
-        if (siteService.getSite(siteId) == null)
-        {
+        if (siteService.getSite(siteId) == null) {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
         }
 
         // Get the saved search details
         List<SavedSearchDetails> details = recordsManagementSearchService.getSavedSearches(siteId);
-        List<Item> items  = new ArrayList<>();
-        for (SavedSearchDetails savedSearchDetails : details)
-        {
+        List<Item> items = new ArrayList<>();
+        for (SavedSearchDetails savedSearchDetails : details) {
             String name = savedSearchDetails.getName();
             String description = savedSearchDetails.getDescription();
             String query = savedSearchDetails.getCompatibility().getQuery();
@@ -110,19 +100,15 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
         return model;
     }
 
-    /**
-     * Item class to contain information about items being placed in model.
-     */
-    public class Item
-    {
+    /** Item class to contain information about items being placed in model. */
+    public class Item {
         private String name;
         private String description;
         private String query;
         private String params;
         private String sort;
 
-        public Item(String name, String description, String query, String params, String sort)
-        {
+        public Item(String name, String description, String query, String params, String sort) {
             this.name = name;
             this.description = description;
             this.query = query;
@@ -130,28 +116,23 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
             this.sort = sort;
         }
 
-        public String getName()
-        {
+        public String getName() {
             return name;
         }
 
-        public String getDescription()
-        {
+        public String getDescription() {
             return description;
         }
 
-        public String getQuery()
-        {
+        public String getQuery() {
             return query;
         }
 
-        public String getParams()
-        {
+        public String getParams() {
             return params;
         }
 
-        public String getSort()
-        {
+        public String getSort() {
             return sort;
         }
     }

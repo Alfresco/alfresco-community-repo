@@ -34,8 +34,6 @@ import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersi
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
 import static org.apache.commons.logging.LogFactory.getLog;
 
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
@@ -47,16 +45,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 
+import java.util.List;
+
 /**
  * Sets the recordable version config for a document within a collaboration site.
  *
- * Note: This is a 'normal' dm action, rather than a records management action.
+ * <p>Note: This is a 'normal' dm action, rather than a records management action.
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
-{
+public class RecordableVersionConfigAction extends ActionExecuterAbstractBase {
     /** Logger */
     private static Log LOGGER = getLog(RecordableVersionConfigAction.class);
 
@@ -77,8 +76,7 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
      *
      * @return The node service
      */
-    protected NodeService getNodeService()
-    {
+    protected NodeService getNodeService() {
         return this.nodeService;
     }
 
@@ -87,8 +85,7 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
      *
      * @param nodeService The node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -97,88 +94,102 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
      *
      * @return The dictionary service
      */
-    protected DictionaryService getDictionaryService()
-    {
+    protected DictionaryService getDictionaryService() {
         return this.dictionaryService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#setDictionaryService(org.alfresco.service.cmr.dictionary.DictionaryService)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#setDictionaryService(org.alfresco.service.cmr.dictionary.DictionaryService)
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (passedChecks(actionedUponNodeRef))
-        {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        if (passedChecks(actionedUponNodeRef)) {
             String version = (String) action.getParameterValue(PARAM_VERSION);
-            getNodeService().setProperty(actionedUponNodeRef, PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.valueOf(version));
+            getNodeService()
+                    .setProperty(
+                            actionedUponNodeRef,
+                            PROP_RECORDABLE_VERSION_POLICY,
+                            RecordableVersionPolicy.valueOf(version));
         }
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_VERSION, TEXT, true, getParamDisplayLabel(PARAM_VERSION), false, "ac-versions"));
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_VERSION,
+                        TEXT,
+                        true,
+                        getParamDisplayLabel(PARAM_VERSION),
+                        false,
+                        "ac-versions"));
     }
 
     /**
      * Helper method to do checks on the actioned upon node reference
      *
      * @param actionedUponNodeRef The actioned upon node reference
-     * @return <code>true</code> if the actioned upon node reference passes the checks, <code>false</code> otherwise
+     * @return <code>true</code> if the actioned upon node reference passes the checks, <code>false
+     *     </code> otherwise
      */
-    private boolean passedChecks(NodeRef actionedUponNodeRef)
-    {
+    private boolean passedChecks(NodeRef actionedUponNodeRef) {
         boolean passedChecks = true;
 
-        if (!getNodeService().exists(actionedUponNodeRef))
-        {
+        if (!getNodeService().exists(actionedUponNodeRef)) {
             passedChecks = false;
-            if (LOGGER.isDebugEnabled())
-            {
-                String message = buildLogMessage(actionedUponNodeRef, "' because the node does not exist.");
+            if (LOGGER.isDebugEnabled()) {
+                String message =
+                        buildLogMessage(actionedUponNodeRef, "' because the node does not exist.");
                 LOGGER.debug(message);
             }
         }
 
         QName type = getNodeService().getType(actionedUponNodeRef);
-        if (!getDictionaryService().isSubClass(type, TYPE_CONTENT))
-        {
+        if (!getDictionaryService().isSubClass(type, TYPE_CONTENT)) {
             passedChecks = false;
-            if (LOGGER.isDebugEnabled())
-            {
-                String message = buildLogMessage(actionedUponNodeRef, "' because the type of the node '" + type.getLocalName()  + "' is not supported.");
+            if (LOGGER.isDebugEnabled()) {
+                String message =
+                        buildLogMessage(
+                                actionedUponNodeRef,
+                                "' because the type of the node '"
+                                        + type.getLocalName()
+                                        + "' is not supported.");
                 LOGGER.debug(message);
             }
         }
 
-        if (getNodeService().hasAspect(actionedUponNodeRef, ASPECT_RECORD))
-        {
+        if (getNodeService().hasAspect(actionedUponNodeRef, ASPECT_RECORD)) {
             passedChecks = false;
-            if (LOGGER.isDebugEnabled())
-            {
-                String message = buildLogMessage(actionedUponNodeRef, "' because the rule cannot be applied to records.");
+            if (LOGGER.isDebugEnabled()) {
+                String message =
+                        buildLogMessage(
+                                actionedUponNodeRef,
+                                "' because the rule cannot be applied to records.");
                 LOGGER.debug(message);
             }
         }
 
-        if (!getNodeService().hasAspect(actionedUponNodeRef, ASPECT_VERSIONABLE))
-        {
+        if (!getNodeService().hasAspect(actionedUponNodeRef, ASPECT_VERSIONABLE)) {
             passedChecks = false;
-            if (LOGGER.isDebugEnabled())
-            {
-                String buildLogMessage = buildLogMessage(actionedUponNodeRef, "' because the rule cannot be applied to records.");
+            if (LOGGER.isDebugEnabled()) {
+                String buildLogMessage =
+                        buildLogMessage(
+                                actionedUponNodeRef,
+                                "' because the rule cannot be applied to records.");
                 LOGGER.debug(buildLogMessage);
             }
         }
@@ -193,8 +204,7 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
      * @param messagePart The message which should be appended.
      * @return The constructed log message
      */
-    private String buildLogMessage(NodeRef actionedUponNodeRef, String messagePart)
-    {
+    private String buildLogMessage(NodeRef actionedUponNodeRef, String messagePart) {
         StringBuilder sb = new StringBuilder();
         sb.append("Cannot set recordable version config for '");
         sb.append(actionedUponNodeRef.toString());

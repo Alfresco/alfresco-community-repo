@@ -22,47 +22,46 @@ import java.util.List;
 
 /**
  * Interface for results returned by {@link CannedQuery canned queries}.
- * 
+ *
  * @author Derek Hulley, janv
  * @since 4.0
  */
-public interface CannedQueryResults<R> extends PagingResults<R>
-{
+public interface CannedQueryResults<R> extends PagingResults<R> {
     /**
      * Get the instance of the query that generated these results.
-     * 
-     * @return              the query that generated these results.
+     *
+     * @return the query that generated these results.
      */
     CannedQuery<R> getOriginatingQuery();
-    
+
     /**
-     * Get the total number of results available within the pages of this result.
-     * The count excludes results chopped out by the paging process i.e. it is only
-     * the count of results physically obtainable through this instance.
-     * 
-     * @return                  number of results available in the pages
+     * Get the total number of results available within the pages of this result. The count excludes
+     * results chopped out by the paging process i.e. it is only the count of results physically
+     * obtainable through this instance.
+     *
+     * @return number of results available in the pages
      */
     int getPagedResultCount();
-    
+
     /**
      * Get the number of pages available
-     * 
-     * @return                  the number of pages available
+     *
+     * @return the number of pages available
      */
     int getPageCount();
-    
+
     /**
      * Get a single result if there is only one result expected.
-     * 
-     * @return                  a single result
+     *
+     * @return a single result
      * @throws IllegalStateException if the query returned more than one result
      */
     R getSingleResult();
 
     /**
      * Get the paged results
-     * 
-     * @return                  a list of paged results
+     *
+     * @return a list of paged results
      */
     List<List<R>> getPages();
 }

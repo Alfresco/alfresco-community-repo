@@ -18,9 +18,5 @@
  */
 package org.alfresco.util.testing.category;
 
-/**
- * Category marker for tests that mark slow tests.
- */
-public interface SlowTests
-{
-}
+/** Category marker for tests that mark slow tests. */
+public interface SlowTests {}

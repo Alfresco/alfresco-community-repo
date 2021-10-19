@@ -31,7 +31,8 @@
  * @author Ana Bozianu
  * @since 2.6
  */
-@WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
+@WebApi(name = "gs", scope = Api.SCOPE.PUBLIC, version = 1)
 package org.alfresco.rm.rest.api.records;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.WebApi;

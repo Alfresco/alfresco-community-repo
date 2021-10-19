@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -49,34 +42,38 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Abstract base class for transfer related web scripts.
  *
  * @author Gavin Cornwell
  */
-public abstract class BaseTransferWebScript extends StreamACP
-                                            implements RecordsManagementModel
-{
+public abstract class BaseTransferWebScript extends StreamACP implements RecordsManagementModel {
     /** Logger */
     private static Log logger = LogFactory.getLog(BaseTransferWebScript.class);
 
     protected FilePlanService filePlanService;
 
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
-    {
+    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
         File tempFile = null;
-        try
-        {
+        try {
             // retrieve requested format
             String format = req.getFormat();
 
@@ -98,26 +95,26 @@ public abstract class BaseTransferWebScript extends StreamACP
             // create and return the file plan NodeRef
             NodeRef filePlan = new NodeRef(new StoreRef(storeType, storeId), nodeId);
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Retrieving transfer '" + transferId + "' from file plan: " + filePlan);
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Retrieving transfer '" + transferId + "' from file plan: " + filePlan);
             }
 
             // ensure the file plan exists
-            if (!this.nodeService.exists(filePlan))
-            {
-                status.setCode(HttpServletResponse.SC_NOT_FOUND,
-                            "Node " + filePlan.toString() + " does not exist");
+            if (!this.nodeService.exists(filePlan)) {
+                status.setCode(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "Node " + filePlan.toString() + " does not exist");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return;
             }
 
             // ensure the node is a filePlan object
-            if (!filePlanService.isFilePlan(filePlan))
-            {
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST,
-                            "Node " + filePlan.toString() + " is not a file plan");
+            if (!filePlanService.isFilePlan(filePlan)) {
+                status.setCode(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Node " + filePlan.toString() + " is not a file plan");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return;
@@ -127,10 +124,10 @@ public abstract class BaseTransferWebScript extends StreamACP
             NodeRef transferNode = findTransferNode(filePlan, transferId);
 
             // send 404 if the transfer is not found
-            if (transferNode == null)
-            {
-                status.setCode(HttpServletResponse.SC_NOT_FOUND,
-                            "Could not locate transfer with id: " + transferId);
+            if (transferNode == null) {
+                status.setCode(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "Could not locate transfer with id: " + transferId);
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return;
@@ -138,25 +135,19 @@ public abstract class BaseTransferWebScript extends StreamACP
 
             // execute the transfer operation
             tempFile = executeTransfer(transferNode, req, res, status, cache);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw createStatusException(e, req, res);
-        }
-        finally
-        {
-           // try and delete the temporary file (if not in debug mode)
-           if (tempFile != null)
-           {
-               if (logger.isDebugEnabled())
-               {
-                   logger.debug("Transfer report saved to temporary file: " + tempFile.getAbsolutePath());
-               }
-               else
-               {
-                   tempFile.delete();
-               }
-           }
+        } finally {
+            // try and delete the temporary file (if not in debug mode)
+            if (tempFile != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Transfer report saved to temporary file: "
+                                    + tempFile.getAbsolutePath());
+                } else {
+                    tempFile.delete();
+                }
+            }
         }
     }
 
@@ -171,31 +162,34 @@ public abstract class BaseTransferWebScript extends StreamACP
      * @return File object representing the file containing the JSON of the report
      * @throws IOException
      */
-    protected abstract File executeTransfer(NodeRef transferNode,
-                WebScriptRequest req, WebScriptResponse res,
-                Status status, Cache cache) throws IOException;
+    protected abstract File executeTransfer(
+            NodeRef transferNode,
+            WebScriptRequest req,
+            WebScriptResponse res,
+            Status status,
+            Cache cache)
+            throws IOException;
 
     /**
-     * Finds a transfer object with the given id in the given file plan.
-     * This method returns null if a transfer with the given id is not found.
+     * Finds a transfer object with the given id in the given file plan. This method returns null if
+     * a transfer with the given id is not found.
      *
      * @param filePlan The file plan to search
      * @param transferId The id of the transfer being requested
      * @return The transfer node or null if not found
      */
-    protected NodeRef findTransferNode(NodeRef filePlan, String transferId)
-    {
+    protected NodeRef findTransferNode(NodeRef filePlan, String transferId) {
         NodeRef transferNode = null;
 
         // get all the transfer nodes and find the one we need
         NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(transferContainer,
-                                                                           ContentModel.ASSOC_CONTAINS,
-                                                                           RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef child : assocs)
-        {
-            if (child.getChildRef().getId().equals(transferId))
-            {
+        List<ChildAssociationRef> assocs =
+                this.nodeService.getChildAssocs(
+                        transferContainer,
+                        ContentModel.ASSOC_CONTAINS,
+                        RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef child : assocs) {
+            if (child.getChildRef().getId().equals(transferId)) {
                 transferNode = child.getChildRef();
                 break;
             }
@@ -210,13 +204,14 @@ public abstract class BaseTransferWebScript extends StreamACP
      * @param transferNode The transfer object
      * @return Array of NodeRefs
      */
-    protected NodeRef[] getTransferNodes(NodeRef transferNode)
-    {
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(transferNode,
-                    RecordsManagementModel.ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
+    protected NodeRef[] getTransferNodes(NodeRef transferNode) {
+        List<ChildAssociationRef> assocs =
+                this.nodeService.getChildAssocs(
+                        transferNode,
+                        RecordsManagementModel.ASSOC_TRANSFERRED,
+                        RegexQNamePattern.MATCH_ALL);
         NodeRef[] itemsToTransfer = new NodeRef[assocs.size()];
-        for (int idx = 0; idx < assocs.size(); idx++)
-        {
+        for (int idx = 0; idx < assocs.size(); idx++) {
             itemsToTransfer[idx] = assocs.get(idx).getChildRef();
         }
 

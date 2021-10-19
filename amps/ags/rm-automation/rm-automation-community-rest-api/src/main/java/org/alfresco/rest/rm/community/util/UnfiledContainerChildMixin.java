@@ -31,18 +31,16 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 
 /**
- * Mix class for Record POJO class
- * Mix-in annotations are: a way to associate annotations with classes
- * without modifying (target) classes themselves.
+ * Mix class for Record POJO class Mix-in annotations are: a way to associate annotations with
+ * classes without modifying (target) classes themselves.
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
-public abstract class UnfiledContainerChildMixin
-{
+public abstract class UnfiledContainerChildMixin {
     /**
-     * Annotation used to indicate that a property should be serialized "unwrapped"
-     * Its properties are instead included as properties of its containing Object
+     * Annotation used to indicate that a property should be serialized "unwrapped" Its properties
+     * are instead included as properties of its containing Object
      */
     @JsonUnwrapped
     abstract UnfiledContainerChildProperties getProperties();

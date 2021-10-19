@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -41,11 +41,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Base implementation of the asynchronous patch.
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  */
-public abstract class AsynchronousPatch extends AbstractPatch
-{
+public abstract class AsynchronousPatch extends AbstractPatch {
     private static final Log logger = LogFactory.getLog(AsynchronousPatch.class);
 
     private static final String JOB_NAME = "asynchronousPatch";
@@ -62,41 +61,31 @@ public abstract class AsynchronousPatch extends AbstractPatch
 
     private JobLockService jobLockService;
 
-    /**
-     * @param jobLockService the jobLockService to set
-     */
-    public void setJobLockService(JobLockService jobLockService)
-    {
+    /** @param jobLockService the jobLockService to set */
+    public void setJobLockService(JobLockService jobLockService) {
         this.jobLockService = jobLockService;
     }
 
     @Override
-    protected void checkProperties()
-    {
+    protected void checkProperties() {
         super.checkProperties();
         checkPropertyNotNull(jobLockService, "jobLockService");
     }
 
-    public void executeAsynchronously()
-    {
+    public void executeAsynchronously() {
         // Lock the push
         QName lockQName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, this.getId());
         String lockToken = jobLockService.getLock(lockQName, LOCK_TIME_TO_LIVE, 0, 1);
         AsyncPatchCallback callback = new AsyncPatchCallback();
         jobLockService.refreshLock(lockToken, lockQName, LOCK_REFRESH_TIME, callback);
 
-        try
-        {
-            if (logger.isDebugEnabled())
-            {
+        try {
+            if (logger.isDebugEnabled()) {
                 logger.debug(this.getId() + ": job lock held");
             }
             applyOutstandingPatch(this);
-        }
-        finally
-        {
-            if (logger.isTraceEnabled())
-            {
+        } finally {
+            if (logger.isTraceEnabled()) {
                 logger.trace(this.getId() + ": job finished");
             }
 
@@ -106,13 +95,11 @@ public abstract class AsynchronousPatch extends AbstractPatch
         }
     }
 
-    private void applyOutstandingPatch(Patch patch)
-    {
+    private void applyOutstandingPatch(Patch patch) {
         // Apply the patch even if we are in read only mode. The system may not
         // work safely otherwise.
 
-        if (!patchService.validatePatch(patch))
-        {
+        if (!patchService.validatePatch(patch)) {
             logger.warn(I18NUtil.getMessage(MSG_SYSTEM_READ_ONLY));
             return;
         }
@@ -121,8 +108,7 @@ public abstract class AsynchronousPatch extends AbstractPatch
 
         AppliedPatch appliedPatch = patchService.getPatch(this.getId());
         // Don't bother if the patch has already been applied successfully
-        if (appliedPatch != null && appliedPatch.getSucceeded())
-        {
+        if (appliedPatch != null && appliedPatch.getSucceeded()) {
             logger.info(I18NUtil.getMessage(MSG_NO_PATCHES_REQUIRED));
             return;
         }
@@ -132,42 +118,39 @@ public abstract class AsynchronousPatch extends AbstractPatch
         // get the executed patch
         appliedPatch = patchService.getPatch(patch.getId());
 
-        if (!appliedPatch.getWasExecuted())
-        {
-            // the patch was not executed. E.g. not relevant to the current schema 
-            logger.info(I18NUtil.getMessage(MSG_NOT_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
-        }
-        else if (appliedPatch.getSucceeded())
-        {
-            logger.info(I18NUtil.getMessage(MSG_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
-        }
-        else
-        {
-            logger.error(I18NUtil.getMessage(MSG_FAILED, appliedPatch.getId(), appliedPatch.getReport()));
+        if (!appliedPatch.getWasExecuted()) {
+            // the patch was not executed. E.g. not relevant to the current schema
+            logger.info(
+                    I18NUtil.getMessage(
+                            MSG_NOT_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
+        } else if (appliedPatch.getSucceeded()) {
+            logger.info(
+                    I18NUtil.getMessage(
+                            MSG_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
+        } else {
+            logger.error(
+                    I18NUtil.getMessage(
+                            MSG_FAILED, appliedPatch.getId(), appliedPatch.getReport()));
             throw new AlfrescoRuntimeException("Not all patches could be applied.");
         }
     }
 
     /**
      * Job to initiate the {@link AsynchronousPatch} if it has been deferred
-     * 
+     *
      * @author Jamal Kaabi-Mofrad
      */
-    public static class AsynchronousPatchJob implements Job
-    {
-        public AsynchronousPatchJob()
-        {
-        }
+    public static class AsynchronousPatchJob implements Job {
+        public AsynchronousPatchJob() {}
 
         @Override
-        public void execute(JobExecutionContext context) throws JobExecutionException
-        {
+        public void execute(JobExecutionContext context) throws JobExecutionException {
             JobDataMap jobData = context.getJobDetail().getJobDataMap();
             // extract the object to use
             Object asyncPatchObj = jobData.get(JOB_NAME);
-            if (asyncPatchObj == null || !(asyncPatchObj instanceof AsynchronousPatch))
-            {
-                throw new AlfrescoRuntimeException(JOB_NAME + " data must contain valid 'AsynchronousPatch' reference");
+            if (asyncPatchObj == null || !(asyncPatchObj instanceof AsynchronousPatch)) {
+                throw new AlfrescoRuntimeException(
+                        JOB_NAME + " data must contain valid 'AsynchronousPatch' reference");
             }
             // Job Lock
             AsynchronousPatch patch = (AsynchronousPatch) asyncPatchObj;
@@ -175,24 +158,18 @@ public abstract class AsynchronousPatch extends AbstractPatch
         }
     }
 
-    /**
-     * @author Jamal Kaabi-Mofrad
-     */
-    private class AsyncPatchCallback implements JobLockRefreshCallback
-    {
+    /** @author Jamal Kaabi-Mofrad */
+    private class AsyncPatchCallback implements JobLockRefreshCallback {
         public boolean isActive = true;
 
         @Override
-        public boolean isActive()
-        {
+        public boolean isActive() {
             return isActive;
         }
 
         @Override
-        public void lockReleased()
-        {
-            if (logger.isTraceEnabled())
-            {
+        public void lockReleased() {
+            if (logger.isTraceEnabled()) {
                 logger.trace("lock released");
             }
         }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,6 +32,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.discovery.DiscoveryApiWebscript;
 import org.alfresco.rest.api.model.DiscoveryDetails;
@@ -58,33 +59,28 @@ import java.util.List;
 
 /**
  * V1 REST API tests for retrieving detailed repository information.
+ *
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/discovery} </li>
+ *   <li>{@literal <host>:<port>/alfresco/api/discovery}
  * </ul>
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
-{
+public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest {
 
     private static final DateTime NOW = DateTime.now();
 
-    @Mock
-    private DescriptorService descriptorServiceMock;
-    @Mock
-    private Descriptor serverDescriptor;
-    @Mock
-    private Descriptor currentRepositoryDescriptor;
-    @Mock
-    private LicenseDescriptor licenseDescriptorMock;
+    @Mock private DescriptorService descriptorServiceMock;
+    @Mock private Descriptor serverDescriptor;
+    @Mock private Descriptor currentRepositoryDescriptor;
+    @Mock private LicenseDescriptor licenseDescriptorMock;
     private DiscoveryApiWebscript discoveryApiWebscript;
 
     private Date licenseIssuedAt;
     private Date licenseExpiresAt;
 
     @Before
-    public void setup() throws Exception
-    {
+    public void setup() throws Exception {
         super.setup();
 
         this.licenseIssuedAt = NOW.toDate();
@@ -96,7 +92,8 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         this.licenseDescriptorMock = mock(LicenseDescriptor.class);
 
         when(descriptorServiceMock.getServerDescriptor()).thenReturn(serverDescriptor);
-        when(descriptorServiceMock.getCurrentRepositoryDescriptor()).thenReturn(currentRepositoryDescriptor);
+        when(descriptorServiceMock.getCurrentRepositoryDescriptor())
+                .thenReturn(currentRepositoryDescriptor);
         when(currentRepositoryDescriptor.getId()).thenReturn("repoId");
         when(serverDescriptor.getEdition()).thenReturn("Enterprise");
         when(serverDescriptor.getVersionMajor()).thenReturn("5");
@@ -117,33 +114,34 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         when(licenseDescriptorMock.isClusterEnabled()).thenReturn(true);
 
         // Override the descriptor service
-        discoveryApiWebscript = applicationContext
-                    .getBean("webscript.org.alfresco.api.DiscoveryApiWebscript.get", DiscoveryApiWebscript.class);
+        discoveryApiWebscript =
+                applicationContext.getBean(
+                        "webscript.org.alfresco.api.DiscoveryApiWebscript.get",
+                        DiscoveryApiWebscript.class);
         discoveryApiWebscript.setDescriptorService(descriptorServiceMock);
         discoveryApiWebscript.setEnabled(true);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 
     /**
      * Tests get discovery.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/discovery}
+     *
+     * <p>GET: {@literal <host>:<port>/alfresco/api/discovery}
      */
     @Test
-    public void testGetDiscovery() throws Exception
-    {
+    public void testGetDiscovery() throws Exception {
         setRequestContext(null, user1, "wrongPassword");
         get("discovery", null, 401);
 
         setRequestContext(null, user1, null);
         HttpResponse response = get("discovery", null, 200);
 
-        DiscoveryDetails discoveryDetails = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
+        DiscoveryDetails discoveryDetails =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
         assertNotNull(discoveryDetails);
         RepositoryInfo repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
@@ -194,22 +192,22 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests get discovery.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/discovery}
+     *
+     * <p>GET: {@literal <host>:<port>/alfresco/api/discovery}
      */
     @Test
-    public void testGetDiscovery_hotfixValue() throws Exception
-    {
+    public void testGetDiscovery_hotfixValue() throws Exception {
         /*
-        * The agreement was that if the hotfix value (versionLabel) does not follow the standard
-        * of "dot then digits" or just "digits", the API should return zero.
+         * The agreement was that if the hotfix value (versionLabel) does not follow the standard
+         * of "dot then digits" or just "digits", the API should return zero.
          */
 
         when(serverDescriptor.getVersionLabel()).thenReturn("4");
         setRequestContext(null, user1, null);
         HttpResponse response = get("discovery", null, 200);
 
-        DiscoveryDetails discoveryDetails = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
+        DiscoveryDetails discoveryDetails =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
         assertNotNull(discoveryDetails);
         RepositoryInfo repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
@@ -229,7 +227,8 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         when(serverDescriptor.getVersionLabel()).thenReturn("d");
         response = get("discovery", null, 200);
 
-        discoveryDetails = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
+        discoveryDetails =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
         assertNotNull(discoveryDetails);
         repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
@@ -247,7 +246,8 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         when(serverDescriptor.getVersionLabel()).thenReturn("39.4");
         response = get("discovery", null, 200);
 
-        discoveryDetails = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
+        discoveryDetails =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
         assertNotNull(discoveryDetails);
         repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
@@ -265,19 +265,19 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests get discovery.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/discovery}
+     *
+     * <p>GET: {@literal <host>:<port>/alfresco/api/discovery}
      */
     @Test
-    public void testGetDiscovery_licenseEntitlement() throws Exception
-    {
+    public void testGetDiscovery_licenseEntitlement() throws Exception {
         // Override maxUsers
         when(licenseDescriptorMock.getMaxUsers()).thenReturn(null);
 
         setRequestContext(null, user1, null);
         HttpResponse response = get("discovery", null, 200);
 
-        DiscoveryDetails discoveryDetails = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
+        DiscoveryDetails discoveryDetails =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
         assertNotNull(discoveryDetails);
         RepositoryInfo repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
@@ -305,7 +305,8 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
 
         response = get("discovery", null, 200);
 
-        discoveryDetails = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
+        discoveryDetails =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), DiscoveryDetails.class);
         assertNotNull(discoveryDetails);
         repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
@@ -322,19 +323,14 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testDiscoveryDisabled() throws Exception
-    {
-        try
-        {
+    public void testDiscoveryDisabled() throws Exception {
+        try {
             discoveryApiWebscript.setEnabled(false);
 
             setRequestContext(null, user1, null);
             get("discovery", null, 501);
-        }
-        finally
-        {
+        } finally {
             discoveryApiWebscript.setEnabled(true);
         }
     }
 }
-

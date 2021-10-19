@@ -20,20 +20,17 @@ package org.alfresco.query;
 
 /**
  * Stores paging details based on a PagingRequest.
- * 
- * @author steveglover
  *
+ * @author steveglover
  */
-public class PageDetails
-{
+public class PageDetails {
     private boolean hasMoreItems = false;
     private int pageSize;
     private int skipCount;
     private int maxItems;
     private int end;
 
-    public PageDetails(int pageSize, boolean hasMoreItems, int skipCount, int maxItems, int end)
-    {
+    public PageDetails(int pageSize, boolean hasMoreItems, int skipCount, int maxItems, int end) {
         super();
         this.hasMoreItems = hasMoreItems;
         this.pageSize = pageSize;
@@ -42,49 +39,39 @@ public class PageDetails
         this.end = end;
     }
 
-    public int getSkipCount()
-    {
+    public int getSkipCount() {
         return skipCount;
     }
 
-    public int getMaxItems()
-    {
+    public int getMaxItems() {
         return maxItems;
     }
 
-    public int getEnd()
-    {
+    public int getEnd() {
         return end;
     }
 
-    public boolean hasMoreItems()
-    {
+    public boolean hasMoreItems() {
         return hasMoreItems;
     }
 
-    public int getPageSize()
-    {
+    public int getPageSize() {
         return pageSize;
     }
-    
-    public static PageDetails getPageDetails(PagingRequest pagingRequest, int totalSize)
-    {
+
+    public static PageDetails getPageDetails(PagingRequest pagingRequest, int totalSize) {
         int skipCount = pagingRequest.getSkipCount();
         int maxItems = pagingRequest.getMaxItems();
         int end = skipCount + maxItems;
         int pageSize = -1;
-        if(end < 0 || end > totalSize)
-        {
+        if (end < 0 || end > totalSize) {
             // overflow or greater than the total
             end = totalSize;
             pageSize = end - skipCount;
-        }
-        else
-        {
+        } else {
             pageSize = maxItems;
         }
-        if(pageSize < 0)
-        {
+        if (pageSize < 0) {
             pageSize = 0;
         }
         boolean hasMoreItems = end < totalSize;

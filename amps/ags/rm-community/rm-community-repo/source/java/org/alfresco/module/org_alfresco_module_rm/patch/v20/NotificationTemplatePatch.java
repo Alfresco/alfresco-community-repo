@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
@@ -48,6 +43,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.BeanNameAware;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Notification template patch implementation
  *
@@ -55,14 +55,15 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class NotificationTemplatePatch extends ModulePatchComponent
-                                       implements BeanNameAware
-{
+public class NotificationTemplatePatch extends ModulePatchComponent implements BeanNameAware {
     /** Last patch update property */
-    private static final QName PROP_LAST_PATCH_UPDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lastPatchUpdate");
+    private static final QName PROP_LAST_PATCH_UPDATE =
+            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lastPatchUpdate");
 
-    private static final String PATH_DUE_FOR_REVIEW = "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
-    private static final String PATH_SUPERSEDED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
+    private static final String PATH_DUE_FOR_REVIEW =
+            "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
+    private static final String PATH_SUPERSEDED =
+            "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
 
     /** Records management notification helper */
     private RecordsManagementNotificationHelper notificationHelper;
@@ -82,61 +83,40 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     /** Bean name */
     private String name;
 
-    /**
-     * @param notificationHelper    notification helper
-     */
-    public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
-    {
+    /** @param notificationHelper notification helper */
+    public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper) {
         this.notificationHelper = notificationHelper;
     }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param contentService content service
-     */
-    public void setContentService(ContentService contentService)
-    {
+    /** @param contentService content service */
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
-    /**
-     * @param versionService    version service
-     */
-    public void setVersionService(VersionService versionService)
-    {
+    /** @param versionService version service */
+    public void setVersionService(VersionService versionService) {
         this.versionService = versionService;
     }
 
-    /**
-     * @param auditService  audit service
-     */
-    public void setAuditService(AuditService auditService)
-    {
+    /** @param auditService audit service */
+    public void setAuditService(AuditService auditService) {
         this.auditService = auditService;
     }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#setBeanName(java.lang.String)
-     */
+    /** @see org.alfresco.repo.module.AbstractModuleComponent#setBeanName(java.lang.String) */
     @Override
-    public void setBeanName(String name)
-    {
+    public void setBeanName(String name) {
         this.name = name;
     }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
+    /** @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal() */
     @Override
-    protected void executePatch()
-    {
+    protected void executePatch() {
         NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
         updateTemplate(supersededTemplate, PATH_SUPERSEDED);
 
@@ -150,29 +130,28 @@ public class NotificationTemplatePatch extends ModulePatchComponent
      * @param template
      * @param updatedTemplate
      */
-    private void updateTemplate(NodeRef template, String templateUpdate)
-    {
-        if (template == null || !nodeService.exists(template))
-        {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Skipping template update, because template has not been bootstraped.");
+    private void updateTemplate(NodeRef template, String templateUpdate) {
+        if (template == null || !nodeService.exists(template)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                        "Skipping template update, because template has not been bootstraped.");
             }
-        }
-        else
-        {
+        } else {
             // Check to see if this template has already been updated
-            String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
-            if (lastPatchUpdate == null || !name.equals(lastPatchUpdate))
-            {
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("Applying update to template. (template=" + template.toString() + ", templateUpdate=" + templateUpdate + ")");
+            String lastPatchUpdate =
+                    (String) nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
+            if (lastPatchUpdate == null || !name.equals(lastPatchUpdate)) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                            "Applying update to template. (template="
+                                    + template.toString()
+                                    + ", templateUpdate="
+                                    + templateUpdate
+                                    + ")");
                 }
 
                 // Make sure the template is versionable
-                if (!nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE))
-                {
+                if (!nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE)) {
                     nodeService.addAspect(template, ContentModel.ASPECT_VERSIONABLE, null);
 
                     // Create version (before template is updated)
@@ -184,26 +163,25 @@ public class NotificationTemplatePatch extends ModulePatchComponent
 
                 // Update the content of the template
                 InputStream is = getClass().getClassLoader().getResourceAsStream(templateUpdate);
-                ContentWriter writer = contentService.getWriter(template, ContentModel.PROP_CONTENT, true);
+                ContentWriter writer =
+                        contentService.getWriter(template, ContentModel.PROP_CONTENT, true);
                 writer.putContent(is);
 
                 boolean enabled = auditService.isAuditEnabled();
                 auditService.setAuditEnabled(false);
-                try
-                {
+                try {
                     // Set the last patch update property
                     nodeService.setProperty(template, PROP_LAST_PATCH_UPDATE, name);
-                }
-                finally
-                {
+                } finally {
                     auditService.setAuditEnabled(enabled);
                 }
-            }
-            else
-            {
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("Skipping template update, because template has already been patched. (template=" + template.toString() + ")");
+            } else {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                            "Skipping template update, because template has already been patched."
+                                    + " (template="
+                                    + template.toString()
+                                    + ")");
                 }
             }
         }

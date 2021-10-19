@@ -26,9 +26,13 @@
  */
 package org.alfresco.rest.rm.community.model.record;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -37,11 +41,7 @@ import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.model.common.Path;
 import org.alfresco.utility.model.TestModel;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import java.util.List;
 
 /**
  * POJO for record
@@ -54,76 +54,66 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Record extends TestModel implements IRestModel<RestNodeModel>
-{
-    public final static String CONTENT_NODE_TYPE = "cm:content";
+public class Record extends TestModel implements IRestModel<RestNodeModel> {
+    public static final String CONTENT_NODE_TYPE = "cm:content";
 
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String createdAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel createdByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String modifiedAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel modifiedByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String id;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String parentId;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty
-    private RecordContent content;
+    @JsonProperty private RecordContent content;
 
-    @JsonProperty
-    private Boolean isCompleted;
+    @JsonProperty private Boolean isCompleted;
 
-    @JsonProperty
-    private RecordProperties properties;
+    @JsonProperty private RecordProperties properties;
 
-    @JsonProperty
-    private List<String> aspectNames;
+    @JsonProperty private List<String> aspectNames;
 
-    @JsonProperty
-    private List<String> allowableOperations;
+    @JsonProperty private List<String> allowableOperations;
 
-    @JsonProperty
-    private Path path;
+    @JsonProperty private Path path;
 
     @Override
-    public ModelAssertion<RestNodeModel> assertThat()
-    {
+    public ModelAssertion<RestNodeModel> assertThat() {
         return new ModelAssertion<>(this);
     }
 
     @Override
-    public ModelAssertion<RestNodeModel> and()
-    {
+    public ModelAssertion<RestNodeModel> and() {
         return assertThat();
     }
 
-    @JsonProperty (value = "entry")
+    @JsonProperty(value = "entry")
     RestNodeModel model;
 
     @Override
-    public RestNodeModel onModel()
-    {
+    public RestNodeModel onModel() {
         return model;
     }
 }

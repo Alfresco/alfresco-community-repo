@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,20 +30,16 @@ import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Representation of the repository information.
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class RepositoryInfo
-{
+public class RepositoryInfo {
     private String id;
     private String edition;
     private VersionInfo version;
@@ -51,82 +47,74 @@ public class RepositoryInfo
     private StatusInfo status;
     private List<ModulePackage> modules;
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public RepositoryInfo setId(String id)
-    {
+    public RepositoryInfo setId(String id) {
         this.id = id;
         return this;
     }
 
-    public String getEdition()
-    {
+    public String getEdition() {
         return edition;
     }
 
-    public RepositoryInfo setEdition(String edition)
-    {
+    public RepositoryInfo setEdition(String edition) {
         this.edition = edition;
         return this;
     }
 
-    public VersionInfo getVersion()
-    {
+    public VersionInfo getVersion() {
         return version;
     }
 
-    public RepositoryInfo setVersion(VersionInfo version)
-    {
+    public RepositoryInfo setVersion(VersionInfo version) {
         this.version = version;
         return this;
     }
 
-    public LicenseInfo getLicense()
-    {
+    public LicenseInfo getLicense() {
         return license;
     }
 
-    public RepositoryInfo setLicense(LicenseInfo license)
-    {
+    public RepositoryInfo setLicense(LicenseInfo license) {
         this.license = license;
         return this;
     }
 
-    public StatusInfo getStatus()
-    {
+    public StatusInfo getStatus() {
         return status;
     }
 
-    public RepositoryInfo setStatus(StatusInfo status)
-    {
+    public RepositoryInfo setStatus(StatusInfo status) {
         this.status = status;
         return this;
     }
 
-    public List<ModulePackage> getModules()
-    {
+    public List<ModulePackage> getModules() {
         return modules;
     }
 
-    public RepositoryInfo setModules(List<ModulePackage> modules)
-    {
+    public RepositoryInfo setModules(List<ModulePackage> modules) {
         this.modules = modules;
         return this;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder(450);
-        sb.append("RepositoryInfo [edition=").append(edition)
-                    .append(", version=").append(version)
-                    .append(", license=").append(license)
-                    .append(", status=").append(status)
-                    .append(", modules=").append(modules)
-                    .append(']');
+        sb.append("RepositoryInfo [edition=")
+                .append(edition)
+                .append(", version=")
+                .append(version)
+                .append(", license=")
+                .append(license)
+                .append(", status=")
+                .append(status)
+                .append(", modules=")
+                .append(modules)
+                .append(']');
         return sb.toString();
     }
 
@@ -135,8 +123,7 @@ public class RepositoryInfo
      *
      * @author Jamal Kaabi-Mofrad
      */
-    public static class VersionInfo
-    {
+    public static class VersionInfo {
         private static final Pattern HOTFIX_PATTERN = Pattern.compile("^[0-9]+$");
         private String major;
         private String minor;
@@ -147,12 +134,9 @@ public class RepositoryInfo
         private String display;
 
         // Default constructor required for test purposes
-        public VersionInfo()
-        {
-        }
+        public VersionInfo() {}
 
-        public VersionInfo(Descriptor descriptor)
-        {
+        public VersionInfo(Descriptor descriptor) {
             this.major = descriptor.getVersionMajor();
             this.minor = descriptor.getVersionMinor();
             this.patch = descriptor.getVersionRevision();
@@ -162,74 +146,61 @@ public class RepositoryInfo
             this.display = getVersionDisplay();
         }
 
-        public String getMajor()
-        {
+        public String getMajor() {
             return major;
         }
 
-        public String getMinor()
-        {
+        public String getMinor() {
             return minor;
         }
 
-        public String getPatch()
-        {
+        public String getPatch() {
             return patch;
         }
 
-        public String getHotfix()
-        {
+        public String getHotfix() {
             return hotfix;
         }
 
-        public int getSchema()
-        {
+        public int getSchema() {
             return schema;
         }
 
-        public String getLabel()
-        {
+        public String getLabel() {
             return label;
         }
 
-        public String getDisplay()
-        {
+        public String getDisplay() {
             return display;
         }
 
-        private String getHotfix(String versionLabel)
-        {
+        private String getHotfix(String versionLabel) {
             /*
              * if the label starts with a dot, then digit(s), or just digit(s), we return the number only.
              * for anything else zero will be returned.
              */
-            if (StringUtils.isNotEmpty(versionLabel))
-            {
-                if (versionLabel.startsWith("."))
-                {
+            if (StringUtils.isNotEmpty(versionLabel)) {
+                if (versionLabel.startsWith(".")) {
                     versionLabel = versionLabel.substring(1);
                 }
                 Matcher matcher = HOTFIX_PATTERN.matcher(versionLabel);
-                if (matcher.find())
-                {
+                if (matcher.find()) {
                     return versionLabel;
                 }
             }
             return Integer.toString(0);
         }
 
-        private String getVersionDisplay()
-        {
+        private String getVersionDisplay() {
             StringBuilder version = new StringBuilder(major);
             version.append('.')
-                        .append(minor)
-                        .append('.')
-                        .append(patch)
-                        .append('.')
-                        .append(getHotfix());
+                    .append(minor)
+                    .append('.')
+                    .append(patch)
+                    .append('.')
+                    .append(getHotfix());
 
-            if (StringUtils.isNotEmpty(label))
-            {
+            if (StringUtils.isNotEmpty(label)) {
                 version.append(" (").append(label).append(") ");
             }
             version.append("schema ").append(schema);
@@ -239,17 +210,23 @@ public class RepositoryInfo
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             final StringBuilder sb = new StringBuilder(250);
-            sb.append("VersionInfo [major=").append(major)
-                        .append(", minor=").append(minor)
-                        .append(", patch=").append(patch)
-                        .append(", hotfix=").append(hotfix)
-                        .append(", schema=").append(schema)
-                        .append(", label=").append(label)
-                        .append(", display=").append(display)
-                        .append(']');
+            sb.append("VersionInfo [major=")
+                    .append(major)
+                    .append(", minor=")
+                    .append(minor)
+                    .append(", patch=")
+                    .append(patch)
+                    .append(", hotfix=")
+                    .append(hotfix)
+                    .append(", schema=")
+                    .append(schema)
+                    .append(", label=")
+                    .append(label)
+                    .append(", display=")
+                    .append(display)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -259,8 +236,7 @@ public class RepositoryInfo
      *
      * @author Jamal Kaabi-Mofrad
      */
-    public static class LicenseInfo
-    {
+    public static class LicenseInfo {
         private Date issuedAt;
         private Date expiresAt;
         private Integer remainingDays;
@@ -269,65 +245,62 @@ public class RepositoryInfo
         private LicenseEntitlement entitlements;
 
         // Default constructor required for test purposes
-        public LicenseInfo()
-        {
-        }
+        public LicenseInfo() {}
 
-        public LicenseInfo(LicenseDescriptor licenseDescriptor)
-        {
+        public LicenseInfo(LicenseDescriptor licenseDescriptor) {
             this.issuedAt = licenseDescriptor.getIssued();
             this.expiresAt = licenseDescriptor.getValidUntil();
             this.remainingDays = licenseDescriptor.getRemainingDays();
             this.holder = licenseDescriptor.getHolderOrganisation();
             this.mode = licenseDescriptor.getLicenseMode().name();
-            this.entitlements = new LicenseEntitlement()
-                        .setMaxDocs(licenseDescriptor.getMaxDocs())
-                        .setMaxUsers(licenseDescriptor.getMaxUsers())
-                        .setClusterEnabled(licenseDescriptor.isClusterEnabled())
-                        .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled());
+            this.entitlements =
+                    new LicenseEntitlement()
+                            .setMaxDocs(licenseDescriptor.getMaxDocs())
+                            .setMaxUsers(licenseDescriptor.getMaxUsers())
+                            .setClusterEnabled(licenseDescriptor.isClusterEnabled())
+                            .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled());
         }
 
-        public Date getIssuedAt()
-        {
+        public Date getIssuedAt() {
             return issuedAt;
         }
 
-        public Date getExpiresAt()
-        {
+        public Date getExpiresAt() {
             return expiresAt;
         }
 
-        public Integer getRemainingDays()
-        {
+        public Integer getRemainingDays() {
             return remainingDays;
         }
 
-        public String getHolder()
-        {
+        public String getHolder() {
             return holder;
         }
 
-        public String getMode()
-        {
+        public String getMode() {
             return mode;
         }
 
-        public LicenseEntitlement getEntitlements()
-        {
+        public LicenseEntitlement getEntitlements() {
             return entitlements;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             final StringBuilder sb = new StringBuilder(250);
-            sb.append("LicenseInfo [issuedAt=").append(issuedAt)
-                        .append(", expiresAt=").append(expiresAt)
-                        .append(", remainingDays=").append(remainingDays)
-                        .append(", holder=").append(holder)
-                        .append(", mode=").append(mode)
-                        .append(", entitlements=").append(entitlements)
-                        .append(']');
+            sb.append("LicenseInfo [issuedAt=")
+                    .append(issuedAt)
+                    .append(", expiresAt=")
+                    .append(expiresAt)
+                    .append(", remainingDays=")
+                    .append(remainingDays)
+                    .append(", holder=")
+                    .append(holder)
+                    .append(", mode=")
+                    .append(mode)
+                    .append(", entitlements=")
+                    .append(entitlements)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -337,70 +310,62 @@ public class RepositoryInfo
      *
      * @author Jamal Kaabi-Mofrad
      */
-    public static class LicenseEntitlement
-    {
+    public static class LicenseEntitlement {
         private Long maxUsers;
         private Long maxDocs;
         private boolean isClusterEnabled;
         private boolean isCryptodocEnabled;
 
-        public LicenseEntitlement()
-        {
-        }
+        public LicenseEntitlement() {}
 
-        public Long getMaxUsers()
-        {
+        public Long getMaxUsers() {
             return maxUsers;
         }
 
-        public LicenseEntitlement setMaxUsers(Long maxUsers)
-        {
+        public LicenseEntitlement setMaxUsers(Long maxUsers) {
             this.maxUsers = maxUsers;
             return this;
         }
 
-        public Long getMaxDocs()
-        {
+        public Long getMaxDocs() {
             return maxDocs;
         }
 
-        public LicenseEntitlement setMaxDocs(Long maxDocs)
-        {
+        public LicenseEntitlement setMaxDocs(Long maxDocs) {
             this.maxDocs = maxDocs;
             return this;
         }
 
-        public boolean getIsClusterEnabled()
-        {
+        public boolean getIsClusterEnabled() {
             return isClusterEnabled;
         }
 
-        public LicenseEntitlement setClusterEnabled(boolean clusterEnabled)
-        {
+        public LicenseEntitlement setClusterEnabled(boolean clusterEnabled) {
             isClusterEnabled = clusterEnabled;
             return this;
         }
 
-        public boolean getIsCryptodocEnabled()
-        {
+        public boolean getIsCryptodocEnabled() {
             return isCryptodocEnabled;
         }
 
-        public LicenseEntitlement setCryptodocEnabled(boolean cryptodocEnabled)
-        {
+        public LicenseEntitlement setCryptodocEnabled(boolean cryptodocEnabled) {
             isCryptodocEnabled = cryptodocEnabled;
             return this;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             final StringBuilder sb = new StringBuilder(100);
-            sb.append("LicenseEntitlement [maxUsers=").append(maxUsers)
-                        .append(", maxDocs=").append(maxDocs)
-                        .append(", isClusterEnabled=").append(isClusterEnabled)
-                        .append(", isCryptodocEnabled=").append(isCryptodocEnabled)
-                        .append(']');
+            sb.append("LicenseEntitlement [maxUsers=")
+                    .append(maxUsers)
+                    .append(", maxDocs=")
+                    .append(maxDocs)
+                    .append(", isClusterEnabled=")
+                    .append(isClusterEnabled)
+                    .append(", isCryptodocEnabled=")
+                    .append(isCryptodocEnabled)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -410,83 +375,74 @@ public class RepositoryInfo
      *
      * @author Jamal Kaabi-Mofrad
      */
-    public static class StatusInfo
-    {
+    public static class StatusInfo {
         private boolean isReadOnly;
         private boolean isAuditEnabled;
         private boolean isQuickShareEnabled;
         private boolean isThumbnailGenerationEnabled;
         private boolean isDirectAccessUrlEnabled;
 
-        public StatusInfo()
-        {
-        }
+        public StatusInfo() {}
 
-        public boolean getIsReadOnly()
-        {
+        public boolean getIsReadOnly() {
             return isReadOnly;
         }
 
-        public StatusInfo setReadOnly(boolean readOnly)
-        {
+        public StatusInfo setReadOnly(boolean readOnly) {
             isReadOnly = readOnly;
             return this;
         }
 
-        public boolean getIsAuditEnabled()
-        {
+        public boolean getIsAuditEnabled() {
             return isAuditEnabled;
         }
 
-        public StatusInfo setAuditEnabled(boolean auditEnabled)
-        {
+        public StatusInfo setAuditEnabled(boolean auditEnabled) {
             isAuditEnabled = auditEnabled;
             return this;
         }
 
-        public boolean getIsQuickShareEnabled()
-        {
+        public boolean getIsQuickShareEnabled() {
             return isQuickShareEnabled;
         }
 
-        public StatusInfo setQuickShareEnabled(boolean quickShareEnabled)
-        {
+        public StatusInfo setQuickShareEnabled(boolean quickShareEnabled) {
             isQuickShareEnabled = quickShareEnabled;
             return this;
         }
 
-        public boolean getIsThumbnailGenerationEnabled()
-        {
+        public boolean getIsThumbnailGenerationEnabled() {
             return isThumbnailGenerationEnabled;
         }
 
-        public StatusInfo setThumbnailGenerationEnabled(boolean isThumbnailGenerationEnabled)
-        {
+        public StatusInfo setThumbnailGenerationEnabled(boolean isThumbnailGenerationEnabled) {
             this.isThumbnailGenerationEnabled = isThumbnailGenerationEnabled;
             return this;
         }
 
-        public boolean getIsDirectAccessUrlEnabled()
-        {
+        public boolean getIsDirectAccessUrlEnabled() {
             return isDirectAccessUrlEnabled;
         }
 
-        public StatusInfo setDirectAccessUrlEnabled(boolean isDirectAccessUrlEnabled)
-        {
+        public StatusInfo setDirectAccessUrlEnabled(boolean isDirectAccessUrlEnabled) {
             this.isDirectAccessUrlEnabled = isDirectAccessUrlEnabled;
             return this;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             final StringBuilder sb = new StringBuilder(250);
-            sb.append("StatusInfo [isReadOnly=").append(isReadOnly)
-                        .append(", isAuditEnabled=").append(isAuditEnabled)
-                        .append(", isQuickShareEnabled=").append(isQuickShareEnabled)
-                        .append(", isThumbnailGenerationEnabled=").append(isThumbnailGenerationEnabled)
-                        .append(", isDirectAccessUrlEnabled=").append(isDirectAccessUrlEnabled)
-                        .append(']');
+            sb.append("StatusInfo [isReadOnly=")
+                    .append(isReadOnly)
+                    .append(", isAuditEnabled=")
+                    .append(isAuditEnabled)
+                    .append(", isQuickShareEnabled=")
+                    .append(isQuickShareEnabled)
+                    .append(", isThumbnailGenerationEnabled=")
+                    .append(isThumbnailGenerationEnabled)
+                    .append(", isDirectAccessUrlEnabled=")
+                    .append(isDirectAccessUrlEnabled)
+                    .append(']');
             return sb.toString();
         }
     }

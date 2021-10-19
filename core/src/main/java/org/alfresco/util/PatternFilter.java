@@ -21,44 +21,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/**
- * Matches a path against a set of regular expression filters
- *
- */
-public class PatternFilter
-{
+/** Matches a path against a set of regular expression filters */
+public class PatternFilter {
     private List<Pattern> patterns;
-    
+
     /**
      * A list of regular expressions that represent patterns of files.
-     * 
+     *
      * @param regexps list of regular expressions
-     * 
      * @see String#matches(java.lang.String)
      */
-    public void setPatterns(List<String> regexps)
-    {
+    public void setPatterns(List<String> regexps) {
         this.patterns = new ArrayList<Pattern>(regexps.size());
-        for(String regexp : regexps)
-        {
+        for (String regexp : regexps) {
             this.patterns.add(Pattern.compile(regexp));
         }
     }
 
-    public boolean isFiltered(String path)
-    {
+    public boolean isFiltered(String path) {
         // check against all the regular expressions
         boolean matched = false;
 
-        for (Pattern regexp : patterns)
-        {
-            if(!regexp.matcher(path).matches())
-            {
+        for (Pattern regexp : patterns) {
+            if (!regexp.matcher(path).matches()) {
                 // it is not a match - try next one
                 continue;
-            }
-            else
-            {
+            } else {
                 matched = true;
                 break;
             }

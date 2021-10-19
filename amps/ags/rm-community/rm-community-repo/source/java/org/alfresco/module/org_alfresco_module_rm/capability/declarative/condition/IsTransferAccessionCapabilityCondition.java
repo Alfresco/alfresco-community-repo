@@ -31,29 +31,24 @@ import org.alfresco.module.org_alfresco_module_rm.capability.declarative.Abstrac
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-/**
- * @author Roy Wetherall
- */
-public class IsTransferAccessionCapabilityCondition extends AbstractCapabilityCondition
-{
+/** @author Roy Wetherall */
+public class IsTransferAccessionCapabilityCondition extends AbstractCapabilityCondition {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
+    public boolean evaluateImpl(NodeRef nodeRef) {
         boolean result = false;
 
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-        if (FilePlanComponentKind.TRANSFER.equals(kind))
-        {
-            Boolean value = (Boolean)nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR);
-            if (value != null)
-            {
+        if (FilePlanComponentKind.TRANSFER.equals(kind)) {
+            Boolean value =
+                    (Boolean) nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR);
+            if (value != null) {
                 result = value.booleanValue();
             }
         }
         return result;
     }
-
 }

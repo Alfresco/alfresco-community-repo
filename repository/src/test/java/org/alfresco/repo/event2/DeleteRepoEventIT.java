@@ -37,14 +37,10 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.junit.Test;
 
-/**
- * @author Iulian Aftene
- */
-public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
-{
+/** @author Iulian Aftene */
+public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent {
     @Test
-    public void testDeleteContent()
-    {
+    public void testDeleteContent() {
         String localName = GUID.generate();
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
@@ -63,19 +59,23 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
         deleteNode(nodeRef);
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(2);
 
-        assertEquals("Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
         assertEquals(createdResource.getId(), getNodeResource(resultRepoEvent).getId());
-        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, createdResource.getPrimaryAssocQName());
+        assertEquals(
+                "Wrong primaryAssocQName prefix.",
+                "ce:" + localName,
+                createdResource.getPrimaryAssocQName());
 
         // There should be no resourceBefore
         EventData<NodeResource> eventData = getEventData(resultRepoEvent);
-        assertNull("There should be no 'resourceBefore' object for the Deleted event type.",
-            eventData.getResourceBefore());
+        assertNull(
+                "There should be no 'resourceBefore' object for the Deleted event type.",
+                eventData.getResourceBefore());
     }
 
     @Test
-    public void testDeleteFolderWithContent()
-    {
+    public void testDeleteFolderWithContent() {
         NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
         NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
         createNode(ContentModel.TYPE_CONTENT, parent);
@@ -90,20 +90,22 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testCreateDeleteNodeInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
+    public void testCreateDeleteNodeInTheSameTransaction() {
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    NodeRef nodeRef =
+                            nodeService
+                                    .createNode(
+                                            rootNodeRef,
+                                            ContentModel.ASSOC_CHILDREN,
+                                            QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                            ContentModel.TYPE_CONTENT)
+                                    .getChildRef();
 
-            NodeRef nodeRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                ContentModel.TYPE_CONTENT).getChildRef();
-
-            nodeService.deleteNode(nodeRef);
-            return null;
-        });
-        //Create and delete node are done in the same transaction so no events are expected
+                    nodeService.deleteNode(nodeRef);
+                    return null;
+                });
+        // Create and delete node are done in the same transaction so no events are expected
         // to be generated
         checkNumOfEvents(0);
     }

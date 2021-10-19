@@ -41,10 +41,9 @@ import org.alfresco.util.ParameterCheck;
  *
  * @author Roy Wetherall
  */
-public class DeclareRecordAction extends RMActionExecuterAbstractBase
-{
+public class DeclareRecordAction extends RMActionExecuterAbstractBase {
     private static final String MISSING_PROPERTIES = "missingProperties";
-    
+
     /** action name */
     public static final String NAME = "declareRecord";
 
@@ -56,31 +55,24 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
      *
      * @param recordService record service
      */
-    public void setRecordService(RecordService recordService)
-    {
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
-    {
+    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef) {
         ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
-        try
-        {
+        try {
             recordService.complete(actionedUponNodeRef);
-        }
-        catch (RecordMissingMetadataException e)
-        {
+        } catch (RecordMissingMetadataException e) {
             action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, MISSING_PROPERTIES);
-        }
-        catch (IntegrityException e)
-        {
+        } catch (IntegrityException e) {
             // IntegrityException is deliberately ignored here, there should be no action taken
         }
-
     }
-    
 }

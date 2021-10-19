@@ -10,8 +10,7 @@ import org.apache.jackrabbit.webdav.DavException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class WebDavRootTests extends WebDavTest
-{
+public class WebDavRootTests extends WebDavTest {
     UserModel testUser;
     FolderModel testFolder;
     FileModel testFile;
@@ -24,36 +23,49 @@ public class WebDavRootTests extends WebDavTest
     FolderModel imapHome = new FolderModel("IMAP Home");
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
+    public void dataPreparation() throws Exception {
         testUser = dataUser.createRandomTestUser();
     }
-    
-    @TestRail(section={TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType= ExecutionType.SANITY, 
-            description ="Verify if valid user can get webdav root folders")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY })
-    public void siteManagerShouldGetRootFolders() throws Exception
-    {
+
+    @TestRail(
+            section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV},
+            executionType = ExecutionType.SANITY,
+            description = "Verify if valid user can get webdav root folders")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY})
+    public void siteManagerShouldGetRootFolders() throws Exception {
         UserModel testUser = dataUser.createRandomTestUser();
-        webDavProtocol.authenticateUser(testUser).usingRoot()
-            .assertThat().hasFolders(shared, imapAttachments, guest, userHome, dataDictionary, imapHome);
+        webDavProtocol
+                .authenticateUser(testUser)
+                .usingRoot()
+                .assertThat()
+                .hasFolders(shared, imapAttachments, guest, userHome, dataDictionary, imapHome);
     }
-    
-    @TestRail(section={TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType= ExecutionType.SANITY, 
-            description ="Verify if admin user can get webdav root folders")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY })
-    public void adminShouldGetRootFolders() throws Exception
-    {
-        webDavProtocol.authenticateUser(dataUser.getAdminUser()).usingRoot()
-            .assertThat().hasFolders(shared, imapAttachments, guest, userHome, dataDictionary, imapHome);
+
+    @TestRail(
+            section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV},
+            executionType = ExecutionType.SANITY,
+            description = "Verify if admin user can get webdav root folders")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY})
+    public void adminShouldGetRootFolders() throws Exception {
+        webDavProtocol
+                .authenticateUser(dataUser.getAdminUser())
+                .usingRoot()
+                .assertThat()
+                .hasFolders(shared, imapAttachments, guest, userHome, dataDictionary, imapHome);
     }
-    
-    @TestRail(section={TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType= ExecutionType.REGRESSION, 
-            description ="Verify that inexistent user cannot get webdav root folders")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE }, expectedExceptions=DavException.class)
-    public void inexistentUserShouldNotGetRootFolders() throws Exception
-    {
-        webDavProtocol.authenticateUser(UserModel.getRandomUserModel()).usingRoot()
-            .assertThat().hasFolders(shared, imapAttachments, guest, userHome, dataDictionary, imapHome);
+
+    @TestRail(
+            section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV},
+            executionType = ExecutionType.REGRESSION,
+            description = "Verify that inexistent user cannot get webdav root folders")
+    @Test(
+            groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE},
+            expectedExceptions = DavException.class)
+    public void inexistentUserShouldNotGetRootFolders() throws Exception {
+        webDavProtocol
+                .authenticateUser(UserModel.getRandomUserModel())
+                .usingRoot()
+                .assertThat()
+                .hasFolders(shared, imapAttachments, guest, userHome, dataDictionary, imapHome);
     }
 }

@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.util.List;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -41,15 +39,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.List;
+
 /**
- * Moves a record within a collaboration site.
- * The record can be moved only within the collaboration site where it was declared.
+ * Moves a record within a collaboration site. The record can be moved only within the collaboration
+ * site where it was declared.
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase implements RecordsManagementModel
-{
+public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase
+        implements RecordsManagementModel {
     /** Logger */
     private static Log logger = LogFactory.getLog(MoveDmRecordAction.class);
 
@@ -70,8 +70,7 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
      *
      * @return Node service
      */
-    protected NodeService getNodeService()
-    {
+    protected NodeService getNodeService() {
         return this.nodeService;
     }
 
@@ -80,8 +79,7 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
      *
      * @param nodeService Node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -90,8 +88,7 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
      *
      * @return Inplace record service
      */
-    protected InplaceRecordService getInplaceRecordService()
-    {
+    protected InplaceRecordService getInplaceRecordService() {
         return this.inplaceRecordService;
     }
 
@@ -100,24 +97,25 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
      *
      * @param inplaceRecordService Inplace record service
      */
-    public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
-    {
+    public void setInplaceRecordService(InplaceRecordService inplaceRecordService) {
         this.inplaceRecordService = inplaceRecordService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
         // Cannot move a document which is not a record
-        if (!getNodeService().hasAspect(actionedUponNodeRef, ASPECT_RECORD) && logger.isDebugEnabled())
-        {
-            logger.debug("Cannot move the document, because '" + actionedUponNodeRef.toString() + "' is not a record.");
-        }
-        else
-        {
+        if (!getNodeService().hasAspect(actionedUponNodeRef, ASPECT_RECORD)
+                && logger.isDebugEnabled()) {
+            logger.debug(
+                    "Cannot move the document, because '"
+                            + actionedUponNodeRef.toString()
+                            + "' is not a record.");
+        } else {
             // Move the record within the collaboration site
             getInplaceRecordService().moveRecord(actionedUponNodeRef, getTargetNodeRef(action));
         }
@@ -129,12 +127,10 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
      * @param action The action
      * @return Node reference of the target
      */
-    private NodeRef getTargetNodeRef(Action action)
-    {
+    private NodeRef getTargetNodeRef(Action action) {
         String targetNodeRef = (String) action.getParameterValue(PARAM_TARGET_NODE_REF);
 
-        if (StringUtils.isBlank(targetNodeRef))
-        {
+        if (StringUtils.isBlank(targetNodeRef)) {
             throw new AlfrescoRuntimeException("Could not find target node reference.");
         }
 
@@ -142,11 +138,11 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
         // Intentionally empty
     }
 }

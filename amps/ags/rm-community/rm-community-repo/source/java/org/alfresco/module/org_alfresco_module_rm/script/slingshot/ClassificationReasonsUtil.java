@@ -29,50 +29,61 @@ package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.service.namespace.QName.createQName;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.QName;
-
 /**
- * Method to replace the plain text classification reason id with the correct nodeRef during record search
+ * Method to replace the plain text classification reason id with the correct nodeRef during record
+ * search
+ *
  * @author Ross Gale
  * @since 2.7
  */
-public class ClassificationReasonsUtil extends SearchUtil
-{
+public class ClassificationReasonsUtil extends SearchUtil {
 
     public static final String CR_URI = "http://www.alfresco.org/model/securitymarks/1.0";
-    public static final QName CLASSIFICATION_REASONS_CONTAINER = createQName(CR_URI,"classificationReasonsContainer");
-    public static final QName PROP_CLASSIFICATION_REASON_CODE = createQName(CR_URI, "classificationReasonCode");
+    public static final QName CLASSIFICATION_REASONS_CONTAINER =
+            createQName(CR_URI, "classificationReasonsContainer");
+    public static final QName PROP_CLASSIFICATION_REASON_CODE =
+            createQName(CR_URI, "classificationReasonCode");
     public static final String REASONS_KEY = "clf:classificationReasons:";
 
     /**
      * Replace plain text reason id with nodeRef
+     *
      * @param searchQuery String e.g. clf:classificationReasons:1.4(a)
      * @return String e.g. clf:classificationReasons:5cc6d344-fa94-4370-9c81-d947b7e8f2ac
      */
-    public String replaceReasonWithNodeRef(String searchQuery)
-    {
+    public String replaceReasonWithNodeRef(String searchQuery) {
         List<String> queries = new ArrayList<>(Arrays.asList(searchQuery.split(" ")));
         StringBuilder stringBuilder = new StringBuilder();
-        for (String queryToEdit : queries)
-        {
-            if(queryToEdit.contains(REASONS_KEY))
-            {
-                for (String reasonId : retrieveAllNodeIds(getRootContainer(CLASSIFICATION_REASONS_CONTAINER)))
-                {
-                    NodeRef reasonNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, reasonId);
+        for (String queryToEdit : queries) {
+            if (queryToEdit.contains(REASONS_KEY)) {
+                for (String reasonId :
+                        retrieveAllNodeIds(getRootContainer(CLASSIFICATION_REASONS_CONTAINER))) {
+                    NodeRef reasonNodeRef =
+                            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, reasonId);
                     Map<QName, Serializable> properties = nodeService.getProperties(reasonNodeRef);
-                    if (queryToEdit.equals(REASONS_KEY + properties.get(PROP_CLASSIFICATION_REASON_CODE).toString()) ||
-                            queryToEdit.equals(REASONS_KEY +"\""+ properties.get(PROP_CLASSIFICATION_REASON_CODE).toString() + "\""))
-                    {
-                        queryToEdit =  REASONS_KEY + properties.get(PROP_NAME).toString();
+                    if (queryToEdit.equals(
+                                    REASONS_KEY
+                                            + properties
+                                                    .get(PROP_CLASSIFICATION_REASON_CODE)
+                                                    .toString())
+                            || queryToEdit.equals(
+                                    REASONS_KEY
+                                            + "\""
+                                            + properties
+                                                    .get(PROP_CLASSIFICATION_REASON_CODE)
+                                                    .toString()
+                                            + "\"")) {
+                        queryToEdit = REASONS_KEY + properties.get(PROP_NAME).toString();
                         break;
                     }
                 }
@@ -81,6 +92,4 @@ public class ClassificationReasonsUtil extends SearchUtil
         }
         return stringBuilder.toString();
     }
-
-
 }

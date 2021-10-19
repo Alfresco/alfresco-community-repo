@@ -29,11 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.forms;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ImapModel;
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -61,18 +56,21 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Implementation of a form processor Filter.
- * <p>
- * The filter ensures that any custom properties defined for the records
- * management type are provided as part of the Form and also assigned to the
- * same field group.
- * </p>
+ *
+ * <p>The filter ensures that any custom properties defined for the records management type are
+ * provided as part of the Form and also assigned to the same field group.
  *
  * @author Gavin Cornwell
  */
-public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter<NodeRef> implements RecordsManagementModel, DOD5015Model
-{
+public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter<NodeRef>
+        implements RecordsManagementModel, DOD5015Model {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementNodeFormFilter.class);
 
@@ -91,8 +89,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      *
      * @return Disposition service
      */
-    protected DispositionService getDispositionService()
-    {
+    protected DispositionService getDispositionService() {
         return this.dispositionService;
     }
 
@@ -101,31 +98,27 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      *
      * @return File plan service
      */
-    protected FilePlanService getFilePlanService()
-    {
+    protected FilePlanService getFilePlanService() {
         return this.filePlanService;
     }
 
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    disposition service
+     * @param dispositionService disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
-    /**
-     * @param filePlanService	file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
     /**
-     * @see org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
+     * @see org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object, java.util.List,
+     *     java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
      */
     @Override
     public void afterGenerate(
@@ -133,16 +126,13 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             List<String> fields,
             List<String> forcedFields,
             Form form,
-            Map<String, Object> context)
-    {
-        if (getFilePlanService().isFilePlanComponent(nodeRef))
-        {
+            Map<String, Object> context) {
+        if (getFilePlanService().isFilePlanComponent(nodeRef)) {
             // add all the custom properties
             addCustomPropertyFieldsToGroup(form, nodeRef);
 
             FilePlanComponentKind kind = getFilePlanService().getFilePlanComponentKind(nodeRef);
-            if (FilePlanComponentKind.RECORD.equals(kind))
-            {
+            if (FilePlanComponentKind.RECORD.equals(kind)) {
                 // add all the record meta-data aspect properties
                 addRecordMetadataPropertyFieldsToGroup(form, nodeRef);
 
@@ -156,170 +146,174 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 protectRecordProperties(form, nodeRef);
 
                 // if the record is the result of an email we need to 'protect' some fields
-                if (this.nodeService.hasAspect(nodeRef, ImapModel.ASPECT_IMAP_CONTENT))
-                {
+                if (this.nodeService.hasAspect(nodeRef, ImapModel.ASPECT_IMAP_CONTENT)) {
                     protectEmailExtractedFields(form, nodeRef);
                 }
-            }
-            else if (FilePlanComponentKind.RECORD_FOLDER.equals(kind))
-            {
+            } else if (FilePlanComponentKind.RECORD_FOLDER.equals(kind)) {
                 // add the supplemental marking list property
                 forceSupplementalMarkingListProperty(form, nodeRef);
 
                 // add required transient properties
                 addTransientProperties(form, nodeRef);
-            }
-            else if (FilePlanComponentKind.DISPOSITION_SCHEDULE.equals(kind))
-            {
-                 // use the same mechanism used to determine whether steps can be removed from the
-                 // schedule to determine whether the disposition level can be changed i.e. record
-                 // level or folder level.
-                 DispositionSchedule schedule = new DispositionScheduleImpl(this.rmServiceRegistry, this.nodeService, nodeRef);
-                 if (getDispositionService().hasDisposableItems(schedule))
-                 {
-                     protectRecordLevelDispositionPropertyField(form);
-                 }
+            } else if (FilePlanComponentKind.DISPOSITION_SCHEDULE.equals(kind)) {
+                // use the same mechanism used to determine whether steps can be removed from the
+                // schedule to determine whether the disposition level can be changed i.e. record
+                // level or folder level.
+                DispositionSchedule schedule =
+                        new DispositionScheduleImpl(
+                                this.rmServiceRegistry, this.nodeService, nodeRef);
+                if (getDispositionService().hasDisposableItems(schedule)) {
+                    protectRecordLevelDispositionPropertyField(form);
+                }
             }
         }
     }
 
     /**
-     *
      * @param form
      * @param nodeRef
      */
-    protected void addCustomPropertyFieldsToGroup(Form form, NodeRef nodeRef)
-    {
+    protected void addCustomPropertyFieldsToGroup(Form form, NodeRef nodeRef) {
         Set<QName> customisables = rmAdminService.getCustomisable(nodeRef);
 
         // Compatibility support: don't show category properties if node of type series
         QName type = nodeService.getType(nodeRef);
-        if (CompatibilityModel.TYPE_RECORD_SERIES.equals(type))
-        {
+        if (CompatibilityModel.TYPE_RECORD_SERIES.equals(type)) {
             // remove record category from the list of customisable types to apply to the form
             customisables.remove(TYPE_RECORD_CATEGORY);
         }
 
-        for (QName customisable : customisables)
-        {
-            addPropertyFieldsToGroup(form, rmAdminService.getCustomPropertyDefinitions(customisable), CUSTOM_RM_FIELD_GROUP_ID, null);
+        for (QName customisable : customisables) {
+            addPropertyFieldsToGroup(
+                    form,
+                    rmAdminService.getCustomPropertyDefinitions(customisable),
+                    CUSTOM_RM_FIELD_GROUP_ID,
+                    null);
         }
     }
 
     /**
-     *
      * @param form
      * @param nodeRef
      */
-    protected void addRecordMetadataPropertyFieldsToGroup(Form form, NodeRef nodeRef)
-    {
+    protected void addRecordMetadataPropertyFieldsToGroup(Form form, NodeRef nodeRef) {
         Set<QName> aspects = recordService.getRecordMetadataAspects(nodeRef);
 
-        for (QName aspect : aspects)
-        {
-            if (nodeService.hasAspect(nodeRef, aspect))
-            {
-                String aspectName = aspect.getPrefixedQName(namespaceService).toPrefixString().replace(":", "-");
+        for (QName aspect : aspects) {
+            if (nodeService.hasAspect(nodeRef, aspect)) {
+                String aspectName =
+                        aspect.getPrefixedQName(namespaceService)
+                                .toPrefixString()
+                                .replace(":", "-");
                 String setId = RM_METADATA_PREFIX + aspectName;
 
                 String setLabel = null;
                 AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-                if (aspectDefinition != null)
-                {
+                if (aspectDefinition != null) {
                     setLabel = aspectDefinition.getTitle(new StaticMessageLookup());
                 }
 
-                addPropertyFieldsToGroup(form, dictionaryService.getPropertyDefs(aspect), setId, setLabel);
+                addPropertyFieldsToGroup(
+                        form, dictionaryService.getPropertyDefs(aspect), setId, setLabel);
             }
         }
     }
 
     /**
-     * Forces the "rmc:supplementalMarkingList" property to be present, if it is
-     * already on the given node this method does nothing, otherwise a property
-     * field definition is generated for the property.
+     * Forces the "rmc:supplementalMarkingList" property to be present, if it is already on the
+     * given node this method does nothing, otherwise a property field definition is generated for
+     * the property.
      *
      * @param form The Form instance to add the property to
      * @param nodeRef The node the form is being generated for
      */
-    protected void forceSupplementalMarkingListProperty(Form form, NodeRef nodeRef)
-    {
-        if (!this.nodeService.hasAspect(nodeRef,
-                    RecordsManagementCustomModel.ASPECT_SUPPLEMENTAL_MARKING_LIST))
-        {
-            PropertyDefinition propDef = this.dictionaryService.getProperty(
-                        RecordsManagementCustomModel.PROP_SUPPLEMENTAL_MARKING_LIST);
+    protected void forceSupplementalMarkingListProperty(Form form, NodeRef nodeRef) {
+        if (!this.nodeService.hasAspect(
+                nodeRef, RecordsManagementCustomModel.ASPECT_SUPPLEMENTAL_MARKING_LIST)) {
+            PropertyDefinition propDef =
+                    this.dictionaryService.getProperty(
+                            RecordsManagementCustomModel.PROP_SUPPLEMENTAL_MARKING_LIST);
 
-            if (propDef != null)
-            {
-                Field field = FieldUtils.makePropertyField(propDef, null, null, namespaceService, dictionaryService);
+            if (propDef != null) {
+                Field field =
+                        FieldUtils.makePropertyField(
+                                propDef, null, null, namespaceService, dictionaryService);
                 form.addField(field);
-            }
-            else if (logger.isWarnEnabled())
-            {
-                logger.warn("Could not add " +
-                            RecordsManagementCustomModel.PROP_SUPPLEMENTAL_MARKING_LIST.getLocalName() +
-                            " property as it's definition could not be found");
+            } else if (logger.isWarnEnabled()) {
+                logger.warn(
+                        "Could not add "
+                                + RecordsManagementCustomModel.PROP_SUPPLEMENTAL_MARKING_LIST
+                                        .getLocalName()
+                                + " property as it's definition could not be found");
             }
         }
     }
 
     /**
-     *
      * @param form
      * @param nodeRef
      */
-    protected void addTransientProperties(final Form form, final NodeRef nodeRef)
-    {
-        if (recordService.isRecord(nodeRef))
-        {
-            addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, recordService.isDeclared(nodeRef));
+    protected void addTransientProperties(final Form form, final NodeRef nodeRef) {
+        if (recordService.isRecord(nodeRef)) {
+            addTransientPropertyField(
+                    form,
+                    TRANSIENT_DECLARED,
+                    DataTypeDefinition.BOOLEAN,
+                    recordService.isDeclared(nodeRef));
         }
 
         // Need to get the disposition schedule as the system user. See RM-1727.
-        //Need to run all block as the system user, needed for disposition instructions, recordCategory and categoryId. See RM-3077.
-        runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                DispositionSchedule ds = getDispositionService().getDispositionSchedule(nodeRef);
+        // Need to run all block as the system user, needed for disposition instructions,
+        // recordCategory and categoryId. See RM-3077.
+        runAsSystem(
+                new RunAsWork<Void>() {
+                    @Override
+                    public Void doWork() throws Exception {
+                        DispositionSchedule ds =
+                                getDispositionService().getDispositionSchedule(nodeRef);
 
-                if (ds != null)
-                {
-                    String instructions = ds.getDispositionInstructions();
-                    if (instructions != null)
-                    {
-                        addTransientPropertyField(form, TRANSIENT_DISPOSITION_INSTRUCTIONS, DataTypeDefinition.TEXT,
-                                    instructions);
-                    }
+                        if (ds != null) {
+                            String instructions = ds.getDispositionInstructions();
+                            if (instructions != null) {
+                                addTransientPropertyField(
+                                        form,
+                                        TRANSIENT_DISPOSITION_INSTRUCTIONS,
+                                        DataTypeDefinition.TEXT,
+                                        instructions);
+                            }
 
-                    NodeRef recordCategory = getDispositionService().getAssociatedRecordsManagementContainer(ds);
-                    if (recordCategory != null)
-                    {
-                        String categoryId = (String) nodeService.getProperty(recordCategory, PROP_IDENTIFIER);
-                        if (categoryId != null)
-                        {
-                            addTransientPropertyField(form, TRANSIENT_CATEGORY_ID, DataTypeDefinition.TEXT, categoryId);
+                            NodeRef recordCategory =
+                                    getDispositionService()
+                                            .getAssociatedRecordsManagementContainer(ds);
+                            if (recordCategory != null) {
+                                String categoryId =
+                                        (String)
+                                                nodeService.getProperty(
+                                                        recordCategory, PROP_IDENTIFIER);
+                                if (categoryId != null) {
+                                    addTransientPropertyField(
+                                            form,
+                                            TRANSIENT_CATEGORY_ID,
+                                            DataTypeDefinition.TEXT,
+                                            categoryId);
+                                }
+                            }
                         }
+                        return null;
                     }
-                }
-                return null;
-            }
-        });
+                });
     }
 
     /**
-     *
      * @param form
      * @param name
      * @param type
      * @param value
      */
-    protected void addTransientPropertyField(Form form, String name, QName type, Object value)
-    {
+    protected void addTransientPropertyField(Form form, String name, QName type, Object value) {
         String dataKeyName = FormFieldConstants.PROP_DATA_PREFIX + name;
-        PropertyFieldDefinition declaredField = new PropertyFieldDefinition(name, type.getLocalName());
+        PropertyFieldDefinition declaredField =
+                new PropertyFieldDefinition(name, type.getLocalName());
         declaredField.setLabel(name);
         declaredField.setDescription(name);
         declaredField.setProtectedField(true);
@@ -329,38 +323,32 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     }
 
     /**
-     *
      * @param form
      * @param nodeRef
      */
-    protected void protectRecordProperties(Form form, NodeRef nodeRef)
-    {
+    protected void protectRecordProperties(Form form, NodeRef nodeRef) {
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        for (FieldDefinition fieldDef : fieldDefs)
-        {
-            if (!fieldDef.isProtectedField())
-            {
+        for (FieldDefinition fieldDef : fieldDefs) {
+            if (!fieldDef.isProtectedField()) {
                 String name = fieldDef.getName();
                 String prefixName = null;
-                if ("size".equals(name) || "mimetype".equals(name) || "encoding".equals(name))
-                {
+                if ("size".equals(name) || "mimetype".equals(name) || "encoding".equals(name)) {
                     prefixName = "cm:content";
-                }
-                else
-                {
+                } else {
                     prefixName = fieldDef.getName();
                 }
 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Checking property " + prefixName + " is editable by user " + AuthenticationUtil.getFullyAuthenticatedUser());
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Checking property "
+                                    + prefixName
+                                    + " is editable by user "
+                                    + AuthenticationUtil.getFullyAuthenticatedUser());
                 }
 
                 QName qname = QName.createQName(prefixName, namespaceService);
-                if (!recordService.isPropertyEditable(nodeRef, qname))
-                {
-                    if (logger.isDebugEnabled())
-                    {
+                if (!recordService.isPropertyEditable(nodeRef, qname)) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("   ... protected property");
                     }
                     fieldDef.setProtectedField(true);
@@ -370,39 +358,34 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     }
 
     /**
-     * Marks all the fields that contain data extracted from an email
-     * as protected fields.
+     * Marks all the fields that contain data extracted from an email as protected fields.
      *
      * @param form The Form instance to add the property to
      * @param nodeRef The node the form is being generated for
      */
-    protected void protectEmailExtractedFields(Form form, NodeRef nodeRef)
-    {
+    protected void protectEmailExtractedFields(Form form, NodeRef nodeRef) {
         // iterate round existing fields and set email fields as protected
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        for (FieldDefinition fieldDef : fieldDefs)
-        {
+        for (FieldDefinition fieldDef : fieldDefs) {
             String prefixName = fieldDef.getName();
 
             // check the value of the property, if empty then do not mark property
             // as read only
             QName qname = QName.createQName(prefixName, namespaceService);
             Serializable value = nodeService.getProperty(nodeRef, qname);
-            if (value != null &&
-                (prefixName.equals("cm:title") ||
-                prefixName.equals("cm:author") ||
-                prefixName.equals("dod:originator") ||
-                prefixName.equals("dod:publicationDate") ||
-                prefixName.equals("dod:dateReceived") ||
-                prefixName.equals("dod:address") ||
-                prefixName.equals("dod:otherAddress")))
-            {
+            if (value != null
+                    && (prefixName.equals("cm:title")
+                            || prefixName.equals("cm:author")
+                            || prefixName.equals("dod:originator")
+                            || prefixName.equals("dod:publicationDate")
+                            || prefixName.equals("dod:dateReceived")
+                            || prefixName.equals("dod:address")
+                            || prefixName.equals("dod:otherAddress"))) {
                 fieldDef.setProtectedField(true);
             }
         }
 
-        if (logger.isDebugEnabled())
-        {
+        if (logger.isDebugEnabled()) {
             logger.debug("Set email related fields to be protected");
         }
     }
@@ -412,22 +395,22 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      *
      * @param form The Form instance
      */
-    protected void protectRecordLevelDispositionPropertyField(Form form)
-    {
+    protected void protectRecordLevelDispositionPropertyField(Form form) {
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        for (FieldDefinition fieldDef : fieldDefs)
-        {
-            if (fieldDef.getName().equals(RecordsManagementModel.PROP_RECORD_LEVEL_DISPOSITION.toPrefixString(
-                        this.namespaceService)))
-            {
+        for (FieldDefinition fieldDef : fieldDefs) {
+            if (fieldDef.getName()
+                    .equals(
+                            RecordsManagementModel.PROP_RECORD_LEVEL_DISPOSITION.toPrefixString(
+                                    this.namespaceService))) {
                 fieldDef.setProtectedField(true);
                 break;
             }
         }
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Set 'rma:recordLevelDisposition' field to be protected as record folders or records are present");
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    "Set 'rma:recordLevelDisposition' field to be protected as record folders or"
+                            + " records are present");
         }
     }
 }

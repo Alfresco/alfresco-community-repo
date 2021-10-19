@@ -26,6 +26,10 @@
 
 package org.alfresco.repo.jscript;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.AbstractFacetLabelDisplayHandler;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabel;
@@ -41,13 +45,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * @author Elia Porciani
- */
+/** @author Elia Porciani */
 public class ScriptSearchTest {
 
     private Search SEARCH_SCRIPT;
@@ -60,10 +58,8 @@ public class ScriptSearchTest {
     private String TXT_LABEL = "TXT";
     private String PDF_LABEL = "PDF";
 
-
     @Before
-    public void init()
-    {
+    public void init() {
         fieldFacet1 = "mimetype";
         fieldFacet2 = "modifier";
 
@@ -75,9 +71,7 @@ public class ScriptSearchTest {
         SEARCH_SCRIPT.setServiceRegistry(mockServiceRegistry());
     }
 
-
-    private ServiceRegistry mockServiceRegistry()
-    {
+    private ServiceRegistry mockServiceRegistry() {
 
         SearchService searchService = mock(SearchService.class);
         ResultSet results = mock(ResultSet.class);
@@ -95,10 +89,12 @@ public class ScriptSearchTest {
         when(results.getFacetQueries()).thenReturn(new HashMap<>());
         when(searchService.query((SearchParameters) any())).thenReturn(results);
 
-        FacetLabelDisplayHandlerRegistry displayHandlerRegistry = mock(FacetLabelDisplayHandlerRegistry.class);
+        FacetLabelDisplayHandlerRegistry displayHandlerRegistry =
+                mock(FacetLabelDisplayHandlerRegistry.class);
         ServiceRegistry services = mock(ServiceRegistry.class);
         when(services.getSearchService()).thenReturn(searchService);
-        when(displayHandlerRegistry.getDisplayHandler(fieldFacet1)).thenReturn(new MimetypeOrderDisplayHandler());
+        when(displayHandlerRegistry.getDisplayHandler(fieldFacet1))
+                .thenReturn(new MimetypeOrderDisplayHandler());
         when(displayHandlerRegistry.getDisplayHandler(fieldFacet2)).thenReturn(null);
 
         SolrFacetHelper solrFacetHelper = mock(SolrFacetHelper.class);
@@ -110,15 +106,14 @@ public class ScriptSearchTest {
     }
 
     @Test
-    public void testSearchFacetDisplayHandlerCustom() throws Exception
-    {
+    public void testSearchFacetDisplayHandlerCustom() throws Exception {
 
         SearchParameters sp = new SearchParameters();
         sp.setLanguage("afts");
         sp.setQueryConsistency(QueryConsistency.EVENTUAL);
         sp.addFieldFacet(new SearchParameters.FieldFacet(fieldFacet1));
         sp.addFieldFacet(new SearchParameters.FieldFacet(fieldFacet2));
-        Pair<Object[], Map<String,Object>> results = SEARCH_SCRIPT.queryResultMeta(sp, false);
+        Pair<Object[], Map<String, Object>> results = SEARCH_SCRIPT.queryResultMeta(sp, false);
         Map<String, Object> facets = (Map<String, Object>) results.getSecond().get("facets");
         List<Object> mimetypes = (List<Object>) facets.get(fieldFacet1);
         List<Object> modifiers = (List<Object>) facets.get(fieldFacet2);
@@ -138,14 +133,10 @@ public class ScriptSearchTest {
         // handler is null, check default value.
         assert admin.getFacetLabelIndex() == -1;
         assert admin.getFacetLabel() == modifier;
-
     }
 
-
-    private class MimetypeOrderDisplayHandler extends AbstractFacetLabelDisplayHandler
-    {
-        public FacetLabel getDisplayLabel(String value)
-        {
+    private class MimetypeOrderDisplayHandler extends AbstractFacetLabelDisplayHandler {
+        public FacetLabel getDisplayLabel(String value) {
             Integer order;
             String label;
             switch (value) {
@@ -164,5 +155,4 @@ public class ScriptSearchTest {
             return new FacetLabel(value, label, order);
         }
     }
-
 }

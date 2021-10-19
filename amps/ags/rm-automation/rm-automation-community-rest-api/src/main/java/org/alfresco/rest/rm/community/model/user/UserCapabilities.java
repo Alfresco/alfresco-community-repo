@@ -32,8 +32,7 @@ package org.alfresco.rest.rm.community.model.user;
  * @author Rodica Sutu
  * @since 2.7
  */
-public class UserCapabilities
-{
+public class UserCapabilities {
 
     /** The id of the view records capability. */
     public static final String VIEW_RECORDS_CAP = "ViewRecords";

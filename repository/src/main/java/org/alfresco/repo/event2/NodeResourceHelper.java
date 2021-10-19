@@ -25,17 +25,6 @@
  */
 package org.alfresco.repo.event2;
 
-import java.io.Serializable;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.ContentInfo;
 import org.alfresco.repo.event.v1.model.NodeResource;
@@ -64,28 +53,37 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.io.Serializable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Helper for {@link NodeResource} objects.
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodeResourceHelper implements InitializingBean
-{
+public class NodeResourceHelper implements InitializingBean {
     private static final Log LOGGER = LogFactory.getLog(NodeResourceHelper.class);
 
-    protected NodeService         nodeService;
-    protected DictionaryService   dictionaryService;
-    protected PersonService       personService;
+    protected NodeService nodeService;
+    protected DictionaryService dictionaryService;
+    protected PersonService personService;
     protected EventFilterRegistry eventFilterRegistry;
-    protected NamespaceService    namespaceService;
-    protected PermissionService   permissionService;
+    protected NamespaceService namespaceService;
+    protected PermissionService permissionService;
 
-    private NodeAspectFilter   nodeAspectFilter;
+    private NodeAspectFilter nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "personService", personService);
@@ -97,40 +95,33 @@ public class NodeResourceHelper implements InitializingBean
         this.nodePropertyFilter = eventFilterRegistry.getNodePropertyFilter();
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    public void setPersonService(PersonService personService)
-    {
+    public void setPersonService(PersonService personService) {
         this.personService = personService;
     }
 
-    public void setPermissionService(PermissionService permissionService)
-    {
+    public void setPermissionService(PermissionService permissionService) {
         this.permissionService = permissionService;
     }
-    
+
     // To make IntelliJ stop complaining about unused method!
     @SuppressWarnings("unused")
-    public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry)
-    {
+    public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry) {
         this.eventFilterRegistry = eventFilterRegistry;
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
-    public NodeResource.Builder createNodeResourceBuilder(NodeRef nodeRef)
-    {
+    public NodeResource.Builder createNodeResourceBuilder(NodeRef nodeRef) {
         final QName type = nodeService.getType(nodeRef);
         final Path path = nodeService.getPath(nodeRef);
 
@@ -139,127 +130,114 @@ public class NodeResourceHelper implements InitializingBean
         // minor: save one lookup if creator & modifier are the same
         Map<String, UserInfo> mapUserCache = new HashMap<>(2);
 
-        return NodeResource.builder().setId(nodeRef.getId())
-                           .setName((String) properties.get(ContentModel.PROP_NAME))
-                           .setNodeType(getQNamePrefixString(type))
-                           .setIsFile(isSubClass(type, ContentModel.TYPE_CONTENT))
-                           .setIsFolder(isSubClass(type, ContentModel.TYPE_FOLDER))
-                           .setCreatedByUser(getUserInfo((String) properties.get(ContentModel.PROP_CREATOR), mapUserCache))
-                           .setCreatedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_CREATED)))
-                           .setModifiedByUser(getUserInfo((String) properties.get(ContentModel.PROP_MODIFIER), mapUserCache))
-                           .setModifiedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_MODIFIED)))
-                           .setContent(getContentInfo(properties))
-                           .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
-                           .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
-                           .setProperties(mapToNodeProperties(properties))
-                           .setAspectNames(getMappedAspects(nodeRef));
+        return NodeResource.builder()
+                .setId(nodeRef.getId())
+                .setName((String) properties.get(ContentModel.PROP_NAME))
+                .setNodeType(getQNamePrefixString(type))
+                .setIsFile(isSubClass(type, ContentModel.TYPE_CONTENT))
+                .setIsFolder(isSubClass(type, ContentModel.TYPE_FOLDER))
+                .setCreatedByUser(
+                        getUserInfo(
+                                (String) properties.get(ContentModel.PROP_CREATOR), mapUserCache))
+                .setCreatedAt(getZonedDateTime((Date) properties.get(ContentModel.PROP_CREATED)))
+                .setModifiedByUser(
+                        getUserInfo(
+                                (String) properties.get(ContentModel.PROP_MODIFIER), mapUserCache))
+                .setModifiedAt(getZonedDateTime((Date) properties.get(ContentModel.PROP_MODIFIED)))
+                .setContent(getContentInfo(properties))
+                .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
+                .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
+                .setProperties(mapToNodeProperties(properties))
+                .setAspectNames(getMappedAspects(nodeRef));
     }
 
-    private boolean isSubClass(QName className, QName ofClassQName)
-    {
+    private boolean isSubClass(QName className, QName ofClassQName) {
         return dictionaryService.isSubClass(className, ofClassQName);
     }
 
-    private String getPrimaryAssocQName(NodeRef nodeRef) 
-    {
+    private String getPrimaryAssocQName(NodeRef nodeRef) {
         String result = null;
-        try 
-        {
+        try {
             ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
-            if(primaryParent != null && primaryParent.getQName() != null) 
-            {
-                result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString();
+            if (primaryParent != null && primaryParent.getQName() != null) {
+                result =
+                        primaryParent
+                                .getQName()
+                                .getPrefixedQName(namespaceService)
+                                .getPrefixString();
             }
-        } catch (NamespaceException namespaceException) 
-        {
-            LOGGER.error("Cannot return a valid primary association QName: " + namespaceException.getMessage());
+        } catch (NamespaceException namespaceException) {
+            LOGGER.error(
+                    "Cannot return a valid primary association QName: "
+                            + namespaceException.getMessage());
         }
         return result;
     }
 
-    private UserInfo getUserInfo(String userName, Map<String, UserInfo> mapUserCache)
-    {
+    private UserInfo getUserInfo(String userName, Map<String, UserInfo> mapUserCache) {
         UserInfo userInfo = mapUserCache.get(userName);
-        if (userInfo == null)
-        {
+        if (userInfo == null) {
             userInfo = getUserInfo(userName);
             mapUserCache.put(userName, userInfo);
         }
         return userInfo;
     }
 
-    public boolean nodeExists(NodeRef nodeRef)
-    {
+    public boolean nodeExists(NodeRef nodeRef) {
         return nodeService.exists(nodeRef);
     }
 
-    public Map<String, Serializable> mapToNodeProperties(Map<QName, Serializable> props)
-    {
+    public Map<String, Serializable> mapToNodeProperties(Map<QName, Serializable> props) {
         Map<String, Serializable> filteredProps = new HashMap<>(props.size());
 
-        props.forEach((k, v) -> {
-            if (!nodePropertyFilter.isExcluded(k))
-            {
-                if (v != null && v instanceof MLText)
-                {
-                    //TODO - should we send all of the values if multiple locales exist?
-                    v = ((MLText) v).getDefaultValue();
-                }
+        props.forEach(
+                (k, v) -> {
+                    if (!nodePropertyFilter.isExcluded(k)) {
+                        if (v != null && v instanceof MLText) {
+                            // TODO - should we send all of the values if multiple locales exist?
+                            v = ((MLText) v).getDefaultValue();
+                        }
 
-                filteredProps.put(getQNamePrefixString(k), v);
-            }
-        });
+                        filteredProps.put(getQNamePrefixString(k), v);
+                    }
+                });
 
         return filteredProps;
     }
 
-    public ContentInfo getContentInfo(Map<QName, Serializable> props)
-    {
+    public ContentInfo getContentInfo(Map<QName, Serializable> props) {
         final Serializable content = props.get(ContentModel.PROP_CONTENT);
         ContentInfo contentInfo = null;
-        if ((content instanceof ContentData))
-        {
+        if ((content instanceof ContentData)) {
             ContentData cd = (ContentData) content;
             contentInfo = new ContentInfo(cd.getMimetype(), cd.getSize(), cd.getEncoding());
         }
         return contentInfo;
     }
 
-    public UserInfo getUserInfo(String userName)
-    {
+    public UserInfo getUserInfo(String userName) {
         UserInfo userInfo = null;
-        if (userName != null)
-        {
+        if (userName != null) {
             String sysUserName = AuthenticationUtil.getSystemUserName();
-            if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled()
-                        && userName.startsWith(sysUserName + "@")))
-            {
+            if (userName.equals(sysUserName)
+                    || (AuthenticationUtil.isMtEnabled()
+                            && userName.startsWith(sysUserName + "@"))) {
                 userInfo = new UserInfo(userName, userName, "");
-            }
-            else
-            {
+            } else {
                 PersonService.PersonInfo pInfo = null;
-                try
-                {
+                try {
                     NodeRef pNodeRef = personService.getPersonOrNull(userName);
-                    if (pNodeRef != null)
-                    {
+                    if (pNodeRef != null) {
                         pInfo = personService.getPerson(pNodeRef);
                     }
-                }
-                catch (NoSuchPersonException | AccessDeniedException ex)
-                {
+                } catch (NoSuchPersonException | AccessDeniedException ex) {
                     // ignore
                 }
 
-                if (pInfo != null)
-                {
+                if (pInfo != null) {
                     userInfo = new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
-                }
-                else
-                {
-                    if (LOGGER.isDebugEnabled())
-                    {
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Unknown person: " + userName);
                     }
                     userInfo = new UserInfo(userName, userName, "");
@@ -269,83 +247,69 @@ public class NodeResourceHelper implements InitializingBean
         return userInfo;
     }
 
-    public ZonedDateTime getZonedDateTime(Date date)
-    {
-        if (date == null)
-        {
+    public ZonedDateTime getZonedDateTime(Date date) {
+        if (date == null) {
             return null;
         }
         return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
     /**
-     * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix
-     * returns it in the form {uri}local.
+     * Returns the QName in the format prefix:local, but in the exceptional case where there is no
+     * registered prefix returns it in the form {uri}local.
      *
-     * @param   k QName
-     * @return  a String representing the QName in the format prefix:local or {uri}local.
+     * @param k QName
+     * @return a String representing the QName in the format prefix:local or {uri}local.
      */
-    public String getQNamePrefixString(QName k)
-    {
+    public String getQNamePrefixString(QName k) {
         String key;
-        try
-        {
+        try {
             key = k.toPrefixString(namespaceService);
-        }
-        catch (NamespaceException e)
-        {
+        } catch (NamespaceException e) {
             key = k.toString();
         }
         return key;
     }
 
-    public Set<String> mapToNodeAspects(Collection<QName> aspects)
-    {
+    public Set<String> mapToNodeAspects(Collection<QName> aspects) {
         Set<String> filteredAspects = new HashSet<>(aspects.size());
 
-        aspects.forEach(q -> {
-            if (!nodeAspectFilter.isExcluded(q))
-            {
-                filteredAspects.add(getQNamePrefixString(q));
-            }
-        });
+        aspects.forEach(
+                q -> {
+                    if (!nodeAspectFilter.isExcluded(q)) {
+                        filteredAspects.add(getQNamePrefixString(q));
+                    }
+                });
 
         return filteredAspects;
     }
 
-    private boolean isNotEmptyString(Serializable ser)
-    {
+    private boolean isNotEmptyString(Serializable ser) {
         return !(ser instanceof String) || !((String) ser).isEmpty();
     }
 
-    public QName getNodeType(NodeRef nodeRef)
-    {
-       return nodeService.getType(nodeRef);
+    public QName getNodeType(NodeRef nodeRef) {
+        return nodeService.getType(nodeRef);
     }
 
-    public Serializable getProperty(NodeRef nodeRef, QName qName)
-    {
+    public Serializable getProperty(NodeRef nodeRef, QName qName) {
         return nodeService.getProperty(nodeRef, qName);
     }
 
-    public Map<QName, Serializable> getProperties(NodeRef nodeRef)
-    {
+    public Map<QName, Serializable> getProperties(NodeRef nodeRef) {
         return nodeService.getProperties(nodeRef);
     }
 
-    public Set<String> getMappedAspects(NodeRef nodeRef)
-    {
+    public Set<String> getMappedAspects(NodeRef nodeRef) {
         return mapToNodeAspects(nodeService.getAspects(nodeRef));
     }
-    
-    public List<String> getPrimaryHierarchy(NodeRef nodeRef, boolean showLeaf)
-    {
+
+    public List<String> getPrimaryHierarchy(NodeRef nodeRef, boolean showLeaf) {
         final Path path = nodeService.getPath(nodeRef);
         return PathUtil.getNodeIdsInReverse(path, showLeaf);
     }
 
-    public PermissionService getPermissionService()
-    {
+    public PermissionService getPermissionService() {
         return permissionService;
     }
 }

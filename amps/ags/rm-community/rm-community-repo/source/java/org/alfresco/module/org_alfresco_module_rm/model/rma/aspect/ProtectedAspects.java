@@ -37,33 +37,25 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * protected aspects behaviour bean 
- * allow only System user to remove this aspects
+ * protected aspects behaviour bean allow only System user to remove this aspects
  *
  * @author Ramona Popa
  * @since 2.6
  */
-
-public class ProtectedAspects implements NodeServicePolicies.OnRemoveAspectPolicy
-{
+public class ProtectedAspects implements NodeServicePolicies.OnRemoveAspectPolicy {
     private PolicyComponent policyComponent;
     private AuthenticationUtil authenticationUtil;
 
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
+    public void setPolicyComponent(PolicyComponent policyComponent) {
         this.policyComponent = policyComponent;
     }
 
-    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
-    {
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil) {
         this.authenticationUtil = authenticationUtil;
     }
 
-    /**
-     * Initialise method
-     */
-    public void init()
-    {
+    /** Initialise method */
+    public void init() {
         // Watch removal of the aspect rma:record
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
@@ -84,16 +76,16 @@ public class ProtectedAspects implements NodeServicePolicies.OnRemoveAspectPolic
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
                 RecordsManagementModel.ASPECT_COMMON_RECORD_DETAILS,
                 new JavaBehaviour(this, "onRemoveAspect"));
-
     }
 
     @Override
-    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (!authenticationUtil.getRunAsUser().equals(authenticationUtil.getSystemUserName()))
-        {
-            throw new IntegrityException("Operation failed. Aspect " + aspectTypeQName.toString() + " is mandatory and cannot be removed.", null);
+    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) {
+        if (!authenticationUtil.getRunAsUser().equals(authenticationUtil.getSystemUserName())) {
+            throw new IntegrityException(
+                    "Operation failed. Aspect "
+                            + aspectTypeQName.toString()
+                            + " is mandatory and cannot be removed.",
+                    null);
         }
-
     }
 }

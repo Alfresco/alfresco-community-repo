@@ -30,13 +30,6 @@ package org.alfresco.rm.rest.api.recordfolders;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
-import java.util.AbstractList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
@@ -64,122 +57,148 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
+import java.util.AbstractList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Record folder children relation
  *
  * @author Ramona Popa
  * @since 2.6
  */
-@RelationshipResource(name = "records", entityResource = RecordFolderEntityResource.class, title = "Children of a record folder")
-public class RecordFolderChildrenRelation implements RelationshipResourceAction.Read<Record>, RelationshipResourceAction.Create<Record>,
-        MultiPartRelationshipResourceAction.Create<Record>
-{
+@RelationshipResource(
+        name = "records",
+        entityResource = RecordFolderEntityResource.class,
+        title = "Children of a record folder")
+public class RecordFolderChildrenRelation
+        implements RelationshipResourceAction.Read<Record>,
+                RelationshipResourceAction.Create<Record>,
+                MultiPartRelationshipResourceAction.Create<Record> {
     private FilePlanComponentsApiUtils apiUtils;
     private SearchTypesFactory searchTypesFactory;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)
-    {
+    public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory) {
         this.searchTypesFactory = searchTypesFactory;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    @WebApiDescription(title = "Return a paged list of records for the record folder identified by 'recordFolderId'")
-    public CollectionWithPagingInfo<Record> readAll(String recordFolderId, Parameters parameters)
-    {
+    @WebApiDescription(
+            title =
+                    "Return a paged list of records for the record folder identified by"
+                            + " 'recordFolderId'")
+    public CollectionWithPagingInfo<Record> readAll(String recordFolderId, Parameters parameters) {
         checkNotBlank("recordFolderId", recordFolderId);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+        NodeRef parentNodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
 
         // list record folders
         // FIXME searchParam
-        Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesForUnfiledEndpoint(parameters, null);
+        Set<QName> searchTypeQNames =
+                searchTypesFactory.buildSearchTypesForUnfiledEndpoint(parameters, null);
 
-        final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef, null, searchTypeQNames, null,
-                apiUtils.getSortProperties(parameters), null, Util.getPagingRequest(parameters.getPaging()));
+        final PagingResults<FileInfo> pagingResults =
+                fileFolderService.list(
+                        parentNodeRef,
+                        null,
+                        searchTypeQNames,
+                        null,
+                        apiUtils.getSortProperties(parameters),
+                        null,
+                        Util.getPagingRequest(parameters.getPaging()));
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<Record> nodes = new AbstractList<Record>()
-        {
-            @Override
-            public Record get(int index)
-            {
-                FileInfo info = page.get(index);
-                return nodesModelFactory.createRecord(info, parameters, mapUserInfo, true);
-            }
+        List<Record> nodes =
+                new AbstractList<Record>() {
+                    @Override
+                    public Record get(int index) {
+                        FileInfo info = page.get(index);
+                        return nodesModelFactory.createRecord(info, parameters, mapUserInfo, true);
+                    }
 
-            @Override
-            public int size()
-            {
-                return page.size();
-            }
-        };
+                    @Override
+                    public int size() {
+                        return page.size();
+                    }
+                };
 
         RecordFolder sourceEntity = null;
-        if (parameters.includeSource())
-        {
+        if (parameters.includeSource()) {
             FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
-            sourceEntity = nodesModelFactory.createRecordFolder(info, parameters, mapUserInfo, true);
+            sourceEntity =
+                    nodesModelFactory.createRecordFolder(info, parameters, mapUserInfo, true);
         }
 
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodes, pagingResults.hasMoreItems(),
-                pagingResults.getTotalResultCount().getFirst(), sourceEntity);
+        return CollectionWithPagingInfo.asPaged(
+                parameters.getPaging(),
+                nodes,
+                pagingResults.hasMoreItems(),
+                pagingResults.getTotalResultCount().getFirst(),
+                sourceEntity);
     }
 
     @Override
-    @WebApiDescription(title = "Create one (or more) records as children of a record folder identified by 'recordFolderId'")
-    public List<Record> create(String recordFolderId, List<Record> nodeInfos, Parameters parameters)
-    {
+    @WebApiDescription(
+            title =
+                    "Create one (or more) records as children of a record folder identified by"
+                            + " 'recordFolderId'")
+    public List<Record> create(
+            String recordFolderId, List<Record> nodeInfos, Parameters parameters) {
         checkNotBlank("recordFolderId", recordFolderId);
         mandatory("nodeInfos", nodeInfos);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+        NodeRef parentNodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
-            public List<NodeRef> execute()
-            {
-                List<NodeRef> createdNodes = new LinkedList<>();
-                for (Record nodeInfo : nodeInfos)
-                {
-                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
-                    createdNodes.add(newNodeRef);
-                }
-                return createdNodes;
-            }
-        };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        RetryingTransactionCallback<List<NodeRef>> callback =
+                new RetryingTransactionCallback<List<NodeRef>>() {
+                    public List<NodeRef> execute() {
+                        List<NodeRef> createdNodes = new LinkedList<>();
+                        for (Record nodeInfo : nodeInfos) {
+                            NodeRef newNodeRef =
+                                    apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
+                            createdNodes.add(newNodeRef);
+                        }
+                        return createdNodes;
+                    }
+                };
+        List<NodeRef> createdNodes =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(callback, false, true);
 
         // Get the nodes info
         List<Record> result = new LinkedList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        for(NodeRef newNodeRef : createdNodes)
-        {
+        for (NodeRef newNodeRef : createdNodes) {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
             result.add(nodesModelFactory.createRecord(info, parameters, mapUserInfo, false));
@@ -190,27 +209,38 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
 
     @Override
     @WebApiDescription(title = "Upload file content and meta-data into the repository.")
-    @WebApiParam(name = "formData", title = "A single form data", description = "A single form data which holds FormFields.")
-    public Record create(String recordFolderId, FormData formData, Parameters parameters, WithResponse withResponse)
-    {
+    @WebApiParam(
+            name = "formData",
+            title = "A single form data",
+            description = "A single form data which holds FormFields.")
+    public Record create(
+            String recordFolderId,
+            FormData formData,
+            Parameters parameters,
+            WithResponse withResponse) {
         checkNotBlank("recordFolderId", recordFolderId);
         mandatory("formData", formData);
         mandatory("parameters", parameters);
 
         // Retrieve the input data and resolve the parent node
         final UploadInfo uploadInfo = new UploadInfo(formData);
-        final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER,
-                uploadInfo.getRelativePath());
+        final NodeRef parentNodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        recordFolderId,
+                        RecordsManagementModel.TYPE_RECORD_FOLDER,
+                        uploadInfo.getRelativePath());
 
         // Create the record
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute()
-            {
-                return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
-            }
-        };
-        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        RetryingTransactionCallback<NodeRef> callback =
+                new RetryingTransactionCallback<NodeRef>() {
+                    public NodeRef execute() {
+                        return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
+                    }
+                };
+        NodeRef newNode =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(callback, false, true);
 
         // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);

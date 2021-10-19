@@ -4,26 +4,33 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.security.sync;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactory;
@@ -34,6 +41,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.naming.CommunicationException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -42,24 +53,14 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchResult;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link org.alfresco.repo.security.sync.ldap.LDAPUserRegistry}
+ *
  * @author amukha
  */
 @RunWith(MockitoJUnitRunner.class)
-public class LDAPUserRegistryTest
-{
+public class LDAPUserRegistryTest {
     @Mock private LDAPInitialDirContextFactory contextFactory;
     @Mock private InitialDirContext initialDirContext;
     @Mock private NamespaceService namespaceService;
@@ -81,8 +82,7 @@ public class LDAPUserRegistryTest
     private static final String MEMBER_ATTRIBUTE_NAME = "member";
     private static final String MEMBER_ATTRIBUTE_VALUE = "cn=foouser10,cn=Users,dc=example,dc=foo";
 
-    private LDAPUserRegistry createRegistry() throws Exception
-    {
+    private LDAPUserRegistry createRegistry() throws Exception {
         LDAPUserRegistry registry = new LDAPUserRegistry();
         registry.setLDAPInitialDirContextFactory(contextFactory);
         registry.setNamespaceService(namespaceService);
@@ -105,7 +105,8 @@ public class LDAPUserRegistryTest
                 .thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
         when(contextFactory.getDefaultIntialDirContext()).thenReturn(initialDirContext);
         when(contextFactory.getDefaultIntialDirContext(0)).thenReturn(initialDirContext);
-        when(initialDirContext.search(eq(GROUP_SEARCH_BASE), eq(GROUP_DIFFERENTIAL_QUERY), any())).thenReturn(searchResults);
+        when(initialDirContext.search(eq(GROUP_SEARCH_BASE), eq(GROUP_DIFFERENTIAL_QUERY), any()))
+                .thenReturn(searchResults);
         when(searchResults.hasMore()).thenReturn(true);
         when(searchResults.next()).thenReturn(searchResult);
         when(searchResult.getAttributes()).thenReturn(attributes);
@@ -115,80 +116,83 @@ public class LDAPUserRegistryTest
         when(rangeRestrictedAttribute.size()).thenReturn(1);
         when(rangeRestrictedAttribute.get(0)).thenReturn(MEMBER_ATTRIBUTE_VALUE);
 
-
         registry.afterPropertiesSet();
         return registry;
     }
 
-    /**
-     * Test for MNT-17966
-     */
+    /** Test for MNT-17966 */
     @Test
-    public void testTimeoutDuringSync() throws Exception
-    {
+    public void testTimeoutDuringSync() throws Exception {
         LDAPUserRegistry userRegistry = createRegistry();
 
-        when(initialDirContext.getAttributes(eq(LDAPUserRegistry.jndiName(MEMBER_ATTRIBUTE_VALUE)), any()))
-                .thenThrow(new NamingException(LDAPUserRegistry.NAMING_TIMEOUT_EXCEPTION_MESSAGE + " test."));
+        when(initialDirContext.getAttributes(
+                        eq(LDAPUserRegistry.jndiName(MEMBER_ATTRIBUTE_VALUE)), any()))
+                .thenThrow(
+                        new NamingException(
+                                LDAPUserRegistry.NAMING_TIMEOUT_EXCEPTION_MESSAGE + " test."));
 
-        try
-        {
+        try {
             userRegistry.getGroups(new Date());
             fail("The process should fail with an exception");
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            assertEquals("The error message is not of the right format.",
-                    "synchronization.err.ldap.search", are.getMsgId());
-            assertTrue("The error message was not caused by timeout.",
-                    are.getCause().getMessage().contains(LDAPUserRegistry.NAMING_TIMEOUT_EXCEPTION_MESSAGE));
+        } catch (AlfrescoRuntimeException are) {
+            assertEquals(
+                    "The error message is not of the right format.",
+                    "synchronization.err.ldap.search",
+                    are.getMsgId());
+            assertTrue(
+                    "The error message was not caused by timeout.",
+                    are.getCause()
+                            .getMessage()
+                            .contains(LDAPUserRegistry.NAMING_TIMEOUT_EXCEPTION_MESSAGE));
         }
     }
 
     /**
-     * Test for MNT-21614: Check & fail if communication breaks due to javax.naming.ServiceUnavailableException
+     * Test for MNT-21614: Check & fail if communication breaks due to
+     * javax.naming.ServiceUnavailableException
      */
     @Test
-    public void testTimeoutDuringSyncForServiceUnavailableException() throws Exception
-    {
+    public void testTimeoutDuringSyncForServiceUnavailableException() throws Exception {
         LDAPUserRegistry userRegistry = createRegistry();
 
-        when(initialDirContext.getAttributes(eq(LDAPUserRegistry.jndiName(MEMBER_ATTRIBUTE_VALUE)), any()))
+        when(initialDirContext.getAttributes(
+                        eq(LDAPUserRegistry.jndiName(MEMBER_ATTRIBUTE_VALUE)), any()))
                 .thenThrow(new ServiceUnavailableException(" test."));
-        try
-        {
+        try {
             userRegistry.getGroups(new Date());
             fail("The process should fail with an exception");
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            assertEquals("The error message is not of the right format.",
-                    "synchronization.err.ldap.search", are.getMsgId());
-            assertTrue("The error message was not caused by timeout.",
+        } catch (AlfrescoRuntimeException are) {
+            assertEquals(
+                    "The error message is not of the right format.",
+                    "synchronization.err.ldap.search",
+                    are.getMsgId());
+            assertTrue(
+                    "The error message was not caused by timeout.",
                     are.getCause().getMessage().contains(" test."));
         }
     }
 
     /**
-     * Test for MNT-21614: Check & fail if communication breaks due to javax.naming.CommunicationException
+     * Test for MNT-21614: Check & fail if communication breaks due to
+     * javax.naming.CommunicationException
      */
     @Test
-    public void testTimeoutDuringSyncForCommunicationException() throws Exception
-    {
+    public void testTimeoutDuringSyncForCommunicationException() throws Exception {
         LDAPUserRegistry userRegistry = createRegistry();
 
-        when(initialDirContext.getAttributes(eq(LDAPUserRegistry.jndiName(MEMBER_ATTRIBUTE_VALUE)), any()))
+        when(initialDirContext.getAttributes(
+                        eq(LDAPUserRegistry.jndiName(MEMBER_ATTRIBUTE_VALUE)), any()))
                 .thenThrow(new CommunicationException(" test."));
-        try
-        {
+        try {
             userRegistry.getGroups(new Date());
             fail("The process should fail with an exception");
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            assertEquals("The error message is not of the right format.",
-                    "synchronization.err.ldap.search", are.getMsgId());
-            assertTrue("The error message was not caused by timeout.",
+        } catch (AlfrescoRuntimeException are) {
+            assertEquals(
+                    "The error message is not of the right format.",
+                    "synchronization.err.ldap.search",
+                    are.getMsgId());
+            assertTrue(
+                    "The error message was not caused by timeout.",
                     are.getCause().getMessage().contains(" test."));
         }
     }

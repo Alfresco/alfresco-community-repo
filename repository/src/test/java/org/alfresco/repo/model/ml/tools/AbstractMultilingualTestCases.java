@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -53,8 +53,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author yanipig
  */
-public abstract class AbstractMultilingualTestCases extends TestCase
-{
+public abstract class AbstractMultilingualTestCases extends TestCase {
 
     protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
@@ -71,8 +70,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
     protected EditionService editionService;
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         authenticationComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
@@ -80,59 +78,63 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
         versionService = serviceRegistry.getVersionService();
-        multilingualContentService = (MultilingualContentService) ctx.getBean("MultilingualContentService");
-        contentFilterLanguagesService = (ContentFilterLanguagesService) ctx.getBean("ContentFilterLanguagesService");
+        multilingualContentService =
+                (MultilingualContentService) ctx.getBean("MultilingualContentService");
+        contentFilterLanguagesService =
+                (ContentFilterLanguagesService) ctx.getBean("ContentFilterLanguagesService");
         editionService = (EditionService) ctx.getBean("EditionService");
 
         // Run as admin
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         // Create a folder to work in
-        RetryingTransactionCallback<NodeRef> createFolderCallback = new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Exception
-            {
-                StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-                // Create the folder
-                NodeRef folderNodeRef = nodeService.createNode(
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
-                        ContentModel.TYPE_FOLDER).getChildRef();
-                // done
-                return folderNodeRef;
-            }
-        };
-        folderNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createFolderCallback);
+        RetryingTransactionCallback<NodeRef> createFolderCallback =
+                new RetryingTransactionCallback<NodeRef>() {
+                    public NodeRef execute() throws Exception {
+                        StoreRef storeRef =
+                                new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+                        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                        // Create the folder
+                        NodeRef folderNodeRef =
+                                nodeService
+                                        .createNode(
+                                                rootNodeRef,
+                                                ContentModel.ASSOC_CHILDREN,
+                                                QName.createQName(
+                                                        NamespaceService.CONTENT_MODEL_1_0_URI,
+                                                        "testFolder"),
+                                                ContentModel.TYPE_FOLDER)
+                                        .getChildRef();
+                        // done
+                        return folderNodeRef;
+                    }
+                };
+        folderNodeRef =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(createFolderCallback);
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         // Clear authentication
-        try
-        {
+        try {
             authenticationComponent.clearCurrentSecurityContext();
-        }
-        catch (Throwable e)
-        {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
-    protected NodeRef createContent()
-    {
+    protected NodeRef createContent() {
         String name = "" + System.currentTimeMillis();
         return createContent(name);
     }
 
-    protected NodeRef createContent(String name)
-    {
-        NodeRef contentNodeRef = fileFolderService.create(
-                folderNodeRef,
-                name,
-                ContentModel.TYPE_CONTENT).getNodeRef();
+    protected NodeRef createContent(String name) {
+        NodeRef contentNodeRef =
+                fileFolderService
+                        .create(folderNodeRef, name, ContentModel.TYPE_CONTENT)
+                        .getNodeRef();
         // add some content
         ContentWriter contentWriter = fileFolderService.getWriter(contentNodeRef);
         contentWriter.putContent("ABC");
@@ -140,10 +142,8 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         return contentNodeRef;
     }
 
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         // Ensure that content can be created
         createContent();
     }
-
 }

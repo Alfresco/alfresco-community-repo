@@ -41,111 +41,73 @@ import org.mockito.InjectMocks;
 
 /**
  * Filling on hold container capability condition unit test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
-public class FillingOnHoldContainerCapabilityConditionUnitTest extends BaseUnitTest
-{
+public class FillingOnHoldContainerCapabilityConditionUnitTest extends BaseUnitTest {
     /** evaluator */
     private @InjectMocks FillingOnHoldContainerCapabilityCondition condition;
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
-     */
+
+    /** @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before() */
     @Before
     @Override
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         super.before();
     }
-    
-    /**
-     * Given hold container node
-     * And no filling permission
-     * When evaluate
-     * Then false
-     */
+
+    /** Given hold container node And no filling permission When evaluate Then false */
     @Test
-    public void noFillingOnHoldContainer()
-    {
+    public void noFillingOnHoldContainer() {
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
-        when(mockedFilePlanService.isFilePlan(holdContainer))
-            .thenReturn(false);
+        when(mockedFilePlanService.isFilePlan(holdContainer)).thenReturn(false);
         when(mockedPermissionService.hasPermission(holdContainer, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.DENIED);
-        
+                .thenReturn(AccessStatus.DENIED);
+
         assertFalse(condition.evaluateImpl(holdContainer));
     }
-    
-    /**
-     * Given hold container node
-     * And filling permission
-     * When evaluate
-     * Then true
-     */
+
+    /** Given hold container node And filling permission When evaluate Then true */
     @Test
-    public void fillingOnHoldContainer()
-    {
+    public void fillingOnHoldContainer() {
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
-        when(mockedFilePlanService.isFilePlan(holdContainer))
-            .thenReturn(false);
+        when(mockedFilePlanService.isFilePlan(holdContainer)).thenReturn(false);
         when(mockedPermissionService.hasPermission(holdContainer, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
-        
+                .thenReturn(AccessStatus.ALLOWED);
+
         assertTrue(condition.evaluateImpl(holdContainer));
     }
-    
-    /**
-     * Given file-plan node
-     * And no filling permission on hold container
-     * When evaluate
-     * Then false
-     */
+
+    /** Given file-plan node And no filling permission on hold container When evaluate Then false */
     @Test
-    public void filePlanNoFilling()
-    {
+    public void filePlanNoFilling() {
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
-        when(mockedFilePlanService.getHoldContainer(filePlan))
-            .thenReturn(holdContainer);
+        when(mockedFilePlanService.getHoldContainer(filePlan)).thenReturn(holdContainer);
         when(mockedPermissionService.hasPermission(holdContainer, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.DENIED);
-        
+                .thenReturn(AccessStatus.DENIED);
+
         assertFalse(condition.evaluateImpl(holdContainer));
     }
-    
-    /**
-     * Given file-plan node
-     * And filling permission on hold container
-     * When evaluate
-     * Then true
-     */
+
+    /** Given file-plan node And filling permission on hold container When evaluate Then true */
     @Test
-    public void filePlanFilling()
-    {
+    public void filePlanFilling() {
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
-        when(mockedFilePlanService.getHoldContainer(filePlan))
-            .thenReturn(holdContainer);
+        when(mockedFilePlanService.getHoldContainer(filePlan)).thenReturn(holdContainer);
         when(mockedPermissionService.hasPermission(holdContainer, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
-        
+                .thenReturn(AccessStatus.ALLOWED);
+
         assertTrue(condition.evaluateImpl(holdContainer));
     }
-    
-    /**
-     * Given unexpected node type
-     * When evaluate
-     * Then false
-     */
+
+    /** Given unexpected node type When evaluate Then false */
     @Test
-    public void unexpectedNode()
-    {
+    public void unexpectedNode() {
         NodeRef unexpectedNode = generateNodeRef();
-        when(mockedFilePlanService.isFilePlan(unexpectedNode))
-            .thenReturn(false);
+        when(mockedFilePlanService.isFilePlan(unexpectedNode)).thenReturn(false);
         when(mockedPermissionService.hasPermission(unexpectedNode, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
-        
+                .thenReturn(AccessStatus.ALLOWED);
+
         assertFalse(condition.evaluateImpl(unexpectedNode));
-    }    
+    }
 }

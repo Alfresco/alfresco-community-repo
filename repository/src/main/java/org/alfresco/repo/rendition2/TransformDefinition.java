@@ -28,20 +28,19 @@ package org.alfresco.repo.rendition2;
 import java.util.Map;
 
 /**
- * A TransformDefinition is a transient {@link RenditionDefinition2} that provides a target mimetype and transform
- * options just like a RenditionDefinition2. However one should be created for each transform request, so that
- * additional client supplied data can be included and returned in the response to the client. It also identifies the
- * reply queue to be used.<p>
+ * A TransformDefinition is a transient {@link RenditionDefinition2} that provides a target mimetype
+ * and transform options just like a RenditionDefinition2. However one should be created for each
+ * transform request, so that additional client supplied data can be included and returned in the
+ * response to the client. It also identifies the reply queue to be used.
  *
- * When it is known that the same target mimetype and transform options are being supplied many times a transform name
- * should be supplied so that the transform registry is able to use the name as a key into a cache used to work
- * out if the transform is possible. The transform name is prefixed {@link #TRANSFORM_NAMESPACE} to avoid clashes with
- * rendition names.
+ * <p>When it is known that the same target mimetype and transform options are being supplied many
+ * times a transform name should be supplied so that the transform registry is able to use the name
+ * as a key into a cache used to work out if the transform is possible. The transform name is
+ * prefixed {@link #TRANSFORM_NAMESPACE} to avoid clashes with rendition names.
  *
  * @author adavis
  */
-public class TransformDefinition extends RenditionDefinition2Impl
-{
+public class TransformDefinition extends RenditionDefinition2Impl {
     public static final String TRANSFORM_NAMESPACE = "transform:";
 
     private final String clientData;
@@ -50,13 +49,18 @@ public class TransformDefinition extends RenditionDefinition2Impl
     private String errorMessage;
 
     /**
-     * Constructor where the same targetMimetype and transformOptions are used in multiple calls. In such a case, how or
-     * if the transform will take place, will be cached against the transformName.
+     * Constructor where the same targetMimetype and transformOptions are used in multiple calls. In
+     * such a case, how or if the transform will take place, will be cached against the
+     * transformName.
      */
-    public TransformDefinition(String transformName, String targetMimetype, Map<String, String> transformOptions,
-                               String clientData, String replyQueue, String requestId,
-                               RenditionDefinitionRegistry2Impl registry)
-    {
+    public TransformDefinition(
+            String transformName,
+            String targetMimetype,
+            Map<String, String> transformOptions,
+            String clientData,
+            String replyQueue,
+            String requestId,
+            RenditionDefinitionRegistry2Impl registry) {
         super(convertToRenditionName(transformName), targetMimetype, transformOptions, registry);
         this.clientData = clientData;
         this.replyQueue = replyQueue;
@@ -64,55 +68,48 @@ public class TransformDefinition extends RenditionDefinition2Impl
         this.errorMessage = null;
     }
 
-    /**
-     * Constructor where the targetMimetype and transformOptions are unlikely to be repeated.
-     */
-    public TransformDefinition(String targetMimetype, Map<String, String> transformOptions,
-                               String clientData, String replyQueue, String requestId)
-    {
+    /** Constructor where the targetMimetype and transformOptions are unlikely to be repeated. */
+    public TransformDefinition(
+            String targetMimetype,
+            Map<String, String> transformOptions,
+            String clientData,
+            String replyQueue,
+            String requestId) {
         this(null, targetMimetype, transformOptions, clientData, replyQueue, requestId, null);
     }
 
-    public static String convertToRenditionName(String transformName)
-    {
-        return transformName == null ? null : TRANSFORM_NAMESPACE+transformName;
+    public static String convertToRenditionName(String transformName) {
+        return transformName == null ? null : TRANSFORM_NAMESPACE + transformName;
     }
 
-    public String getTransformName()
-    {
+    public String getTransformName() {
         String renditionName = getRenditionName();
         return getTransformName(renditionName);
     }
 
-    public static String getTransformName(String renditionName)
-    {
+    public static String getTransformName(String renditionName) {
         return renditionName == null || !renditionName.startsWith(TRANSFORM_NAMESPACE)
                 ? null
                 : renditionName.substring(TRANSFORM_NAMESPACE.length());
     }
 
-    public String getClientData()
-    {
+    public String getClientData() {
         return clientData;
     }
 
-    public String getReplyQueue()
-    {
+    public String getReplyQueue() {
         return replyQueue;
     }
 
-    public String getRequestId()
-    {
+    public String getRequestId() {
         return requestId;
     }
 
-    public String getErrorMessage()
-    {
+    public String getErrorMessage() {
         return errorMessage;
     }
 
-    public void setErrorMessage(String errorMessage)
-    {
+    public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 }

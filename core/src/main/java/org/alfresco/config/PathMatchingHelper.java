@@ -18,52 +18,47 @@
  */
 package org.alfresco.config;
 
+import org.springframework.core.io.Resource;
+import org.springframework.util.PathMatcher;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 
-import org.springframework.core.io.Resource;
-import org.springframework.util.PathMatcher;
-
 /**
- * An interface for plug ins to JBossEnabledResourcePatternResolver that avoids direct dependencies on
- * application server specifics.
- * 
+ * An interface for plug ins to JBossEnabledResourcePatternResolver that avoids direct dependencies
+ * on application server specifics.
+ *
  * @author dward
  */
-public interface PathMatchingHelper
-{
+public interface PathMatchingHelper {
     /**
-     * Indicates whether this helper is capable of searching the given URL (i.e. its protocol is supported).
-     * 
-     * @param rootURL
-     *            the root url to be searched
+     * Indicates whether this helper is capable of searching the given URL (i.e. its protocol is
+     * supported).
+     *
+     * @param rootURL the root url to be searched
      * @return <code>true</code> if this helper is capable of searching the given URL
      */
     public boolean canHandle(URL rootURL);
 
     /**
      * Gets the resource at the given URL.
-     * 
+     *
      * @param url URL
      * @return the resource at the given URL
-     * @throws IOException
-     *             for any error
+     * @throws IOException for any error
      */
     public Resource getResource(URL url) throws IOException;
 
     /**
      * Gets the set of resources under the given URL whose path matches the given sub pattern.
-     * 
-     * @param matcher
-     *            the matcher
-     * @param rootURL
-     *            the root URL to be searched
-     * @param subPattern
-     *            the ant-style pattern to match
+     *
+     * @param matcher the matcher
+     * @param rootURL the root URL to be searched
+     * @param subPattern the ant-style pattern to match
      * @return the set of matching resources
-     * @throws IOException
-     *             for any error
+     * @throws IOException for any error
      */
-    public Set<Resource> getResources(PathMatcher matcher, URL rootURL, String subPattern) throws IOException;
+    public Set<Resource> getResources(PathMatcher matcher, URL rootURL, String subPattern)
+            throws IOException;
 }

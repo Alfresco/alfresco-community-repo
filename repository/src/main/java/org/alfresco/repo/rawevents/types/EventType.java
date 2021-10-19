@@ -27,10 +27,7 @@ package org.alfresco.repo.rawevents.types;
 
 import java.io.Serializable;
 
-public enum EventType implements Serializable
-{
-    /**
-     * Event type that should be used when creating a content update event.
-     */
+public enum EventType implements Serializable {
+    /** Event type that should be used when creating a content update event. */
     CONTENT_UPDATED
 }

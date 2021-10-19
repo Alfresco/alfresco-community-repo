@@ -20,8 +20,7 @@ import org.testng.annotations.Test;
  *
  * @author Cristina Axinte
  */
-public class GetProcessTasksSanityTests extends RestTest
-{
+public class GetProcessTasksSanityTests extends RestTest {
     private FileModel document;
     private SiteModel siteModel;
     private UserModel userModel, assignee1, assignee2, assignee3;
@@ -29,58 +28,105 @@ public class GetProcessTasksSanityTests extends RestTest
     private RestTaskModelsCollection processTasks;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
+    public void dataPreparation() throws Exception {
         userModel = dataUser.createRandomTestUser();
         assignee1 = dataUser.createRandomTestUser();
         assignee2 = dataUser.createRandomTestUser();
         assignee3 = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        document = dataContent.usingUser(userModel).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        process = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(document)
-                .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
+        document =
+                dataContent
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .createContent(DocumentType.TEXT_PLAIN);
+        process =
+                dataWorkflow
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .usingResource(document)
+                        .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
-            description = "Verify user who started the process gets all tasks of started process with Rest API and response is successfull (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void userWhoStartedProcessCanGetProcessTasks() throws JsonToModelConversionException, Exception
-    {
-        processTasks = restClient.authenticateUser(userModel).withWorkflowAPI().usingProcess(process).getProcessTasks();
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES},
+            executionType = ExecutionType.SANITY,
+            description =
+                    "Verify user who started the process gets all tasks of started process with"
+                            + " Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
+    public void userWhoStartedProcessCanGetProcessTasks()
+            throws JsonToModelConversionException, Exception {
+        processTasks =
+                restClient
+                        .authenticateUser(userModel)
+                        .withWorkflowAPI()
+                        .usingProcess(process)
+                        .getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processTasks.assertThat()
-            .entriesListCountIs(3).and()
-            .entriesListContains("assignee", assignee1.getUsername()).and()
-            .entriesListContains("assignee", assignee2.getUsername()).and()
-            .entriesListContains("assignee", assignee3.getUsername());
+        processTasks
+                .assertThat()
+                .entriesListCountIs(3)
+                .and()
+                .entriesListContains("assignee", assignee1.getUsername())
+                .and()
+                .entriesListContains("assignee", assignee2.getUsername())
+                .and()
+                .entriesListContains("assignee", assignee3.getUsername());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
-            description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void assigneeUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
-    {
-        processTasks = restClient.authenticateUser(assignee1).withWorkflowAPI().usingProcess(process).getProcessTasks();
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES},
+            executionType = ExecutionType.SANITY,
+            description =
+                    "Verify any assignee user of the process gets all tasks of the process with"
+                            + " Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
+    public void assigneeUserCanGetAllProcessTasks()
+            throws JsonToModelConversionException, Exception {
+        processTasks =
+                restClient
+                        .authenticateUser(assignee1)
+                        .withWorkflowAPI()
+                        .usingProcess(process)
+                        .getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processTasks.assertThat()
-            .entriesListContains("assignee", assignee1.getUsername()).and()
-            .entriesListContains("assignee", assignee2.getUsername()).and()
-            .entriesListContains("assignee", assignee3.getUsername());
+        processTasks
+                .assertThat()
+                .entriesListContains("assignee", assignee1.getUsername())
+                .and()
+                .entriesListContains("assignee", assignee2.getUsername())
+                .and()
+                .entriesListContains("assignee", assignee3.getUsername());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
-            description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void involvedUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
-    {
-        ProcessModel process = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(document)
-                .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES},
+            executionType = ExecutionType.SANITY,
+            description =
+                    "Verify any assignee user of the process gets all tasks of the process with"
+                            + " Rest API and response is successfull (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
+    public void involvedUserCanGetAllProcessTasks()
+            throws JsonToModelConversionException, Exception {
+        ProcessModel process =
+                dataWorkflow
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .usingResource(document)
+                        .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
         dataWorkflow.usingUser(assignee1).approveTask(process);
 
-        processTasks = restClient.authenticateUser(assignee2).withWorkflowAPI().usingProcess(process).getProcessTasks();
+        processTasks =
+                restClient
+                        .authenticateUser(assignee2)
+                        .withWorkflowAPI()
+                        .usingProcess(process)
+                        .getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processTasks.assertThat()
-            .entriesListIsNotEmpty().assertThat()
-            .entriesListContains("assignee", userModel.getUsername());
+        processTasks
+                .assertThat()
+                .entriesListIsNotEmpty()
+                .assertThat()
+                .entriesListContains("assignee", userModel.getUsername());
     }
 }

@@ -18,18 +18,16 @@
  */
 package org.alfresco.config;
 
+import junit.framework.TestCase;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 /**
  * @see SystemPropertiesSetterBean
- * 
  * @author Derek Hulley
  */
-public class SystemPropertiesSetterBeanTest extends TestCase
-{
+public class SystemPropertiesSetterBeanTest extends TestCase {
     private static final String KEY_A = "SystemPropertiesSetterBeanTest.A";
     private static final String KEY_B = "SystemPropertiesSetterBeanTest.B";
     private static final String KEY_C = "SystemPropertiesSetterBeanTest.C";
@@ -47,11 +45,10 @@ public class SystemPropertiesSetterBeanTest extends TestCase
 
     SystemPropertiesSetterBean setter;
     private Map<String, String> propertyMap;
-    
-    public void setUp() throws Exception
-    {
+
+    public void setUp() throws Exception {
         System.setProperty(KEY_EXISTING, VALUE_EXISTING);
-        
+
         propertyMap = new HashMap<String, String>(7);
         propertyMap.put(KEY_A, VALUE_A);
         propertyMap.put(KEY_B, VALUE_B);
@@ -60,21 +57,19 @@ public class SystemPropertiesSetterBeanTest extends TestCase
         propertyMap.put(KEY_PLACEHOLDER, VALUE_PLACEHOLDER);
         propertyMap.put(KEY_EMPTY_STRING, VALUE_EMPTY_STRING);
         propertyMap.put(KEY_NULL, VALUE_NULL);
-        
+
         setter = new SystemPropertiesSetterBean();
         setter.setPropertyMap(propertyMap);
     }
-    
-    public void testSetUp()
-    {
+
+    public void testSetUp() {
         assertEquals(VALUE_EXISTING, System.getProperty(KEY_EXISTING));
         assertNull(System.getProperty(KEY_A));
         assertNull(System.getProperty(KEY_B));
         assertNull(System.getProperty(KEY_C));
     }
-    
-    public void testSettingOfSystemProperties()
-    {
+
+    public void testSettingOfSystemProperties() {
         setter.init();
         // Check
         assertEquals(VALUE_A, System.getProperty(KEY_A));

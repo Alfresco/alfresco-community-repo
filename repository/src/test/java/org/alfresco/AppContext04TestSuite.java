@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,9 +32,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Repository project tests using the main context alfresco/application-context.xml.
- * To balance test jobs tests using this context have been split into multiple test suites.
- * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ * Repository project tests using the main context alfresco/application-context.xml. To balance test
+ * jobs tests using this context have been split into multiple test suites. Tests marked as DBTests
+ * are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
@@ -55,7 +55,6 @@ import org.junit.runners.Suite;
 
     // This test opens, closes and again opens the alfresco application context.
     org.alfresco.repo.dictionary.CustomModelRepoRestartTest.class,
-
     org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class,
     org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class,
     org.alfresco.repo.replication.ReplicationServiceIntegrationTest.class,
@@ -87,13 +86,10 @@ import org.junit.runners.Suite;
     org.alfresco.util.schemacomp.SchemaBootstrapTest.class,
     org.alfresco.repo.module.ModuleComponentHelperTest.class,
     org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class,
-
     org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class,
     org.alfresco.service.ServiceRegistryTest.class,
 
     // does not want to work in the same test suite as org.alfresco.repo.rule.* tests
     org.alfresco.opencmis.search.OpenCmisQueryTest.class
-    })
-public class AppContext04TestSuite
-{
-}
+})
+public class AppContext04TestSuite {}

@@ -25,28 +25,23 @@
  */
 package org.alfresco.repo.action.scheduled;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.transaction.UserTransaction;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
+import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl.ScheduledPersistedActionServiceBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
-import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.BaseSpringTest;
 import org.junit.After;
 import org.junit.Before;
@@ -69,11 +64,13 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-/**
- * Unit tests for the {@link ScheduledPersistedActionService}
- */
-public class ScheduledPersistedActionServiceTest extends BaseSpringTest
-{
+import java.util.Date;
+import java.util.List;
+
+import javax.transaction.UserTransaction;
+
+/** Unit tests for the {@link ScheduledPersistedActionService} */
+public class ScheduledPersistedActionServiceTest extends BaseSpringTest {
     private ScheduledPersistedActionServiceBootstrap bootstrap;
     private ScheduledPersistedActionService service;
     private ScheduledPersistedActionServiceImpl serviceImpl;
@@ -89,16 +86,21 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
     private Action testAction3;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         actionService = (ActionService) applicationContext.getBean("actionService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         runtimeActionService = (RuntimeActionService) applicationContext.getBean("actionService");
-        service = (ScheduledPersistedActionService) applicationContext.getBean("ScheduledPersistedActionService");
-        serviceImpl = (ScheduledPersistedActionServiceImpl) applicationContext.getBean("scheduledPersistedActionService");
+        service =
+                (ScheduledPersistedActionService)
+                        applicationContext.getBean("ScheduledPersistedActionService");
+        serviceImpl =
+                (ScheduledPersistedActionServiceImpl)
+                        applicationContext.getBean("scheduledPersistedActionService");
         scheduler = (Scheduler) applicationContext.getBean("schedulerFactory");
-        bootstrap = (ScheduledPersistedActionServiceBootstrap) applicationContext.getBean("scheduledPersistedActionServiceBootstrap");
+        bootstrap =
+                (ScheduledPersistedActionServiceBootstrap)
+                        applicationContext.getBean("scheduledPersistedActionServiceBootstrap");
 
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -111,19 +113,24 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
 
         // Zap all test schedules
         List<ScheduledPersistedAction> schedules = service.listSchedules();
-        for (ScheduledPersistedAction schedule : schedules)
-        {
+        for (ScheduledPersistedAction schedule : schedules) {
             service.deleteSchedule(schedule);
         }
 
         // Persist an action that uses the test executor
         testAction = new TestAction(actionService.createAction(SleepActionExecuter.NAME));
-        runtimeActionService.createActionNodeRef(testAction, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
-                ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction"));
+        runtimeActionService.createActionNodeRef(
+                testAction,
+                serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("TestAction"));
 
         testAction2 = new TestAction(actionService.createAction(SleepActionExecuter.NAME));
-        runtimeActionService.createActionNodeRef(testAction2, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
-                ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction2"));
+        runtimeActionService.createActionNodeRef(
+                testAction2,
+                serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("TestAction2"));
 
         testAction3 = new TestAction(actionService.createAction(SleepActionExecuter.NAME));
 
@@ -136,15 +143,13 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
 
         // Zap all test schedules
         List<ScheduledPersistedAction> schedules = service.listSchedules();
-        for (ScheduledPersistedAction schedule : schedules)
-        {
+        for (ScheduledPersistedAction schedule : schedules) {
             service.deleteSchedule(schedule);
         }
         txn.commit();
@@ -153,12 +158,9 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         scheduler.start();
     }
 
-    /**
-     * Test that the {@link ScheduledPersistedAction} implementation behaves properly
-     */
+    /** Test that the {@link ScheduledPersistedAction} implementation behaves properly */
     @Test
-    public void testPersistedActionImpl() throws Exception
-    {
+    public void testPersistedActionImpl() throws Exception {
         ScheduledPersistedActionImpl schedule = new ScheduledPersistedActionImpl(testAction);
         ScheduledPersistedActionImpl schedule3 = new ScheduledPersistedActionImpl(testAction3);
 
@@ -174,7 +176,9 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         // Persist the 3rd action
         runtimeActionService.createActionNodeRef(
                 //
-                testAction3, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF, ContentModel.ASSOC_CONTAINS,
+                testAction3,
+                serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+                ContentModel.ASSOC_CONTAINS,
                 QName.createQName("TestAction3"));
 
         assertEquals(null, schedule.getPersistedAtNodeRef());
@@ -243,22 +247,17 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         // Trigger parts happen in another test
     }
 
-    /**
-     * Tests that the to-trigger stuff works properly
-     */
+    /** Tests that the to-trigger stuff works properly */
     @Test
-    public void testActionToTrigger() throws Exception
-    {
+    public void testActionToTrigger() throws Exception {
         // Can't get a trigger until persisted
-        ScheduledPersistedActionImpl schedule = (ScheduledPersistedActionImpl) service.createSchedule(testAction);
+        ScheduledPersistedActionImpl schedule =
+                (ScheduledPersistedActionImpl) service.createSchedule(testAction);
         Trigger t;
-        try
-        {
+        try {
             schedule.asTrigger();
             fail("Should require persistence first");
-        }
-        catch (IllegalStateException e)
-        {
+        } catch (IllegalStateException e) {
         }
 
         service.saveSchedule(schedule);
@@ -295,11 +294,16 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
 
         t = schedule.asTrigger();
         assertNotNull(t);
-        assertEquals((double) System.currentTimeMillis(), (double) t.getStartTime().getTime(), 10); // Within 10ms
+        assertEquals(
+                (double) System.currentTimeMillis(),
+                (double) t.getStartTime().getTime(),
+                10); // Within 10ms
         assertEquals(null, t.getEndTime());
         assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(2, ((CalendarIntervalTrigger) t).getRepeatInterval());
-        assertEquals(DateBuilder.IntervalUnit.SECOND, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
+        assertEquals(
+                DateBuilder.IntervalUnit.SECOND,
+                ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
         // Start+interval
         schedule.setScheduleStart(new Date(12345));
@@ -313,7 +317,9 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(null, t.getEndTime());
         assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(3, ((CalendarIntervalTrigger) t).getRepeatInterval());
-        assertEquals(DateBuilder.IntervalUnit.MONTH, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
+        assertEquals(
+                DateBuilder.IntervalUnit.MONTH,
+                ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
         // Start+interval+end-in-the-past
         schedule.setScheduleStart(new Date(12345));
@@ -337,7 +343,9 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(future, t.getEndTime().getTime());
         assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(12, ((CalendarIntervalTrigger) t).getRepeatInterval());
-        assertEquals(DateBuilder.IntervalUnit.WEEK, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
+        assertEquals(
+                DateBuilder.IntervalUnit.WEEK,
+                ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
         // interval+end
         schedule.setScheduleStart(null);
@@ -347,11 +355,16 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
 
         t = schedule.asTrigger();
         assertNotNull(t);
-        assertEquals((double) System.currentTimeMillis(), (double) t.getStartTime().getTime(), 2); // Within 2ms
+        assertEquals(
+                (double) System.currentTimeMillis(),
+                (double) t.getStartTime().getTime(),
+                2); // Within 2ms
         assertEquals(future, t.getEndTime().getTime());
         assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(6, ((CalendarIntervalTrigger) t).getRepeatInterval());
-        assertEquals(DateBuilder.IntervalUnit.HOUR, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
+        assertEquals(
+                DateBuilder.IntervalUnit.HOUR,
+                ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
         // Start+end-in-the-past
         // (Ignored as the end has passed)
@@ -379,19 +392,17 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(SimpleTriggerImpl.class, t.getClass());
     }
 
-    /**
-     * Tests that the triggers are suitably tweaked based on when the last run occured
-     */
+    /** Tests that the triggers are suitably tweaked based on when the last run occured */
     @Test
-    public void testAsTriggerLastRun() throws Exception
-    {
+    public void testAsTriggerLastRun() throws Exception {
         long future = System.currentTimeMillis() + 1234567;
         long future90mins = System.currentTimeMillis() + 90 * 60 * 1000;
         long past30mins = System.currentTimeMillis() - 30 * 60 * 1000;
         long past90mins = System.currentTimeMillis() - 90 * 60 * 1000;
         long past150mins = System.currentTimeMillis() - 150 * 60 * 1000;
 
-        ScheduledPersistedActionImpl schedule = (ScheduledPersistedActionImpl) service.createSchedule(testAction);
+        ScheduledPersistedActionImpl schedule =
+                (ScheduledPersistedActionImpl) service.createSchedule(testAction);
         service.saveSchedule(schedule);
         Trigger t;
 
@@ -406,7 +417,10 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         t = schedule.asTrigger();
         assertNotNull(t);
 
-        assertEquals((double) System.currentTimeMillis(), (double) t.getStartTime().getTime(), 10); // Within 10ms
+        assertEquals(
+                (double) System.currentTimeMillis(),
+                (double) t.getStartTime().getTime(),
+                10); // Within 10ms
         assertEquals(null, t.getEndTime());
 
         // No start date, repeats set, previously run
@@ -420,7 +434,10 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         t = schedule.asTrigger();
         assertNotNull(t);
 
-        assertEquals((double) System.currentTimeMillis(), (double) t.getStartTime().getTime(), 10); // Within 10ms
+        assertEquals(
+                (double) System.currentTimeMillis(),
+                (double) t.getStartTime().getTime(),
+                10); // Within 10ms
         assertEquals(null, t.getEndTime());
 
         // Start date in the past, no repeats, never run
@@ -562,16 +579,15 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(t);
 
         assertEquals(past150mins, t.getStartTime().getTime()); // Real start used
-        assertEquals(future90mins, t.getFireTimeAfter(new Date()).getTime()); // After this, fire 4 hours from start
+        assertEquals(
+                future90mins,
+                t.getFireTimeAfter(new Date()).getTime()); // After this, fire 4 hours from start
         assertEquals(null, t.getEndTime());
     }
 
-    /**
-     * Tests that we can create, save, edit, delete etc the scheduled persisted actions
-     */
+    /** Tests that we can create, save, edit, delete etc the scheduled persisted actions */
     @Test
-    public void testCreation()
-    {
+    public void testCreation() {
         ScheduledPersistedAction schedule = service.createSchedule(testAction);
         assertNotNull(schedule);
         assertTrue(testAction == schedule.getAction());
@@ -588,12 +604,12 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         schedule.setScheduleIntervalCount(2);
         assertEquals(new Integer(2), schedule.getScheduleIntervalCount());
         schedule.setScheduleIntervalPeriod(ScheduledPersistedAction.IntervalPeriod.Day);
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, schedule.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Day, schedule.getScheduleIntervalPeriod());
     }
 
     @Test
-    public void testCreateSaveLoad() throws Exception
-    {
+    public void testCreateSaveLoad() throws Exception {
         // create and save schedule
         ScheduledPersistedAction schedule = service.createSchedule(testAction);
         assertNotNull(schedule);
@@ -607,23 +623,27 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
 
         // Load it again, should have the same details still
-        ScheduledPersistedAction retrieved = serviceImpl
-                .loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
+        ScheduledPersistedAction retrieved =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
         assertEquals(new Integer(2), retrieved.getScheduleIntervalCount());
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
         assertNotNull(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
 
         // Load a 2nd copy, won't be any changes
-        ScheduledPersistedAction second = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule)
-                .getPersistedAtNodeRef());
+        ScheduledPersistedAction second =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         assertNotNull(second);
         assertEquals(testAction.getNodeRef(), second.getAction().getNodeRef());
         assertEquals(now, second.getScheduleStart());
         assertEquals(new Integer(2), second.getScheduleIntervalCount());
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, second.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Day, second.getScheduleIntervalPeriod());
 
         // Now ensure we can create for an action that didn't have a noderef
         // when we started
@@ -632,8 +652,11 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNull(schedule.getActionNodeRef());
         assertNull(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
 
-        runtimeActionService.createActionNodeRef(testAction3, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
-                ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction3"));
+        runtimeActionService.createActionNodeRef(
+                testAction3,
+                serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("TestAction3"));
 
         assertNotNull(schedule.getActionNodeRef());
         assertNull(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
@@ -645,12 +668,11 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
     }
 
     /**
-     * Ensures that we can create, save, edit, save load, edit, save, load etc, all without problems, and without
-     * creating duplicates
+     * Ensures that we can create, save, edit, save load, edit, save, load etc, all without
+     * problems, and without creating duplicates
      */
     @Test
-    public void testEditing() throws Exception
-    {
+    public void testEditing() throws Exception {
         // create and save schedule
         ScheduledPersistedAction schedule = service.createSchedule(testAction);
         assertNotNull(schedule);
@@ -667,46 +689,53 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         // Load and check it hasn't changed
         txn = transactionService.getUserTransaction();
         txn.begin();
-        ScheduledPersistedAction retrieved = serviceImpl
-                .loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
+        ScheduledPersistedAction retrieved =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         txn.commit();
 
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
         assertEquals(new Integer(2), retrieved.getScheduleIntervalCount());
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // Save and re-load without changes
         txn = transactionService.getUserTransaction();
         txn.begin();
         service.saveSchedule(schedule);
-        retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule)
-                .getPersistedAtNodeRef());
+        retrieved =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         txn.commit();
 
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
         assertEquals(new Integer(2), retrieved.getScheduleIntervalCount());
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // Make some small changes
         txn = transactionService.getUserTransaction();
         txn.begin();
-        retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule)
-                .getPersistedAtNodeRef());
+        retrieved =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         retrieved.setScheduleIntervalCount(3);
         service.saveSchedule(retrieved);
-        retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule)
-                .getPersistedAtNodeRef());
+        retrieved =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         txn.commit();
 
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
         assertEquals(new Integer(3), retrieved.getScheduleIntervalCount());
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // And some more changes
         retrieved.setScheduleIntervalPeriod(ScheduledPersistedAction.IntervalPeriod.Month);
@@ -716,23 +745,23 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         txn = transactionService.getUserTransaction();
         txn.begin();
         service.saveSchedule(retrieved);
-        retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl) schedule)
-                .getPersistedAtNodeRef());
+        retrieved =
+                serviceImpl.loadPersistentSchedule(
+                        ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
         txn.commit();
 
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
         assertEquals(new Integer(3), retrieved.getScheduleIntervalCount());
-        assertEquals(ScheduledPersistedAction.IntervalPeriod.Month, retrieved.getScheduleIntervalPeriod());
+        assertEquals(
+                ScheduledPersistedAction.IntervalPeriod.Month,
+                retrieved.getScheduleIntervalPeriod());
     }
 
-    /**
-     * Tests that the listings work, both of all scheduled, and from an action
-     */
+    /** Tests that the listings work, both of all scheduled, and from an action */
     @Test
-    public void testLoadList() throws Exception
-    {
+    public void testLoadList() throws Exception {
         assertEquals(0, service.listSchedules().size());
 
         // Create
@@ -753,8 +782,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
     }
 
     @Test
-    public void testLoadFromAction() throws Exception
-    {
+    public void testLoadFromAction() throws Exception {
         // Create schedule
         ScheduledPersistedAction schedule1 = service.createSchedule(testAction);
         assertNotNull(schedule1);
@@ -770,23 +798,28 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(testAction.getNodeRef(), retrieved.getActionNodeRef());
     }
 
-    /**
-     * Tests that the startup registering works properly
-     */
+    /** Tests that the startup registering works properly */
     @Test
-    public void testStartup() throws Exception
-    {
+    public void testStartup() throws Exception {
         // Startup with none there, nothing happens
-        assertEquals(0, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
+        assertEquals(
+                0,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+                        .size());
         assertEquals(0, service.listSchedules().size());
 
         bootstrap.onBootstrap(null);
 
-        assertEquals(0, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
+        assertEquals(
+                0,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+                        .size());
         assertEquals(0, service.listSchedules().size());
 
         // Manually add a scheduled action
@@ -796,29 +829,35 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         schedule.setScheduleStart(new Date(future));
         service.saveSchedule(schedule);
 
-        ((ScheduledPersistedActionServiceImpl) applicationContext.getBean("scheduledPersistedActionService"))
+        ((ScheduledPersistedActionServiceImpl)
+                        applicationContext.getBean("scheduledPersistedActionService"))
                 .removeFromScheduler((ScheduledPersistedActionImpl) schedule);
 
-        assertEquals(0, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
+        assertEquals(
+                0,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+                        .size());
         assertEquals(1, service.listSchedules().size());
 
         // Now do the bootstrap, and see it get registered
         bootstrap.onBootstrap(null);
 
-        assertEquals(1, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
+        assertEquals(
+                1,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+                        .size());
         assertEquals(1, service.listSchedules().size());
     }
 
-    /**
-     * Ensures that deletion works correctly
-     */
+    /** Ensures that deletion works correctly */
     @Test
-    public void testDeletion() throws Exception
-    {
+    public void testDeletion() throws Exception {
         // Delete does nothing if not persisted
         assertEquals(0, service.listSchedules().size());
         ScheduledPersistedAction schedule1 = service.createSchedule(testAction);
@@ -832,14 +871,28 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         service.saveSchedule(schedule1);
         service.saveSchedule(schedule2);
         assertEquals(2, service.listSchedules().size());
-        NodeRef schedule1NodeRef = ((ScheduledPersistedActionImpl) schedule1).getPersistedAtNodeRef();
-        NodeRef schedule2NodeRef = ((ScheduledPersistedActionImpl) schedule2).getPersistedAtNodeRef();
+        NodeRef schedule1NodeRef =
+                ((ScheduledPersistedActionImpl) schedule1).getPersistedAtNodeRef();
+        NodeRef schedule2NodeRef =
+                ((ScheduledPersistedActionImpl) schedule2).getPersistedAtNodeRef();
 
         // Both should have the relationship
-        assertEquals(1, nodeService.getTargetAssocs(schedule1NodeRef, RegexQNamePattern.MATCH_ALL).size());
-        assertEquals(1, nodeService.getTargetAssocs(schedule2NodeRef, RegexQNamePattern.MATCH_ALL).size());
-        assertEquals(1, nodeService.getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
-        assertEquals(1, nodeService.getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(
+                1,
+                nodeService.getTargetAssocs(schedule1NodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(
+                1,
+                nodeService.getTargetAssocs(schedule2NodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(
+                1,
+                nodeService
+                        .getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL)
+                        .size());
+        assertEquals(
+                1,
+                nodeService
+                        .getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL)
+                        .size());
 
         // Delete one - the correct one goes!
         service.deleteSchedule(schedule2);
@@ -851,9 +904,19 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNull(service.getSchedule(testAction2));
 
         // Ensure that the relationship went
-        assertEquals(1, nodeService.getTargetAssocs(schedule1NodeRef, RegexQNamePattern.MATCH_ALL).size());
-        assertEquals(1, nodeService.getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
-        assertEquals(0, nodeService.getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(
+                1,
+                nodeService.getTargetAssocs(schedule1NodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(
+                1,
+                nodeService
+                        .getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL)
+                        .size());
+        assertEquals(
+                0,
+                nodeService
+                        .getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL)
+                        .size());
 
         // Re-delete already deleted, no change
         service.deleteSchedule(schedule2);
@@ -873,8 +936,16 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNull(service.getSchedule(testAction2));
 
         // Ensure that the relationship went
-        assertEquals(0, nodeService.getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
-        assertEquals(0, nodeService.getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(
+                0,
+                nodeService
+                        .getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL)
+                        .size());
+        assertEquals(
+                0,
+                nodeService
+                        .getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL)
+                        .size());
 
         // Can add back in again after being deleted
         service.saveSchedule(schedule1);
@@ -892,34 +963,30 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(0, service.listSchedules().size());
     }
 
-    /**
-     * Tests that things get properly injected onto the job bean
-     */
+    /** Tests that things get properly injected onto the job bean */
     @Test
-    public void testJobBeanInjection() throws Exception
-    {
+    public void testJobBeanInjection() throws Exception {
         // This test needs the scheduler running properly
         scheduler.start();
 
         // The job should run almost immediately
         Job job = new TestJob();
-        JobDetail details = JobBuilder.newJob()
-                .withIdentity("ThisIsATest")
-                .ofType(job.getClass())
-                .build();
-        Trigger now = TriggerBuilder.newTrigger()
-                .withIdentity("TestTrigger")
-                .startAt(new Date(1))
-                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
-                .build();
+        JobDetail details =
+                JobBuilder.newJob().withIdentity("ThisIsATest").ofType(job.getClass()).build();
+        Trigger now =
+                TriggerBuilder.newTrigger()
+                        .withIdentity("TestTrigger")
+                        .startAt(new Date(1))
+                        .withSchedule(
+                                SimpleScheduleBuilder.simpleSchedule()
+                                        .withMisfireHandlingInstructionFireNow())
+                        .build();
         Scheduler scheduler = (Scheduler) applicationContext.getBean("schedulerFactory");
         scheduler.scheduleJob(details, now);
 
         // Allow it to run
-        for (int i = 0; i < 20; i++)
-        {
-            if (!TestJob.ran)
-                Thread.sleep(50);
+        for (int i = 0; i < 20; i++) {
+            if (!TestJob.ran) Thread.sleep(50);
         }
 
         // Ensure it ran, and it got a copy of the context
@@ -927,13 +994,11 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(true, TestJob.gotContext);
     }
 
-    /**
-     * Tests that things actually get run correctly. Each sub-test runs in its own transaction
-     */
+    /** Tests that things actually get run correctly. Each sub-test runs in its own transaction */
     @Test
-    public void testExecution() throws Exception
-    {
-        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) applicationContext.getBean(SleepActionExecuter.NAME);
+    public void testExecution() throws Exception {
+        final SleepActionExecuter sleepActionExec =
+                (SleepActionExecuter) applicationContext.getBean(SleepActionExecuter.NAME);
         sleepActionExec.resetTimesExecuted();
         sleepActionExec.setSleepMs(1);
 
@@ -943,34 +1008,47 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         // Until the schedule is persisted, nothing will happen
         @SuppressWarnings("unused")
         ScheduledPersistedAction schedule = service.createSchedule(testAction);
-        assertEquals(0, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
+        assertEquals(
+                0,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+                        .size());
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
 
-                // A job due to start in 1 second, and run once
-                ScheduledPersistedAction schedule = service.createSchedule(testAction);
-                schedule.setScheduleStart(new Date(System.currentTimeMillis() + 1000));
-                assertNull(schedule.getScheduleInterval());
-                assertNull(schedule.getScheduleIntervalCount());
-                assertNull(schedule.getScheduleIntervalPeriod());
-                assertNull(schedule.getScheduleLastExecutedAt());
+                                // A job due to start in 1 second, and run once
+                                ScheduledPersistedAction schedule =
+                                        service.createSchedule(testAction);
+                                schedule.setScheduleStart(
+                                        new Date(System.currentTimeMillis() + 1000));
+                                assertNull(schedule.getScheduleInterval());
+                                assertNull(schedule.getScheduleIntervalCount());
+                                assertNull(schedule.getScheduleIntervalPeriod());
+                                assertNull(schedule.getScheduleLastExecutedAt());
 
-                System.out.println("Job starts in 1 second, no repeat...");
-                service.saveSchedule(schedule);
+                                System.out.println("Job starts in 1 second, no repeat...");
+                                service.saveSchedule(schedule);
 
-                return null;
-            }
-        }, false, true);
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
 
         // Check it went in
-        assertEquals(1, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
+        assertEquals(
+                1,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+                        .size());
 
         // Let it run
         Thread.sleep(2000);
@@ -979,184 +1057,244 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertEquals(1, sleepActionExec.getTimesExecuted());
 
         // Should have removed itself now the schedule is over
-        assertEquals(0, scheduler
-                .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                .size());
-
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-
-                // Ensure it was tagged with when it ran
-                ScheduledPersistedAction schedule = service.getSchedule(testAction);
-                assertEquals((double) System.currentTimeMillis(), (double) schedule.getScheduleLastExecutedAt()
-                        .getTime(), 2500); // Within 2.5 secs
-
-                // Zap it
-                service.deleteSchedule(schedule);
-                assertEquals(0, scheduler
-                        .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
+        assertEquals(
+                0,
+                scheduler
+                        .getJobKeys(
+                                GroupMatcher.groupEquals(
+                                        ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
                         .size());
 
-                return null;
-            }
-        }, false, true);
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
+
+                                // Ensure it was tagged with when it ran
+                                ScheduledPersistedAction schedule = service.getSchedule(testAction);
+                                assertEquals(
+                                        (double) System.currentTimeMillis(),
+                                        (double) schedule.getScheduleLastExecutedAt().getTime(),
+                                        2500); // Within 2.5 secs
+
+                                // Zap it
+                                service.deleteSchedule(schedule);
+                                assertEquals(
+                                        0,
+                                        scheduler
+                                                .getJobKeys(
+                                                        GroupMatcher.groupEquals(
+                                                                ScheduledPersistedActionServiceImpl
+                                                                        .SCHEDULER_GROUP))
+                                                .size());
+
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
 
         // ==========================
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
 
-                // A job that runs every 2 seconds, for the next 3.5 seconds
-                // (Should get to run twice, now and @2 secs)
-                ScheduledPersistedAction schedule = service.createSchedule(testAction);
-                schedule.setScheduleStart(new Date(System.currentTimeMillis() - 50));
-                ((ScheduledPersistedActionImpl) schedule).setScheduleEnd(new Date(System.currentTimeMillis() + 3500));
-                schedule.setScheduleIntervalCount(2);
-                schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
-                assertEquals("2Second", schedule.getScheduleInterval());
+                                // A job that runs every 2 seconds, for the next 3.5 seconds
+                                // (Should get to run twice, now and @2 secs)
+                                ScheduledPersistedAction schedule =
+                                        service.createSchedule(testAction);
+                                schedule.setScheduleStart(
+                                        new Date(System.currentTimeMillis() - 50));
+                                ((ScheduledPersistedActionImpl) schedule)
+                                        .setScheduleEnd(
+                                                new Date(System.currentTimeMillis() + 3500));
+                                schedule.setScheduleIntervalCount(2);
+                                schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+                                assertEquals("2Second", schedule.getScheduleInterval());
 
-                // Reset count
-                sleepActionExec.resetTimesExecuted();
-                assertEquals(0, sleepActionExec.getTimesExecuted());
+                                // Reset count
+                                sleepActionExec.resetTimesExecuted();
+                                assertEquals(0, sleepActionExec.getTimesExecuted());
 
-                service.saveSchedule(schedule);
-                System.out.println("Job " + ((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef()
-                        + " starts now, repeats twice @ 2s");
+                                service.saveSchedule(schedule);
+                                System.out.println(
+                                        "Job "
+                                                + ((ScheduledPersistedActionImpl) schedule)
+                                                        .getPersistedAtNodeRef()
+                                                + " starts now, repeats twice @ 2s");
 
-                return null;
-            }
-        }, false, true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                Thread.sleep(4250);
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
+                                Thread.sleep(4250);
 
-                ScheduledPersistedAction schedule = service.getSchedule(testAction);
+                                ScheduledPersistedAction schedule = service.getSchedule(testAction);
 
-                // Ensure it did properly run two times
-                // (Depending on timing of tests, might actually slip in 3
-                // runs)
-                if (sleepActionExec.getTimesExecuted() == 3)
-                {
-                    assertEquals(3, sleepActionExec.getTimesExecuted());
-                }
-                else
-                {
-                    assertEquals(2, sleepActionExec.getTimesExecuted());
-                }
+                                // Ensure it did properly run two times
+                                // (Depending on timing of tests, might actually slip in 3
+                                // runs)
+                                if (sleepActionExec.getTimesExecuted() == 3) {
+                                    assertEquals(3, sleepActionExec.getTimesExecuted());
+                                } else {
+                                    assertEquals(2, sleepActionExec.getTimesExecuted());
+                                }
 
-                // Zap it
-                service.deleteSchedule(schedule);
-                assertEquals(0, scheduler
-                        .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                        .size());
+                                // Zap it
+                                service.deleteSchedule(schedule);
+                                assertEquals(
+                                        0,
+                                        scheduler
+                                                .getJobKeys(
+                                                        GroupMatcher.groupEquals(
+                                                                ScheduledPersistedActionServiceImpl
+                                                                        .SCHEDULER_GROUP))
+                                                .size());
 
-                return null;
-            }
-        }, false, true);
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
 
         // ==========================
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
 
-                // A job that starts in 2 seconds time, and runs
-                // every second until we kill it
-                ScheduledPersistedAction schedule = service.createSchedule(testAction);
-                schedule.setScheduleStart(new Date(System.currentTimeMillis() + 2000));
-                schedule.setScheduleIntervalCount(1);
-                schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
-                assertEquals("1Second", schedule.getScheduleInterval());
+                                // A job that starts in 2 seconds time, and runs
+                                // every second until we kill it
+                                ScheduledPersistedAction schedule =
+                                        service.createSchedule(testAction);
+                                schedule.setScheduleStart(
+                                        new Date(System.currentTimeMillis() + 2000));
+                                schedule.setScheduleIntervalCount(1);
+                                schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+                                assertEquals("1Second", schedule.getScheduleInterval());
 
-                // Reset count
-                sleepActionExec.resetTimesExecuted();
-                assertEquals(0, sleepActionExec.getTimesExecuted());
+                                // Reset count
+                                sleepActionExec.resetTimesExecuted();
+                                assertEquals(0, sleepActionExec.getTimesExecuted());
 
-                System.out.println("Job starts in 2s, repeats @ 1s");
-                service.saveSchedule(schedule);
+                                System.out.println("Job starts in 2s, repeats @ 1s");
+                                service.saveSchedule(schedule);
 
-                return null;
-            }
-        }, false, true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
 
-                // Let it run a few times
-                Thread.sleep(5000);
+                                // Let it run a few times
+                                Thread.sleep(5000);
 
-                // Zap it - should still be live
-                ScheduledPersistedAction schedule = service.getSchedule(testAction);
-                assertEquals(1, scheduler
-                        .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                        .size());
-                service.deleteSchedule(schedule);
-                assertEquals(0, scheduler
-                        .getJobKeys(GroupMatcher.groupEquals(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP))
-                        .size());
+                                // Zap it - should still be live
+                                ScheduledPersistedAction schedule = service.getSchedule(testAction);
+                                assertEquals(
+                                        1,
+                                        scheduler
+                                                .getJobKeys(
+                                                        GroupMatcher.groupEquals(
+                                                                ScheduledPersistedActionServiceImpl
+                                                                        .SCHEDULER_GROUP))
+                                                .size());
+                                service.deleteSchedule(schedule);
+                                assertEquals(
+                                        0,
+                                        scheduler
+                                                .getJobKeys(
+                                                        GroupMatcher.groupEquals(
+                                                                ScheduledPersistedActionServiceImpl
+                                                                        .SCHEDULER_GROUP))
+                                                .size());
 
-                // Check it ran an appropriate number of times
-                assertEquals("Didn't run enough - " + sleepActionExec.getTimesExecuted(), true,
-                        sleepActionExec.getTimesExecuted() >= 3);
-                assertEquals("Ran too much - " + sleepActionExec.getTimesExecuted(), true,
-                        sleepActionExec.getTimesExecuted() < 5);
+                                // Check it ran an appropriate number of times
+                                assertEquals(
+                                        "Didn't run enough - " + sleepActionExec.getTimesExecuted(),
+                                        true,
+                                        sleepActionExec.getTimesExecuted() >= 3);
+                                assertEquals(
+                                        "Ran too much - " + sleepActionExec.getTimesExecuted(),
+                                        true,
+                                        sleepActionExec.getTimesExecuted() < 5);
 
-                // Ensure it finished shutting down
-                Thread.sleep(500);
+                                // Ensure it finished shutting down
+                                Thread.sleep(500);
 
-                return null;
-            }
-        }, false, true);
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
     }
 
     /**
-     * Tests that when we have more than one schedule defined and active, then the correct things run at the correct
-     * times, and we never get confused
+     * Tests that when we have more than one schedule defined and active, then the correct things
+     * run at the correct times, and we never get confused
      */
     @Test
-    public void testMultipleExecutions() throws Exception
-    {
-        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) applicationContext.getBean(SleepActionExecuter.NAME);
+    public void testMultipleExecutions() throws Exception {
+        final SleepActionExecuter sleepActionExec =
+                (SleepActionExecuter) applicationContext.getBean(SleepActionExecuter.NAME);
         sleepActionExec.resetTimesExecuted();
         sleepActionExec.setSleepMs(1);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
 
-                // Create one that starts running in 2 seconds, runs every 2
-                // seconds
-                // until 9 seconds are up (will run 4 times)
-                ScheduledPersistedActionImpl scheduleA = (ScheduledPersistedActionImpl) service.createSchedule(testAction);
-                scheduleA.setScheduleStart(new Date(System.currentTimeMillis() + 2000));
-                scheduleA.setScheduleEnd(new Date(System.currentTimeMillis() + 9000));
-                scheduleA.setScheduleIntervalCount(2);
-                scheduleA.setScheduleIntervalPeriod(IntervalPeriod.Second);
-                service.saveSchedule(scheduleA);
+                                // Create one that starts running in 2 seconds, runs every 2
+                                // seconds
+                                // until 9 seconds are up (will run 4 times)
+                                ScheduledPersistedActionImpl scheduleA =
+                                        (ScheduledPersistedActionImpl)
+                                                service.createSchedule(testAction);
+                                scheduleA.setScheduleStart(
+                                        new Date(System.currentTimeMillis() + 2000));
+                                scheduleA.setScheduleEnd(
+                                        new Date(System.currentTimeMillis() + 9000));
+                                scheduleA.setScheduleIntervalCount(2);
+                                scheduleA.setScheduleIntervalPeriod(IntervalPeriod.Second);
+                                service.saveSchedule(scheduleA);
 
-                // Create one that starts running now, every second until 9.5
-                // seconds
-                // are up (will run 9-10 times)
-                ScheduledPersistedActionImpl scheduleB = (ScheduledPersistedActionImpl) service
-                        .createSchedule(testAction2);
-                scheduleB.setScheduleStart(new Date(System.currentTimeMillis()));
-                scheduleB.setScheduleEnd(new Date(System.currentTimeMillis() + 9500));
-                scheduleB.setScheduleIntervalCount(1);
-                scheduleB.setScheduleIntervalPeriod(IntervalPeriod.Second);
-                service.saveSchedule(scheduleB);
+                                // Create one that starts running now, every second until 9.5
+                                // seconds
+                                // are up (will run 9-10 times)
+                                ScheduledPersistedActionImpl scheduleB =
+                                        (ScheduledPersistedActionImpl)
+                                                service.createSchedule(testAction2);
+                                scheduleB.setScheduleStart(new Date(System.currentTimeMillis()));
+                                scheduleB.setScheduleEnd(
+                                        new Date(System.currentTimeMillis() + 9500));
+                                scheduleB.setScheduleIntervalCount(1);
+                                scheduleB.setScheduleIntervalPeriod(IntervalPeriod.Second);
+                                service.saveSchedule(scheduleB);
 
-                return null;
-            }
-        }, false, true);
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
 
         // Set them going
         scheduler.start();
@@ -1165,66 +1303,73 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         Thread.sleep(10 * 1000);
 
         // Check that they really did run properly
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+        transactionService
+                .getRetryingTransactionHelper()
+                .doInTransaction(
+                        new RetryingTransactionCallback<Void>() {
+                            public Void execute() throws Throwable {
 
-                ScheduledPersistedAction scheduleA = service.getSchedule(testAction);
-                ScheduledPersistedAction scheduleB = service.getSchedule(testAction2);
+                                ScheduledPersistedAction scheduleA =
+                                        service.getSchedule(testAction);
+                                ScheduledPersistedAction scheduleB =
+                                        service.getSchedule(testAction2);
 
-                // Both should have last run at some point in the last second
-                // or two
-                assertEquals((double) System.currentTimeMillis(), (double) scheduleA.getScheduleLastExecutedAt()
-                        .getTime(), 2500);
-                assertEquals((double) System.currentTimeMillis(), (double) scheduleB.getScheduleLastExecutedAt()
-                        .getTime(), 2500);
+                                // Both should have last run at some point in the last second
+                                // or two
+                                assertEquals(
+                                        (double) System.currentTimeMillis(),
+                                        (double) scheduleA.getScheduleLastExecutedAt().getTime(),
+                                        2500);
+                                assertEquals(
+                                        (double) System.currentTimeMillis(),
+                                        (double) scheduleB.getScheduleLastExecutedAt().getTime(),
+                                        2500);
 
-                // A should have run ~4 times
-                // B should have run ~9 times
-                assertEquals("Didn't run enough - " + sleepActionExec.getTimesExecuted(), true,
-                        sleepActionExec.getTimesExecuted() >= 11);
-                assertEquals("Ran too much - " + sleepActionExec.getTimesExecuted(), true,
-                        sleepActionExec.getTimesExecuted() < 16);
+                                // A should have run ~4 times
+                                // B should have run ~9 times
+                                assertEquals(
+                                        "Didn't run enough - " + sleepActionExec.getTimesExecuted(),
+                                        true,
+                                        sleepActionExec.getTimesExecuted() >= 11);
+                                assertEquals(
+                                        "Ran too much - " + sleepActionExec.getTimesExecuted(),
+                                        true,
+                                        sleepActionExec.getTimesExecuted() < 16);
 
-                return null;
-            }
-        }, false, true);
+                                return null;
+                            }
+                        },
+                        false,
+                        true);
     }
 
     // ============================================================================
 
-    /**
-     * For unit testing only - not thread safe!
-     */
-    public static class TestJob implements Job, ApplicationContextAware
-    {
+    /** For unit testing only - not thread safe! */
+    public static class TestJob implements Job, ApplicationContextAware {
         private static boolean gotContext = false;
         private static boolean ran = false;
 
-        public TestJob()
-        {
+        public TestJob() {
             gotContext = false;
             ran = false;
         }
 
-        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-        {
+        public void setApplicationContext(ApplicationContext applicationContext)
+                throws BeansException {
             gotContext = true;
         }
 
-        public void execute(JobExecutionContext paramJobExecutionContext) throws JobExecutionException
-        {
+        public void execute(JobExecutionContext paramJobExecutionContext)
+                throws JobExecutionException {
             ran = true;
         }
     }
 
-    protected static class TestAction extends ActionImpl
-    {
+    protected static class TestAction extends ActionImpl {
         private static final long serialVersionUID = -4648866728324635763L;
 
-        protected TestAction(Action action)
-        {
+        protected TestAction(Action action) {
             super(action);
         }
     }

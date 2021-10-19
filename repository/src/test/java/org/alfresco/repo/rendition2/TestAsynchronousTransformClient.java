@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.doTest;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.isATest;
+
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -34,64 +38,69 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.io.ByteArrayInputStream;
 
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.doTest;
-import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.isATest;
-
-/**
- * @author adavis
- */
-public class TestAsynchronousTransformClient<T> implements TransformClient
-{
+/** @author adavis */
+public class TestAsynchronousTransformClient<T> implements TransformClient {
     private ContentService contentService;
     private TransformClient delegate;
     private RenditionService2Impl renditionService2;
 
-    public TestAsynchronousTransformClient(ContentService contentService, TransformClient delegate,
-                                           RenditionService2Impl renditionService2)
-    {
+    public TestAsynchronousTransformClient(
+            ContentService contentService,
+            TransformClient delegate,
+            RenditionService2Impl renditionService2) {
         this.contentService = contentService;
         this.delegate = delegate;
         this.renditionService2 = renditionService2;
     }
 
     @Override
-    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype,
-                               long sourceSizeInBytes, String contentUrl)
-    {
+    public void checkSupported(
+            NodeRef sourceNodeRef,
+            RenditionDefinition2 renditionDefinition,
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String contentUrl) {
         String targetMimetype = renditionDefinition.getTargetMimetype();
-        if (!isATest(sourceMimetype, targetMimetype))
-        {
-            delegate.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+        if (!isATest(sourceMimetype, targetMimetype)) {
+            delegate.checkSupported(
+                    sourceNodeRef,
+                    renditionDefinition,
+                    sourceMimetype,
+                    sourceSizeInBytes,
+                    contentUrl);
         }
     }
 
     @Override
-    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user,
-                   int sourceContentHashCode)
-            throws UnsupportedTransformationException, ContentIOException
-    {
+    public void transform(
+            NodeRef sourceNodeRef,
+            RenditionDefinition2 renditionDefinition,
+            String user,
+            int sourceContentHashCode)
+            throws UnsupportedTransformationException, ContentIOException {
         ContentReader reader = contentService.getReader(sourceNodeRef, PROP_CONTENT);
         String sourceMimetype = reader.getMimetype();
         String targetMimetype = renditionDefinition.getTargetMimetype();
-        if (isATest(sourceMimetype, targetMimetype))
-        {
+        if (isATest(sourceMimetype, targetMimetype)) {
             ContentWriter writer = contentService.getTempWriter();
             writer.setMimetype(targetMimetype);
-            doTest(sourceMimetype, targetMimetype, writer,
-                    new TestSynchronousTransformClient.TestTransformClientCallback()
-                    {
+            doTest(
+                    sourceMimetype,
+                    targetMimetype,
+                    writer,
+                    new TestSynchronousTransformClient.TestTransformClientCallback() {
                         @Override
-                        public void successfulTransform(ContentWriter writer)
-                        {
-                            ByteArrayInputStream inputStream = new ByteArrayInputStream("SUCCESS".getBytes());
-                            renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition,
+                        public void successfulTransform(ContentWriter writer) {
+                            ByteArrayInputStream inputStream =
+                                    new ByteArrayInputStream("SUCCESS".getBytes());
+                            renditionService2.consume(
+                                    sourceNodeRef,
+                                    inputStream,
+                                    renditionDefinition,
                                     sourceContentHashCode);
                         }
                     });
-        }
-        else
-        {
+        } else {
             delegate.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
         }
     }

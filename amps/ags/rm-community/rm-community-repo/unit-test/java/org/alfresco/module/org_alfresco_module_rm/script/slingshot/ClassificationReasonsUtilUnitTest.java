@@ -34,11 +34,6 @@ import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_S
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -49,33 +44,31 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Ross Gale
  * @since 2.7
  */
-public class ClassificationReasonsUtilUnitTest
-{
+public class ClassificationReasonsUtilUnitTest {
 
-    @Mock
-    private NodeService nodeService;
+    @Mock private NodeService nodeService;
 
-    @Mock
-    private ChildAssociationRef childAssociationRef;
+    @Mock private ChildAssociationRef childAssociationRef;
 
-    @Mock
-    private ChildAssociationRef reason;
+    @Mock private ChildAssociationRef reason;
 
-    @Mock
-    private Map<QName, Serializable> properties;
+    @Mock private Map<QName, Serializable> properties;
 
-    @InjectMocks
-    private ClassificationReasonsUtil classificationReasonsUtil;
+    @InjectMocks private ClassificationReasonsUtil classificationReasonsUtil;
 
     private NodeRef childNodeRef;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         NodeRef rootNodeRef = new NodeRef("workspace://SpacesStore/rootNodeRef");
         NodeRef containerNodeRef = new NodeRef("workspace://SpacesStore/containerNodeRef");
@@ -86,43 +79,45 @@ public class ClassificationReasonsUtilUnitTest
         childAssocRefs.add(reason);
         when(reason.getChildRef()).thenReturn(childNodeRef);
         when(nodeService.getRootNode(STORE_REF_WORKSPACE_SPACESSTORE)).thenReturn(rootNodeRef);
-        when(nodeService.getChildAssocs(rootNodeRef, ASSOC_CHILDREN, CLASSIFICATION_REASONS_CONTAINER)).thenReturn(assocRefs);
+        when(nodeService.getChildAssocs(
+                        rootNodeRef, ASSOC_CHILDREN, CLASSIFICATION_REASONS_CONTAINER))
+                .thenReturn(assocRefs);
         when(childAssociationRef.getChildRef()).thenReturn(containerNodeRef);
         when(nodeService.getChildAssocs(containerNodeRef)).thenReturn(childAssocRefs);
     }
 
-    /**
-     * Check no modifications are made to non matching parts of the query string
-     */
+    /** Check no modifications are made to non matching parts of the query string */
     @Test
-    public void testNoChangeMadeToStringIfKeyNotFound()
-    {
+    public void testNoChangeMadeToStringIfKeyNotFound() {
         String stringToTest = "noChangeMadeToString";
-        assertEquals("Change made to string",stringToTest, classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
+        assertEquals(
+                "Change made to string",
+                stringToTest,
+                classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
     }
 
-    /**
-     * Check no modifications made if the plain text parameter doesn't have a stored match
-     */
+    /** Check no modifications made if the plain text parameter doesn't have a stored match */
     @Test
-    public void testNoChangeMadeToStringIfMatchNotFound()
-    {
+    public void testNoChangeMadeToStringIfMatchNotFound() {
         when(nodeService.getProperties(childNodeRef)).thenReturn(properties);
         when(properties.get(PROP_CLASSIFICATION_REASON_CODE)).thenReturn("not a match!");
         String stringToTest = "clf:classificationReasons:noChangeMadeToString";
-        assertEquals("Change made to string", stringToTest, classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
+        assertEquals(
+                "Change made to string",
+                stringToTest,
+                classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
     }
 
-    /**
-     * Check the query is updated correctly when a match is found
-     */
+    /** Check the query is updated correctly when a match is found */
     @Test
-    public void testChangeMadeToStringIfMatchFound()
-    {
+    public void testChangeMadeToStringIfMatchFound() {
         when(nodeService.getProperties(childNodeRef)).thenReturn(properties);
         when(properties.get(PROP_CLASSIFICATION_REASON_CODE)).thenReturn("stringToChange");
         when(properties.get(PROP_NAME)).thenReturn("newString");
         String stringToTest = "clf:classificationReasons:stringToChange";
-        assertEquals("No change made to string", "clf:classificationReasons:newString", classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
+        assertEquals(
+                "No change made to string",
+                "clf:classificationReasons:newString",
+                classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
     }
 }

@@ -29,16 +29,11 @@ import org.json.simple.JSONObject;
 
 import java.io.Serializable;
 
-public class Avatar implements Serializable, ExpectedComparison
-{
+public class Avatar implements Serializable, ExpectedComparison {
     @Override
-    public void expected(Object other)
-    {
+    public void expected(Object other) {}
 
-    }
-
-    public static Avatar parseAvatar(JSONObject entry)
-    {
+    public static Avatar parseAvatar(JSONObject entry) {
         return new Avatar();
     }
 }

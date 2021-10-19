@@ -19,34 +19,31 @@
 package org.alfresco.query;
 
 /**
- * Interface for named query implementations.  These are queries that encapsulate varying
- * degrees of functionality, but ultimately provide support for paging results.
- * <p/>
- * Note that each instance of the query is stateful and cannot be reused.
- * 
- * @param <R>               the query result type
- * 
+ * Interface for named query implementations. These are queries that encapsulate varying degrees of
+ * functionality, but ultimately provide support for paging results.
+ *
+ * <p>Note that each instance of the query is stateful and cannot be reused.
+ *
+ * @param <R> the query result type
  * @author Derek Hulley
  * @since 4.0
  */
-public interface CannedQuery<R>
-{
+public interface CannedQuery<R> {
     /**
      * Get the original parameters used to generate the query.
-     * 
-     * @return              the parameters used to obtain the named query.
+     *
+     * @return the parameters used to obtain the named query.
      */
     CannedQueryParameters getParameters();
-    
+
     /**
-     * Execute the named query, which was provided to support the
-     * {@link #getParameters() parameters} originally provided.
-     * <p/>
-     * <b>Note: This method can only be used once</b>; to requery, get a new
-     * instance from the {@link CannedQueryFactory factory}.
-     * 
-     * @return              the query results
-     * 
+     * Execute the named query, which was provided to support the {@link #getParameters()
+     * parameters} originally provided.
+     *
+     * <p><b>Note: This method can only be used once</b>; to requery, get a new instance from the
+     * {@link CannedQueryFactory factory}.
+     *
+     * @return the query results
      * @throws IllegalStateException on second and subsequent calls to this method
      */
     CannedQueryResults<R> execute();

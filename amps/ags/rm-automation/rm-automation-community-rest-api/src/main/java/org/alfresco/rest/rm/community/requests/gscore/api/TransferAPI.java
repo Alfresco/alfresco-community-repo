@@ -43,21 +43,14 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferAPI extends RMModelRequest
-{
-    /**
-     * @param rmRestWrapper RM REST Wrapper
-     */
-    public TransferAPI(RMRestWrapper rmRestWrapper)
-    {
+public class TransferAPI extends RMModelRequest {
+    /** @param rmRestWrapper RM REST Wrapper */
+    public TransferAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
-    /**
-     * see {@link #getTransfer(String, String)}
-     */
-    public Transfer getTransfer(String transferId)
-    {
+    /** see {@link #getTransfer(String, String)} */
+    public Transfer getTransfer(String transferId) {
         mandatoryString("transferId", transferId);
 
         return getTransfer(transferId, EMPTY);
@@ -70,29 +63,27 @@ public class TransferAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link Transfer} for the given {@code transferId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code transferId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code transferId}</li>
-     *  <li>{@code transferId} does not exist</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code transferId} is not a valid format
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code transferId}
+     *       <li>{@code transferId} does not exist
+     *     </ul>
      */
-    public Transfer getTransfer(String transferId, String parameters)
-    {
+    public Transfer getTransfer(String transferId, String parameters) {
         mandatoryString("transferId", transferId);
 
-        return getRmRestWrapper().processModel(Transfer.class, simpleRequest(
-                GET,
-                "/transfers/{transferId}?{parameters}",
-                transferId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        Transfer.class,
+                        simpleRequest(
+                                GET,
+                                "/transfers/{transferId}?{parameters}",
+                                transferId,
+                                parameters));
     }
-    /**
-     * see {@link #getTransfersChildren(String, String)}
-     */
-    public TransferChildCollection getTransfersChildren(String transferId)
-    {
+    /** see {@link #getTransfersChildren(String, String)} */
+    public TransferChildCollection getTransfersChildren(String transferId) {
         mandatoryString("transferId", transferId);
 
         return getTransfersChildren(transferId, EMPTY);
@@ -105,21 +96,22 @@ public class TransferAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link TransferChildCollection} for the given {@code transferId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code transferId}</li>
-     *  <li>{@code filePlanId} does not exist</li>
-     *</ul>
+     *     <ul>
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code transferId}
+     *       <li>{@code filePlanId} does not exist
+     *     </ul>
      */
-    public TransferChildCollection getTransfersChildren(String transferId, String parameters)
-    {
+    public TransferChildCollection getTransfersChildren(String transferId, String parameters) {
         mandatoryString("transferId", transferId);
 
-        return getRmRestWrapper().processModels(TransferChildCollection.class, simpleRequest(
-            GET,
-            "transfers/{filePlanId}/children?{parameters}",
-            transferId,
-            parameters
-        ));
+        return getRmRestWrapper()
+                .processModels(
+                        TransferChildCollection.class,
+                        simpleRequest(
+                                GET,
+                                "transfers/{filePlanId}/children?{parameters}",
+                                transferId,
+                                parameters));
     }
 }

@@ -29,9 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -41,16 +38,19 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Implementation for Java backed webscript to remove RM custom relationship from a node.
  *
  * @author Neil McErlean
  * @author Tuna Aksoy
  */
-public class CustomRefDelete extends AbstractRmWebScript
-{
+public class CustomRefDelete extends AbstractRmWebScript {
     /** Constants */
     private static final String REF_ID = "refId";
+
     private static final String ST = "st";
     private static final String SI = "si";
 
@@ -65,8 +65,7 @@ public class CustomRefDelete extends AbstractRmWebScript
      *
      * @return The relationship service instance
      */
-    protected RelationshipService getRelationshipService()
-    {
+    protected RelationshipService getRelationshipService() {
         return this.relationshipService;
     }
 
@@ -75,8 +74,7 @@ public class CustomRefDelete extends AbstractRmWebScript
      *
      * @param relationshipService The relationship service instance
      */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
+    public void setRelationshipService(RelationshipService relationshipService) {
         this.relationshipService = relationshipService;
     }
 
@@ -85,8 +83,7 @@ public class CustomRefDelete extends AbstractRmWebScript
      *
      * @return The rule service instance
      */
-    protected RuleService getRuleService()
-    {
+    protected RuleService getRuleService() {
         return this.ruleService;
     }
 
@@ -95,28 +92,24 @@ public class CustomRefDelete extends AbstractRmWebScript
      *
      * @param ruleService The rule service instance
      */
-    public void setRuleService(RuleService ruleService)
-    {
+    public void setRuleService(RuleService ruleService) {
         this.ruleService = ruleService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         Map<String, Object> model = new HashMap<>(1);
-        try
-        {
+        try {
             getRuleService().disableRuleType(RuleType.OUTBOUND);
             removeCustomRelationship(req);
             model.put(SUCCESS, true);
-        }
-        finally
-        {
+        } finally {
             getRuleService().enableRuleType(RuleType.OUTBOUND);
         }
         return model;
@@ -127,8 +120,7 @@ public class CustomRefDelete extends AbstractRmWebScript
      *
      * @param req The webscript request
      */
-    private void removeCustomRelationship(WebScriptRequest req)
-    {
+    private void removeCustomRelationship(WebScriptRequest req) {
         String uniqueName = getRequestParameterValue(req, REF_ID);
         NodeRef source = parseRequestForNodeRef(req);
         NodeRef target = getTargetNode(req);
@@ -143,17 +135,16 @@ public class CustomRefDelete extends AbstractRmWebScript
      * @param req The webscript request
      * @return The target node
      */
-    private NodeRef getTargetNode(WebScriptRequest req)
-    {
+    private NodeRef getTargetNode(WebScriptRequest req) {
         String storeType = req.getParameter(ST);
         String storeId = req.getParameter(SI);
         String nodeId = req.getParameter(ID);
 
         NodeRef targetNode = new NodeRef(storeType, storeId, nodeId);
-        if (!getNodeService().exists(targetNode))
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find the target node: '" +
-                    targetNode.toString() + "'.");
+        if (!getNodeService().exists(targetNode)) {
+            throw new WebScriptException(
+                    Status.STATUS_NOT_FOUND,
+                    "Unable to find the target node: '" + targetNode.toString() + "'.");
         }
 
         return targetNode;

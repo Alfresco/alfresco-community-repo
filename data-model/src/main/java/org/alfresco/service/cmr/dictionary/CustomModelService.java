@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -40,8 +40,7 @@ import org.alfresco.util.Pair;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public interface CustomModelService
-{
+public interface CustomModelService {
     /**
      * Gets custom model
      *
@@ -125,8 +124,8 @@ public interface CustomModelService
 
     /**
      * Indicates whether the specified user is a model-administrator or not.
-     * <p>
-     * Note: The super/repo admin is considered to be a model-administrator too.
+     *
+     * <p>Note: The super/repo admin is considered to be a model-administrator too.
      *
      * @param userName The user name
      * @return true if the specified user is a model-administrator, false otherwise
@@ -135,16 +134,16 @@ public interface CustomModelService
 
     /**
      * Activates custom model
-     * @see {@link org.alfresco.service.cmr.admin.RepoAdminService#activateModel(String)}
      *
+     * @see {@link org.alfresco.service.cmr.admin.RepoAdminService#activateModel(String)}
      * @param modelFileName the name of the custom model
      */
     public void activateCustomModel(String modelFileName);
 
     /**
      * Deactivates custom model
-     * @see {@link org.alfresco.service.cmr.admin.RepoAdminService#deactivateModel(String)}
      *
+     * @see {@link org.alfresco.service.cmr.admin.RepoAdminService#deactivateModel(String)}
      * @param modelFileName the name of the custom model
      */
     public void deactivateCustomModel(String modelFileName);
@@ -157,12 +156,13 @@ public interface CustomModelService
      * @param activate whether the model should be activated or not
      * @return the updated model definition as a {@code CustomModelDefinition} object
      */
-    public CustomModelDefinition updateCustomModel(String modelFileName, M2Model m2Model, boolean activate);
+    public CustomModelDefinition updateCustomModel(
+            String modelFileName, M2Model m2Model, boolean activate);
 
     /**
      * Deletes custom model.
-     * <p>
-     * The model can only be deleted if it is inactive
+     *
+     * <p>The model can only be deleted if it is inactive
      *
      * @param modelFileName the model name
      */
@@ -187,7 +187,7 @@ public interface CustomModelService
     public boolean isModelExists(String modelFileName);
 
     /**
-     *  Gets custom models' namespace URI and prefix
+     * Gets custom models' namespace URI and prefix
      *
      * @param model the {@code M2Model} object
      * @return the custom model URI and prefix as a {@code Pair<String, String}
@@ -196,7 +196,7 @@ public interface CustomModelService
     public Pair<String, String> getModelNamespaceUriPrefix(M2Model model);
 
     /**
-     *  Validates the custom models' namespace prefix
+     * Validates the custom models' namespace prefix
      *
      * @param prefix the namespace prefix {@code String}
      * @throws CustomModelException if the namespace prefix is already in use by another model
@@ -204,9 +204,10 @@ public interface CustomModelService
     public void validateModelNamespacePrefix(String prefix);
 
     /**
-     *  Validates the custom models' namespace prefix
+     * Validates the custom models' namespace prefix
      *
-     * @param modelNodeRef the nodeRef of the model whose namespace prefix is to be validated {@code NodeRef}
+     * @param modelNodeRef the nodeRef of the model whose namespace prefix is to be validated {@code
+     *     NodeRef}
      * @throws CustomModelException if the namespace prefix is already in use by another model
      */
     public void validateModelNamespacePrefix(NodeRef modelNodeRef);
@@ -228,12 +229,11 @@ public interface CustomModelService
     public ConstraintDefinition getCustomConstraint(QName name);
 
     /**
-     * Creates a downloadable archive file containing the custom model file and
-     * if specified, its associated Share extension module file.
+     * Creates a downloadable archive file containing the custom model file and if specified, its
+     * associated Share extension module file.
      *
      * @param modelName the model name to be exported
-     * @param withAssociatedForm whether Share extension module file should be
-     *            included or not
+     * @param withAssociatedForm whether Share extension module file should be included or not
      * @return reference to the node which will contain the archive file
      */
     public NodeRef createDownloadNode(String modelName, boolean withAssociatedForm);
@@ -252,9 +252,9 @@ public interface CustomModelService
      * Gets custom models' information.
      *
      * @return {@code CustomModelsInfo} containing:
-     *         <li>number of active models</li>
-     *         <li>number of active models' types</li>
-     *         <li>number of active models' aspects</li>
+     *     <li>number of active models
+     *     <li>number of active models' types
+     *     <li>number of active models' aspects
      */
     public CustomModelsInfo getCustomModelsInfo();
 }

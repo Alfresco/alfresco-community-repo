@@ -25,7 +25,6 @@
  * #L%
  */
 package org.alfresco.rest.v0;
-import java.text.MessageFormat;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
@@ -36,39 +35,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.MessageFormat;
+
 /**
  * The v0 REST API for nodes
- * 
+ *
  * @author jcule
  * @since 2.7EA1
  */
 @Component
-public class NodeAPI extends BaseAPI
-{
+public class NodeAPI extends BaseAPI {
     /** Logger for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeAPI.class);
 
     /** The URI for the get node API. */
     private static final String GET_NODE_API = "{0}alfresco/s/slingshot/doclib2/node/{1}";
 
-    @Autowired
-    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
+    @Autowired private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
     /**
-     * Get the node metadata using the using the node data webscript:  Document List v2 Component
-     * 
+     * Get the node metadata using the using the node data webscript: Document List v2 Component
+     *
      * @param username
      * @param password
      * @param nodeId
      * @return
      */
-    public JSONObject getNode(String username, String password, String nodeId)
-    {
+    public JSONObject getNode(String username, String password, String nodeId) {
         String requestURL;
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        requestURL = MessageFormat.format(GET_NODE_API, client.getAlfrescoUrl(), NODE_PREFIX + nodeId);
+        requestURL =
+                MessageFormat.format(GET_NODE_API, client.getAlfrescoUrl(), NODE_PREFIX + nodeId);
         client.close();
         return doGetRequest(username, password, requestURL);
     }
-    
 }

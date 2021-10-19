@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.recordfolder;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -53,25 +47,33 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Record Folder Service Implementation
  *
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RecordFolderServiceImpl extends    ServiceBaseImpl
-                                     implements RecordFolderService,
-                                                RecordsManagementModel
-{
+public class RecordFolderServiceImpl extends ServiceBaseImpl
+        implements RecordFolderService, RecordsManagementModel {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordFolderServiceImpl.class);
 
     /** I18N */
     private static final String MSG_RECORD_FOLDER_EXPECTED = "rm.service.record-folder-expected";
-    private static final String MSG_PARENT_RECORD_FOLDER_ROOT = "rm.service.parent-record-folder-root";
-    private static final String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
+
+    private static final String MSG_PARENT_RECORD_FOLDER_ROOT =
+            "rm.service.parent-record-folder-root";
+    private static final String MSG_PARENT_RECORD_FOLDER_TYPE =
+            "rm.service.parent-record-folder-type";
     private static final String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
-    private static final String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.service.close-record-folder-not-folder";
+    private static final String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER =
+            "rm.service.close-record-folder-not-folder";
 
     /** Disposition service */
     private DispositionService dispositionService;
@@ -82,58 +84,46 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     /** File Plan Service */
     private FilePlanService filePlanService;
 
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    /** @param dispositionService disposition service */
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
-    /**
-     * @param recordService     record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
+    /** @param recordService record service */
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#setupRecordFolder(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#setupRecordFolder(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void setupRecordFolder(NodeRef nodeRef)
-    {
+    public void setupRecordFolder(NodeRef nodeRef) {
         // initialise disposition details
-        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
-        {
+        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE)) {
             DispositionSchedule di = dispositionService.getDispositionSchedule(nodeRef);
-            if (di != null && !di.isRecordLevelDisposition())
-            {
+            if (di != null && !di.isRecordLevelDisposition()) {
                 nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
             }
         }
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#isRecordFolderDeclared(NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#isRecordFolderDeclared(NodeRef)
      */
     @Override
-    public boolean isRecordFolderDeclared(NodeRef nodeRef)
-    {
+    public boolean isRecordFolderDeclared(NodeRef nodeRef) {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Check we have a record folder
-        if (!isRecordFolder(nodeRef))
-        {
+        if (!isRecordFolder(nodeRef)) {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
 
@@ -141,10 +131,8 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
 
         // Check that each record in the record folder in declared
         List<NodeRef> records = recordService.getRecords(nodeRef);
-        for (NodeRef record : records)
-        {
-            if (!recordService.isDeclared(record))
-            {
+        for (NodeRef record : records) {
+            if (!recordService.isDeclared(record)) {
                 result = false;
                 break;
             }
@@ -154,32 +142,28 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#isRecordFolderClosed(NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#isRecordFolderClosed(NodeRef)
      */
     @Override
-    public boolean isRecordFolderClosed(final NodeRef nodeRef)
-    {
+    public boolean isRecordFolderClosed(final NodeRef nodeRef) {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Check we have a record folder
-        if (!isRecordFolder(nodeRef))
-        {
+        if (!isRecordFolder(nodeRef)) {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
 
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
-            public Boolean doWork() throws Exception
-            {
-                return ((Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED));
-            }
-        });
+        return AuthenticationUtil.runAsSystem(
+                new RunAsWork<Boolean>() {
+                    public Boolean doWork() throws Exception {
+                        return ((Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED));
+                    }
+                });
     }
 
     @Override
-    public NodeRef createRecordFolder(NodeRef rmContainer, String name,
-            QName type)
-    {
+    public NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type) {
         ParameterCheck.mandatory("rmContainer", rmContainer);
         ParameterCheck.mandatoryString("name", name);
         ParameterCheck.mandatory("type", type);
@@ -188,73 +172,81 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#createRecordFolder(NodeRef, String, QName, Map)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#createRecordFolder(NodeRef,
+     *     String, QName, Map)
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef rmContainer, String name,
-            QName type, Map<QName, Serializable> properties)
-    {
+    public NodeRef createRecordFolder(
+            NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties) {
         ParameterCheck.mandatory("rmContainer", rmContainer);
         ParameterCheck.mandatoryString("name", name);
         ParameterCheck.mandatory("type", type);
         // "properties" is not mandatory
 
         // Check that we are not trying to create a record folder in a root container
-        if (filePlanService.isFilePlan(rmContainer))
-        {
+        if (filePlanService.isFilePlan(rmContainer)) {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_ROOT));
         }
 
         // Check that the parent is a container
         QName parentType = nodeService.getType(rmContainer);
-        if (!TYPE_RECORD_CATEGORY.equals(parentType) &&
-            !dictionaryService.isSubClass(parentType, TYPE_RECORD_CATEGORY))
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_TYPE, parentType.toString()));
+        if (!TYPE_RECORD_CATEGORY.equals(parentType)
+                && !dictionaryService.isSubClass(parentType, TYPE_RECORD_CATEGORY)) {
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_TYPE, parentType.toString()));
         }
 
         // Check that the the provided type is a sub-type of rm:recordFolder
-        if (!TYPE_RECORD_FOLDER.equals(type) &&
-            !dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER))
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_TYPE, type.toString()));
+        if (!TYPE_RECORD_FOLDER.equals(type)
+                && !dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER)) {
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_RECORD_FOLDER_TYPE, type.toString()));
         }
 
         Map<QName, Serializable> props = new HashMap<>(1);
-        if (properties != null && properties.size() != 0)
-        {
+        if (properties != null && properties.size() != 0) {
             props.putAll(properties);
         }
         props.put(ContentModel.PROP_NAME, name);
 
-        return nodeService.createNode(
-                rmContainer,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, (name.length() > QName.MAX_LENGTH ? name.substring(0, QName.MAX_LENGTH) : name)),
-                type,
-                props).getChildRef();
+        return nodeService
+                .createNode(
+                        rmContainer,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(
+                                NamespaceService.CONTENT_MODEL_1_0_URI,
+                                (name.length() > QName.MAX_LENGTH
+                                        ? name.substring(0, QName.MAX_LENGTH)
+                                        : name)),
+                        type,
+                        props)
+                .getChildRef();
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#createRecordFolder(NodeRef, String)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#createRecordFolder(NodeRef,
+     *     String)
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef rmContainer, String name)
-    {
+    public NodeRef createRecordFolder(NodeRef rmContainer, String name) {
         ParameterCheck.mandatory("rmContainer", rmContainer);
         ParameterCheck.mandatoryString("name", name);
 
-        // TODO defaults to rm:recordFolder, but in future could auto-detect sub-type of folder based on context
+        // TODO defaults to rm:recordFolder, but in future could auto-detect sub-type of folder
+        // based on context
         return createRecordFolder(rmContainer, name, TYPE_RECORD_FOLDER);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#createRecordFolder(NodeRef, String, Map)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#createRecordFolder(NodeRef,
+     *     String, Map)
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef rmContainer, String name,
-            Map<QName, Serializable> properties)
-    {
+    public NodeRef createRecordFolder(
+            NodeRef rmContainer, String name, Map<QName, Serializable> properties) {
         ParameterCheck.mandatory("rmContainer", rmContainer);
         ParameterCheck.mandatoryString("name", name);
         ParameterCheck.mandatory("properties", properties);
@@ -263,22 +255,21 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#getRecordFolders(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#getRecordFolders(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public List<NodeRef> getRecordFolders(NodeRef record)
-    {
+    public List<NodeRef> getRecordFolders(NodeRef record) {
         ParameterCheck.mandatory("record", record);
 
         List<NodeRef> result = new ArrayList<>(1);
-        if (recordService.isRecord(record))
-        {
-            List<ChildAssociationRef> assocs = nodeService.getParentAssocs(record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
-            {
+        if (recordService.isRecord(record)) {
+            List<ChildAssociationRef> assocs =
+                    nodeService.getParentAssocs(
+                            record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef assoc : assocs) {
                 NodeRef parent = assoc.getParentRef();
-                if (isRecordFolder(parent))
-                {
+                if (isRecordFolder(parent)) {
                     result.add(parent);
                 }
             }
@@ -287,34 +278,29 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#closeRecordFolder(NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#closeRecordFolder(NodeRef)
      */
     @Override
-    public void closeRecordFolder(NodeRef nodeRef)
-    {
+    public void closeRecordFolder(NodeRef nodeRef) {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        if (isRecord(nodeRef))
-        {
+        if (isRecord(nodeRef)) {
             ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
-            if (assocRef != null)
-            {
+            if (assocRef != null) {
                 nodeRef = assocRef.getParentRef();
             }
         }
 
-        if (isRecordFolder(nodeRef))
-        {
-            if (!isRecordFolderClosed(nodeRef))
-            {
+        if (isRecordFolder(nodeRef)) {
+            if (!isRecordFolderClosed(nodeRef)) {
                 nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
             }
-        }
-        else
-        {
-            if (logger.isWarnEnabled())
-            {
-                logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, nodeRef.toString()));
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn(
+                        I18NUtil.getMessage(
+                                MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, nodeRef.toString()));
             }
         }
     }

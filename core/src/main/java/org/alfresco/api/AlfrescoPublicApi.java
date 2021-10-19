@@ -25,17 +25,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used to denote a class or method as part
- * of the public API. When a class or method is so designated then
- * we will not change it within a release in a way that would make
- * it no longer backwardly compatible with an earlier version within
- * the release.
- * 
+ * This annotation is used to denote a class or method as part of the public API. When a class or
+ * method is so designated then we will not change it within a release in a way that would make it
+ * no longer backwardly compatible with an earlier version within the release.
+ *
  * @author Greg Melahn
  */
-@Target( {ElementType.TYPE,ElementType.METHOD} )
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface AlfrescoPublicApi
-{
-}
+public @interface AlfrescoPublicApi {}

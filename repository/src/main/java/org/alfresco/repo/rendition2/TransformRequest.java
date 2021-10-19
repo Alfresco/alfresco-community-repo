@@ -35,8 +35,7 @@ import java.util.Objects;
  *
  * @author aepure
  */
-public class TransformRequest implements Serializable
-{
+public class TransformRequest implements Serializable {
     private String requestId;
     private String transformName;
     private String nodeRef;
@@ -45,156 +44,145 @@ public class TransformRequest implements Serializable
     private String clientData;
     private String replyQueue;
 
-    public String getRequestId()
-    {
+    public String getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(String requestId)
-    {
+    public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
 
-    public String getTransformName()
-    {
+    public String getTransformName() {
         return transformName;
     }
 
-    public void setTransformName(String transformName)
-    {
+    public void setTransformName(String transformName) {
         this.transformName = transformName;
     }
 
-    public String getNodeRef()
-    {
+    public String getNodeRef() {
         return nodeRef;
     }
 
-    public void setNodeRef(String nodeRef)
-    {
+    public void setNodeRef(String nodeRef) {
         this.nodeRef = nodeRef;
     }
 
-    public String getTargetMediaType()
-    {
+    public String getTargetMediaType() {
         return targetMediaType;
     }
 
-    public void setTargetMediaType(String targetMediaType)
-    {
+    public void setTargetMediaType(String targetMediaType) {
         this.targetMediaType = targetMediaType;
     }
 
-    public Map<String, String> getTransformOptions()
-    {
+    public Map<String, String> getTransformOptions() {
         return transformOptions;
     }
 
-    public String getClientData()
-    {
+    public String getClientData() {
         return clientData;
     }
 
-    public void setClientData(String clientData)
-    {
+    public void setClientData(String clientData) {
         this.clientData = clientData;
     }
 
-    public void setTransformOptions(Map<String, String> transformOptions)
-    {
+    public void setTransformOptions(Map<String, String> transformOptions) {
         this.transformOptions = transformOptions;
     }
 
-    public String getReplyQueue()
-    {
+    public String getReplyQueue() {
         return replyQueue;
     }
 
-    public void setReplyQueue(String replyQueue)
-    {
+    public void setReplyQueue(String replyQueue) {
         this.replyQueue = replyQueue;
     }
 
-    @Override public boolean equals(Object o)
-    {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         TransformRequest that = (TransformRequest) o;
         return requestId.equals(that.requestId) && nodeRef.equals(that.nodeRef);
     }
 
-    @Override public int hashCode()
-    {
+    @Override
+    public int hashCode() {
         return Objects.hash(requestId, nodeRef);
     }
 
-    @Override public String toString()
-    {
-        return '{' +
-            "\"requestId\":\"" + requestId + '\"' +
-            ", \"transformName\":\"" + transformName + '\"' +
-            ", \"nodeRef\":\"" + nodeRef + '\"' +
-            ", \"targetMediaType\":\"" + targetMediaType + '\"' +
-            ", \"transformOptions\":" + transformOptions +
-            ", \"clientData\":\"" + clientData + '\"' +
-            ", \"replyQueue\":\"" + replyQueue + '\"' +
-            '}';
+    @Override
+    public String toString() {
+        return '{'
+                + "\"requestId\":\""
+                + requestId
+                + '\"'
+                + ", \"transformName\":\""
+                + transformName
+                + '\"'
+                + ", \"nodeRef\":\""
+                + nodeRef
+                + '\"'
+                + ", \"targetMediaType\":\""
+                + targetMediaType
+                + '\"'
+                + ", \"transformOptions\":"
+                + transformOptions
+                + ", \"clientData\":\""
+                + clientData
+                + '\"'
+                + ", \"replyQueue\":\""
+                + replyQueue
+                + '\"'
+                + '}';
     }
 
     public static class Builder {
         private final TransformRequest request;
 
-        private Builder()
-        {
+        private Builder() {
             this.request = new TransformRequest();
         }
 
-        public TransformRequest.Builder withRequestId(final String requestId)
-        {
+        public TransformRequest.Builder withRequestId(final String requestId) {
             this.request.requestId = requestId;
             return this;
         }
 
-        public TransformRequest.Builder withTransformName(final String transformName)
-        {
+        public TransformRequest.Builder withTransformName(final String transformName) {
             this.request.transformName = transformName;
             return this;
         }
 
-        public TransformRequest.Builder withNodeRef(final String nodeRef)
-        {
+        public TransformRequest.Builder withNodeRef(final String nodeRef) {
             this.request.nodeRef = nodeRef;
             return this;
         }
 
-        public TransformRequest.Builder withTargetMediaType(final String targetMediaType)
-        {
+        public TransformRequest.Builder withTargetMediaType(final String targetMediaType) {
             this.request.targetMediaType = targetMediaType;
             return this;
         }
 
-        public TransformRequest.Builder withTransformOptions(final Map<String, String> transformOptions)
-        {
+        public TransformRequest.Builder withTransformOptions(
+                final Map<String, String> transformOptions) {
             this.request.transformOptions = transformOptions;
             return this;
         }
 
-        public TransformRequest.Builder withUserData(final String userData)
-        {
+        public TransformRequest.Builder withUserData(final String userData) {
             this.request.clientData = userData;
             return this;
         }
 
-        public TransformRequest.Builder withReplyQueue(final String replyQueue)
-        {
+        public TransformRequest.Builder withReplyQueue(final String replyQueue) {
             this.request.replyQueue = replyQueue;
             return this;
         }
 
-        public TransformRequest build()
-        {
+        public TransformRequest build() {
             return this.request;
         }
     }

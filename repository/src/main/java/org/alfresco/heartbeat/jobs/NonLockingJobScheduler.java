@@ -30,17 +30,15 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 
 /**
- * This scheduler is responsible for the scheduling and unscheduling of non locking jobs {@link NonLockingJob}.
- * All repository nodes in a cluster will send data for collectors which have jobs scheduled by this scheduler.
+ * This scheduler is responsible for the scheduling and unscheduling of non locking jobs {@link
+ * NonLockingJob}. All repository nodes in a cluster will send data for collectors which have jobs
+ * scheduled by this scheduler.
  *
  * @author eknizat
- *
  */
-public class NonLockingJobScheduler extends QuartzJobScheduler
-{
+public class NonLockingJobScheduler extends QuartzJobScheduler {
     @Override
-    protected JobDataMap getJobDetailMap(HBBaseDataCollector collector)
-    {
+    protected JobDataMap getJobDetailMap(HBBaseDataCollector collector) {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put(NonLockingJob.COLLECTOR_KEY, collector);
         jobDataMap.put(NonLockingJob.DATA_SENDER_SERVICE_KEY, hbDataSenderService);
@@ -48,8 +46,7 @@ public class NonLockingJobScheduler extends QuartzJobScheduler
     }
 
     @Override
-    protected Class<? extends Job> getHeartBeatJobClass()
-    {
+    protected Class<? extends Job> getHeartBeatJobClass() {
         return NonLockingJob.class;
     }
 }

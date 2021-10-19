@@ -32,57 +32,44 @@ package org.alfresco.module.org_alfresco_module_rm.query;
  * @author Tom Page
  * @since 2.5.0.4
  */
-public class NodeRefEntity
-{
+public class NodeRefEntity {
     private Long num;
     private String protocol;
     private String identifier;
     private String uuid;
 
-    /**
-     * Default constructor.
-     */
-    public NodeRefEntity()
-    {
-    }
+    /** Default constructor. */
+    public NodeRefEntity() {}
 
-    public Long getNum()
-    {
+    public Long getNum() {
         return num;
     }
 
-    public void setNum(Long num)
-    {
+    public void setNum(Long num) {
         this.num = num;
     }
 
-    public String getProtocol()
-    {
+    public String getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(String protocol)
-    {
+    public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
-    public String getIdentifier()
-    {
+    public String getIdentifier() {
         return identifier;
     }
 
-    public void setIdentifier(String identifier)
-    {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
-    public String getUuid()
-    {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid)
-    {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 }

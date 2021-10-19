@@ -43,43 +43,54 @@ import java.util.Set;
 /**
  * Transformer that passes a document to a sequence of transforms until one succeeds.
  *
- * Instances are automatically created for transformers identified by alfresco/transform json files and returned from
- * T-Engines which are themselves identified by global properties the match the pattern localTransform.&lt;name>.url.
- * The transforms take place in a separate process (typically a Docker container).
+ * <p>Instances are automatically created for transformers identified by alfresco/transform json
+ * files and returned from T-Engines which are themselves identified by global properties the match
+ * the pattern localTransform.&lt;name>.url. The transforms take place in a separate process
+ * (typically a Docker container).
  */
-public class LocalFailoverTransform extends AbstractLocalTransform
-{
+public class LocalFailoverTransform extends AbstractLocalTransform {
     private final List<LocalTransform> transformers = new ArrayList<>();
 
-    public LocalFailoverTransform(String name, TransformerDebug transformerDebug,
-                                  MimetypeService mimetypeService, boolean strictMimeTypeCheck,
-                                  Map<String, Set<String>> strictMimetypeExceptions,
-                                  boolean retryTransformOnDifferentMimeType,
-                                  Set<TransformOption> transformsTransformOptions,
-                                  LocalTransformServiceRegistry localTransformServiceRegistry)
-    {
-        super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+    public LocalFailoverTransform(
+            String name,
+            TransformerDebug transformerDebug,
+            MimetypeService mimetypeService,
+            boolean strictMimeTypeCheck,
+            Map<String, Set<String>> strictMimetypeExceptions,
+            boolean retryTransformOnDifferentMimeType,
+            Set<TransformOption> transformsTransformOptions,
+            LocalTransformServiceRegistry localTransformServiceRegistry) {
+        super(
+                name,
+                transformerDebug,
+                mimetypeService,
+                strictMimeTypeCheck,
+                strictMimetypeExceptions,
+                retryTransformOnDifferentMimeType,
+                transformsTransformOptions,
+                localTransformServiceRegistry);
     }
 
     @Override
-    public boolean isAvailable()
-    {
+    public boolean isAvailable() {
         return true;
     }
 
-    public void addStepTransformer(LocalTransform stepTransformer)
-    {
+    public void addStepTransformer(LocalTransform stepTransformer) {
         transformers.add(stepTransformer);
     }
 
     @Override
-    protected void transformImpl(ContentReader reader,
-                                 ContentWriter writer, Map<String, String> transformOptions,
-                                 String sourceMimetype, String targetMimetype,
-                                 String sourceExtension, String targetExtension,
-                                 String renditionName, NodeRef sourceNodeRef)
-    {
+    protected void transformImpl(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> transformOptions,
+            String sourceMimetype,
+            String targetMimetype,
+            String sourceExtension,
+            String targetExtension,
+            String renditionName,
+            NodeRef sourceNodeRef) {
         final String targetExt = mimetypeService.getExtension(targetMimetype);
 
         // We need to keep a reference to thrown exceptions as we're going to catch them and
@@ -87,42 +98,46 @@ public class LocalFailoverTransform extends AbstractLocalTransform
         // the first exception.
         RuntimeException transformationException = null;
 
-        for (int i = 0; i < transformers.size(); i++)
-        {
+        for (int i = 0; i < transformers.size(); i++) {
             LocalTransform stepTransformer = transformers.get(i);
             ContentWriter currentWriter = null;
             File tempFile = null;
-            try
-            {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Transformation attempt " + (i+1) + " of " + transformers.size() +  ": " + stepTransformer);
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug(
+                            "Transformation attempt "
+                                    + (i + 1)
+                                    + " of "
+                                    + transformers.size()
+                                    + ": "
+                                    + stepTransformer);
                 }
 
                 // We can't know in advance which transformer in the sequence will work - if any.
                 // Therefore we can't write into the ContentWriter stream.
                 // So make a temporary file writer with the current transformer name.
-                tempFile = TempFileProvider.createTempFile(
-                        "LocalFailoverTransformer_intermediate_" + stepTransformer.getClass().getSimpleName() + "_",
-                        "." + targetExt);
+                tempFile =
+                        TempFileProvider.createTempFile(
+                                "LocalFailoverTransformer_intermediate_"
+                                        + stepTransformer.getClass().getSimpleName()
+                                        + "_",
+                                "." + targetExt);
                 currentWriter = new FileContentWriter(tempFile);
                 currentWriter.setMimetype(targetMimetype);
                 currentWriter.setEncoding(writer.getEncoding());
 
                 // attempt to transform
-                stepTransformer.transform(reader, currentWriter, transformOptions, renditionName, sourceNodeRef);
-            }
-            catch (UnsupportedTransformationException | ContentIOException are)
-            {
-                if (transformationException == null)
-                {
+                stepTransformer.transform(
+                        reader, currentWriter, transformOptions, renditionName, sourceNodeRef);
+            } catch (UnsupportedTransformationException | ContentIOException are) {
+                if (transformationException == null) {
                     transformationException = are;
-                }
-                else
-                {
-                    // Don't log the first exception in full until the end as we're going to throw it and it will
+                } else {
+                    // Don't log the first exception in full until the end as we're going to throw
+                    // it and it will
                     // get logged again.
-                    log.debug("The below exception is provided for information purposes only.", are);
+                    log.debug(
+                            "The below exception is provided for information purposes only.", are);
                 }
 
                 // Set a new reader to refresh the input stream.
@@ -131,17 +146,16 @@ public class LocalFailoverTransform extends AbstractLocalTransform
                 continue;
             }
 
-
-            if (transformationException == null)
-            {
-                log.debug("The following exception (from the first transformer) is provided for " +
-                        "information purposes only as a later transformer succeeded.", transformationException);
+            if (transformationException == null) {
+                log.debug(
+                        "The following exception (from the first transformer) is provided for "
+                                + "information purposes only as a later transformer succeeded.",
+                        transformationException);
             }
 
             // No need to close input or output streams
             // Now we must copy the content from the temporary file into the ContentWriter stream.
-            if (tempFile != null)
-            {
+            if (tempFile != null) {
                 writer.putContent(tempFile);
             }
 
@@ -150,10 +164,11 @@ public class LocalFailoverTransform extends AbstractLocalTransform
         }
 
         // At this point we have tried all transformers in the sequence without apparent success.
-        if (transformationException != null)
-        {
+        if (transformationException != null) {
             transformerDebug.debug("          No more transformations to failover to");
-            log.debug("All transformations were unsuccessful. Throwing first exception.", transformationException);
+            log.debug(
+                    "All transformations were unsuccessful. Throwing first exception.",
+                    transformationException);
             throw transformationException;
         }
     }

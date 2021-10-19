@@ -39,28 +39,32 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * qshare:shared aspect behaviour bean 
- * do not allow this aspect to be added for records
+ * qshare:shared aspect behaviour bean do not allow this aspect to be added for records
  *
  * @author Ramona Popa
  * @since 2.5
  */
 @BehaviourBean(defaultType = "qshare:shared")
-public class QShareAspect extends BaseBehaviourBean implements NodeServicePolicies.BeforeAddAspectPolicy
-{
+public class QShareAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.BeforeAddAspectPolicy {
     /**
      * Behaviour to prevent sharing a record
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.namespace.QName)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     *     org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
-    public void beforeAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
-    {
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
-        {
-            throw new IntegrityException("Operation failed. Aspect " + aspectTypeQName.toString() + " cannot be added for records.", null);
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    public void beforeAddAspect(final NodeRef nodeRef, final QName aspectTypeQName) {
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD)) {
+            throw new IntegrityException(
+                    "Operation failed. Aspect "
+                            + aspectTypeQName.toString()
+                            + " cannot be added for records.",
+                    null);
         }
     }
 }

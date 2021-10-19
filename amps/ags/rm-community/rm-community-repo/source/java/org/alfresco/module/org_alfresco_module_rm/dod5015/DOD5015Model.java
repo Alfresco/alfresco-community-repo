@@ -29,14 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.dod5015;
 
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Helper class containing DOD 5015 model qualified names
  *
  * @author Roy Wetherall
  */
-public interface DOD5015Model
-{
+public interface DOD5015Model {
     // Namespace details
     String DOD_URI = "http://www.alfresco.org/model/dod5015/1.0";
     String DOD_PREFIX = "dod";
@@ -69,7 +67,8 @@ public interface DOD5015Model
     // PDF Record
     QName ASPECT_PDF_RECORD = QName.createQName(DOD_URI, "pdfRecord");
     QName PROP_PRODUCING_APPLICATION = QName.createQName(DOD_URI, "producingApplication");
-    QName PROP_PRODUCING_APPLICATION_VERSION = QName.createQName(DOD_URI, "producingApplicationVersion");
+    QName PROP_PRODUCING_APPLICATION_VERSION =
+            QName.createQName(DOD_URI, "producingApplicationVersion");
     QName PROP_PDF_VERSION = QName.createQName(DOD_URI, "pdfVersion");
     QName PROP_CREATING_APPLICATION = QName.createQName(DOD_URI, "creatingApplication");
     QName PROP_DOCUMENT_SECURITY_SETTINGS = QName.createQName(DOD_URI, "documentSecuritySettings");

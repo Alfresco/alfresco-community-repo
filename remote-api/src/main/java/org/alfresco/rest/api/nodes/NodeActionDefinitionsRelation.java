@@ -31,34 +31,30 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-@RelationshipResource(name = "action-definitions",  entityResource = NodesEntityResource.class, title = "Node action definitions")
+@RelationshipResource(
+        name = "action-definitions",
+        entityResource = NodesEntityResource.class,
+        title = "Node action definitions")
 public class NodeActionDefinitionsRelation extends AbstractNodeRelation
-        implements RelationshipResourceAction.Read<ActionDefinition>
-{
+        implements RelationshipResourceAction.Read<ActionDefinition> {
     private Actions actions;
 
     @Override
-    public void afterPropertiesSet()
-    {
+    public void afterPropertiesSet() {
         super.afterPropertiesSet();
         ParameterCheck.mandatory("actions", actions);
     }
 
-    public void setActions(Actions actions)
-    {
+    public void setActions(Actions actions) {
         this.actions = actions;
     }
 
     @Override
-    public CollectionWithPagingInfo<ActionDefinition> readAll(String entityResourceId, Parameters params)
-    {
+    public CollectionWithPagingInfo<ActionDefinition> readAll(
+            String entityResourceId, Parameters params) {
         NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId, null);
         return actions.getActionDefinitions(parentNodeRef, params);
     }

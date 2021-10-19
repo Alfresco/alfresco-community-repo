@@ -26,14 +26,11 @@
 
 package org.alfresco.repo.event2;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-import javax.jms.ConnectionFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -71,72 +68,65 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-/**
- * @author Iulian Aftene
- */
+import javax.jms.ConnectionFactory;
 
-public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
-{
-    protected static final boolean            DEBUG = false;
+/** @author Iulian Aftene */
+public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest {
+    protected static final boolean DEBUG = false;
 
-    protected static final String             TEST_NAMESPACE  = "http://www.alfresco.org/test/ContextAwareRepoEvent";
+    protected static final String TEST_NAMESPACE =
+            "http://www.alfresco.org/test/ContextAwareRepoEvent";
     protected static final RepoEventContainer EVENT_CONTAINER = new RepoEventContainer();
 
-    private static final   String             BROKER_URL      = "tcp://localhost:61616";
-    private static final   String             TOPIC_NAME      = "alfresco.repo.event2";
-    private static final   String             CAMEL_ROUTE     = "jms:topic:" + TOPIC_NAME;
-    private static final   CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
+    private static final String BROKER_URL = "tcp://localhost:61616";
+    private static final String TOPIC_NAME = "alfresco.repo.event2";
+    private static final String CAMEL_ROUTE = "jms:topic:" + TOPIC_NAME;
+    private static final CamelContext CAMEL_CONTEXT = new DefaultCamelContext();
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
-    
-    @Autowired
-    protected RetryingTransactionHelper retryingTransactionHelper;
 
-    @Autowired
-    protected NodeService nodeService;
+    @Autowired protected RetryingTransactionHelper retryingTransactionHelper;
 
-    @Autowired
-    protected CustomModelService customModelService;
+    @Autowired protected NodeService nodeService;
+
+    @Autowired protected CustomModelService customModelService;
 
     @Qualifier("descriptorComponent")
     @Autowired
     protected DescriptorService descriptorService;
 
-    @Autowired
-    protected ObjectMapper event2ObjectMapper;
+    @Autowired protected ObjectMapper event2ObjectMapper;
 
-    @Autowired @Qualifier("eventGeneratorV2")
+    @Autowired
+    @Qualifier("eventGeneratorV2")
     protected EventGenerator eventGenerator;
 
     @Autowired
     @Qualifier("eventGeneratorQueue")
     protected EventGeneratorQueue eventQueue;
 
-    @Autowired
-    private NamespaceDAO namespaceDAO;
+    @Autowired private NamespaceDAO namespaceDAO;
 
     protected NodeRef rootNodeRef;
 
     @BeforeClass
-    public static void beforeAll()
-    {
+    public static void beforeAll() {
         isCamelConfigured = false;
     }
 
     @AfterClass
-    public static void afterAll() throws Exception
-    {
+    public static void afterAll() throws Exception {
         CAMEL_CONTEXT.stop();
     }
 
     @Before
-    public void setUp() throws Exception
-    {
-        if (!isCamelConfigured)
-        {
+    public void setUp() throws Exception {
+        if (!isCamelConfigured) {
             dataFormat = new JacksonDataFormat(event2ObjectMapper, RepoEvent.class);
             configRoute();
             isCamelConfigured = true;
@@ -145,16 +135,19 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         // authenticate as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
-        rootNodeRef = retryingTransactionHelper.doInTransaction(() -> {
-            // create a store and get the root node
-            StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, getClass().getName());
-            if (!nodeService.exists(storeRef))
-            {
-                storeRef = nodeService.createStore(storeRef.getProtocol(),
-                    storeRef.getIdentifier());
-            }
-            return nodeService.getRootNode(storeRef);
-        });
+        rootNodeRef =
+                retryingTransactionHelper.doInTransaction(
+                        () -> {
+                            // create a store and get the root node
+                            StoreRef storeRef =
+                                    new StoreRef(StoreRef.PROTOCOL_WORKSPACE, getClass().getName());
+                            if (!nodeService.exists(storeRef)) {
+                                storeRef =
+                                        nodeService.createStore(
+                                                storeRef.getProtocol(), storeRef.getIdentifier());
+                            }
+                            return nodeService.getRootNode(storeRef);
+                        });
 
         initTestNamespacePrefixMapping();
 
@@ -162,8 +155,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     }
 
     protected void initTestNamespacePrefixMapping() {
-        if(namespaceDAO.getNamespaceURI("ce") == null)
-        {
+        if (namespaceDAO.getNamespaceURI("ce") == null) {
             namespaceDAO.addURI(TEST_NAMESPACE);
             namespaceDAO.addPrefix("ce", TEST_NAMESPACE);
         }
@@ -174,92 +166,93 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
      * creep up here making the test fails. After attempting several other
      * strategies, a smart sleep seems to do the work.
      */
-    protected void flushSpuriousEvents() throws InterruptedException
-    {
+    protected void flushSpuriousEvents() throws InterruptedException {
         int maxloops = 5;
-        
+
         int count = maxloops;
-        do
-        {
+        do {
             Thread.sleep(165l);
-            if (EVENT_CONTAINER.isEmpty())
-            {
+            if (EVENT_CONTAINER.isEmpty()) {
                 count--;
-            } else 
-            {
+            } else {
                 EVENT_CONTAINER.reset();
                 count = maxloops;
             }
 
         } while (count > 0);
     }
-    
+
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
         EVENT_CONTAINER.reset();
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
-
-    protected NodeRef createNode(QName contentType)
-    {
-        return retryingTransactionHelper.doInTransaction(() -> nodeService.createNode(
-            rootNodeRef,
-            ContentModel.ASSOC_CHILDREN,
-            QName.createQName(TEST_NAMESPACE, GUID.generate()),
-            contentType).getChildRef());
+    protected NodeRef createNode(QName contentType) {
+        return retryingTransactionHelper.doInTransaction(
+                () ->
+                        nodeService
+                                .createNode(
+                                        rootNodeRef,
+                                        ContentModel.ASSOC_CHILDREN,
+                                        QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                        contentType)
+                                .getChildRef());
     }
 
-    protected NodeRef createNode(QName contentType, NodeRef parentRef)
-    {
-        return retryingTransactionHelper.doInTransaction(() -> nodeService.createNode(
-            parentRef,
-            ContentModel.ASSOC_CONTAINS,
-            QName.createQName(TEST_NAMESPACE, GUID.generate()),
-            contentType).getChildRef());
+    protected NodeRef createNode(QName contentType, NodeRef parentRef) {
+        return retryingTransactionHelper.doInTransaction(
+                () ->
+                        nodeService
+                                .createNode(
+                                        parentRef,
+                                        ContentModel.ASSOC_CONTAINS,
+                                        QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                        contentType)
+                                .getChildRef());
     }
 
-    protected NodeRef createNode(QName contentType, PropertyMap propertyMap)
-    {
+    protected NodeRef createNode(QName contentType, PropertyMap propertyMap) {
         return createNode(contentType, GUID.generate(), propertyMap);
     }
 
-    protected NodeRef createNode(QName contentType, String localName, PropertyMap propertyMap)
-    {
-        return retryingTransactionHelper.doInTransaction(() -> nodeService.createNode(
-            rootNodeRef,
-            ContentModel.ASSOC_CHILDREN,
-            QName.createQName(TEST_NAMESPACE, localName),
-            contentType,
-            propertyMap).getChildRef());
+    protected NodeRef createNode(QName contentType, String localName, PropertyMap propertyMap) {
+        return retryingTransactionHelper.doInTransaction(
+                () ->
+                        nodeService
+                                .createNode(
+                                        rootNodeRef,
+                                        ContentModel.ASSOC_CHILDREN,
+                                        QName.createQName(TEST_NAMESPACE, localName),
+                                        contentType,
+                                        propertyMap)
+                                .getChildRef());
     }
 
-    protected NodeRef updateNodeName(NodeRef nodeRef, String newName)
-    {
+    protected NodeRef updateNodeName(NodeRef nodeRef, String newName) {
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_NAME, newName);
-        return retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.addProperties(nodeRef, propertyMap);
-            return null;
-        });
+        return retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.addProperties(nodeRef, propertyMap);
+                    return null;
+                });
     }
 
-    protected void deleteNode(NodeRef nodeRef)
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.deleteNode(nodeRef);
-            return null;
-        });
+    protected void deleteNode(NodeRef nodeRef) {
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.deleteNode(nodeRef);
+                    return null;
+                });
     }
 
-    protected RepoEventContainer getRepoEventsContainer()
-    {
+    protected RepoEventContainer getRepoEventsContainer() {
         return EVENT_CONTAINER;
     }
 
-    protected <D extends DataAttributes<? extends Resource>> RepoEvent<D> getRepoEvent(int eventSequenceNumber)
-    {
+    protected <D extends DataAttributes<? extends Resource>> RepoEvent<D> getRepoEvent(
+            int eventSequenceNumber) {
         waitUntilNumOfEvents(eventSequenceNumber);
 
         RepoEventContainer eventContainer = getRepoEventsContainer();
@@ -270,8 +263,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return event;
     }
 
-    protected <D extends DataAttributes<? extends Resource>> RepoEvent<D> getRepoEventWithoutWait(int eventSequenceNumber)
-    {
+    protected <D extends DataAttributes<? extends Resource>> RepoEvent<D> getRepoEventWithoutWait(
+            int eventSequenceNumber) {
         RepoEventContainer eventContainer = getRepoEventsContainer();
         @SuppressWarnings("unchecked")
         RepoEvent<D> event = (RepoEvent<D>) eventContainer.getEvent(eventSequenceNumber);
@@ -280,8 +273,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return event;
     }
 
-    protected <D extends DataAttributes<? extends Resource>> D getEventData(int eventSequenceNumber)
-    {
+    protected <D extends DataAttributes<? extends Resource>> D getEventData(
+            int eventSequenceNumber) {
         RepoEvent<D> event = getRepoEvent(eventSequenceNumber);
         D eventData = event.getData();
         assertNotNull(eventData);
@@ -289,8 +282,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return eventData;
     }
 
-    protected <D extends DataAttributes<? extends Resource>> D getEventDataWithoutWait(int eventSequenceNumber)
-    {
+    protected <D extends DataAttributes<? extends Resource>> D getEventDataWithoutWait(
+            int eventSequenceNumber) {
         RepoEvent<D> event = getRepoEventWithoutWait(eventSequenceNumber);
         D eventData = event.getData();
         assertNotNull(eventData);
@@ -298,8 +291,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return eventData;
     }
 
-    protected <D extends DataAttributes<? extends Resource>> D getEventData(RepoEvent<D> repoEvent)
-    {
+    protected <D extends DataAttributes<? extends Resource>> D getEventData(
+            RepoEvent<D> repoEvent) {
         assertNotNull(repoEvent);
         D eventData = repoEvent.getData();
         assertNotNull(eventData);
@@ -307,8 +300,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return eventData;
     }
 
-    protected NodeResource getNodeResource(int eventSequenceNumber)
-    {
+    protected NodeResource getNodeResource(int eventSequenceNumber) {
         DataAttributes<NodeResource> eventData = getEventData(eventSequenceNumber);
         NodeResource resource = eventData.getResource();
         assertNotNull(resource);
@@ -316,8 +308,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resource;
     }
 
-    protected NodeResource getNodeResourceWithoutWait(int eventSequenceNumber)
-    {
+    protected NodeResource getNodeResourceWithoutWait(int eventSequenceNumber) {
         DataAttributes<NodeResource> eventData = getEventDataWithoutWait(eventSequenceNumber);
         NodeResource resource = eventData.getResource();
         assertNotNull(resource);
@@ -325,8 +316,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resource;
     }
 
-    protected <D extends DataAttributes<NodeResource>> NodeResource getNodeResource(RepoEvent<D> repoEvent)
-    {
+    protected <D extends DataAttributes<NodeResource>> NodeResource getNodeResource(
+            RepoEvent<D> repoEvent) {
         assertNotNull(repoEvent);
         D eventData = getEventData(repoEvent);
         assertNotNull(eventData);
@@ -336,9 +327,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resource;
     }
 
-    protected <D extends DataAttributes<ChildAssociationResource>> ChildAssociationResource getChildAssocResource(
-                RepoEvent<D> repoEvent)
-    {
+    protected <D extends DataAttributes<ChildAssociationResource>>
+            ChildAssociationResource getChildAssocResource(RepoEvent<D> repoEvent) {
         assertNotNull(repoEvent);
         D eventData = repoEvent.getData();
         assertNotNull(eventData);
@@ -348,9 +338,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resource;
     }
 
-    protected <D extends DataAttributes<PeerAssociationResource>> PeerAssociationResource getPeerAssocResource(
-                RepoEvent<D> repoEvent)
-    {
+    protected <D extends DataAttributes<PeerAssociationResource>>
+            PeerAssociationResource getPeerAssocResource(RepoEvent<D> repoEvent) {
         assertNotNull(repoEvent);
         D eventData = repoEvent.getData();
         assertNotNull(eventData);
@@ -360,8 +349,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resource;
     }
 
-    protected NodeResource getNodeResourceBefore(int eventSequenceNumber)
-    {
+    protected NodeResource getNodeResourceBefore(int eventSequenceNumber) {
         DataAttributes<NodeResource> eventData = getEventData(eventSequenceNumber);
         NodeResource resourceBefore = eventData.getResourceBefore();
         assertNotNull(resourceBefore);
@@ -369,8 +357,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resourceBefore;
     }
 
-    protected <D extends DataAttributes<NodeResource>> NodeResource getNodeResourceBefore(RepoEvent<D> repoEvent)
-    {
+    protected <D extends DataAttributes<NodeResource>> NodeResource getNodeResourceBefore(
+            RepoEvent<D> repoEvent) {
         assertNotNull(repoEvent);
         D eventData = repoEvent.getData();
         assertNotNull(eventData);
@@ -381,116 +369,98 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T getProperty(NodeResource resource, String propertyName)
-    {
+    protected <T> T getProperty(NodeResource resource, String propertyName) {
         assertNotNull(resource);
         assertNotNull(resource.getProperties());
         return (T) resource.getProperties().get(propertyName);
     }
 
     /**
-     * Await at most 5 seconds for the condition (ie. {@code numOfEvents})
-     * to be met before throwing a timeout exception.
+     * Await at most 5 seconds for the condition (ie. {@code numOfEvents}) to be met before throwing
+     * a timeout exception.
      *
      * @param eventSequenceNumber the await condition
      */
-    protected void waitUntilNumOfEvents(int eventSequenceNumber)
-    {
-        try
-        {
-            await().atMost(10, SECONDS).until(() -> EVENT_CONTAINER.getEvents().size() >= eventSequenceNumber);
+    protected void waitUntilNumOfEvents(int eventSequenceNumber) {
+        try {
+            await().atMost(10, SECONDS)
+                    .until(() -> EVENT_CONTAINER.getEvents().size() >= eventSequenceNumber);
+        } catch (Exception ex) {
+            fail(
+                    "Requested event #"
+                            + eventSequenceNumber
+                            + " but, after waiting 10s, total events in the container are: "
+                            + EVENT_CONTAINER.getEvents().size());
         }
-        catch (Exception ex)
-        {
-            fail("Requested event #" + eventSequenceNumber
-                             + " but, after waiting 10s, total events in the container are: "
-                             + EVENT_CONTAINER.getEvents().size());
-        }
-
     }
 
-    protected void checkNumOfEvents(int expected)
-    {
-        try
-        {
+    protected void checkNumOfEvents(int expected) {
+        try {
             await().atMost(10, SECONDS).until(() -> EVENT_CONTAINER.getEvents().size() == expected);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             assertEquals("Wrong number of events ", expected, EVENT_CONTAINER.getEvents().size());
         }
     }
 
-    private void configRoute() throws Exception
-    {
+    private void configRoute() throws Exception {
         final ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_URL);
-        CAMEL_CONTEXT.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
+        CAMEL_CONTEXT.addComponent(
+                "jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
 
-        CAMEL_CONTEXT.addRoutes(new RouteBuilder()
-        {
-            @Override
-            public void configure()
-            {
-                from(CAMEL_ROUTE).id("RepoEvent2Test")
-                                 .unmarshal(dataFormat)
-                                 .process(EVENT_CONTAINER);
-            }
-        });
+        CAMEL_CONTEXT.addRoutes(
+                new RouteBuilder() {
+                    @Override
+                    public void configure() {
+                        from(CAMEL_ROUTE)
+                                .id("RepoEvent2Test")
+                                .unmarshal(dataFormat)
+                                .process(EVENT_CONTAINER);
+                    }
+                });
 
         CAMEL_CONTEXT.start();
     }
 
-    public static class RepoEventContainer implements Processor
-    {
+    public static class RepoEventContainer implements Processor {
         private final List<RepoEvent<?>> events = Collections.synchronizedList(new ArrayList<>());
 
         @Override
-        public void process(Exchange exchange)
-        {
+        public void process(Exchange exchange) {
             Object object = exchange.getIn().getBody();
             events.add((RepoEvent<?>) object);
 
-            if (DEBUG)
-            {
-                System.err.println("XX: "+object);
+            if (DEBUG) {
+                System.err.println("XX: " + object);
             }
         }
 
-        public List<RepoEvent<?>> getEvents()
-        {
+        public List<RepoEvent<?>> getEvents() {
             return events;
         }
 
-        public RepoEvent<?> getEvent(int eventSequenceNumber)
-        {
+        public RepoEvent<?> getEvent(int eventSequenceNumber) {
             int index = eventSequenceNumber - 1;
-            if (index < events.size())
-            {
+            if (index < events.size()) {
                 return events.get(index);
             }
             return null;
         }
 
-        public void reset()
-        {
+        public void reset() {
             events.clear();
         }
 
-        public boolean isEmpty()
-        {
+        public boolean isEmpty() {
             return events.isEmpty();
         }
-
     }
 
     @SuppressWarnings("unchecked")
-    public <D extends DataAttributes<? extends Resource>> List<RepoEvent<D>> getFilteredEvents(EventType eventType)
-    {
+    public <D extends DataAttributes<? extends Resource>> List<RepoEvent<D>> getFilteredEvents(
+            EventType eventType) {
         List<RepoEvent<D>> assocChildCreatedEvents = new ArrayList<>();
-        for (RepoEvent<?> event : EVENT_CONTAINER.getEvents())
-        {
-            if (event.getType().equals(eventType.getType()))
-            {
+        for (RepoEvent<?> event : EVENT_CONTAINER.getEvents()) {
+            if (event.getType().equals(eventType.getType())) {
                 assocChildCreatedEvents.add((RepoEvent<D>) event);
             }
         }
@@ -498,13 +468,11 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     }
 
     @SuppressWarnings("unchecked")
-    public <D extends DataAttributes<? extends Resource>> RepoEvent<D> getFilteredEvent(EventType eventType, int index)
-    {
+    public <D extends DataAttributes<? extends Resource>> RepoEvent<D> getFilteredEvent(
+            EventType eventType, int index) {
         List<RepoEvent<D>> events = new ArrayList<>();
-        for (RepoEvent<?> event : EVENT_CONTAINER.getEvents())
-        {
-            if (event.getType().equals(eventType.getType()))
-            {
+        for (RepoEvent<?> event : EVENT_CONTAINER.getEvents()) {
+            if (event.getType().equals(eventType.getType())) {
                 events.add((RepoEvent<D>) event);
             }
         }
@@ -513,5 +481,3 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return events.get(index);
     }
 }
-
-

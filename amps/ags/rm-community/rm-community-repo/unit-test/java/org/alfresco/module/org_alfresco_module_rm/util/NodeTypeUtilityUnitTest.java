@@ -48,19 +48,15 @@ import org.mockito.MockitoAnnotations;
  * @author Claudia Agache
  * @since 3.2
  */
-public class NodeTypeUtilityUnitTest
-{
-    @InjectMocks
-    private NodeTypeUtility nodeTypeUtility;
+public class NodeTypeUtilityUnitTest {
+    @InjectMocks private NodeTypeUtility nodeTypeUtility;
 
-    @Mock
-    private DictionaryService mockedDictionaryService;
+    @Mock private DictionaryService mockedDictionaryService;
 
     private QName type, ofType;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         type = AlfMock.generateQName();
         ofType = AlfMock.generateQName();
@@ -68,24 +64,21 @@ public class NodeTypeUtilityUnitTest
 
     /** test that instanceOf returns false if verified type is not subtype of the other */
     @Test
-    public void testNotInstanceOf()
-    {
+    public void testNotInstanceOf() {
         when(mockedDictionaryService.isSubClass(type, ofType)).thenReturn(false);
         assertFalse(nodeTypeUtility.instanceOf(type, ofType));
     }
 
     /** test that instanceOf returns true if verified type is subtype of the other */
     @Test
-    public void testIsInstanceOf()
-    {
+    public void testIsInstanceOf() {
         when(mockedDictionaryService.isSubClass(type, ofType)).thenReturn(true);
         assertTrue(nodeTypeUtility.instanceOf(type, ofType));
     }
 
     /** test that instanceOf checks the cache when verifying the same type twice */
     @Test
-    public void testInstanceOfCacheSameTypes()
-    {
+    public void testInstanceOfCacheSameTypes() {
         nodeTypeUtility.instanceOf(type, ofType);
         nodeTypeUtility.instanceOf(type, ofType);
         verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
@@ -93,8 +86,7 @@ public class NodeTypeUtilityUnitTest
 
     /** test the invocations when verifying different types */
     @Test
-    public void testInstanceOfDifferentTypes()
-    {
+    public void testInstanceOfDifferentTypes() {
         QName anotherType = AlfMock.generateQName();
         nodeTypeUtility.instanceOf(type, ofType);
         nodeTypeUtility.instanceOf(anotherType, ofType);
@@ -103,8 +95,7 @@ public class NodeTypeUtilityUnitTest
 
     /** test that instanceOf returns true if verified type is equal to the other */
     @Test
-    public void testTypesAreEqual()
-    {
+    public void testTypesAreEqual() {
         assertTrue(nodeTypeUtility.instanceOf(type, type));
         verify(mockedDictionaryService, times(0)).isSubClass(any(), any());
     }

@@ -4,32 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.security.authentication;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.AuthenticationManager;
@@ -48,125 +42,164 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
-{
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+public class AuthenticationComponentImpl extends AbstractAuthenticationComponent {
     private Log logger = LogFactory.getLog(getClass());
-    
+
     private MutableAuthenticationDao authenticationDao;
-    
+
     AuthenticationManager authenticationManager;
     CompositePasswordEncoder passwordEncoder;
 
-    public AuthenticationComponentImpl()
-    {
+    public AuthenticationComponentImpl() {
         super();
     }
 
     /**
      * IOC
-     * 
+     *
      * @param authenticationManager AuthenticationManager
      */
-    public void setAuthenticationManager(AuthenticationManager authenticationManager)
-    {
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
 
     /**
      * IOC
-     * 
+     *
      * @param authenticationDao MutableAuthenticationDao
      */
-    public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
-    {
+    public void setAuthenticationDao(MutableAuthenticationDao authenticationDao) {
         this.authenticationDao = authenticationDao;
     }
-    
-    public void setCompositePasswordEncoder(CompositePasswordEncoder passwordEncoder)
-    {
+
+    public void setCompositePasswordEncoder(CompositePasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Authenticate
-     */
+    /** Authenticate */
     @Override
-    protected void authenticateImpl(final String userNameIn, final char[] password) throws AuthenticationException
-    {
-        if (logger.isTraceEnabled())
-        {
+    protected void authenticateImpl(final String userNameIn, final char[] password)
+            throws AuthenticationException {
+        if (logger.isTraceEnabled()) {
             logger.trace("Authentication for user: " + AuthenticationUtil.maskUsername(userNameIn));
         }
-        try
-        {
+        try {
             Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
             final String userName = userTenant.getFirst();
             final String tenantDomain = userTenant.getSecond();
-            
-            String normalized = getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<String>()
-                    {
-                        public String execute() throws Throwable
-                        {
-                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
-                            {
-                                public String doWork() throws Exception
-                                {
-                                    String normalized = getPersonService().getUserIdentifier(userName);
-                                    String finalUserName = normalized == null ? userName : normalized; 
-                                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                            finalUserName, new String(password));
-                                    authenticationManager.authenticate(authentication);
-                                    
-                                    // check whether the user's password requires re-hashing
-                                    UserDetails userDetails = authenticationDao.loadUserByUsername(finalUserName);
-                                    if (userDetails instanceof RepositoryAuthenticatedUser)
-                                    {
-                                        List<String> hashIndicator = ((RepositoryAuthenticatedUser)userDetails).getHashIndicator();
-                                        
-                                        if (hashIndicator != null && !hashIndicator.isEmpty())
-                                        {
-                                            // if the encoding chain is longer than 1 (double hashed) or the 
-                                            // current encoding is not the preferred encoding then re-generate
-                                            if (hashIndicator.size() > 1 || !passwordEncoder.lastEncodingIsPreferred(hashIndicator))
-                                            {
-                                                // add transaction listener to re-hash the users password
-                                                HashPasswordTransactionListener txListener = new HashPasswordTransactionListener(userName, password);
-                                                txListener.setTransactionService(getTransactionService());
-                                                txListener.setAuthenticationDao(authenticationDao);
-                                                AlfrescoTransactionSupport.bindListener(txListener);
-                                                if (logger.isDebugEnabled())
-                                                {
-                                                    logger.debug("New hashed password for user '" + AuthenticationUtil.maskUsername(userName)
-                                                        + "' has been requested");
-                                                }
-                                            }
+
+            String normalized =
+                    getTransactionService()
+                            .getRetryingTransactionHelper()
+                            .doInTransaction(
+                                    new RetryingTransactionCallback<String>() {
+                                        public String execute() throws Throwable {
+                                            return TenantUtil.runAsSystemTenant(
+                                                    new TenantRunAsWork<String>() {
+                                                        public String doWork() throws Exception {
+                                                            String normalized =
+                                                                    getPersonService()
+                                                                            .getUserIdentifier(
+                                                                                    userName);
+                                                            String finalUserName =
+                                                                    normalized == null
+                                                                            ? userName
+                                                                            : normalized;
+                                                            UsernamePasswordAuthenticationToken
+                                                                    authentication =
+                                                                            new UsernamePasswordAuthenticationToken(
+                                                                                    finalUserName,
+                                                                                    new String(
+                                                                                            password));
+                                                            authenticationManager.authenticate(
+                                                                    authentication);
+
+                                                            // check whether the user's password
+                                                            // requires re-hashing
+                                                            UserDetails userDetails =
+                                                                    authenticationDao
+                                                                            .loadUserByUsername(
+                                                                                    finalUserName);
+                                                            if (userDetails
+                                                                    instanceof
+                                                                    RepositoryAuthenticatedUser) {
+                                                                List<String> hashIndicator =
+                                                                        ((RepositoryAuthenticatedUser)
+                                                                                        userDetails)
+                                                                                .getHashIndicator();
+
+                                                                if (hashIndicator != null
+                                                                        && !hashIndicator
+                                                                                .isEmpty()) {
+                                                                    // if the encoding chain is
+                                                                    // longer than 1 (double hashed)
+                                                                    // or the
+                                                                    // current encoding is not the
+                                                                    // preferred encoding then
+                                                                    // re-generate
+                                                                    if (hashIndicator.size() > 1
+                                                                            || !passwordEncoder
+                                                                                    .lastEncodingIsPreferred(
+                                                                                            hashIndicator)) {
+                                                                        // add transaction listener
+                                                                        // to re-hash the users
+                                                                        // password
+                                                                        HashPasswordTransactionListener
+                                                                                txListener =
+                                                                                        new HashPasswordTransactionListener(
+                                                                                                userName,
+                                                                                                password);
+                                                                        txListener
+                                                                                .setTransactionService(
+                                                                                        getTransactionService());
+                                                                        txListener
+                                                                                .setAuthenticationDao(
+                                                                                        authenticationDao);
+                                                                        AlfrescoTransactionSupport
+                                                                                .bindListener(
+                                                                                        txListener);
+                                                                        if (logger
+                                                                                .isDebugEnabled()) {
+                                                                            logger.debug(
+                                                                                    "New hashed"
+                                                                                        + " password"
+                                                                                        + " for user"
+                                                                                        + " '"
+                                                                                            + AuthenticationUtil
+                                                                                                    .maskUsername(
+                                                                                                            userName)
+                                                                                            + "' has"
+                                                                                            + " been"
+                                                                                            + " requested");
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            return normalized;
+                                                        }
+                                                    },
+                                                    tenantDomain);
                                         }
-                                    }
-                                    
-                                    return normalized;
-                                }
-                            }, tenantDomain);
-                        }
-                    }, true);
-            
-            if (normalized == null)
-            {
+                                    },
+                                    true);
+
+            if (normalized == null) {
                 setCurrentUser(userName, UserNameValidationMode.CHECK_AND_FIX);
-            }
-            else
-            {
+            } else {
                 setCurrentUser(normalized, UserNameValidationMode.NONE);
             }
-            
+
             TenantContextHolder.setTenantDomain(tenantDomain);
-        }
-        catch (TenantDisabledException tde)
-        {
+        } catch (TenantDisabledException tde) {
             throw new AuthenticationException(tde.getMessage(), tde);
-        }
-        catch (net.sf.acegisecurity.AuthenticationException ae)
-        {
+        } catch (net.sf.acegisecurity.AuthenticationException ae) {
             // This is a bit gross, I admit, but when LDAP is
             // configured ae, above, is non-serializable and breaks
             // remote authentication.
@@ -179,57 +212,42 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
         }
     }
 
-    /**
-     * We actually have an acegi object so override the default method.
-     */
+    /** We actually have an acegi object so override the default method. */
     @Override
-    protected UserDetails getUserDetails(String userName)
-    {
-        if (AuthenticationUtil.isMtEnabled())
-        {
-            // ALF-9403 - "manual" runAs to avoid clearing ticket, eg. when called via "validate" (->setCurrentUser->CheckCurrentUser)
+    protected UserDetails getUserDetails(String userName) {
+        if (AuthenticationUtil.isMtEnabled()) {
+            // ALF-9403 - "manual" runAs to avoid clearing ticket, eg. when called via "validate"
+            // (->setCurrentUser->CheckCurrentUser)
             Authentication originalFullAuthentication = AuthenticationUtil.getFullAuthentication();
-            try
-            {
-                if (originalFullAuthentication == null)
-                {
-                    AuthenticationUtil.setFullyAuthenticatedUser(getSystemUserName(getUserDomain(userName)));
+            try {
+                if (originalFullAuthentication == null) {
+                    AuthenticationUtil.setFullyAuthenticatedUser(
+                            getSystemUserName(getUserDomain(userName)));
                 }
                 return authenticationDao.loadUserByUsername(userName);
-            }
-            finally
-            {
-                if (originalFullAuthentication == null)
-                {
-                    ContextHolder.setContext(null); // note: does not clear ticket (unlike AuthenticationUtil.clearCurrentSecurityContext())
+            } finally {
+                if (originalFullAuthentication == null) {
+                    ContextHolder.setContext(null); // note: does not clear ticket (unlike
+                    // AuthenticationUtil.clearCurrentSecurityContext())
                 }
             }
-        }
-        else
-        {
+        } else {
             return authenticationDao.loadUserByUsername(userName);
         }
     }
-    
-    /**
-     * Get the password hash from the DAO
-     */
-    public String getMD4HashedPassword(String userName)
-    {
+
+    /** Get the password hash from the DAO */
+    public String getMD4HashedPassword(String userName) {
         return this.authenticationDao.getMD4HashedPassword(userName);
     }
 
-    /**
-     * The default is not to support Authentication token base authentication
-     */
-    public Authentication authenticate(Authentication token) throws AuthenticationException
-    {
+    /** The default is not to support Authentication token base authentication */
+    public Authentication authenticate(Authentication token) throws AuthenticationException {
         throw new AlfrescoRuntimeException("Authentication via token not supported");
     }
-    
+
     @Override
-    protected boolean implementationAllowsGuestLogin()
-    {
+    protected boolean implementationAllowsGuestLogin() {
         return true;
     }
 
@@ -238,8 +256,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
      * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
      */
     @Override
-    public Set<String> getDefaultAdministratorUserNames()
-    {
+    public Set<String> getDefaultAdministratorUserNames() {
         return Collections.singleton(AuthenticationUtil.getAdminUserName());
     }
 }

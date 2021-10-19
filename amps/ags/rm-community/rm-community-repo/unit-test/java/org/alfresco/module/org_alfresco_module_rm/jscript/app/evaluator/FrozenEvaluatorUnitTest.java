@@ -34,9 +34,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,23 +43,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Freeze evaluator unit test.
- * 
+ *
  * @author Roy Wetherall
  */
-public class FrozenEvaluatorUnitTest extends BaseUnitTest
-{
-    @Mock(name="kinds") Set<FilePlanComponentKind> mockedKinds;
-    
+public class FrozenEvaluatorUnitTest extends BaseUnitTest {
+    @Mock(name = "kinds")
+    Set<FilePlanComponentKind> mockedKinds;
+
     @Spy @InjectMocks FrozenEvaluator evaluator;
-    
+
     @Before
     @Override
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         super.before();
-        
+
         // setup interactions
         doReturn(false).when(mockedKinds).contains(FilePlanComponentKind.RECORD_CATEGORY);
         doReturn(true).when(mockedKinds).contains(FilePlanComponentKind.RECORD_FOLDER);
@@ -70,46 +69,51 @@ public class FrozenEvaluatorUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void isNotRecordOrRecordFolder()
-    {
+    public void isNotRecordOrRecordFolder() {
         // setup interactions
         NodeRef nodeRef = generateNodeRef(TYPE_RECORD_CATEGORY);
-        doReturn(FilePlanComponentKind.RECORD_CATEGORY).when(mockedFilePlanService).getFilePlanComponentKind(nodeRef);
-        
-        // evaluate 
+        doReturn(FilePlanComponentKind.RECORD_CATEGORY)
+                .when(mockedFilePlanService)
+                .getFilePlanComponentKind(nodeRef);
+
+        // evaluate
         boolean result = evaluator.evaluate(filePlanComponent);
         assertFalse(result);
-        
+
         // verify interactions
         verify(mockedHoldService, never()).heldBy(filePlanComponent, true);
     }
-    
+
     @Test
-    public void isNotHeld()
-    {
+    public void isNotHeld() {
         // setup interactions
-        doReturn(FilePlanComponentKind.RECORD).when(mockedFilePlanService).getFilePlanComponentKind(record);
+        doReturn(FilePlanComponentKind.RECORD)
+                .when(mockedFilePlanService)
+                .getFilePlanComponentKind(record);
         doReturn(Collections.EMPTY_LIST).when(mockedHoldService).heldBy(record, true);
-        
+
         // evaluate
         boolean result = evaluator.evaluate(record);
         assertFalse(result);
-        
+
         // verify interactions
         verify(mockedHoldService, times(1)).heldBy(record, true);
     }
-    
+
     @Test
-    public void isHeldByAtLeastOne()
-    {
+    public void isHeldByAtLeastOne() {
         // setup interactions
-        doReturn(FilePlanComponentKind.RECORD).when(mockedFilePlanService).getFilePlanComponentKind(record);
-        doReturn(Collections.singletonList(generateNodeRef(TYPE_HOLD))).when(mockedHoldService).heldBy(record, true);
-        
+        doReturn(FilePlanComponentKind.RECORD)
+                .when(mockedFilePlanService)
+                .getFilePlanComponentKind(record);
+        doReturn(Collections.singletonList(generateNodeRef(TYPE_HOLD)))
+                .when(mockedHoldService)
+                .heldBy(record, true);
+
         // evaluate
         boolean result = evaluator.evaluate(record);
         assertTrue(result);
-        
+
         // verify interactions
         verify(mockedHoldService, times(1)).heldBy(record, true);
     }

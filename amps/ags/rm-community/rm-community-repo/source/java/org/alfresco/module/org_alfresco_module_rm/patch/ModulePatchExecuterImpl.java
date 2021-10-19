@@ -27,17 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module patch executer base implementation
@@ -45,9 +45,8 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class ModulePatchExecuterImpl extends   AbstractModuleComponent
-                                    implements ModulePatchExecuter
-{
+public class ModulePatchExecuterImpl extends AbstractModuleComponent
+        implements ModulePatchExecuter {
     /** logger */
     protected static final Log LOGGER = LogFactory.getLog(ModulePatchExecuterImpl.class);
 
@@ -66,73 +65,67 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     /** module patches */
     protected Map<String, ModulePatch> modulePatches = new HashMap<>(21);
 
-    /**
-     * @param attributeService  attribute service
-     */
-    public void setAttributeService(AttributeService attributeService)
-    {
+    /** @param attributeService attribute service */
+    public void setAttributeService(AttributeService attributeService) {
         this.attributeService = attributeService;
     }
 
-    /**
-     * @param moduleSchema  configured module schema version
-     */
-    public void setModuleSchema(int moduleSchema)
-    {
+    /** @param moduleSchema configured module schema version */
+    public void setModuleSchema(int moduleSchema) {
         this.moduleSchema = moduleSchema;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter#register(org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter#register(org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch)
      */
     @Override
-    public void register(ModulePatch modulePatch)
-    {
+    public void register(ModulePatch modulePatch) {
         // ensure that the module patch being registered relates to the module id
-        if (!getModuleId().equals(modulePatch.getModuleId()))
-        {
-            throw new AlfrescoRuntimeException("Unable to register module patch, becuase module id is invalid.");
+        if (!getModuleId().equals(modulePatch.getModuleId())) {
+            throw new AlfrescoRuntimeException(
+                    "Unable to register module patch, becuase module id is invalid.");
         }
 
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Registering module patch " + modulePatch.getId() + " for module " + getModuleId());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                    "Registering module patch "
+                            + modulePatch.getId()
+                            + " for module "
+                            + getModuleId());
         }
 
         modulePatches.put(modulePatch.getId(), modulePatch);
     }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
+    /** @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal() */
     @Override
-    protected void executeInternal()
-    {
+    protected void executeInternal() {
         // get current schema version
         int currentSchema = getCurrentSchema();
 
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Running module patch executer (currentSchema=" + currentSchema + ", configuredSchema=" + moduleSchema + ")");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                    "Running module patch executer (currentSchema="
+                            + currentSchema
+                            + ", configuredSchema="
+                            + moduleSchema
+                            + ")");
         }
 
-        if (moduleSchema > currentSchema)
-        {
+        if (moduleSchema > currentSchema) {
             // determine what patches should be applied
             List<ModulePatch> patchesToApply = new ArrayList<>(13);
-            for (ModulePatch modulePatch : modulePatches.values())
-            {
-                if (modulePatch.getFixesFromSchema() <= currentSchema &&
-                    modulePatch.getFixesToSchema() >= currentSchema)
-                {
+            for (ModulePatch modulePatch : modulePatches.values()) {
+                if (modulePatch.getFixesFromSchema() <= currentSchema
+                        && modulePatch.getFixesToSchema() >= currentSchema) {
                     patchesToApply.add(modulePatch);
                 }
             }
 
             // apply the patches in the correct order
             Collections.sort(patchesToApply);
-            for (ModulePatch patchToApply : patchesToApply)
-            {
+            for (ModulePatch patchToApply : patchesToApply) {
                 patchToApply.apply();
             }
 
@@ -144,14 +137,12 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     /**
      * Get the currently recorded schema version for the module
      *
-     * @return  int currently recorded schema version
+     * @return int currently recorded schema version
      */
-    protected int getCurrentSchema()
-    {
+    protected int getCurrentSchema() {
         Integer result = START_SCHEMA;
-        if (attributeService.exists(KEY_MODULE_SCHEMA, getModuleId()))
-        {
-            result = (Integer)attributeService.getAttribute(KEY_MODULE_SCHEMA, getModuleId());
+        if (attributeService.exists(KEY_MODULE_SCHEMA, getModuleId())) {
+            result = (Integer) attributeService.getAttribute(KEY_MODULE_SCHEMA, getModuleId());
         }
         return result;
     }
@@ -161,17 +152,15 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
      *
      * @param newSchema new schema version
      */
-    protected void updateSchema(int newSchema)
-    {
-        attributeService.setAttribute(Integer.valueOf(newSchema), KEY_MODULE_SCHEMA,  getModuleId());
+    protected void updateSchema(int newSchema) {
+        attributeService.setAttribute(Integer.valueOf(newSchema), KEY_MODULE_SCHEMA, getModuleId());
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter#initSchemaVersion()
      */
     @Override
-    public void initSchemaVersion()
-    {
+    public void initSchemaVersion() {
         updateSchema(moduleSchema);
     }
 }

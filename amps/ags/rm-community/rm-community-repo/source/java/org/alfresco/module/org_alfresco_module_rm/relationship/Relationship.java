@@ -37,8 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public interface Relationship
-{
+public interface Relationship {
     /**
      * Gets the unique name of the relationship
      *

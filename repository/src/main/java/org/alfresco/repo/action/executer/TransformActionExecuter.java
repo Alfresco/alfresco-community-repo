@@ -4,29 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.action.executer;
-
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -58,23 +55,29 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Transfor action executer
- * 
+ *
  * @author Roy Wetherall
  */
 @Deprecated
-public class TransformActionExecuter extends ActionExecuterAbstractBase 
-{    
+public class TransformActionExecuter extends ActionExecuterAbstractBase {
     /* Error messages */
-    public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
-    private static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Can not find Content Reader for document. Operation can't be performed";
-    private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
+    public static final String ERR_OVERWRITE =
+            "Unable to overwrite copy because more than one have been found.";
+    private static final String CONTENT_READER_NOT_FOUND_MESSAGE =
+            "Can not find Content Reader for document. Operation can't be performed";
+    private static final String TRANSFORMING_ERROR_MESSAGE =
+            "Some error occurred during document transforming. Error message: ";
 
-    public static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' -> '%s' with options '%s' was not found.";
-    
-    private static Log logger = LogFactory.getLog(TransformActionExecuter.class); 
-    
+    public static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN =
+            "Transformer for '%s' -> '%s' with options '%s' was not found.";
+
+    private static Log logger = LogFactory.getLog(TransformActionExecuter.class);
+
     /*
      * Action constants
      */
@@ -84,7 +87,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_ASSOC_TYPE_QNAME = "assoc-type";
     public static final String PARAM_ASSOC_QNAME = "assoc-name";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
-    
+
     /*
      * Injected services
      */
@@ -97,322 +100,330 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     private SynchronousTransformClient synchronousTransformClient;
     private TransformationOptionsConverter converter;
 
-    /**
-     * Properties (needed to avoid changing method signatures)
-     */
-    @Deprecated
-    protected TransformationOptions options;
-    
-    /**
-     * Set the mime type service
-     */
-    public void setMimetypeService(MimetypeService mimetypeService) 
-    {
+    /** Properties (needed to avoid changing method signatures) */
+    @Deprecated protected TransformationOptions options;
+
+    /** Set the mime type service */
+    public void setMimetypeService(MimetypeService mimetypeService) {
         this.mimetypeService = mimetypeService;
     }
 
-    /**
-     * Set the node service
-     */
-    public void setNodeService(NodeService nodeService) 
-    {
+    /** Set the node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * Set the service to determine check-in and check-out status
-     */
-    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
-    {
+    /** Set the service to determine check-in and check-out status */
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
         this.checkOutCheckInService = checkOutCheckInService;
     }
 
-    /**
-     * Set the dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService) 
-    {
+    /** Set the dictionary service */
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
-    
-    /**
-     * Set the content service
-     */
-    public void setContentService(ContentService contentService) 
-    {
+
+    /** Set the content service */
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
-    
-    /**
-     * Set the copy service
-     */
-    public void setCopyService(CopyService copyService) 
-    {
+
+    /** Set the copy service */
+    public void setCopyService(CopyService copyService) {
         this.copyService = copyService;
     }
 
-    public void setSynchronousTransformClient(SynchronousTransformClient synchronousTransformClient)
-    {
+    public void setSynchronousTransformClient(
+            SynchronousTransformClient synchronousTransformClient) {
         this.synchronousTransformClient = synchronousTransformClient;
     }
 
-    public void setConverter(TransformationOptionsConverter converter)
-    {
+    public void setConverter(TransformationOptionsConverter converter) {
         this.converter = converter;
     }
 
-    /**
-     * Add parameter definitions
-     */
+    /** Add parameter definitions */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_MIME_TYPE, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_MIME_TYPE), false, "ac-mimetypes"));
-        paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_QNAME, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_QNAME)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_MIME_TYPE,
+                        DataTypeDefinition.TEXT,
+                        true,
+                        getParamDisplayLabel(PARAM_MIME_TYPE),
+                        false,
+                        "ac-mimetypes"));
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_DESTINATION_FOLDER,
+                        DataTypeDefinition.NODE_REF,
+                        true,
+                        getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_ASSOC_TYPE_QNAME,
+                        DataTypeDefinition.QNAME,
+                        false,
+                        getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_ASSOC_QNAME,
+                        DataTypeDefinition.QNAME,
+                        false,
+                        getParamDisplayLabel(PARAM_ASSOC_QNAME)));
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_OVERWRITE_COPY,
+                        DataTypeDefinition.BOOLEAN,
+                        false,
+                        getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(
-            Action ruleAction,
-            NodeRef actionedUponNodeRef) 
-    {
-        if (this.nodeService.exists(actionedUponNodeRef) == false)
-        {
+    protected void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef) {
+        if (this.nodeService.exists(actionedUponNodeRef) == false) {
             // node doesn't exist - can't do anything
             return;
         }
         // First check that the node is a sub-type of content
         QName typeQName = this.nodeService.getType(actionedUponNodeRef);
-        if (this.dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT) == false)
-        {
+        if (this.dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT) == false) {
             // it is not content, so can't transform
             return;
         }
-        
+
         // Get the mime type
-        String mimeType = (String)ruleAction.getParameterValue(PARAM_MIME_TYPE);
+        String mimeType = (String) ruleAction.getParameterValue(PARAM_MIME_TYPE);
         // Get the content reader
-        ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
-        if (null == contentReader || !contentReader.exists())
-        {
+        ContentReader contentReader =
+                this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+        if (null == contentReader || !contentReader.exists()) {
             throw new RuleServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
         }
 
-        TransformationOptions transformationOptions = newTransformationOptions(ruleAction, actionedUponNodeRef);
-        // getExecuteAsynchronously() is not true for async convert content rules, so using Thread name
+        TransformationOptions transformationOptions =
+                newTransformationOptions(ruleAction, actionedUponNodeRef);
+        // getExecuteAsynchronously() is not true for async convert content rules, so using Thread
+        // name
         // options.setUse(ruleAction.getExecuteAsynchronously() ? "asyncRule" :"syncRule");
-        transformationOptions.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" :"syncRule");
+        transformationOptions.setUse(
+                Thread.currentThread().getName().contains("Async") ? "asyncRule" : "syncRule");
 
         String sourceMimetype = contentReader.getMimetype();
         long sourceSizeInBytes = contentReader.getSize();
         String contentUrl = contentReader.getContentUrl();
-        Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, mimeType);
-        if (!synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes,
-                contentUrl, mimeType, options, null, actionedUponNodeRef))
-        {
+        Map<String, String> options =
+                converter.getOptions(transformationOptions, sourceMimetype, mimeType);
+        if (!synchronousTransformClient.isSupported(
+                sourceMimetype,
+                sourceSizeInBytes,
+                contentUrl,
+                mimeType,
+                options,
+                null,
+                actionedUponNodeRef)) {
             String optionsString = TransformerDebug.toString(options);
-            throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimetype,
-                    mimeType, optionsString));
+            throw new RuleServiceException(
+                    String.format(
+                            TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN,
+                            sourceMimetype,
+                            mimeType,
+                            optionsString));
         }
-        
+
         // Get the details of the copy destination
-        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-        QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
-        QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
-        
+        NodeRef destinationParent =
+                (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+        QName destinationAssocTypeQName =
+                (QName) ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
+        QName destinationAssocQName = (QName) ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
+
         // default the assoc params if they're not present
-        if (destinationAssocTypeQName == null)
-        {
+        if (destinationAssocTypeQName == null) {
             destinationAssocTypeQName = ContentModel.ASSOC_CONTAINS;
         }
-        if (destinationAssocQName == null)
-        {
-            destinationAssocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy");
+        if (destinationAssocQName == null) {
+            destinationAssocQName =
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy");
         }
-        
+
         // Get the overwirte value
         boolean overwrite = true;
-        Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
-        if (overwriteValue != null)
-        {
+        Boolean overwriteValue = (Boolean) ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
+        if (overwriteValue != null) {
             overwrite = overwriteValue.booleanValue();
         }
-        
+
         // Calculate the destination name
-        String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+        String originalName =
+                (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
         String newName = transformName(this.mimetypeService, originalName, mimeType, true);
-        
+
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
-        if (overwrite == true)
-        {
+        if (overwrite == true) {
             // Try and find copies of the actioned upon node reference.
             // Include the parent folder because that's where the copy will be if this action
             // had done the first copy.
-            PagingResults<CopyInfo> copies = copyService.getCopies(
-                    actionedUponNodeRef,
-                    destinationParent,
-                    new PagingRequest(1000));
-            for (CopyInfo copyInfo : copies.getPage())
-            {
+            PagingResults<CopyInfo> copies =
+                    copyService.getCopies(
+                            actionedUponNodeRef, destinationParent, new PagingRequest(1000));
+            for (CopyInfo copyInfo : copies.getPage()) {
                 NodeRef copy = copyInfo.getNodeRef();
                 String copyName = copyInfo.getName();
                 // We know that it is in the destination parent, but avoid working copies
-                if (checkOutCheckInService.isWorkingCopy(copy))
-                {
+                if (checkOutCheckInService.isWorkingCopy(copy)) {
                     // It is a working copy
                     continue;
-                }
-                else if (!newName.equals(copyName))
-                {
+                } else if (!newName.equals(copyName)) {
                     // The copy's name is not what this action would have set it to
                     continue;
                 }
-                if (copyNodeRef == null)
-                {
+                if (copyNodeRef == null) {
                     copyNodeRef = copy;
-                }
-                else
-                {
+                } else {
                     throw new RuleServiceException(ERR_OVERWRITE);
                 }
             }
         }
-        
-        if (copyNodeRef == null)
-        {
+
+        if (copyNodeRef == null) {
             // Copy the content node
-            copyNodeRef = this.copyService.copy(
-                    actionedUponNodeRef, 
-                    destinationParent,
-                    destinationAssocTypeQName,
-                    QName.createQName(destinationAssocQName.getNamespaceURI(), newName));
+            copyNodeRef =
+                    this.copyService.copy(
+                            actionedUponNodeRef,
+                            destinationParent,
+                            destinationAssocTypeQName,
+                            QName.createQName(destinationAssocQName.getNamespaceURI(), newName));
 
             // Adjust the name of the copy
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
-            String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
-            
-            if (originalTitle != null)
-            {
+            String originalTitle =
+                    (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
+
+            if (originalTitle != null) {
                 nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, originalTitle);
             }
         }
-        
+
         // Only do the transformation if some content is available
-        if (contentReader != null)
-        {
+        if (contentReader != null) {
             // get the writer and set it up
-            ContentWriter contentWriter = this.contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);
-            contentWriter.setMimetype(mimeType);                        // new mimetype
-            contentWriter.setEncoding(contentReader.getEncoding());     // original encoding
+            ContentWriter contentWriter =
+                    this.contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);
+            contentWriter.setMimetype(mimeType); // new mimetype
+            contentWriter.setEncoding(contentReader.getEncoding()); // original encoding
 
             // Try and transform the content - failures are caught and allowed to fail silently.
             // This is unique to this action, and is essentially a broken pattern.
-            // Clients should rather get the exception and then decide to replay with rules/actions turned off or not.
+            // Clients should rather get the exception and then decide to replay with rules/actions
+            // turned off or not.
             // TODO: Check failure patterns for actions.
-            try
-            {
-                doTransform(ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
+            try {
+                doTransform(
+                        ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
                 ruleAction.setParameterValue(PARAM_RESULT, copyNodeRef);
-            }
-            catch(NoTransformerException e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("No transformer found to execute rule: \n" +
-                            "   reader: " + contentReader + "\n" +
-                            "   writer: " + contentWriter + "\n" +
-                            "   action: " + this);
-                }             
+            } catch (NoTransformerException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "No transformer found to execute rule: \n"
+                                    + "   reader: "
+                                    + contentReader
+                                    + "\n"
+                                    + "   writer: "
+                                    + contentWriter
+                                    + "\n"
+                                    + "   action: "
+                                    + this);
+                }
                 throw new RuleServiceException(TRANSFORMING_ERROR_MESSAGE + e.getMessage());
             }
         }
     }
 
-    protected TransformationOptions newTransformationOptions(Action ruleAction, NodeRef sourceNodeRef)
-    {
-        return new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, null, ContentModel.PROP_NAME);
-    }    
-    
-    /**
-     * Executed in a new transaction so that failures don't cause the entire transaction to rollback.
-     */
-    protected void doTransform( Action ruleAction, 
-                                NodeRef sourceNodeRef, ContentReader contentReader, 
-                                NodeRef destinationNodeRef, ContentWriter contentWriter)    
+    protected TransformationOptions newTransformationOptions(
+            Action ruleAction, NodeRef sourceNodeRef) {
+        return new TransformationOptions(
+                sourceNodeRef, ContentModel.PROP_NAME, null, ContentModel.PROP_NAME);
+    }
 
-    {
+    /**
+     * Executed in a new transaction so that failures don't cause the entire transaction to
+     * rollback.
+     */
+    protected void doTransform(
+            Action ruleAction,
+            NodeRef sourceNodeRef,
+            ContentReader contentReader,
+            NodeRef destinationNodeRef,
+            ContentWriter contentWriter) {
+
         // transform - will throw NoTransformerException if there are no transformers
-        TransformationOptions transformationOptions = newTransformationOptions(ruleAction, sourceNodeRef);
+        TransformationOptions transformationOptions =
+                newTransformationOptions(ruleAction, sourceNodeRef);
         transformationOptions.setTargetNodeRef(destinationNodeRef);
         String sourceMimetype = contentReader.getMimetype();
-        Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, contentWriter.getMimetype());
-        synchronousTransformClient.transform(contentReader, contentWriter, options, null, sourceNodeRef);
+        Map<String, String> options =
+                converter.getOptions(
+                        transformationOptions, sourceMimetype, contentWriter.getMimetype());
+        synchronousTransformClient.transform(
+                contentReader, contentWriter, options, null, sourceNodeRef);
     }
-    
+
     /**
-     * Transform a name from original extension to new extension, if appropriate.
-     * If the original name seems to end with a reasonable file extension, then the name
-     * will be transformed such that the old extension is replaced with the new.
-     * Otherwise the name will be returned unaltered.
-     * <P/>
-     * The original name will be deemed to have a reasonable extension if there are one
-     * or more characters after the (required) final dot, none of which are spaces.
-     * 
+     * Transform a name from original extension to new extension, if appropriate. If the original
+     * name seems to end with a reasonable file extension, then the name will be transformed such
+     * that the old extension is replaced with the new. Otherwise the name will be returned
+     * unaltered.
+     *
+     * <p>The original name will be deemed to have a reasonable extension if there are one or more
+     * characters after the (required) final dot, none of which are spaces.
+     *
      * @param mimetypeService the mimetype service
      * @param original the original name
      * @param newMimetype the new mime type
      * @param alwaysAdd if the name has no extension, then add the new one
-     * 
      * @return name with new extension as appropriate for the mimetype
      */
-    public static String transformName(MimetypeService mimetypeService, String original, String newMimetype, boolean alwaysAdd)
-    {
+    public static String transformName(
+            MimetypeService mimetypeService,
+            String original,
+            String newMimetype,
+            boolean alwaysAdd) {
         // get the current extension
         int dotIndex = original.lastIndexOf('.');
         StringBuilder sb = new StringBuilder(original.length());
-        if (dotIndex > -1)
-        {
+        if (dotIndex > -1) {
             // we found it
             String nameBeforeDot = original.substring(0, dotIndex);
             String originalExtension = original.substring(dotIndex + 1, original.length());
-            
+
             // See ALF-1937, which actually relates to cm:title not cm:name.
             // It is possible that the text after the '.' is not actually an extension
             // in which case it should not be replaced.
             boolean originalExtensionIsReasonable = isExtensionReasonable(originalExtension);
             String newExtension = mimetypeService.getExtension(newMimetype);
-            if (originalExtensionIsReasonable)
-            {
+            if (originalExtensionIsReasonable) {
                 sb.append(nameBeforeDot);
                 sb.append('.').append(newExtension);
-            }
-            else
-            {
+            } else {
                 sb.append(original);
-                if (alwaysAdd == true)
-                {
-                    if (sb.charAt(sb.length() - 1) != '.')
-                    {
+                if (alwaysAdd == true) {
+                    if (sb.charAt(sb.length() - 1) != '.') {
                         sb.append('.');
                     }
                     sb.append(newExtension);
                 }
             }
-        }
-        else
-        {
+        } else {
             // no extension so don't add a new one
             sb.append(original);
-            
-            if (alwaysAdd == true)
-            {               
+
+            if (alwaysAdd == true) {
                 // add the new extension - defaults to .bin
                 String newExtension = mimetypeService.getExtension(newMimetype);
                 sb.append('.').append(newExtension);
@@ -424,30 +435,25 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * Given a String, this method tries to determine whether it is a reasonable filename extension.
-     * There are a number of checks that could be performed here, including checking whether the characters
-     * in the string are all 'letters'. However these are complicated by unicode and other
-     * considerations. Therefore this method adopts a simple approach and returns true if the
+     * There are a number of checks that could be performed here, including checking whether the
+     * characters in the string are all 'letters'. However these are complicated by unicode and
+     * other considerations. Therefore this method adopts a simple approach and returns true if the
      * string is of non-zero length and contains no spaces.
-     * 
+     *
      * @param potentialExtensionString the string which may be a file extension.
      * @return <code>true</code> if it is deemed reasonable, else <code>false</code>
      * @since 3.3
      */
-    private static boolean isExtensionReasonable(String potentialExtensionString)
-    {
+    private static boolean isExtensionReasonable(String potentialExtensionString) {
         return potentialExtensionString.length() > 0 && potentialExtensionString.indexOf(' ') == -1;
     }
-    
+
     @Override
-    public boolean onLogException(Log logger, Throwable t, String message)
-    {
-        if (t instanceof UnimportantTransformException )
-        {
+    public boolean onLogException(Log logger, Throwable t, String message) {
+        if (t instanceof UnimportantTransformException) {
             logger.debug(message);
             return true;
-        }
-        else if (t instanceof UnsupportedTransformationException)
-        {
+        } else if (t instanceof UnsupportedTransformationException) {
             logger.error(message);
             return true;
         }

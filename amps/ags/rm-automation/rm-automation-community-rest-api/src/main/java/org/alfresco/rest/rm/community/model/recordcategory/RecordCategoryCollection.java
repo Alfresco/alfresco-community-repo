@@ -35,7 +35,5 @@ import org.alfresco.rest.core.RestModels;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RecordCategoryCollection extends RestModels<RecordCategoryEntry, RecordCategoryCollection>
-{
-
-}
+public class RecordCategoryCollection
+        extends RestModels<RecordCategoryEntry, RecordCategoryCollection> {}

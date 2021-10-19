@@ -32,11 +32,6 @@ import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestU
 import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils.PERIOD_ONE_WEEK;
 import static org.alfresco.util.GUID.generate;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
@@ -46,77 +41,88 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
-* Update next disposition step integration tests.
-*
-* @author Roxana Lucanu
-* @since 2.3.1
-*/
-public class UpdateNextDispositionActionTest extends BaseRMTestCase
-{
+ * Update next disposition step integration tests.
+ *
+ * @author Roxana Lucanu
+ * @since 2.3.1
+ */
+public class UpdateNextDispositionActionTest extends BaseRMTestCase {
     /**
-     * Given a record with multiple dispositions
-     * When updating the next step
-     * Then the action is available
-     * <p>
-     * relates to https://issues.alfresco.com/jira/browse/RM-3060
+     * Given a record with multiple dispositions When updating the next step Then the action is
+     * available
+     *
+     * <p>relates to https://issues.alfresco.com/jira/browse/RM-3060
      */
-    public void testUpdateNextDispositionAction_RM3060() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            NodeRef record;
-            NodeRef folder2;
+    public void testUpdateNextDispositionAction_RM3060() throws Exception {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest() {
+                    NodeRef record;
+                    NodeRef folder2;
 
-            @Override
-            public void given()
-            {
-                // create category1
-                NodeRef category1 = filePlanService.createRecordCategory(filePlan, generate());
+                    @Override
+                    public void given() {
+                        // create category1
+                        NodeRef category1 =
+                                filePlanService.createRecordCategory(filePlan, generate());
 
-                // create disposition schedule for category1
-                createDispositionSchedule(category1);
+                        // create disposition schedule for category1
+                        createDispositionSchedule(category1);
 
-                // create category2
-                NodeRef category2 = filePlanService.createRecordCategory(filePlan, generate());
+                        // create category2
+                        NodeRef category2 =
+                                filePlanService.createRecordCategory(filePlan, generate());
 
-                // create disposition schedule for category2
-                createDispositionSchedule(category2);
+                        // create disposition schedule for category2
+                        createDispositionSchedule(category2);
 
-                // create folder2 inside category2
-                folder2 = recordFolderService.createRecordFolder(category2, generate());
+                        // create folder2 inside category2
+                        folder2 = recordFolderService.createRecordFolder(category2, generate());
 
-                // create folder1 inside category1
-                NodeRef folder1 = recordFolderService.createRecordFolder(category1, generate());
+                        // create folder1 inside category1
+                        NodeRef folder1 =
+                                recordFolderService.createRecordFolder(category1, generate());
 
-                // create record inside folder1
-                record = utils.createRecord(folder1, generate(), generate());
+                        // create record inside folder1
+                        record = utils.createRecord(folder1, generate(), generate());
+                    }
 
-            }
-            @Override
-            public void when() throws Exception
-            {
-                // link the record to folder2
-                recordService.link(record, folder2);
+                    @Override
+                    public void when() throws Exception {
+                        // link the record to folder2
+                        recordService.link(record, folder2);
 
-                // complete record
-                utils.completeRecord(record);
+                        // complete record
+                        utils.completeRecord(record);
 
-                // cut off
-                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null); 
-            }
+                        // cut off
+                        rmActionService.executeRecordsManagementAction(
+                                record, CutOffAction.NAME, null);
+                    }
 
-            @Override
-            public void then() throws Exception
-            {
-                assertTrue("Record " + record + " doesn't have the cutOff aspect.", nodeService.hasAspect(record, ASPECT_CUT_OFF));
-            }
-        });
+                    @Override
+                    public void then() throws Exception {
+                        assertTrue(
+                                "Record " + record + " doesn't have the cutOff aspect.",
+                                nodeService.hasAspect(record, ASPECT_CUT_OFF));
+                    }
+                });
     }
 
-    private void createDispositionSchedule(NodeRef category)
-    {
-        DispositionSchedule ds = utils.createDispositionSchedule(category, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_DESCRIPTION, true, false, false);
+    private void createDispositionSchedule(NodeRef category) {
+        DispositionSchedule ds =
+                utils.createDispositionSchedule(
+                        category,
+                        DEFAULT_DISPOSITION_INSTRUCTIONS,
+                        DEFAULT_DISPOSITION_DESCRIPTION,
+                        true,
+                        false,
+                        false);
 
         // create the properties for CUTOFF action and add it to the disposition action definition
         Map<QName, Serializable> cutOff = new HashMap<>(3);
@@ -129,7 +135,9 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
         Map<QName, Serializable> transfer = new HashMap<>(3);
         transfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
         transfer.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        transfer.put(PROP_DISPOSITION_EVENT, (Serializable)Collections.singletonList(DEFAULT_EVENT_NAME));
+        transfer.put(
+                PROP_DISPOSITION_EVENT,
+                (Serializable) Collections.singletonList(DEFAULT_EVENT_NAME));
         dispositionService.addDispositionActionDefinition(ds, transfer);
 
         // create the properties for DESTROY action and add it to the disposition action definition

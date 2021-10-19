@@ -27,15 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -58,27 +49,39 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * This webscript applies necessary changes to the RM custom model in the repository. These changes
  * are to 'patch' a deployed RM custom model during the DoD certification process. With that in mind
- * they are safe to apply to a live database i.e. without side-effect to existing data and safe
- * to call multiple times.
- * <P>
+ * they are safe to apply to a live database i.e. without side-effect to existing data and safe to
+ * call multiple times.
  *
- * TODO This webscript should be removed after DOD certification as none of these patches are needed
- * for a newly-installed DoD amp.
+ * <p>TODO This webscript should be removed after DOD certification as none of these patches are
+ * needed for a newly-installed DoD amp.
  *
  * @author neilm
  */
 @Deprecated
 public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
-                                  implements RecordsManagementModel
-{
-    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
-    private static final String RMC_CUSTOM_RECORD_SERIES_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordSeriesProperties";
-    private static final String RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordCategoryProperties";
-    private static final String RMC_CUSTOM_RECORD_FOLDER_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordFolderProperties";
-    private static final String RMC_CUSTOM_RECORD_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordProperties";
+        implements RecordsManagementModel {
+    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF =
+            new NodeRef("workspace://SpacesStore/records_management_custom_model");
+    private static final String RMC_CUSTOM_RECORD_SERIES_PROPERTIES =
+            RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordSeriesProperties";
+    private static final String RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES =
+            RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordCategoryProperties";
+    private static final String RMC_CUSTOM_RECORD_FOLDER_PROPERTIES =
+            RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordFolderProperties";
+    private static final String RMC_CUSTOM_RECORD_PROPERTIES =
+            RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordProperties";
 
     /** Logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplyDodCertModelFixesGet.class);
@@ -86,24 +89,20 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     private ContentService contentService;
     private NamespaceService namespaceService;
 
-    public void setContentService(ContentService contentService)
-    {
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
     @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         LOGGER.info("Applying webscript-based patches to RM custom model in the repo.");
 
         M2Model customModel = readCustomContentModel();
-        if (customModel == null)
-        {
+        if (customModel == null) {
             final String msg = "Custom content model could not be read";
             LOGGER.error(msg);
             throw new AlfrescoRuntimeException(msg);
@@ -112,8 +111,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
         M2Aspect customAssocsAspect = customModel.getAspect(customAspectName);
 
-        if (customAssocsAspect == null)
-        {
+        if (customAssocsAspect == null) {
             final String msg = "Unknown aspect: " + customAspectName;
             LOGGER.error(msg);
             throw new AlfrescoRuntimeException(msg);
@@ -122,14 +120,12 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         // MOB-1573. All custom references should have many-many multiplicity.
         LOGGER.info("MOB-1573. All custom references should have many-many multiplicity.");
 
-        for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations())
-        {
+        for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations()) {
             classAssoc.setSourceMany(true);
             classAssoc.setTargetMany(true);
-
         }
 
-        //MOB-1621. Custom fields should be created as untokenized by default.
+        // MOB-1621. Custom fields should be created as untokenized by default.
         LOGGER.info("MOB-1621. Custom fields should be created as untokenized by default.");
 
         List<String> allCustomPropertiesAspects = new ArrayList<>(4);
@@ -137,12 +133,10 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_FOLDER_PROPERTIES);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_PROPERTIES);
-        for (String aspectName : allCustomPropertiesAspects)
-        {
+        for (String aspectName : allCustomPropertiesAspects) {
             M2Aspect aspectObj = customModel.getAspect(aspectName);
             List<M2Property> customProperties = aspectObj.getProperties();
-            for (M2Property propertyObj : customProperties)
-            {
+            for (M2Property propertyObj : customProperties) {
                 propertyObj.setIndexed(true);
                 propertyObj.setIndexedAtomically(true);
                 propertyObj.setStoredInIndex(false);
@@ -150,52 +144,46 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
             }
         }
 
-
         writeCustomContentModel(customModel);
 
-        LOGGER.info("Completed application of webscript-based patches to RM custom model in the repo.");
+        LOGGER.info(
+                "Completed application of webscript-based patches to RM custom model in the repo.");
 
         Map<String, Object> model = new HashMap<>(1, 1.0f);
-    	model.put("success", true);
+        model.put("success", true);
 
         return model;
     }
 
-    private M2Model readCustomContentModel()
-    {
-        ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT);
+    private M2Model readCustomContentModel() {
+        ContentReader reader =
+                this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF, ContentModel.TYPE_CONTENT);
 
-        if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
+        if (!reader.exists()) {
+            throw new AlfrescoRuntimeException("RM CustomModel has no content.");
+        }
 
         InputStream contentIn = null;
         M2Model deserializedModel = null;
-        try
-        {
+        try {
             contentIn = reader.getContentInputStream();
             deserializedModel = M2Model.createModel(contentIn);
-        }
-        finally
-        {
-            try
-            {
-                if (contentIn != null)
-                {
+        } finally {
+            try {
+                if (contentIn != null) {
                     contentIn.close();
                 }
-            }
-            catch (IOException ignored)
-            {
+            } catch (IOException ignored) {
                 // Intentionally empty.`
             }
         }
         return deserializedModel;
     }
 
-    private void writeCustomContentModel(M2Model deserializedModel)
-    {
-        ContentWriter writer = this.contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT, true);
+    private void writeCustomContentModel(M2Model deserializedModel) {
+        ContentWriter writer =
+                this.contentService.getWriter(
+                        RM_CUSTOM_MODEL_NODE_REF, ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
 
@@ -203,14 +191,12 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         deserializedModel.toXML(baos);
 
         String updatedModelXml;
-        try
-        {
+        try {
             updatedModelXml = baos.toString("UTF-8");
             writer.putContent(updatedModelXml);
             // putContent closes all resources.
             // so we don't have to.
-        } catch (UnsupportedEncodingException uex)
-        {
+        } catch (UnsupportedEncodingException uex) {
             throw new AlfrescoRuntimeException("Exception when writing custom model xml.", uex);
         }
     }

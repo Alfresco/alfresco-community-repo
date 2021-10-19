@@ -27,12 +27,6 @@
 
 package org.alfresco.repo.web.scripts.rule;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -42,50 +36,53 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Implementation for Java backed webscript to get the RM related action definition list.
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmActionDefinitionsGet extends DeclarativeWebScript
-{
+public class RmActionDefinitionsGet extends DeclarativeWebScript {
     private RecordsManagementActionService recordsManagementActionService;
     private ActionService extendedActionService;
 
     private List<String> whitelistedActions = WhitelistedDMActions.getActionsList();
 
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
+    public void setRecordsManagementActionService(
+            RecordsManagementActionService recordsManagementActionService) {
         this.recordsManagementActionService = recordsManagementActionService;
     }
 
-    public void setExtendedActionService(ActionService extendedActionService)
-    {
+    public void setExtendedActionService(ActionService extendedActionService) {
         this.extendedActionService = extendedActionService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        List<RecordsManagementAction> rmActions = recordsManagementActionService.getRecordsManagementActions();
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+        List<RecordsManagementAction> rmActions =
+                recordsManagementActionService.getRecordsManagementActions();
         List<ActionDefinition> actions = extendedActionService.getActionDefinitions();
         Set<ActionDefinition> defs = new HashSet<>(rmActions.size());
-        for (RecordsManagementAction action : rmActions)
-        {
-            if (action.isPublicAction())
-            {
+        for (RecordsManagementAction action : rmActions) {
+            if (action.isPublicAction()) {
                 defs.add(action.getRecordsManagementActionDefinition());
             }
         }
         // If there are any DM whitelisted actions for RM add them in the rule actions
-        for (ActionDefinition actionDefinition : actions)
-        {
-            if (whitelistedActions.contains(actionDefinition.getName()))
-            {
+        for (ActionDefinition actionDefinition : actions) {
+            if (whitelistedActions.contains(actionDefinition.getName())) {
                 defs.add(actionDefinition);
             }
         }

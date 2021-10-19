@@ -47,95 +47,108 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Based on the logic of the legacy BinaryPassThrough and String Transformers.
- * Streams the source content to target when the respective mimetypes are identical, or transforms to "text/plain" from
- * any mimetype starting "text/", or "application/x-javascript", or "application/dita+xml". There must be no transform
- * options, but in case of the text transform the source and target encodings may be change.
+ * Based on the logic of the legacy BinaryPassThrough and String Transformers. Streams the source
+ * content to target when the respective mimetypes are identical, or transforms to "text/plain" from
+ * any mimetype starting "text/", or "application/x-javascript", or "application/dita+xml". There
+ * must be no transform options, but in case of the text transform the source and target encodings
+ * may be change.
  *
- * Supported transforms are added by {@link CombinedConfig#addPassThroughTransformer(org.alfresco.service.cmr.repository.MimetypeService)}.
+ * <p>Supported transforms are added by {@link
+ * CombinedConfig#addPassThroughTransformer(org.alfresco.service.cmr.repository.MimetypeService)}.
  *
  * @author adavis
  */
-public class LocalPassThroughTransform extends AbstractLocalTransform
-{
+public class LocalPassThroughTransform extends AbstractLocalTransform {
     public static final String NAME = "PassThrough";
 
-    public LocalPassThroughTransform(String name, TransformerDebug transformerDebug,
-                                     MimetypeService mimetypeService, boolean strictMimeTypeCheck,
-                                     Map<String, Set<String>> strictMimetypeExceptions,
-                                     boolean retryTransformOnDifferentMimeType,
-                                     Set<TransformOption> transformsTransformOptions,
-                                     LocalTransformServiceRegistry localTransformServiceRegistry)
-    {
-        super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+    public LocalPassThroughTransform(
+            String name,
+            TransformerDebug transformerDebug,
+            MimetypeService mimetypeService,
+            boolean strictMimeTypeCheck,
+            Map<String, Set<String>> strictMimetypeExceptions,
+            boolean retryTransformOnDifferentMimeType,
+            Set<TransformOption> transformsTransformOptions,
+            LocalTransformServiceRegistry localTransformServiceRegistry) {
+        super(
+                name,
+                transformerDebug,
+                mimetypeService,
+                strictMimeTypeCheck,
+                strictMimetypeExceptions,
+                retryTransformOnDifferentMimeType,
+                transformsTransformOptions,
+                localTransformServiceRegistry);
     }
 
-    public static Transformer getConfig(List<String> mimetypes)
-    {
+    public static Transformer getConfig(List<String> mimetypes) {
         Set<SupportedSourceAndTarget> supportedSourceAndTargetList = new HashSet();
-        for (String mimetype: mimetypes)
-        {
-            supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, mimetype, -1, 20));
-            if (isToText(mimetype, mimetype))
-            {
-                supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, 20));
+        for (String mimetype : mimetypes) {
+            supportedSourceAndTargetList.add(
+                    new SupportedSourceAndTarget(mimetype, mimetype, -1, 20));
+            if (isToText(mimetype, mimetype)) {
+                supportedSourceAndTargetList.add(
+                        new SupportedSourceAndTarget(
+                                mimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, 20));
             }
         }
-        return Transformer.builder().withTransformerName(LocalPassThroughTransform.NAME).
-                withSupportedSourceAndTargetList(supportedSourceAndTargetList).build();
+        return Transformer.builder()
+                .withTransformerName(LocalPassThroughTransform.NAME)
+                .withSupportedSourceAndTargetList(supportedSourceAndTargetList)
+                .build();
     }
 
-    private static boolean isToText(String sourceMimetype, String targetMimetype)
-    {
-        return (targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN) &&
-                sourceMimetype.startsWith(MimetypeMap.PREFIX_TEXT)) ||
-                sourceMimetype.equals(MimetypeMap.MIMETYPE_JAVASCRIPT) ||
-                sourceMimetype.equals(MimetypeMap.MIMETYPE_DITA);
+    private static boolean isToText(String sourceMimetype, String targetMimetype) {
+        return (targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN)
+                        && sourceMimetype.startsWith(MimetypeMap.PREFIX_TEXT))
+                || sourceMimetype.equals(MimetypeMap.MIMETYPE_JAVASCRIPT)
+                || sourceMimetype.equals(MimetypeMap.MIMETYPE_DITA);
     }
 
     @Override
-    public boolean isAvailable()
-    {
+    public boolean isAvailable() {
         return true;
     }
 
     @Override
-    protected void transformImpl(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
-                                 String sourceMimetype, String targetMimetype, String sourceExtension,
-                                 String targetExtension, String renditionName, NodeRef sourceNodeRef)
-            throws UnsupportedTransformationException, ContentIOException
-    {
-        if (isToText(sourceMimetype, targetMimetype))
-        {
+    protected void transformImpl(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> transformOptions,
+            String sourceMimetype,
+            String targetMimetype,
+            String sourceExtension,
+            String targetExtension,
+            String renditionName,
+            NodeRef sourceNodeRef)
+            throws UnsupportedTransformationException, ContentIOException {
+        if (isToText(sourceMimetype, targetMimetype)) {
             // Set the encodings if specified.
             String sourceEncoding = reader.getEncoding();
-            try (Reader charReader = sourceEncoding == null
-                    ? new InputStreamReader(reader.getContentInputStream())
-                    : new InputStreamReader(reader.getContentInputStream(), sourceEncoding))
-            {
+            try (Reader charReader =
+                    sourceEncoding == null
+                            ? new InputStreamReader(reader.getContentInputStream())
+                            : new InputStreamReader(
+                                    reader.getContentInputStream(), sourceEncoding)) {
                 String targetEncoding = writer.getEncoding();
-                try (Writer charWriter = targetEncoding == null
-                    ? new OutputStreamWriter(writer.getContentOutputStream())
-                    : new OutputStreamWriter(writer.getContentOutputStream(), targetEncoding))
-                {
+                try (Writer charWriter =
+                        targetEncoding == null
+                                ? new OutputStreamWriter(writer.getContentOutputStream())
+                                : new OutputStreamWriter(
+                                        writer.getContentOutputStream(), targetEncoding)) {
                     char[] buffer = new char[8192];
                     int readCount = 0;
-                    while (readCount > -1)
-                    {
+                    while (readCount > -1) {
                         // write the last read count number of bytes
                         charWriter.write(buffer, 0, readCount);
                         // fill the buffer again
                         readCount = charReader.read(buffer);
                     }
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 log.error(e);
             }
-        }
-        else // simple pass through
+        } else // simple pass through
         {
             writer.putContent(reader.getContentInputStream());
         }

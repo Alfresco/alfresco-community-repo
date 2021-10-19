@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
-import static java.util.Arrays.asList;
-
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,11 +44,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import static java.util.Arrays.asList;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -76,16 +70,22 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Hold service implementation unit test
  *
  * @author Roy Wetherall
  * @since 2.2
  */
-public class HoldServiceImplUnitTest extends BaseUnitTest
-{
+public class HoldServiceImplUnitTest extends BaseUnitTest {
     /** test values */
     private static final String HOLD_NAME = "holdname";
+
     private static final String HOLD_REASON = "holdreason";
     private static final String HOLD_DESCRIPTION = "holddescription";
     private static final String GENERIC_ERROR_MSG = "any error message text";
@@ -95,18 +95,15 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef hold2;
     protected NodeRef activeContent;
 
-    @Mock
-    private CapabilityService mockedCapabilityService;
+    @Mock private CapabilityService mockedCapabilityService;
 
-    @Mock
-    private ChildAssociationRef mockChildAssociationRef;
+    @Mock private ChildAssociationRef mockChildAssociationRef;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
 
     @Before
     @Override
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         super.before();
 
         // setup objects used in mock interactions
@@ -114,15 +111,22 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         hold = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
 
-        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD))
+                .thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.ADD_TO_HOLD))
+                .thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(
+                        hold, RMPermissionModel.REMOVE_FROM_HOLD))
+                .thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(
+                        hold2, RMPermissionModel.REMOVE_FROM_HOLD))
+                .thenReturn(AccessStatus.ALLOWED);
 
         activeContent = generateNodeRef();
         QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");
         when(mockedNodeService.getType(activeContent)).thenReturn(contentSubtype);
-        when(mockedNodeTypeUtility.instanceOf(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(contentSubtype, ContentModel.TYPE_CONTENT))
+                .thenReturn(true);
         when(mockedNodeService.getPrimaryParent(activeContent)).thenReturn(mockChildAssociationRef);
 
         when(mockedNodeService.getPrimaryParent(recordFolder)).thenReturn(mockChildAssociationRef);
@@ -131,25 +135,35 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void isHold()
-    {
+    public void isHold() {
         assertTrue(holdService.isHold(hold));
         assertFalse(holdService.isHold(recordFolder));
     }
 
     @Test
-    public void heldByMultipleResults()
-    {
+    public void heldByMultipleResults() {
         // setup record folder in multiple holds
         List<ChildAssociationRef> holds = new ArrayList<>(4);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, activeContent, true, 2));
-        doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1));
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2));
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1));
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, activeContent, true, 2));
+        doReturn(holds)
+                .when(mockedNodeService)
+                .getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
-        //setup active content in multiple holds
-        doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        // setup active content in multiple holds
+        doReturn(holds)
+                .when(mockedNodeService)
+                .getParentAssocs(activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
         doReturn(Collections.singleton(filePlan)).when(mockedFilePlanService).getFilePlans();
 
@@ -172,13 +186,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         assertTrue(holdService.heldBy(activeContent, false).isEmpty());
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
-    public void getHold()
-    {
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void getHold() {
         // setup node service interactions
-        when(mockedNodeService.getChildByName(eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), anyString())).thenReturn(null)
-                                                                                                               .thenReturn(hold)
-                                                                                                               .thenReturn(recordFolder);
+        when(mockedNodeService.getChildByName(
+                        eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), anyString()))
+                .thenReturn(null)
+                .thenReturn(hold)
+                .thenReturn(recordFolder);
 
         // no hold
         NodeRef noHold = holdService.getHold(filePlan, "notAHold");
@@ -193,26 +208,29 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.getHold(filePlan, "notHold");
     }
 
-    @Test (expected=RuntimeException.class)
-    public void getHeldNotAHold()
-    {
+    @Test(expected = RuntimeException.class)
+    public void getHeldNotAHold() {
         holdService.getHeld(recordFolder);
     }
 
     @Test
-    public void getHeldNoResults()
-    {
+    public void getHeldNoResults() {
         assertTrue(holdService.getHeld(hold).isEmpty());
     }
 
     @Test
-    public void getHeldWithResults()
-    {
+    public void getHeldWithResults() {
         // setup record folder in hold
         List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1));
-        doReturn(holds).when(mockedNodeService).getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1));
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1));
+        doReturn(holds)
+                .when(mockedNodeService)
+                .getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
 
         List<NodeRef> list = holdService.getHeld(hold);
         assertEquals(2, list.size());
@@ -220,18 +238,25 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         assertEquals(activeContent, list.get(1));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void createHold()
-    {
+    public void createHold() {
         // setup node service interactions
-        when(mockedNodeService.createNode(eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), any(QName.class) , eq(TYPE_HOLD), any(Map.class)))
-            .thenReturn(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, holdContainer, generateQName(), hold));
+        when(mockedNodeService.createNode(
+                        eq(holdContainer),
+                        eq(ContentModel.ASSOC_CONTAINS),
+                        any(QName.class),
+                        eq(TYPE_HOLD),
+                        any(Map.class)))
+                .thenReturn(
+                        new ChildAssociationRef(
+                                ContentModel.ASSOC_CONTAINS, holdContainer, generateQName(), hold));
 
         mockPoliciesForCreateHold();
 
         // create hold
-        NodeRef newHold = holdService.createHold(filePlan, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
+        NodeRef newHold =
+                holdService.createHold(filePlan, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
         assertNotNull(newHold);
         assertEquals(TYPE_HOLD, mockedNodeService.getType(newHold));
         assertEquals(hold, newHold);
@@ -239,10 +264,17 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // check the node service interactions
         ArgumentCaptor<Map> propertyMapCaptor = ArgumentCaptor.forClass(Map.class);
         ArgumentCaptor<QName> assocNameCaptor = ArgumentCaptor.forClass(QName.class);
-        verify(mockedNodeService).createNode(eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), assocNameCaptor.capture() , eq(TYPE_HOLD), propertyMapCaptor.capture());
+        verify(mockedNodeService)
+                .createNode(
+                        eq(holdContainer),
+                        eq(ContentModel.ASSOC_CONTAINS),
+                        assocNameCaptor.capture(),
+                        eq(TYPE_HOLD),
+                        propertyMapCaptor.capture());
 
         // check property map
-        Map<QName, Serializable> propertyMap = (Map<QName, Serializable>)propertyMapCaptor.getValue();
+        Map<QName, Serializable> propertyMap =
+                (Map<QName, Serializable>) propertyMapCaptor.getValue();
         assertNotNull(propertyMap);
         assertEquals(3, propertyMap.size());
         assertTrue(propertyMap.containsKey(ContentModel.PROP_NAME));
@@ -254,22 +286,23 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // check assoc name
         assertNotNull(assocNameCaptor.getValue());
-        assertEquals(NamespaceService.CONTENT_MODEL_1_0_URI, assocNameCaptor.getValue().getNamespaceURI());
+        assertEquals(
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                assocNameCaptor.getValue().getNamespaceURI());
         assertEquals(HOLD_NAME, assocNameCaptor.getValue().getLocalName());
     }
 
     @Test
-    public void getHoldReason()
-    {
+    public void getHoldReason() {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
-            .thenReturn(false)
-            .thenReturn(true)
-            .thenReturn(true)
-            .thenReturn(true);
+                .thenReturn(false)
+                .thenReturn(true)
+                .thenReturn(true)
+                .thenReturn(true);
         when(mockedNodeService.getProperty(eq(hold), eq(PROP_HOLD_REASON)))
-            .thenReturn(null)
-            .thenReturn(HOLD_REASON);
+                .thenReturn(null)
+                .thenReturn(HOLD_REASON);
 
         // node does not exist
         assertNull(holdService.getHoldReason(hold));
@@ -285,13 +318,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void setHoldReason()
-    {
+    public void setHoldReason() {
         // setup node service interactions
-        when(mockedNodeService.exists(hold))
-            .thenReturn(false)
-            .thenReturn(true)
-            .thenReturn(true);
+        when(mockedNodeService.exists(hold)).thenReturn(false).thenReturn(true).thenReturn(true);
 
         // node does not exist
         holdService.setHoldReason(hold, HOLD_REASON);
@@ -306,16 +335,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).setProperty(hold, PROP_HOLD_REASON, HOLD_REASON);
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
-    public void deleteHoldNotAHold()
-    {
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void deleteHoldNotAHold() {
         holdService.deleteHold(recordFolder);
         verify(mockedNodeService, never()).deleteNode(hold);
     }
 
     @Test
-    public void deleteHold()
-    {
+    public void deleteHold() {
         mockPoliciesForDeleteHold();
 
         // delete hold
@@ -325,79 +352,84 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // TODO check interactions with policy component!!!
     }
 
-    @Test (expected = AccessDeniedException.class)
-    public void deleteHoldNoPermissionsOnContent()
-    {
+    @Test(expected = AccessDeniedException.class)
+    public void deleteHoldNoPermissionsOnContent() {
         mockPoliciesForDeleteHold();
 
         ChildAssociationRef childAssociationRef = generateChildAssociationRef(hold, record);
-        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL))
-            .thenReturn(Collections.singletonList(childAssociationRef));
+        when(mockedNodeService.getChildAssocs(
+                        hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL))
+                .thenReturn(Collections.singletonList(childAssociationRef));
 
-        when(mockedPermissionService.hasPermission(record, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
-        when(mockedNodeService.getProperty(record, ContentModel.PROP_NAME)).thenThrow(new AccessDeniedException(GENERIC_ERROR_MSG));
+        when(mockedPermissionService.hasPermission(record, RMPermissionModel.FILING))
+                .thenReturn(AccessStatus.DENIED);
+        when(mockedNodeService.getProperty(record, ContentModel.PROP_NAME))
+                .thenThrow(new AccessDeniedException(GENERIC_ERROR_MSG));
 
         holdService.beforeDeleteNode(hold);
     }
 
-    @Test (expected = IntegrityException.class)
-    public void addToHoldNotAHold()
-    {
+    @Test(expected = IntegrityException.class)
+    public void addToHoldNotAHold() {
         holdService.addToHold(recordFolder, recordFolder);
     }
 
-    @Test (expected = IntegrityException.class)
-    public void addToHoldNotARecordFolderOrRecordOrActiveContent()
-    {
+    @Test(expected = IntegrityException.class)
+    public void addToHoldNotARecordFolderOrRecordOrActiveContent() {
         NodeRef anotherThing = generateNodeRef(TYPE_RECORD_CATEGORY);
         holdService.addToHold(hold, anotherThing);
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void addToHoldNotInHold()
-    {
+    public void addToHoldNotInHold() {
         mockPoliciesForAddToHold();
         when(mockedNodeService.getPrimaryParent(record)).thenReturn(mockChildAssociationRef);
 
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService)
+                .addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
 
         holdService.addToHold(hold, record);
-        verify(mockedNodeService).addChild(hold, record, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService)
+                .addChild(hold, record, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedNodeService, times(2)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService, times(2))
+                .addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
 
         holdService.addToHold(hold, activeContent);
-        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService)
+                .addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void addToHoldAlreadyInHold()
-    {
+    public void addToHoldAlreadyInHold() {
         doReturn(asList(recordFolder, activeContent)).when(holdService).getHeld(hold);
 
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService, never()).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-        verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService, never())
+                .addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, never())
+                .addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
 
         holdService.addToHold(hold, activeContent);
 
-        verify(mockedNodeService, never()).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-        verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService, never())
+                .addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, never())
+                .addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void addToHoldAlreadyFrozen()
-    {
+    public void addToHoldAlreadyFrozen() {
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
@@ -406,19 +438,23 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-        verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService)
+                .addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, never())
+                .addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
 
         holdService.addToHold(hold, activeContent);
-        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-        verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService)
+                .addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, never())
+                .addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
     }
 
-    @Test (expected = AccessDeniedException.class)
-    public void addActiveContentToHoldsNoPermissionsOnHold()
-    {
-        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.DENIED);
+    @Test(expected = AccessDeniedException.class)
+    public void addActiveContentToHoldsNoPermissionsOnHold() {
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD))
+                .thenReturn(AccessStatus.DENIED);
         // build a list of holds
         List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
@@ -426,42 +462,43 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.addToHolds(holds, activeContent);
     }
 
-    @Test (expected = AccessDeniedException.class)
-    public void addActiveContentToHoldNoPermissionsOnContent()
-    {
-        when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
+    @Test(expected = AccessDeniedException.class)
+    public void addActiveContentToHoldNoPermissionsOnContent() {
+        when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE))
+                .thenReturn(AccessStatus.DENIED);
         holdService.addToHold(hold, activeContent);
     }
 
-    @Test (expected = IntegrityException.class)
-    public void addArchivedContentToHold()
-    {
-        when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED)).thenReturn(true);
+    @Test(expected = IntegrityException.class)
+    public void addArchivedContentToHold() {
+        when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED))
+                .thenReturn(true);
         holdService.addToHold(hold, activeContent);
     }
 
-    @Test (expected = IntegrityException.class)
-    public void addLockedContentToHold()
-    {
-        when(mockedNodeService.hasAspect(activeContent, ContentModel.ASPECT_LOCKABLE)).thenReturn(true);
+    @Test(expected = IntegrityException.class)
+    public void addLockedContentToHold() {
+        when(mockedNodeService.hasAspect(activeContent, ContentModel.ASPECT_LOCKABLE))
+                .thenReturn(true);
         holdService.addToHold(hold, activeContent);
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void addToHolds()
-    {
+    public void addToHolds() {
         // ensure the interaction indicates that a node has the frozen aspect applied if it has
-        doAnswer(new Answer<Void>()
-        {
-            public Void answer(InvocationOnMock invocation)
-            {
-                NodeRef nodeRef = (NodeRef)invocation.getArguments()[0];
-                doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ASPECT_FROZEN);
-                return null;
-            }
-
-        }).when(mockedNodeService).addAspect(any(NodeRef.class), eq(ASPECT_FROZEN), any(Map.class));
+        doAnswer(
+                        new Answer<Void>() {
+                            public Void answer(InvocationOnMock invocation) {
+                                NodeRef nodeRef = (NodeRef) invocation.getArguments()[0];
+                                doReturn(true)
+                                        .when(mockedNodeService)
+                                        .hasAspect(nodeRef, ASPECT_FROZEN);
+                                return null;
+                            }
+                        })
+                .when(mockedNodeService)
+                .addAspect(any(NodeRef.class), eq(ASPECT_FROZEN), any(Map.class));
 
         mockPoliciesForAddToHold();
 
@@ -474,21 +511,23 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.addToHolds(holds, recordFolder);
 
         // verify the interactions
-        verify(mockedNodeService, times(1)).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-        verify(mockedNodeService, times(1)).addChild(hold2, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-        verify(mockedNodeService, times(1)).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedNodeService, times(1)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService, times(1))
+                .addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, times(1))
+                .addChild(hold2, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, times(1))
+                .addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedNodeService, times(1))
+                .addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
     }
 
-    @Test (expected = IntegrityException.class)
-    public void removeFromHoldNotAHold()
-    {
+    @Test(expected = IntegrityException.class)
+    public void removeFromHoldNotAHold() {
         holdService.removeFromHold(recordFolder, recordFolder);
     }
 
     @Test
-    public void removeFromHoldNotInHold()
-    {
+    public void removeFromHoldNotInHold() {
         mockPoliciesForRemoveFromHold();
 
         holdService.removeFromHold(hold, recordFolder);
@@ -499,8 +538,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void removeFromHold()
-    {
+    public void removeFromHold() {
         doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
@@ -515,8 +553,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void removeFromHolds()
-    {
+    public void removeFromHolds() {
         doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
         doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold2);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
@@ -538,34 +575,37 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void removeFromAllHolds()
-    {
+    public void removeFromAllHolds() {
         // build a list of holds
         List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
         holds.add(hold2);
 
-        doAnswer(new Answer<Void>()
-        {
-            public Void answer(InvocationOnMock invocation)
-            {
-                doReturn(Collections.singletonList(hold2)).when(holdService).heldBy(recordFolder, true);
-                return null;
-            }
-
-        }).when(mockedNodeService).removeChild(hold, recordFolder);
+        doAnswer(
+                        new Answer<Void>() {
+                            public Void answer(InvocationOnMock invocation) {
+                                doReturn(Collections.singletonList(hold2))
+                                        .when(holdService)
+                                        .heldBy(recordFolder, true);
+                                return null;
+                            }
+                        })
+                .when(mockedNodeService)
+                .removeChild(hold, recordFolder);
 
         mockPoliciesForRemoveFromHold();
 
-        doAnswer(new Answer<Void>()
-        {
-            public Void answer(InvocationOnMock invocation)
-            {
-                doReturn(new ArrayList<NodeRef>()).when(holdService).heldBy(recordFolder, true);
-                return null;
-            }
-
-        }).when(mockedNodeService).removeChild(hold2, recordFolder);
+        doAnswer(
+                        new Answer<Void>() {
+                            public Void answer(InvocationOnMock invocation) {
+                                doReturn(new ArrayList<NodeRef>())
+                                        .when(holdService)
+                                        .heldBy(recordFolder, true);
+                                return null;
+                            }
+                        })
+                .when(mockedNodeService)
+                .removeChild(hold2, recordFolder);
 
         // define interactions
         doReturn(holds).when(holdService).heldBy(recordFolder, true);
@@ -584,13 +624,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
     }
 
-     @Test (expected = AccessDeniedException.class)
-    public void removeActiveContentFromHoldsNoPermissionsOnHold()
-    {
+    @Test(expected = AccessDeniedException.class)
+    public void removeActiveContentFromHoldsNoPermissionsOnHold() {
         doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold);
         doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold2);
         doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
-        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.DENIED);
+        when(mockedCapabilityService.getCapabilityAccessState(
+                        hold, RMPermissionModel.REMOVE_FROM_HOLD))
+                .thenReturn(AccessStatus.DENIED);
         // build a list of holds
         List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
@@ -598,30 +639,25 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.removeFromHolds(holds, activeContent);
     }
 
-    /**
-     * test before delete node throws exception for failed read permission check for content
-     */
-    @Test (expected = AccessDeniedException.class)
-    public void testBeforeDeleteNodeThrowsExceptionForActiveContentWithoutReadPermission()
-    {
+    /** test before delete node throws exception for failed read permission check for content */
+    @Test(expected = AccessDeniedException.class)
+    public void testBeforeDeleteNodeThrowsExceptionForActiveContentWithoutReadPermission() {
         NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
         mockPoliciesForExistingHoldWithHeldItems(hold, heldContent);
 
         // mocks for held content
         when(mockedRecordService.isRecord(heldContent)).thenReturn(false);
         when(mockedRecordFolderService.isRecordFolder(heldContent)).thenReturn(false);
-        when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ)).thenReturn(AccessStatus.DENIED);
+        when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ))
+                .thenReturn(AccessStatus.DENIED);
         when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
 
         holdService.beforeDeleteNode(hold);
     }
 
-    /**
-     * test before delete node throws exception for failed read permission check for records
-     */
-    @Test (expected = AccessDeniedException.class)
-    public void testBeforeDeleteNodeThrowsExceptionForARecordWithoutReadPermission()
-    {
+    /** test before delete node throws exception for failed read permission check for records */
+    @Test(expected = AccessDeniedException.class)
+    public void testBeforeDeleteNodeThrowsExceptionForARecordWithoutReadPermission() {
         NodeRef heldContent = generateNodeRef();
         mockPoliciesForExistingHoldWithHeldItems(hold, heldContent);
 
@@ -630,38 +666,36 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.beforeDeleteNode(hold);
     }
 
-    /**
-     * test before delete node throws exception for failed file permission check for records
-     */
-    @Test (expected = AccessDeniedException.class)
-    public void testBeforeDeleteNodeThrowsExceptionForARecordWithoutFilePermission()
-    {
+    /** test before delete node throws exception for failed file permission check for records */
+    @Test(expected = AccessDeniedException.class)
+    public void testBeforeDeleteNodeThrowsExceptionForARecordWithoutFilePermission() {
         NodeRef heldContent = generateNodeRef();
 
         mockPoliciesForExistingHoldWithHeldItems(hold, heldContent);
 
         // mocks for held record
         when(mockedRecordService.isRecord(heldContent)).thenReturn(true);
-        when(mockedPermissionService.hasPermission(heldContent, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+        when(mockedPermissionService.hasPermission(heldContent, RMPermissionModel.FILING))
+                .thenReturn(AccessStatus.DENIED);
         when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
 
         holdService.beforeDeleteNode(hold);
     }
 
-    /**
-     * Test hold deleted for active content with read permission
-     */
+    /** Test hold deleted for active content with read permission */
     @Test
-    public void testDeleteHoldChecksReadPermissionForActiveContent()
-    {
+    public void testDeleteHoldChecksReadPermissionForActiveContent() {
         NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
         List<ChildAssociationRef> holds = createListOfHoldAssociations(heldContent);
 
         mockPoliciesForDeleteHold();
-        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        when(mockedNodeService.getChildAssocs(
+                        hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL))
+                .thenReturn(holds);
         when(mockedRecordService.isRecord(heldContent)).thenReturn(false);
         when(mockedRecordFolderService.isRecordFolder(heldContent)).thenReturn(false);
-        when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ))
+                .thenReturn(AccessStatus.ALLOWED);
         when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
 
         holdService.deleteHold(hold);
@@ -669,60 +703,46 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).deleteNode(hold);
     }
 
-    /**
-     * Helper method to create hold and associations with given content
-     */
-    private List<ChildAssociationRef> createListOfHoldAssociations(NodeRef heldContent)
-    {
+    /** Helper method to create hold and associations with given content */
+    private List<ChildAssociationRef> createListOfHoldAssociations(NodeRef heldContent) {
         List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
+        holds.add(
+                new ChildAssociationRef(
+                        ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
         return holds;
     }
 
-    /**
-     * mocks for existing hold with held items
-     */
-    private void mockPoliciesForExistingHoldWithHeldItems(NodeRef hold, NodeRef heldContent)
-    {
+    /** mocks for existing hold with held items */
+    private void mockPoliciesForExistingHoldWithHeldItems(NodeRef hold, NodeRef heldContent) {
         when(mockedNodeService.exists(hold)).thenReturn(true);
         when(holdService.isHold(hold)).thenReturn(true);
 
         List<ChildAssociationRef> holds = createListOfHoldAssociations(heldContent);
-        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        when(mockedNodeService.getChildAssocs(
+                        hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL))
+                .thenReturn(holds);
     }
 
-    /**
-     * mocks policies for create hold
-     */
-    private void mockPoliciesForCreateHold()
-    {
+    /** mocks policies for create hold */
+    private void mockPoliciesForCreateHold() {
         doNothing().when(holdService).invokeBeforeCreateHold(any(), anyString(), anyString());
         doNothing().when(holdService).invokeOnCreateHold(any());
     }
 
-    /**
-     * mocks policies for delete hold
-     */
-    private void mockPoliciesForDeleteHold()
-    {
+    /** mocks policies for delete hold */
+    private void mockPoliciesForDeleteHold() {
         doNothing().when(holdService).invokeBeforeDeleteHold(any());
         doNothing().when(holdService).invokeOnDeleteHold(any(), any());
     }
 
-    /**
-     * mocks policies for add to hold
-     */
-    private void mockPoliciesForAddToHold()
-    {
+    /** mocks policies for add to hold */
+    private void mockPoliciesForAddToHold() {
         doNothing().when(holdService).invokeBeforeAddToHold(any(), any());
         doNothing().when(holdService).invokeOnAddToHold(any(), any());
     }
 
-    /**
-     * mocks policies for remove from hold
-     */
-    private void mockPoliciesForRemoveFromHold()
-    {
+    /** mocks policies for remove from hold */
+    private void mockPoliciesForRemoveFromHold() {
         doNothing().when(holdService).invokeBeforeRemoveFromHold(any(), any());
         doNothing().when(holdService).invokeOnRemoveFromHold(any(), any());
     }

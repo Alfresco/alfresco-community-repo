@@ -46,28 +46,23 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordableVersionConfigActionTest extends BaseRMTestCase
-{
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
-     */
+public class RecordableVersionConfigActionTest extends BaseRMTestCase {
+    /** @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest() */
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
      */
     @Override
-    protected boolean isCollaborationSiteTest()
-    {
+    protected boolean isCollaborationSiteTest() {
         return true;
     }
 
-    public void testRecordableVersionConfigAction()
-    {
+    public void testRecordableVersionConfigAction() {
         // Uncommented due to the failures on bamboo. Also this is related to RM-1758
         /*
         doTestInTransaction(new Test<Void>()
@@ -91,62 +86,67 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
         dmCollaborator);
         */
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                Action action = actionService.createAction(NAME);
-                action.setParameterValue(PARAM_VERSION, ALL.toString());
-                actionService.executeAction(action, dmFolder);
-                return null;
-            }
+        doTestInTransaction(
+                new Test<Void>() {
+                    public Void run() {
+                        Action action = actionService.createAction(NAME);
+                        action.setParameterValue(PARAM_VERSION, ALL.toString());
+                        actionService.executeAction(action, dmFolder);
+                        return null;
+                    }
 
-            public void test(Void result) throws Exception
-            {
-                assertNull(nodeService.getProperty(dmFolder, PROP_RECORDABLE_VERSION_POLICY));
-            }
-        },
-        dmCollaborator);
+                    public void test(Void result) throws Exception {
+                        assertNull(
+                                nodeService.getProperty(dmFolder, PROP_RECORDABLE_VERSION_POLICY));
+                    }
+                },
+                dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            final NodeRef document2 = fileFolderService.create(dmFolder, "another document", ContentModel.TYPE_CONTENT).getNodeRef();
-            public Void run()
-            {
-                Action action = actionService.createAction(NAME);
-                action.setParameterValue(PARAM_VERSION, NONE.toString());
-                actionService.executeAction(action, document2);
-                return null;
-            }
+        doTestInTransaction(
+                new Test<Void>() {
+                    final NodeRef document2 =
+                            fileFolderService
+                                    .create(dmFolder, "another document", ContentModel.TYPE_CONTENT)
+                                    .getNodeRef();
 
-            public void test(Void result) throws Exception
-            {
-                assertNull(nodeService.getProperty(document2, PROP_RECORDABLE_VERSION_POLICY));
-            }
-        },
-        dmCollaborator);
+                    public Void run() {
+                        Action action = actionService.createAction(NAME);
+                        action.setParameterValue(PARAM_VERSION, NONE.toString());
+                        actionService.executeAction(action, document2);
+                        return null;
+                    }
 
+                    public void test(Void result) throws Exception {
+                        assertNull(
+                                nodeService.getProperty(document2, PROP_RECORDABLE_VERSION_POLICY));
+                    }
+                },
+                dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            final NodeRef document3 = fileFolderService.create(dmFolder, "testfile.txt", ContentModel.TYPE_CONTENT).getNodeRef();
-            public Void run()
-            {
-                Action createAction = actionService.createAction(CreateRecordAction.NAME);
-                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                actionService.executeAction(createAction, document3);
+        doTestInTransaction(
+                new Test<Void>() {
+                    final NodeRef document3 =
+                            fileFolderService
+                                    .create(dmFolder, "testfile.txt", ContentModel.TYPE_CONTENT)
+                                    .getNodeRef();
 
-                Action action = actionService.createAction(NAME);
-                action.setParameterValue(PARAM_VERSION, MAJOR_ONLY.toString());
-                actionService.executeAction(action, document3);
-                return null;
-            }
+                    public Void run() {
+                        Action createAction = actionService.createAction(CreateRecordAction.NAME);
+                        createAction.setParameterValue(
+                                CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                        actionService.executeAction(createAction, document3);
 
-            public void test(Void result) throws Exception
-            {
-                assertNull(nodeService.getProperty(document3, PROP_RECORDABLE_VERSION_POLICY));
-            }
-        },
-        dmCollaborator);
+                        Action action = actionService.createAction(NAME);
+                        action.setParameterValue(PARAM_VERSION, MAJOR_ONLY.toString());
+                        actionService.executeAction(action, document3);
+                        return null;
+                    }
+
+                    public void test(Void result) throws Exception {
+                        assertNull(
+                                nodeService.getProperty(document3, PROP_RECORDABLE_VERSION_POLICY));
+                    }
+                },
+                dmCollaborator);
     }
 }

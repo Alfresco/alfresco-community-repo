@@ -23,13 +23,12 @@ import org.alfresco.util.PropertyCheck;
 /**
  * Stores Java keystore initialisation parameters.
  *
- * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
+ * <p>WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best
+ * security practices.
  *
  * @since 4.0
- *
  */
-public class KeyStoreParameters
-{
+public class KeyStoreParameters {
     private String id;
     private String name;
     private String type;
@@ -37,20 +36,21 @@ public class KeyStoreParameters
     private String keyMetaDataFileLocation;
     private String location;
 
-    public KeyStoreParameters()
-    {
-    }
+    public KeyStoreParameters() {}
 
     /**
-     * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
+     * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best
+     * security practices.
      *
-     * <p/>Set the unique ID of the keystore and aliases to use Java system properties lookup instead. The property lookup format is:
+     * <p>Set the unique ID of the keystore and aliases to use Java system properties lookup
+     * instead. The property lookup format is:
+     *
      * <ul>
-     *     <li>[keystore-id].password - keystore password</li>
-     *     <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
-     *     <li>[keystore-id].[alias].keydata - key data bytes in base64</li>
-     *     <li>[keystore-id].[alias].algorithm - key algorithm</li>
-     *     <li>[keystore-id].[alias].password - key password</li>
+     *   <li>[keystore-id].password - keystore password
+     *   <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore
+     *   <li>[keystore-id].[alias].keydata - key data bytes in base64
+     *   <li>[keystore-id].[alias].algorithm - key algorithm
+     *   <li>[keystore-id].[alias].password - key password
      * </ul>
      *
      * Loading of keys info from system (JVM) properties takes precedence over metadata file.
@@ -62,20 +62,25 @@ public class KeyStoreParameters
      * @param keyMetaDataFileLocation path to keystore metadata file on the file system
      * @param location path to keystore on the file system
      */
-    public KeyStoreParameters(String id, String name, String type, String keyStoreProvider,
-            String keyMetaDataFileLocation, String location)
-    {
+    public KeyStoreParameters(
+            String id,
+            String name,
+            String type,
+            String keyStoreProvider,
+            String keyMetaDataFileLocation,
+            String location) {
         this(name, type, keyStoreProvider, keyMetaDataFileLocation, location);
         this.id = id;
     }
 
-    /**
-     * Use {@link #KeyStoreParameters(String, String, String, String, String, String)} instead
-     */
+    /** Use {@link #KeyStoreParameters(String, String, String, String, String, String)} instead */
     @Deprecated()
-    public KeyStoreParameters(String name, String type, String keyStoreProvider,
-                              String keyMetaDataFileLocation, String location)
-    {
+    public KeyStoreParameters(
+            String name,
+            String type,
+            String keyStoreProvider,
+            String keyMetaDataFileLocation,
+            String location) {
         super();
         this.name = name;
         this.type = type;
@@ -84,88 +89,69 @@ public class KeyStoreParameters
         this.location = location;
     }
 
-
-    public void init()
-    {
-        if (!PropertyCheck.isValidPropertyString(getId()))
-        {
+    public void init() {
+        if (!PropertyCheck.isValidPropertyString(getId())) {
             setId(null);
         }
-        if (!PropertyCheck.isValidPropertyString(getLocation()))
-        {
+        if (!PropertyCheck.isValidPropertyString(getLocation())) {
             setLocation(null);
         }
-        if (!PropertyCheck.isValidPropertyString(getProvider()))
-        {
+        if (!PropertyCheck.isValidPropertyString(getProvider())) {
             setProvider(null);
         }
-        if (!PropertyCheck.isValidPropertyString(getType()))
-        {
+        if (!PropertyCheck.isValidPropertyString(getType())) {
             setType(null);
         }
-        if (!PropertyCheck.isValidPropertyString(getKeyMetaDataFileLocation()))
-        {
+        if (!PropertyCheck.isValidPropertyString(getKeyMetaDataFileLocation())) {
             setKeyMetaDataFileLocation(null);
-        }        
+        }
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
-    public String getProvider()
-    {
+    public String getProvider() {
         return provider;
     }
 
-    public String getKeyMetaDataFileLocation()
-    {
+    public String getKeyMetaDataFileLocation() {
         return keyMetaDataFileLocation;
     }
 
-    public String getLocation()
-    {
+    public String getLocation() {
         return location;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public void setType(String type)
-    {
+    public void setType(String type) {
         this.type = type;
     }
 
-    public void setProvider(String provider)
-    {
+    public void setProvider(String provider) {
         this.provider = provider;
     }
 
-    public void setKeyMetaDataFileLocation(String keyMetaDataFileLocation)
-    {
+    public void setKeyMetaDataFileLocation(String keyMetaDataFileLocation) {
         this.keyMetaDataFileLocation = keyMetaDataFileLocation;
     }
 
-    public void setLocation(String location)
-    {
+    public void setLocation(String location) {
         this.location = location;
     }
 }

@@ -27,11 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.constraint;
 
+import org.alfresco.repo.action.constraint.BaseParameterConstraint;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.alfresco.repo.action.constraint.BaseParameterConstraint;
 
 /**
  * A parameter constraint that reads in a list of allowable values from Spring configuration
@@ -39,8 +39,7 @@ import org.alfresco.repo.action.constraint.BaseParameterConstraint;
  * @author Craig Tan
  * @since 2.1
  */
-public class CustomParameterConstraint extends BaseParameterConstraint
-{
+public class CustomParameterConstraint extends BaseParameterConstraint {
     private List<String> parameterValues;
 
     /**
@@ -48,20 +47,15 @@ public class CustomParameterConstraint extends BaseParameterConstraint
      *
      * @param parameterValues The parameter values
      */
-    public void setParameterValues(List<String> parameterValues)
-    {
+    public void setParameterValues(List<String> parameterValues) {
         this.parameterValues = parameterValues;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
-     */
-    protected Map<String, String> getAllowableValuesImpl()
-    {
+    /** @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues() */
+    protected Map<String, String> getAllowableValuesImpl() {
         Map<String, String> allowableValues = new HashMap<>(parameterValues.size());
 
-        for (Object parameterValue : parameterValues)
-        {
+        for (Object parameterValue : parameterValues) {
             // Look up the I18N value
             String displayLabel = getI18NLabel(parameterValue.toString());
 

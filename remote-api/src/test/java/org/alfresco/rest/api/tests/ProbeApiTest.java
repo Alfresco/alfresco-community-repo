@@ -25,6 +25,13 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.probes.ProbeEntityResource.*;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.LIVE;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.READY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.lenient;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepoHealthChecker;
 import org.alfresco.rest.api.discovery.DiscoveryApiWebscript;
@@ -33,52 +40,41 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.alfresco.rest.api.probes.ProbeEntityResource.*;
-import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.LIVE;
-import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.READY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.lenient;
-
 /**
  * V1 REST API tests for Probes (Live and Ready)
  *
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/probe/<probeId>} </li>
+ *   <li>{@literal
+ *       <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/probe/<probeId>}
  * </ul>
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ProbeApiTest extends AbstractBaseApiTest
-{
+public class ProbeApiTest extends AbstractBaseApiTest {
     private static final boolean OK = true;
 
     private ProbeEntityResource probe;
     private DiscoveryApiWebscript origDiscovery;
 
-    @Mock
-    private DiscoveryApiWebscript goodDiscovery;
+    @Mock private DiscoveryApiWebscript goodDiscovery;
 
-    @Mock
-    private DiscoveryApiWebscript badDiscovery;
+    @Mock private DiscoveryApiWebscript badDiscovery;
 
-    @Mock
-    private RepoHealthChecker repoHealthChecker;
+    @Mock private RepoHealthChecker repoHealthChecker;
 
     @Before
     @Override
-    public void setup() throws Exception
-    {
-//      super.setup(); -- Takes a very long time and we need no test networks, sites or users.
+    public void setup() throws Exception {
+        //      super.setup(); -- Takes a very long time and we need no test networks, sites or
+        // users.
         setRequestContext(null, null, null);
 
-        String beanName = ProbeEntityResource.class.getCanonicalName()+".get";
+        String beanName = ProbeEntityResource.class.getCanonicalName() + ".get";
         probe = applicationContext.getBean(beanName, ProbeEntityResource.class);
         lenient().when(badDiscovery.getRepositoryInfo()).thenThrow(AlfrescoRuntimeException.class);
         Mockito.doNothing().when(repoHealthChecker).checkDatabase();
@@ -88,44 +84,42 @@ public class ProbeApiTest extends AbstractBaseApiTest
 
     @After
     @Override
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         probe.setDiscovery(origDiscovery);
         super.tearDown();
     }
 
     @Override
-    public String getScope()
-    {
+    public String getScope() {
         return "public";
     }
 
-    private void assertResponse(ProbeType probeType, Boolean ready, String expected, int expectedStatus) throws Exception
-    {
-        String[] keys = expectedStatus == 200
-                ? new String[]{"entry", "message"}
-                : new String[]{"error", "briefSummary"};
+    private void assertResponse(
+            ProbeType probeType, Boolean ready, String expected, int expectedStatus)
+            throws Exception {
+        String[] keys =
+                expectedStatus == 200
+                        ? new String[] {"entry", "message"}
+                        : new String[] {"error", "briefSummary"};
 
-        probe.setDiscovery(ready == null
-                ? null // force a NPE if used - never should be
-                : ready
-                ? goodDiscovery
-                : badDiscovery);
+        probe.setDiscovery(
+                ready == null
+                        ? null // force a NPE if used - never should be
+                        : ready ? goodDiscovery : badDiscovery);
 
-        HttpResponse response = getSingle(ProbeEntityResource.class, probeType.getValue(), null, expectedStatus);
+        HttpResponse response =
+                getSingle(ProbeEntityResource.class, probeType.getValue(), null, expectedStatus);
         Object object = response.getJsonResponse();
-        for (String key: keys)
-        {
-            object = ((JSONObject)object).get(key);
-            assertNotNull("Missing \""+key+"\" in json", object);
+        for (String key : keys) {
+            object = ((JSONObject) object).get(key);
+            assertNotNull("Missing \"" + key + "\" in json", object);
         }
         String message = object.toString();
 
         if (expectedStatus != 200) // Strip the leading number from the exception message.
         {
             int i = message.indexOf(' ');
-            if (i != -1)
-            {
+            if (i != -1) {
                 message = message.substring(i + 1);
             }
         }
@@ -134,8 +128,7 @@ public class ProbeApiTest extends AbstractBaseApiTest
     }
 
     @Test
-    public void testProbes() throws Exception
-    {
+    public void testProbes() throws Exception {
         // Live first
         assertResponse(LIVE, OK, "liveProbe: Success - Tested", 200);
         assertResponse(READY, null, "readyProbe: Failure - Tested", 503);
@@ -159,7 +152,5 @@ public class ProbeApiTest extends AbstractBaseApiTest
         Mockito.doThrow(AlfrescoRuntimeException.class).when(repoHealthChecker).checkDatabase();
         assertResponse(READY, OK, "readyProbe: Failure - Tested", 503);
         assertResponse(READY, OK, "readyProbe: Failure - No test", 503);
-        
     }
-
 }

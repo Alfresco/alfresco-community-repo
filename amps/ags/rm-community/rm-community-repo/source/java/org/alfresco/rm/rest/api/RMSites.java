@@ -38,8 +38,7 @@ import org.alfresco.rm.rest.api.model.RMSite;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public interface RMSites extends Sites
-{
+public interface RMSites extends Sites {
     /**
      * Creates RM site
      *
@@ -51,6 +50,7 @@ public interface RMSites extends Sites
 
     /**
      * Gets RM site
+     *
      * @param siteId
      * @return
      */
@@ -58,6 +58,7 @@ public interface RMSites extends Sites
 
     /**
      * Updates RM site
+     *
      * @param siteId
      * @param site
      * @param parameters

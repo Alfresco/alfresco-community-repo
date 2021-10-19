@@ -36,31 +36,29 @@ import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name = "types", title = "types")
-public class TypeEntityResource implements EntityResourceAction.ReadById<Type>, EntityResourceAction.Read<Type>, InitializingBean
-{
+public class TypeEntityResource
+        implements EntityResourceAction.ReadById<Type>,
+                EntityResourceAction.Read<Type>,
+                InitializingBean {
 
     private Types types;
 
-    public void setTypes(Types types)
-    {
+    public void setTypes(Types types) {
         this.types = types;
     }
 
     @Override
-    public void afterPropertiesSet()
-    {
+    public void afterPropertiesSet() {
         ParameterCheck.mandatory("types", this.types);
     }
 
     @Override
-    public CollectionWithPagingInfo<Type> readAll(Parameters params)
-    {
+    public CollectionWithPagingInfo<Type> readAll(Parameters params) {
         return types.listTypes(params);
     }
 
     @Override
-    public Type readById(String id, Parameters parameters)
-    {
+    public Type readById(String id, Parameters parameters) {
         return types.getType(id);
     }
 }

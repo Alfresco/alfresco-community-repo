@@ -26,13 +26,6 @@
 
 package org.alfresco.repo.event2;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.M2Model;
@@ -52,42 +45,53 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.junit.Test;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author Iulian Aftene
  * @author Jamal Kaabi-Mofard
  */
-public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
-{
+public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent {
 
     @Test
-    public void testUpdateNodeResourceContent()
-    {
-        ContentService contentService = (ContentService) applicationContext.getBean(
-            "contentService");
+    public void testUpdateNodeResourceContent() {
+        ContentService contentService =
+                (ContentService) applicationContext.getBean("contentService");
 
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(),
-            resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
 
         NodeResource resource = getNodeResource(resultRepoEvent);
         assertNull("Content should have been null.", resource.getContent());
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
-                true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-            writer.setEncoding("UTF-8");
-            writer.putContent("test content.");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    ContentWriter writer =
+                            contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent("test content.");
+                    return null;
+                });
 
         checkNumOfEvents(2);
-        
+
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
-            resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                resultRepoEvent.getType());
 
         resource = getNodeResource(resultRepoEvent);
         ContentInfo content = resource.getContent();
@@ -100,14 +104,15 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull("Content should not have been null.", resourceBefore.getContent());
 
         // Update the content again
-        retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
-                true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-            writer.setEncoding("UTF-8");
-            writer.putContent("A quick brown fox jumps over the lazy dog.");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    ContentWriter writer =
+                            contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent("A quick brown fox jumps over the lazy dog.");
+                    return null;
+                });
 
         resource = getNodeResource(3);
         content = resource.getContent();
@@ -142,33 +147,37 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateNodeResourceContent_NullBefore()
-    {
-        ContentService contentService = (ContentService) applicationContext.getBean(
-                "contentService");
+    public void testUpdateNodeResourceContent_NullBefore() {
+        ContentService contentService =
+                (ContentService) applicationContext.getBean("contentService");
 
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(),
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
                 resultRepoEvent.getType());
 
         NodeResource resource = getNodeResource(resultRepoEvent);
         assertNull("Content should have been null.", resource.getContent());
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
-                    true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-            writer.setEncoding("UTF-8");
-            writer.putContent("test content.");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    ContentWriter writer =
+                            contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent("test content.");
+                    return null;
+                });
 
         checkNumOfEvents(2);
 
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
                 resultRepoEvent.getType());
 
         resource = getNodeResource(resultRepoEvent);
@@ -203,30 +212,38 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateNodeResourceContentSameContentSize()
-    {
-        ContentService contentService = (ContentService) applicationContext.getBean("contentService");
+    public void testUpdateNodeResourceContentSameContentSize() {
+        ContentService contentService =
+                (ContentService) applicationContext.getBean("contentService");
 
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
 
         NodeResource resource = getNodeResource(resultRepoEvent);
         assertNull("Content should have been null.", resource.getContent());
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-            writer.setEncoding("UTF-8");
-            writer.putContent("test content a");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    ContentWriter writer =
+                            contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent("test content a");
+                    return null;
+                });
 
         checkNumOfEvents(2);
-        
+
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                resultRepoEvent.getType());
 
         resource = getNodeResource(resultRepoEvent);
         ContentInfo content = resource.getContent();
@@ -239,13 +256,15 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull("Content should not have been null.", resourceBefore.getContent());
 
         // Update the content again - different content but same size
-        retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-            writer.setEncoding("UTF-8");
-            writer.putContent("test content b");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    ContentWriter writer =
+                            contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent("test content b");
+                    return null;
+                });
 
         resource = getNodeResource(3);
         content = resource.getContent();
@@ -280,8 +299,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateContentTitle()
-    {
+    public void testUpdateContentTitle() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         NodeResource resource = getNodeResource(1);
 
@@ -290,20 +308,22 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull("Title should have been null.", title);
 
         // update content cm:title property with "test title" value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "test title");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "test title");
+                    return null;
+                });
 
         resource = getNodeResource(2);
         title = getProperty(resource, "cm:title");
         assertEquals("test title", title);
 
         // update content cm:title property again with "new test title" value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "new test title");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "new test title");
+                    return null;
+                });
 
         resource = getNodeResource(3);
         title = getProperty(resource, "cm:title");
@@ -316,8 +336,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateContentTitleFromNull()
-    {
+    public void testUpdateContentTitleFromNull() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         NodeResource resource = getNodeResource(1);
 
@@ -326,10 +345,11 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull("Title should have been null.", title);
 
         // update content cm:title property with "test title" value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "test title");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "test title");
+                    return null;
+                });
 
         resource = getNodeResource(2);
         title = getProperty(resource, "cm:title");
@@ -344,8 +364,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateContentDescription()
-    {
+    public void testUpdateContentDescription() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         NodeResource resource = getNodeResource(1);
@@ -353,10 +372,12 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull("Description should have been null.", desc);
 
         // update content cm:description property with "test_description" value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "test description");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setProperty(
+                            nodeRef, ContentModel.PROP_DESCRIPTION, "test description");
+                    return null;
+                });
 
         resource = getNodeResource(2);
         desc = getProperty(resource, "cm:description");
@@ -371,8 +392,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateContentName()
-    {
+    public void testUpdateContentName() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         NodeResource resource = getNodeResource(1);
@@ -380,10 +400,11 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(nodeRef.getId(), oldName);
 
         // update cm:name property with "test_new_name" value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "test_new_name");
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "test_new_name");
+                    return null;
+                });
 
         resource = getNodeResource(2);
         assertEquals("test_new_name", resource.getName());
@@ -407,8 +428,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testAddAspectToContent()
-    {
+    public void testAddAspectToContent() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         NodeResource resource = getNodeResource(1);
@@ -419,22 +439,23 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue(resource.getProperties().isEmpty());
 
         // Add cm:versionable aspect with default value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                    return null;
+                });
 
         resource = getNodeResource(2);
         assertNotNull(resource.getAspectNames());
         assertTrue(resource.getAspectNames().contains("cm:versionable"));
-        //Check all aspects
+        // Check all aspects
         Set<String> expectedAspects = new HashSet<>(originalAspects);
         expectedAspects.add("cm:versionable");
         assertEquals(expectedAspects, resource.getAspectNames());
         // Check properties
         assertFalse(resource.getProperties().isEmpty());
 
-        //Check resourceBefore
+        // Check resourceBefore
         NodeResource resourceBefore = getNodeResourceBefore(2);
         assertNotNull(resourceBefore.getAspectNames());
         assertEquals(originalAspects, resourceBefore.getAspectNames());
@@ -450,28 +471,29 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testRemoveAspectFromContentTest()
-    {
+    public void testRemoveAspectFromContentTest() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         NodeResource resource = getNodeResource(1);
         final Set<String> originalAspects = resource.getAspectNames();
         assertNotNull(originalAspects);
 
         // Add cm:geographic aspect with default value
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
+                    return null;
+                });
         resource = getNodeResource(2);
         Set<String> aspectsBeforeRemove = resource.getAspectNames();
         assertNotNull(aspectsBeforeRemove);
         assertTrue(aspectsBeforeRemove.contains("cm:geographic"));
 
         // Remove cm:geographic aspect
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
+                    return null;
+                });
 
         resource = getNodeResource(3);
         assertEquals(originalAspects, resource.getAspectNames());
@@ -482,56 +504,73 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testCreateAndUpdateInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
+    public void testCreateAndUpdateInTheSameTransaction() {
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    NodeRef node1 =
+                            nodeService
+                                    .createNode(
+                                            rootNodeRef,
+                                            ContentModel.ASSOC_CHILDREN,
+                                            QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                            ContentModel.TYPE_CONTENT)
+                                    .getChildRef();
 
-            NodeRef node1 = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                ContentModel.TYPE_CONTENT).getChildRef();
-
-            nodeService.setProperty(node1, ContentModel.PROP_DESCRIPTION, "test description");
-            return null;
-        });
-        //Create and update node are done in the same transaction so one event is expected
+                    nodeService.setProperty(
+                            node1, ContentModel.PROP_DESCRIPTION, "test description");
+                    return null;
+                });
+        // Create and update node are done in the same transaction so one event is expected
         // to be generated
         checkNumOfEvents(1);
     }
 
     @Test
-    public void testUpdateNodeType()
-    {
+    public void testUpdateNodeType() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         // old node's type
-        assertEquals("Created node does not have the correct type", ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+        assertEquals(
+                "Created node does not have the correct type",
+                ContentModel.TYPE_CONTENT,
+                nodeService.getType(nodeRef));
 
         // node.Created event should be generated
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
-        assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
+        assertEquals(
+                "cm:content node type was not found", "cm:content", nodeResource.getNodeType());
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
 
-            // new node's type
-            assertEquals("Wrong node type", ContentModel.TYPE_FOLDER, nodeService.getType(nodeRef));
-            return null;
-        });
+                    // new node's type
+                    assertEquals(
+                            "Wrong node type",
+                            ContentModel.TYPE_FOLDER,
+                            nodeService.getType(nodeRef));
+                    return null;
+                });
 
         // we should have 2 events, node.Created and node.Updated
         checkNumOfEvents(2);
 
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:folder", nodeResource.getNodeType());
 
         NodeResource resourceBefore = getNodeResourceBefore(2);
-        assertEquals("Incorrect node type was found","cm:content", resourceBefore.getNodeType());
-        // assertNotNull(resourceBefore.getModifiedAt());  uncomment this when the issue will be fixed
+        assertEquals("Incorrect node type was found", "cm:content", resourceBefore.getNodeType());
+        // assertNotNull(resourceBefore.getModifiedAt());  uncomment this when the issue will be
+        // fixed
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getContent());
         assertNull(resourceBefore.isFile());
@@ -546,23 +585,25 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateNodeTypeWithCustomType()
-    {
+    public void testUpdateNodeTypeWithCustomType() {
         String modelName = "testModel" + System.currentTimeMillis();
         String modelDescription = "testModel description";
         Pair<String, String> namespacePair = getNamespacePair();
 
-        M2Model model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName);
+        M2Model model =
+                M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName);
         model.createNamespace(namespacePair.getFirst(), namespacePair.getSecond());
         model.setDescription(modelDescription);
 
         String typeName = "testType";
-        M2Type m2Type = model.createType(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName);
+        M2Type m2Type =
+                model.createType(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName);
         m2Type.setTitle("Test type title");
 
         // Create active model
         CustomModelDefinition modelDefinition =
-                retryingTransactionHelper.doInTransaction(() -> customModelService.createCustomModel(model, true));
+                retryingTransactionHelper.doInTransaction(
+                        () -> customModelService.createCustomModel(model, true));
 
         assertNotNull(modelDefinition);
         assertEquals(modelName, modelDefinition.getName().getLocalName());
@@ -574,9 +615,13 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // node.Created event should be generated for the model
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
-        assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
+        assertEquals(
+                "Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
 
         initTestNamespacePrefixMapping();
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
@@ -585,26 +630,38 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // node.Created event should be generated
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
-        assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
+        assertEquals(
+                "cm:content node type was not found", "cm:content", nodeResource.getNodeType());
 
-        QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setType(nodeRef, typeQName);
+        QName typeQName = QName.createQName("{" + namespacePair.getFirst() + "}" + typeName);
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setType(nodeRef, typeQName);
 
-            // new node's type
-            assertEquals(typeQName, nodeService.getType(nodeRef));
-            return null;
-        });
+                    // new node's type
+                    assertEquals(typeQName, nodeService.getType(nodeRef));
+                    return null;
+                });
 
-        // we should have 3 events, node.Created for the model, node.Created for the node and node.Updated
+        // we should have 3 events, node.Created for the model, node.Created for the node and
+        // node.Updated
         checkNumOfEvents(3);
 
         resultRepoEvent = getRepoEvent(3);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
-        assertEquals("Incorrect node type was found", namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName, nodeResource.getNodeType());
+        assertEquals(
+                "Incorrect node type was found",
+                namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName,
+                nodeResource.getNodeType());
 
         NodeResource resourceBefore = getNodeResourceBefore(3);
         assertEquals("Incorrect node type was found", "cm:content", resourceBefore.getNodeType());
@@ -622,39 +679,49 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testUpdateTwiceNodeTypeInTheSameTransaction()
-    {
+    public void testUpdateTwiceNodeTypeInTheSameTransaction() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         // node.Created event should be generated
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:content", nodeResource.getNodeType());
 
         // old type
         assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
-            nodeService.setType(nodeRef, ContentModel.TYPE_CONTENT);
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+                    nodeService.setType(nodeRef, ContentModel.TYPE_CONTENT);
 
-            // new type
-            assertEquals("Wrong node type", ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
-            return null;
-        });
+                    // new type
+                    assertEquals(
+                            "Wrong node type",
+                            ContentModel.TYPE_CONTENT,
+                            nodeService.getType(nodeRef));
+                    return null;
+                });
 
         // we should have only 2 events, node.Created and node.Updated
         checkNumOfEvents(2);
 
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:content", nodeResource.getNodeType());
 
         NodeResource resourceBefore = getNodeResourceBefore(2);
         assertEquals("Incorrect node type was found", "cm:folder", resourceBefore.getNodeType());
-        // assertNotNull(resourceBefore.getModifiedAt()); uncomment this when the issue will be fixed
+        // assertNotNull(resourceBefore.getModifiedAt()); uncomment this when the issue will be
+        // fixed
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getContent());
         assertNull(resourceBefore.isFile());
@@ -669,36 +736,41 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testCreateAndUpdateNodeTypeInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
-            final NodeRef nodeRef = nodeService.createNode(
-                    rootNodeRef,
-                    ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                    ContentModel.TYPE_CONTENT).getChildRef();
+    public void testCreateAndUpdateNodeTypeInTheSameTransaction() {
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    final NodeRef nodeRef =
+                            nodeService
+                                    .createNode(
+                                            rootNodeRef,
+                                            ContentModel.ASSOC_CHILDREN,
+                                            QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                            ContentModel.TYPE_CONTENT)
+                                    .getChildRef();
 
-            // old type
-            assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+                    // old type
+                    assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
 
-            nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+                    nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
 
-            // new type
-            assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(nodeRef));
-            return null;
-        });
+                    // new type
+                    assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(nodeRef));
+                    return null;
+                });
 
         // we should have only 1 event, node.Created
         checkNumOfEvents(1);
 
-        RepoEvent<EventData<NodeResource>>  resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_CREATED.getType(),
+                resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:folder", nodeResource.getNodeType());
     }
 
-    private Pair<String, String> getNamespacePair()
-    {
+    private Pair<String, String> getNamespacePair() {
         long timeMillis = System.currentTimeMillis();
         String uri = "http://www.alfresco.org/model/testcmmservicenamespace" + timeMillis + "/1.0";
         String prefix = "testcmmservice" + timeMillis;
@@ -707,25 +779,25 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testMoveFile()
-    {
+    public void testMoveFile() {
         final NodeRef folder1 = createNode(ContentModel.TYPE_FOLDER);
         final String folder1ID = getNodeResource(1).getId();
         final NodeRef folder2 = createNode(ContentModel.TYPE_FOLDER);
         final String folder2ID = getNodeResource(2).getId();
         final NodeRef moveFile = createNode(ContentModel.TYPE_CONTENT, folder1);
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.moveNode(
-                moveFile,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.moveNode(
+                            moveFile,
+                            folder2,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(TEST_NAMESPACE));
+                    return null;
+                });
 
         checkNumOfEvents(4);
-        
+
         NodeResource resourceBefore = getNodeResourceBefore(4);
         NodeResource resource = getNodeResource(4);
 
@@ -734,8 +806,10 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertEquals("Wrong node parent.", folder1ID, moveFileParentBeforeMove);
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
-            getRepoEvent(4).getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                getRepoEvent(4).getType());
 
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getName());
@@ -759,20 +833,20 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testMoveFolder()
-    {
+    public void testMoveFolder() {
         final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
         final NodeRef moveFolder = createNode(ContentModel.TYPE_FOLDER, parent);
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.moveNode(
-                moveFolder,
-                grandParent,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.moveNode(
+                            moveFolder,
+                            grandParent,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(TEST_NAMESPACE));
+                    return null;
+                });
 
         checkNumOfEvents(4);
 
@@ -780,196 +854,199 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         final String parentID = getNodeResource(2).getId();
 
         final String moveFolderParentBeforeMove =
-            getNodeResourceBefore(4).getPrimaryHierarchy().get(0);
-        final String moveFolderParentAfterMove =
-            getNodeResource(4).getPrimaryHierarchy().get(0);
+                getNodeResourceBefore(4).getPrimaryHierarchy().get(0);
+        final String moveFolderParentAfterMove = getNodeResource(4).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", parentID, moveFolderParentBeforeMove);
         assertEquals("Wrong node parent.", grandParentID, moveFolderParentAfterMove);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
-            getRepoEventWithoutWait(4).getType());
+        assertEquals(
+                "Wrong repo event type.",
+                EventType.NODE_UPDATED.getType(),
+                getRepoEventWithoutWait(4).getType());
     }
 
     @Test
-    public void testMoveFolderStructure()
-    {
+    public void testMoveFolderStructure() {
         final NodeRef root1 = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef root2 = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER, root1);
         final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
         createNode(ContentModel.TYPE_CONTENT, parent);
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.moveNode(
-                grandParent,
-                root2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.moveNode(
+                            grandParent,
+                            root2,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(TEST_NAMESPACE));
+                    return null;
+                });
 
         checkNumOfEvents(6);
 
         final String root2ID = getNodeResource(2).getId();
-        final String grandParentParentAfterMove =
-            getNodeResource(6).getPrimaryHierarchy().get(0);
+        final String grandParentParentAfterMove = getNodeResource(6).getPrimaryHierarchy().get(0);
         assertEquals("Wrong node parent.", root2ID, grandParentParentAfterMove);
 
         final String grandParentID = getNodeResource(3).getId();
-        final String parentIDOfTheParentFolder =
-            getNodeResource(4).getPrimaryHierarchy().get(0);
+        final String parentIDOfTheParentFolder = getNodeResource(4).getPrimaryHierarchy().get(0);
         assertEquals("Wrong node parent.", grandParentID, parentIDOfTheParentFolder);
 
         final String parentID = getNodeResource(4).getId();
-        final String contentParentID =
-            getNodeResource(5).getPrimaryHierarchy().get(0);
+        final String contentParentID = getNodeResource(5).getPrimaryHierarchy().get(0);
         assertEquals("Wrong node parent.", parentID, contentParentID);
     }
 
     @Test
-    public void testMoveNodeWithAspects()
-    {
+    public void testMoveNodeWithAspects() {
         final NodeRef folder1 = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef folder2 = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef moveFile = createNode(ContentModel.TYPE_CONTENT, folder1);
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.addAspect(moveFile, ContentModel.ASPECT_VERSIONABLE, null);
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.addAspect(moveFile, ContentModel.ASPECT_VERSIONABLE, null);
+                    return null;
+                });
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.moveNode(
-                moveFile,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.moveNode(
+                            moveFile,
+                            folder2,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(TEST_NAMESPACE));
+                    return null;
+                });
 
         NodeResource resource = getNodeResource(5);
         assertNotNull(resource.getAspectNames());
         assertTrue("Wrong aspect.", resource.getAspectNames().contains("cm:versionable"));
 
         final String folder2ID = getNodeResource(2).getId();
-        final String moveFileParentAfterMove =
-            getNodeResource(5).getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = getNodeResource(5).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
 
     @Test
-    public void testMoveNodeWithProperties()
-    {
+    public void testMoveNodeWithProperties() {
         final NodeRef folder1 = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef folder2 = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef moveFile = createNode(ContentModel.TYPE_CONTENT, folder1);
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(moveFile, ContentModel.PROP_NAME, "test_new_name");
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    nodeService.setProperty(moveFile, ContentModel.PROP_NAME, "test_new_name");
 
-            nodeService.moveNode(
-                moveFile,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
-            return null;
-        });
+                    nodeService.moveNode(
+                            moveFile,
+                            folder2,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(TEST_NAMESPACE));
+                    return null;
+                });
 
         NodeResource resource = getNodeResource(4);
         assertEquals("test_new_name", resource.getName());
 
         final String folder2ID = getNodeResource(2).getId();
-        final String moveFileParentAfterMove =
-            getNodeResource(4).getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = getNodeResource(4).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
 
     @Test
-    public void testCreateAndMoveFileInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
+    public void testCreateAndMoveFileInTheSameTransaction() {
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    NodeRef folder1 =
+                            nodeService
+                                    .createNode(
+                                            rootNodeRef,
+                                            ContentModel.ASSOC_CHILDREN,
+                                            QName.createQName(TEST_NAMESPACE),
+                                            ContentModel.TYPE_FOLDER)
+                                    .getChildRef();
 
-            NodeRef folder1 = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE),
-                ContentModel.TYPE_FOLDER).getChildRef();
+                    NodeRef folder2 =
+                            nodeService
+                                    .createNode(
+                                            rootNodeRef,
+                                            ContentModel.ASSOC_CHILDREN,
+                                            QName.createQName(TEST_NAMESPACE),
+                                            ContentModel.TYPE_FOLDER)
+                                    .getChildRef();
 
-            NodeRef folder2 = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE),
-                ContentModel.TYPE_FOLDER).getChildRef();
+                    NodeRef fileToMove =
+                            nodeService
+                                    .createNode(
+                                            folder1,
+                                            ContentModel.ASSOC_CONTAINS,
+                                            QName.createQName(TEST_NAMESPACE),
+                                            ContentModel.TYPE_CONTENT)
+                                    .getChildRef();
 
-            NodeRef fileToMove = nodeService.createNode(
-                folder1,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE),
-                ContentModel.TYPE_CONTENT).getChildRef();
+                    nodeService.moveNode(
+                            fileToMove,
+                            folder2,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(TEST_NAMESPACE));
 
-            nodeService.moveNode(
-                fileToMove,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    assertEquals(folder2, nodeService.getPrimaryParent(fileToMove).getParentRef());
 
-            assertEquals(folder2, nodeService.getPrimaryParent(fileToMove).getParentRef());
-
-            return null;
-        });
+                    return null;
+                });
 
         checkNumOfEvents(3);
 
         final String folder2ID = getNodeResource(2).getId();
-        final String moveFileParentAfterMove =
-            getNodeResource(3).getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = getNodeResource(3).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
 
     @Test
-    public void testAddAspectRemoveAspectFromContentSameTransactionTest()
-    {
+    public void testAddAspectRemoveAspectFromContentSameTransactionTest() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         NodeResource resource = getNodeResource(1);
         final Set<String> originalAspects = resource.getAspectNames();
         assertNotNull(originalAspects);
 
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    // Add cm:geographic aspect with default value
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            // Add cm:geographic aspect with default value
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
-
-            // Remove cm:geographic aspect
-            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
-            return null;
-        });
+                    // Remove cm:geographic aspect
+                    nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
+                    return null;
+                });
 
         checkNumOfEvents(1);
     }
 
     @Test
-    public void testAddAspectRemoveAspectAddAspectFromContentSameTransactionTest()
-    {
+    public void testAddAspectRemoveAspectAddAspectFromContentSameTransactionTest() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         NodeResource resource = getNodeResource(1);
         final Set<String> originalAspects = resource.getAspectNames();
         assertNotNull(originalAspects);
-        
-        retryingTransactionHelper.doInTransaction(() -> {
-            // Add cm:geographic aspect with default value
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
 
-            // Remove cm:geographic aspect
-            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    // Add cm:geographic aspect with default value
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
 
-            // Add cm:geographic aspect with default value
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
+                    // Remove cm:geographic aspect
+                    nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
 
-            return null;
-        });
+                    // Add cm:geographic aspect with default value
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
+
+                    return null;
+                });
 
         checkNumOfEvents(2);
 
@@ -988,8 +1065,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testAddAndRemovePropertyInTheSameTransaction()
-    {
+    public void testAddAndRemovePropertyInTheSameTransaction() {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         checkNumOfEvents(1);
@@ -999,19 +1075,22 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue(resource.getProperties().isEmpty());
 
         // Add and remove cm:userName property
-        retryingTransactionHelper.doInTransaction(() -> {
-            Map<QName, Serializable> properties = Map.of(ContentModel.PROP_USERNAME, "user1");
-            nodeService.addProperties(nodeRef, properties);
-            nodeService.removeProperty(nodeRef, ContentModel.PROP_USERNAME);
-            return null;
-        });
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    Map<QName, Serializable> properties =
+                            Map.of(ContentModel.PROP_USERNAME, "user1");
+                    nodeService.addProperties(nodeRef, properties);
+                    nodeService.removeProperty(nodeRef, ContentModel.PROP_USERNAME);
+                    return null;
+                });
 
         // There should only be a create event
         resource = getNodeResource(1);
         assertTrue(resource.getProperties().isEmpty());
 
         // Check there isn't a node update event
-        List<RepoEvent<EventData<NodeResource>>> nodeUpdatedEvents = getFilteredEvents(EventType.NODE_UPDATED);
+        List<RepoEvent<EventData<NodeResource>>> nodeUpdatedEvents =
+                getFilteredEvents(EventType.NODE_UPDATED);
         assertEquals(0, nodeUpdatedEvents.size());
     }
 }

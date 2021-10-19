@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,9 +26,6 @@
 
 package org.alfresco.filesys.auth.ftp;
 
-import javax.transaction.UserTransaction;
-
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPSrvSession;
@@ -44,64 +41,51 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.extensions.config.ConfigElement;
 
-/**
- * 
- * @author gkspencer
- */
-public abstract class FTPAuthenticatorBase implements FTPAuthenticator, ActivateableBean, DisposableBean {
+import javax.transaction.UserTransaction;
+
+/** @author gkspencer */
+public abstract class FTPAuthenticatorBase
+        implements FTPAuthenticator, ActivateableBean, DisposableBean {
 
     // Logging
-	  
-    protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
 
+    protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
 
     protected ServerConfigurationAccessor serverConfiguration;
 
-
     private AuthenticationComponent authenticationComponent;
-
 
     private AuthenticationService authenticationService;
 
-
     private TransactionService transactionService;
 
-
     private AuthorityService authorityService;
-    
+
     /** Is this component active, i.e. should it be used? */
     private boolean active = true;
 
-    /**
-	 * Default constructor
-	 */
-	public FTPAuthenticatorBase() {
-	}
+    /** Default constructor */
+    public FTPAuthenticatorBase() {}
 
-	
-	public void setConfig(ServerConfigurationAccessor config)
-    {
-	    this.serverConfiguration = config;
+    public void setConfig(ServerConfigurationAccessor config) {
+        this.serverConfiguration = config;
     }
 
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent) {
         this.authenticationComponent = authenticationComponent;
     }
 
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
+    public void setAuthenticationService(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
-    {
+    public void setAuthorityService(AuthorityService authorityService) {
         this.authorityService = authorityService;
     }
 
@@ -109,37 +93,36 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
      * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
      */
-    public boolean isActive()
-    {
+    public boolean isActive() {
         return active;
     }
 
     /**
      * Activates or deactivates the bean.
-     * 
-     * @param active
-     *            <code>true</code> if the bean is active and initialization should complete
+     *
+     * @param active <code>true</code> if the bean is active and initialization should complete
      */
-    public void setActive(boolean active)
-    {
+    public void setActive(boolean active) {
         this.active = active;
     }
 
     /**
      * Initialize the authenticator
-     * 
-	 * @param config ServerConfiguration
-	 * @param params ConfigElement
+     *
+     * @param config ServerConfiguration
+     * @param params ConfigElement
      * @exception InvalidConfigurationException
      */
-    public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
-    {
+    public void initialize(ServerConfiguration config, ConfigElement params)
+            throws InvalidConfigurationException {
         setConfig(config);
 
-        // Get the alfresco configuration section, required to get hold of various services/components
-        
-        AlfrescoConfigSection alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection( AlfrescoConfigSection.SectionName);
-        
+        // Get the alfresco configuration section, required to get hold of various
+        // services/components
+
+        AlfrescoConfigSection alfrescoConfig =
+                (AlfrescoConfigSection) config.getConfigSection(AlfrescoConfigSection.SectionName);
+
         // Copy over relevant bean properties for backward compatibility
         setAuthenticationComponent(alfrescoConfig.getAuthenticationComponent());
         setAuthenticationService(alfrescoConfig.getAuthenticationService());
@@ -152,137 +135,126 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
 
     /**
      * Initialize the authenticator (after properties have been set)
-     * 
+     *
      * @exception InvalidConfigurationException
      */
-    public void initialize() throws InvalidConfigurationException
-    {
-        if ( this.serverConfiguration == null)
-            throw new InvalidConfigurationException("server configuration accessor property not set");
-	}
+    public void initialize() throws InvalidConfigurationException {
+        if (this.serverConfiguration == null)
+            throw new InvalidConfigurationException(
+                    "server configuration accessor property not set");
+    }
 
     /**
-	 * Authenticate the user
-	 * 
-	 * @param info ClientInfo
-	 * @param sess FTPSrvSession
-	 * @return boolean
-	 */
-	public abstract boolean authenticateUser(ClientInfo info, FTPSrvSession sess);
+     * Authenticate the user
+     *
+     * @param info ClientInfo
+     * @param sess FTPSrvSession
+     * @return boolean
+     */
+    public abstract boolean authenticateUser(ClientInfo info, FTPSrvSession sess);
 
-	/**
-	 * Close the authenticator, perform any cleanup
-	 */
-	public void closeAuthenticator()
-	{
-	}
-	
-
-	/**
-	 * Return the authentication componenet
-	 * 
-	 * @return AuthenticationComponent
-	 */
-	protected final AuthenticationComponent getAuthenticationComponent() {
-		return this.authenticationComponent;
-	}
+    /** Close the authenticator, perform any cleanup */
+    public void closeAuthenticator() {}
 
     /**
-	 * Return the authentication service
-	 * 
-	 * @return AuthenticationService
-	 */
-	protected final AuthenticationService getAuthenticationService() {
-		return this.authenticationService;
-	}
+     * Return the authentication componenet
+     *
+     * @return AuthenticationComponent
+     */
+    protected final AuthenticationComponent getAuthenticationComponent() {
+        return this.authenticationComponent;
+    }
 
-	/**
-	 * Return the transaction service
-	 * 
-	 * @return TransactionService
-	 */
-	protected final TransactionService getTransactionService() {
-		return this.transactionService;
-	}
+    /**
+     * Return the authentication service
+     *
+     * @return AuthenticationService
+     */
+    protected final AuthenticationService getAuthenticationService() {
+        return this.authenticationService;
+    }
 
-	/**
-	 * Return the authority service
-	 * 
-	 * @return AuthorityService
-	 */
-	protected final AuthorityService getAuthorityService() {
-		return this.authorityService;
-	}
+    /**
+     * Return the transaction service
+     *
+     * @return TransactionService
+     */
+    protected final TransactionService getTransactionService() {
+        return this.transactionService;
+    }
 
-	/**
-	 * Check if the user is an administrator user name
-	 * 
-	 * @param cInfo ClientInfo
-	 */
-	protected final void checkForAdminUserName(ClientInfo cInfo) {
-		
-		// Check if the user name is an administrator
+    /**
+     * Return the authority service
+     *
+     * @return AuthorityService
+     */
+    protected final AuthorityService getAuthorityService() {
+        return this.authorityService;
+    }
 
-		UserTransaction tx = getTransactionService().getUserTransaction();
+    /**
+     * Check if the user is an administrator user name
+     *
+     * @param cInfo ClientInfo
+     */
+    protected final void checkForAdminUserName(ClientInfo cInfo) {
 
-		try {
-			tx.begin();
+        // Check if the user name is an administrator
 
-			if ( cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
-				
-				// Indicate that this is an administrator logon
+        UserTransaction tx = getTransactionService().getUserTransaction();
 
-				cInfo.setLogonType(ClientInfo.LogonAdmin);
-			}
-			tx.commit();
-		}
-		catch (Throwable ex) {
-			try {
-				tx.rollback();
-			}
-			catch (Throwable ex2) {
-				logger.error("Failed to rollback transaction", ex2);
-			}
+        try {
+            tx.begin();
 
-			// Re-throw the exception
+            if (cInfo.getLogonType() == ClientInfo.LogonNormal
+                    && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
 
-			if ( ex instanceof RuntimeException) {
-				throw (RuntimeException) ex;
-			}
-			else {
-				throw new RuntimeException("Error during execution of transaction.", ex);
-			}
-		}
-	}
-	
-	/**
-	 * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
-	 * 
-	 * return UserTransaction
-	 */
-	protected final UserTransaction createTransaction()
-	{
-		// Get the transaction service
-		
-		TransactionService txService = getTransactionService();
-		
-		// DEBUG
-		
-		if ( logger.isDebugEnabled())
-			logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
-		
-		// Create the transaction
-		
-		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
-	}
+                // Indicate that this is an administrator logon
 
-	/**
-	 * Handle tidy up on container shutdown
-	 */
-    public void destroy()
-    {
+                cInfo.setLogonType(ClientInfo.LogonAdmin);
+            }
+            tx.commit();
+        } catch (Throwable ex) {
+            try {
+                tx.rollback();
+            } catch (Throwable ex2) {
+                logger.error("Failed to rollback transaction", ex2);
+            }
+
+            // Re-throw the exception
+
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            } else {
+                throw new RuntimeException("Error during execution of transaction.", ex);
+            }
+        }
+    }
+
+    /**
+     * Create a transaction, this will be a wrteable transaction unless the system is in read-only
+     * mode.
+     *
+     * <p>return UserTransaction
+     */
+    protected final UserTransaction createTransaction() {
+        // Get the transaction service
+
+        TransactionService txService = getTransactionService();
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug(
+                    "Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+
+        // Create the transaction
+
+        return txService.getUserTransaction(txService.isReadOnly() ? true : false);
+    }
+
+    /** Handle tidy up on container shutdown */
+    public void destroy() {
         closeAuthenticator();
     }
-	
-	
 }

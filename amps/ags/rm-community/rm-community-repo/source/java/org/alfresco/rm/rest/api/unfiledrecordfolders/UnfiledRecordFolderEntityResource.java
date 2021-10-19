@@ -55,102 +55,114 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 2.6
  */
 @EntityResource(name = "unfiled-record-folders", title = "Unfiled Record Folders")
-public class UnfiledRecordFolderEntityResource implements EntityResourceAction.ReadById<UnfiledRecordFolder>,
-                                                          EntityResourceAction.Delete,
-                                                          EntityResourceAction.Update<UnfiledRecordFolder>, InitializingBean
-
-{
+public class UnfiledRecordFolderEntityResource
+        implements EntityResourceAction.ReadById<UnfiledRecordFolder>,
+                EntityResourceAction.Delete,
+                EntityResourceAction.Update<UnfiledRecordFolder>,
+                InitializingBean {
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
-    
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         mandatory("apiUtils", apiUtils);
         mandatory("fileFolderService", fileFolderService);
         mandatory("apiNodesModelFactory", nodesModelFactory);
     }
 
-    @WebApiDescription(title = "Get unfiled record folder information", description = "Gets information for an unfiled record folder with id 'unfiledRecordFolderId'")
+    @WebApiDescription(
+            title = "Get unfiled record folder information",
+            description =
+                    "Gets information for an unfiled record folder with id 'unfiledRecordFolderId'")
     @WebApiParam(name = "unfiledRecordFolderId", title = "The unfiled record folder id")
-    public UnfiledRecordFolder readById(String unfiledRecordFolderId, Parameters parameters)
-    {
+    public UnfiledRecordFolder readById(String unfiledRecordFolderId, Parameters parameters) {
         checkNotBlank("unfiledRecordFolderId", unfiledRecordFolderId);
         mandatory("parameters", parameters);
 
         String relativePath = parameters.getParameter(Nodes.PARAM_RELATIVE_PATH);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER, relativePath, true);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        unfiledRecordFolderId,
+                        RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER,
+                        relativePath,
+                        true);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
         return nodesModelFactory.createUnfiledRecordFolder(info, parameters, null, false);
-
     }
 
     @Override
-    @WebApiDescription(title = "Update unfiled record folder", description = "Updates an unfiled record folder with id 'unfiledRecordFolderId'")
-    public UnfiledRecordFolder update(String unfiledRecordFolderId, UnfiledRecordFolder unfiledRecordFolderInfo, Parameters parameters)
-    {
+    @WebApiDescription(
+            title = "Update unfiled record folder",
+            description = "Updates an unfiled record folder with id 'unfiledRecordFolderId'")
+    public UnfiledRecordFolder update(
+            String unfiledRecordFolderId,
+            UnfiledRecordFolder unfiledRecordFolderInfo,
+            Parameters parameters) {
         checkNotBlank("unfiledRecordFolderId", unfiledRecordFolderId);
         mandatory("unfiledRecordFolderInfo", unfiledRecordFolderInfo);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(nodeRef, unfiledRecordFolderInfo, parameters);
-                return null;
-            }
-        };
+        RetryingTransactionCallback<Void> callback =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() {
+                        apiUtils.updateNode(nodeRef, unfiledRecordFolderInfo, parameters);
+                        return null;
+                    }
+                };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+        RetryingTransactionCallback<FileInfo> readCallback =
+                new RetryingTransactionCallback<FileInfo>() {
+                    public FileInfo execute() {
+                        return fileFolderService.getFileInfo(nodeRef);
+                    }
+                };
+        FileInfo info =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(readCallback, false, true);
 
-        apiUtils.postActivity(info, unfiledRecordFolderInfo.getParentId(), ActivityType.FILE_UPDATED);
+        apiUtils.postActivity(
+                info, unfiledRecordFolderInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createUnfiledRecordFolder(info, parameters, null, false);
     }
 
     @Override
-    @WebApiDescription(title = "Delete unfiled record folder", description = "Deletes an unfiled record folder with id 'unfiledRecordFolderId'")
-    public void delete(String unfiledRecordFolderId, Parameters parameters)
-    {
+    @WebApiDescription(
+            title = "Delete unfiled record folder",
+            description = "Deletes an unfiled record folder with id 'unfiledRecordFolderId'")
+    public void delete(String unfiledRecordFolderId, Parameters parameters) {
         checkNotBlank("unfiledRecordFolderId", unfiledRecordFolderId);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
 
         fileFolderService.delete(nodeRef);
     }

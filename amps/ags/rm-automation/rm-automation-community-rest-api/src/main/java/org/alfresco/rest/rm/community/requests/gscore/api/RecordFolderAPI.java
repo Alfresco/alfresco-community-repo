@@ -39,12 +39,9 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 
@@ -55,21 +52,23 @@ import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.rest.rm.community.util.FilePlanComponentMixIn;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
 /**
  * Record folder REST API Wrapper
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RecordFolderAPI extends RMModelRequest
-{
+public class RecordFolderAPI extends RMModelRequest {
     /**
      * Constructor.
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RecordFolderAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RecordFolderAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -78,30 +77,24 @@ public class RecordFolderAPI extends RMModelRequest
      *
      * @param recordFolderId The identifier of a record folder
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code recordFolderId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to delete {@code recordFolderId}</li>
-     *  <li>{@code recordFolderId} does not exist</li>
-     *  <li>{@code recordFolderId} is locked and cannot be deleted</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code recordFolderId} is not a valid format
+     *       <li>authentication fails
+     *       <li>current user does not have permission to delete {@code recordFolderId}
+     *       <li>{@code recordFolderId} does not exist
+     *       <li>{@code recordFolderId} is locked and cannot be deleted
+     *     </ul>
      */
-    public void deleteRecordFolder(String recordFolderId)
-    {
+    public void deleteRecordFolder(String recordFolderId) {
         mandatoryString("recordFolderId", recordFolderId);
 
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "record-folders/{recordFolderId}",
-                recordFolderId
-        ));
+        getRmRestWrapper()
+                .processEmptyModel(
+                        simpleRequest(DELETE, "record-folders/{recordFolderId}", recordFolderId));
     }
 
-    /**
-     * see {@link #getRecordFolder(String, String)}
-     */
-    public RecordFolder getRecordFolder(String recordFolderId)
-    {
+    /** see {@link #getRecordFolder(String, String)} */
+    public RecordFolder getRecordFolder(String recordFolderId) {
         mandatoryString("recordFolderId", recordFolderId);
 
         return getRecordFolder(recordFolderId, EMPTY);
@@ -114,30 +107,30 @@ public class RecordFolderAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link RecordFolder} for the given {@code recordFolderId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code recordFolderId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code recordFolderId}</li>
-     *  <li>{@code recordFolderId} does not exist</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code recordFolderId} is not a valid format
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code recordFolderId}
+     *       <li>{@code recordFolderId} does not exist
+     *     </ul>
      */
-    public RecordFolder getRecordFolder(String recordFolderId, String parameters)
-    {
+    public RecordFolder getRecordFolder(String recordFolderId, String parameters) {
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModel(RecordFolder.class, simpleRequest(
-                GET,
-                "record-folders/{recordFolderId}?{parameters}",
-                recordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        RecordFolder.class,
+                        simpleRequest(
+                                GET,
+                                "record-folders/{recordFolderId}?{parameters}",
+                                recordFolderId,
+                                parameters));
     }
 
     /**
      * see {@link #updateRecordFolder(RecordFolder, String, String)
      */
-    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId)
-    {
+    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId) {
         mandatoryObject("recordFolderModel", recordFolderModel);
         mandatoryString("recordFolderId", recordFolderId);
 
@@ -152,34 +145,35 @@ public class RecordFolderAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @param returns The updated {@link RecordFolder}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>the update request is invalid or {@code recordFolderId} is not a valid format or {@code recordFolderModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to update {@code recordFolderId}</li>
-     *  <li>{@code recordFolderId} does not exist</li>
-     *  <li>the updated name clashes with an existing record folder in the current parent category</li>
-     *  <li>model integrity exception, including file name with invalid characters</li>
-     * </ul>
+     *     <ul>
+     *       <li>the update request is invalid or {@code recordFolderId} is not a valid format or
+     *           {@code recordFolderModel} is invalid
+     *       <li>authentication fails
+     *       <li>current user does not have permission to update {@code recordFolderId}
+     *       <li>{@code recordFolderId} does not exist
+     *       <li>the updated name clashes with an existing record folder in the current parent
+     *           category
+     *       <li>model integrity exception, including file name with invalid characters
+     *     </ul>
      */
-    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId, String parameters)
-    {
+    public RecordFolder updateRecordFolder(
+            RecordFolder recordFolderModel, String recordFolderId, String parameters) {
         mandatoryObject("recordFolderModel", recordFolderModel);
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModel(RecordFolder.class, requestWithBody(
-                PUT,
-                toJson(recordFolderModel),
-                "record-folders/{recordFolderId}?{parameters}",
-                recordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        RecordFolder.class,
+                        requestWithBody(
+                                PUT,
+                                toJson(recordFolderModel),
+                                "record-folders/{recordFolderId}?{parameters}",
+                                recordFolderId,
+                                parameters));
     }
 
-    /**
-     * see {@link #getRecordFolderChildren(String, String)}
-     */
-    public RecordFolderCollection getRecordFolderChildren(String recordFolderId)
-    {
+    /** see {@link #getRecordFolderChildren(String, String)} */
+    public RecordFolderCollection getRecordFolderChildren(String recordFolderId) {
         mandatoryString("recordFolderId", recordFolderId);
 
         return getRecordFolderChildren(recordFolderId, EMPTY);
@@ -192,29 +186,28 @@ public class RecordFolderAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link RecordFolderCollection} for the given {@code recordFolderId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code recordFolderId}</li>
-     *  <li>{@code recordFolderId} does not exist</li>
-     *</ul>
+     *     <ul>
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code recordFolderId}
+     *       <li>{@code recordFolderId} does not exist
+     *     </ul>
      */
-    public RecordFolderCollection getRecordFolderChildren(String recordFolderId, String parameters)
-    {
+    public RecordFolderCollection getRecordFolderChildren(
+            String recordFolderId, String parameters) {
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModels(RecordFolderCollection.class, simpleRequest(
-            GET,
-            "record-folders/{recordFolderId}/records?{parameters}",
-            recordFolderId,
-            parameters
-        ));
+        return getRmRestWrapper()
+                .processModels(
+                        RecordFolderCollection.class,
+                        simpleRequest(
+                                GET,
+                                "record-folders/{recordFolderId}/records?{parameters}",
+                                recordFolderId,
+                                parameters));
     }
 
-    /**
-     * see {@link #createRecord(Record, String, String)}
-     */
-    public Record createRecord(Record recordModel, String recordFolderId)
-    {
+    /** see {@link #createRecord(Record, String, String)} */
+    public Record createRecord(Record recordModel, String recordFolderId) {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordFolderId", recordFolderId);
 
@@ -225,19 +218,19 @@ public class RecordFolderAPI extends RMModelRequest
      * Create a record from file resource
      *
      * @param recordModel {@link Record} for electronic record to be created
-     * @param recordContent {@link File} pointing to the content of the electronic record to be created
+     * @param recordContent {@link File} pointing to the content of the electronic record to be
+     *     created
      * @param recordFolderId The identifier of a record folder
      * @return newly created {@link Record}
      * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public Record createRecord(Record recordModel, String recordFolderId, File recordContent) throws RuntimeException
-    {
+    public Record createRecord(Record recordModel, String recordFolderId, File recordContent)
+            throws RuntimeException {
         mandatoryString("recordFolderId", recordFolderId);
         mandatoryObject("recordContent", recordContent);
         mandatoryObject("recordModel", recordModel);
 
-        if (!recordModel.getNodeType().equals(CONTENT_TYPE))
-        {
+        if (!recordModel.getNodeType().equals(CONTENT_TYPE)) {
             fail("Only electronic records are supported");
         }
 
@@ -247,18 +240,20 @@ public class RecordFolderAPI extends RMModelRequest
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
-        try
-        {
-            root = new ObjectMapper().readTree(toJson(recordModel, Record.class, FilePlanComponentMixIn.class));
-        }
-        catch (IOException e)
-        {
+        try {
+            root =
+                    new ObjectMapper()
+                            .readTree(
+                                    toJson(
+                                            recordModel,
+                                            Record.class,
+                                            FilePlanComponentMixIn.class));
+        } catch (IOException e) {
             throw new RuntimeException("Failed to convert model to JSON.", e);
         }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
-        while (fieldNames.hasNext())
-        {
+        while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
@@ -284,17 +279,18 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public Record createRecord(Record recordModel, String recordFolderId, String parameters)
-    {
+    public Record createRecord(Record recordModel, String recordFolderId, String parameters) {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModel(Record.class, requestWithBody(
-                POST,
-                toJson(recordModel),
-                "record-folders/{recordFolderId}/records?{parameters}",
-                recordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        Record.class,
+                        requestWithBody(
+                                POST,
+                                toJson(recordModel),
+                                "record-folders/{recordFolderId}/records?{parameters}",
+                                recordFolderId,
+                                parameters));
     }
 }

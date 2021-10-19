@@ -35,10 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.GUID;
@@ -47,29 +44,25 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.util.Map;
+
 /**
  * Unit tests for {@link RemoveFromHoldAuditEvent}.
  *
  * @author Chris Shields
  * @since 3.3
  */
-public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
-{
-    @InjectMocks
-    private RemoveFromHoldAuditEvent removeFromHoldAuditEvent;
+public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest {
+    @InjectMocks private RemoveFromHoldAuditEvent removeFromHoldAuditEvent;
 
-    @Mock
-    private NodeService mockedNodeService;
+    @Mock private NodeService mockedNodeService;
 
     private NodeRef holdNodeRef;
     private NodeRef contentNodeRef;
 
-    /**
-     * Set up the mocks.
-     */
+    /** Set up the mocks. */
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         initMocks(this);
 
         holdNodeRef = generateNodeRef();
@@ -82,14 +75,16 @@ public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
         when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME)).thenReturn(contentName);
     }
 
-    /**
-     * Check that the remove from hold event calls an audit event.
-     */
+    /** Check that the remove from hold event calls an audit event. */
     @Test
-    public void testRemoveFromHoldCausesAuditEvent()
-    {
+    public void testRemoveFromHoldCausesAuditEvent() {
         removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), any(Map.class), isNull(Map.class), eq(true));
+        verify(mockedRecordsManagementAuditService, times(1))
+                .auditEvent(
+                        eq(contentNodeRef),
+                        any(String.class),
+                        any(Map.class),
+                        isNull(Map.class),
+                        eq(true));
     }
-
 }

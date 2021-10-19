@@ -27,14 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.DeleteHoldTest;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit test for https://issues.alfresco.com/jira/browse/RM-1424
@@ -43,86 +43,94 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.2
  * @version 1.0
  */
-public class RM1424Test extends DeleteHoldTest
-{
-    public void testGettingHolds()
-    {
+public class RM1424Test extends DeleteHoldTest {
+    public void testGettingHolds() {
         final List<NodeRef> listWithTwoHolds = new ArrayList<>(2);
 
-        doTestInTransaction(new Test<Void>()
-        {
-           @Override
-           public Void run()
-           {
-               // No holds
-               List<NodeRef> emptyHoldList = holdService.getHolds(filePlan);
-               assertNotNull(emptyHoldList);
-               assertTrue(emptyHoldList.isEmpty());
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() {
+                        // No holds
+                        List<NodeRef> emptyHoldList = holdService.getHolds(filePlan);
+                        assertNotNull(emptyHoldList);
+                        assertTrue(emptyHoldList.isEmpty());
 
-               // Create 2 holds
-               createAndCheckHolds();
+                        // Create 2 holds
+                        createAndCheckHolds();
 
-               // Check the list of holds
-               listWithTwoHolds.addAll(holdService.getHolds(filePlan));
-               assertNotNull(listWithTwoHolds);
-               assertEquals(2, listWithTwoHolds.size());
+                        // Check the list of holds
+                        listWithTwoHolds.addAll(holdService.getHolds(filePlan));
+                        assertNotNull(listWithTwoHolds);
+                        assertEquals(2, listWithTwoHolds.size());
 
-               // Check the first hold
-               NodeRef hold1 = listWithTwoHolds.get(0);
-               assertEquals(RecordsManagementModel.TYPE_HOLD, nodeService.getType(hold1));
-               assertEquals(HOLD1_NAME, (String) nodeService.getProperty(hold1, PROP_NAME));
-               assertEquals(HOLD1_REASON, (String) nodeService.getProperty(hold1, PROP_HOLD_REASON));
-               assertEquals(HOLD1_DESC, (String) nodeService.getProperty(hold1, PROP_DESCRIPTION));
+                        // Check the first hold
+                        NodeRef hold1 = listWithTwoHolds.get(0);
+                        assertEquals(RecordsManagementModel.TYPE_HOLD, nodeService.getType(hold1));
+                        assertEquals(
+                                HOLD1_NAME, (String) nodeService.getProperty(hold1, PROP_NAME));
+                        assertEquals(
+                                HOLD1_REASON,
+                                (String) nodeService.getProperty(hold1, PROP_HOLD_REASON));
+                        assertEquals(
+                                HOLD1_DESC,
+                                (String) nodeService.getProperty(hold1, PROP_DESCRIPTION));
 
-               // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
+                        // Add the user to the RM Manager role
+                        filePlanRoleService.assignRoleToAuthority(
+                                filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
-               return null;
-           }
-        });
+                        return null;
+                    }
+                });
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                // Get the holds the test user without having any permissions on the holds
-                List<NodeRef> holds = holdService.getHolds(filePlan);
-                assertNotNull(holds);
-                assertEquals(0, holds.size());
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() {
+                        // Get the holds the test user without having any permissions on the holds
+                        List<NodeRef> holds = holdService.getHolds(filePlan);
+                        assertNotNull(holds);
+                        assertEquals(0, holds.size());
 
-                return null;
-            }
-        }, userName);
+                        return null;
+                    }
+                },
+                userName);
 
         final NodeRef hold2 = listWithTwoHolds.get(1);
-        doTestInTransaction(new Test<Void>()
-        {
-           @Override
-           public Void run()
-           {
-               // Give the user read permissions on the hold
-               permissionService.setPermission(hold2, userName, RMPermissionModel.FILING, true);
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() {
+                        // Give the user read permissions on the hold
+                        permissionService.setPermission(
+                                hold2, userName, RMPermissionModel.FILING, true);
 
-               return null;
-           }
-        });
+                        return null;
+                    }
+                });
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                List<NodeRef> holds = holdService.getHolds(filePlan);
-                assertNotNull(holds);
-                assertEquals(1, holds.size());
-                assertEquals(RecordsManagementModel.TYPE_HOLD, nodeService.getType(hold2));
-                assertEquals(HOLD2_NAME, (String) nodeService.getProperty(hold2, PROP_NAME));
-                assertEquals(HOLD2_REASON, (String) nodeService.getProperty(hold2, PROP_HOLD_REASON));
-                assertEquals(HOLD2_DESC, (String) nodeService.getProperty(hold2, PROP_DESCRIPTION));
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() {
+                        List<NodeRef> holds = holdService.getHolds(filePlan);
+                        assertNotNull(holds);
+                        assertEquals(1, holds.size());
+                        assertEquals(RecordsManagementModel.TYPE_HOLD, nodeService.getType(hold2));
+                        assertEquals(
+                                HOLD2_NAME, (String) nodeService.getProperty(hold2, PROP_NAME));
+                        assertEquals(
+                                HOLD2_REASON,
+                                (String) nodeService.getProperty(hold2, PROP_HOLD_REASON));
+                        assertEquals(
+                                HOLD2_DESC,
+                                (String) nodeService.getProperty(hold2, PROP_DESCRIPTION));
 
-                return null;
-            }
-        }, userName);
+                        return null;
+                    }
+                },
+                userName);
     }
 }

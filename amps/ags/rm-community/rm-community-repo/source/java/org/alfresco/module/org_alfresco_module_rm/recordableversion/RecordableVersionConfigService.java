@@ -27,11 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.recordableversion;
 
-import java.util.List;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.script.slingshot.Version;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.List;
 
 /**
  * Recordable version config service interface
@@ -40,8 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public interface RecordableVersionConfigService
-{
+public interface RecordableVersionConfigService {
     /**
      * Gets the recordable versions
      *

@@ -31,19 +31,16 @@ import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstrac
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public class TestAction2 extends RMActionExecuterAbstractBase
-{
+public class TestAction2 extends RMActionExecuterAbstractBase {
     public static final String NAME = "testAction2";
-    
+
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
         // Do nothing
-    }      
-    
+    }
+
     @Override
-    public boolean isDispositionAction()
-    {
+    public boolean isDispositionAction() {
         return false;
     }
 }

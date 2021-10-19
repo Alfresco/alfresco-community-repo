@@ -25,6 +25,8 @@
  */
 package org.alfresco.messaging.camel;
 
+import static org.junit.Assert.assertEquals;
+
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
@@ -36,17 +38,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.junit.Assert.assertEquals;
-
-/**
- * Tests Camel components defined in the application's Spring context
- */
+/** Tests Camel components defined in the application's Spring context */
 @RunWith(SpringJUnit4ClassRunner.class)
 @Category(NeverRunsTests.class)
 @ContextConfiguration(locations = "/test-messaging-context.xml")
 public class CamelComponentsTest {
-    @Autowired
-    protected CamelContext camelContext;
+    @Autowired protected CamelContext camelContext;
 
     @Produce("activemq:queue:alfresco.test")
     protected ProducerTemplate activemqTemplate;
@@ -57,45 +54,40 @@ public class CamelComponentsTest {
     @Produce("jms:queue:alfresco.test")
     protected ProducerTemplate jmsTemplate;
 
-
     @Test
-    public void testActivemqComponent()
-    {
+    public void testActivemqComponent() {
         final String msg = "ping <activemq>";
 
         activemqTemplate.sendBody(msg);
 
-        final Object reply = camelContext
-                .createConsumerTemplate()
-                .receiveBody("activemq:queue:alfresco.test", 2000);
+        final Object reply =
+                camelContext
+                        .createConsumerTemplate()
+                        .receiveBody("activemq:queue:alfresco.test", 2000);
 
         assertEquals(msg, reply);
     }
 
     @Test
-    public void testAmqpComponent()
-    {
+    public void testAmqpComponent() {
         final String msg = "ping <amqp>";
 
         amqpTemplate.sendBody(msg);
 
-        final Object reply = camelContext
-                .createConsumerTemplate()
-                .receiveBody("amqp:queue:alfresco.test", 2000);
+        final Object reply =
+                camelContext.createConsumerTemplate().receiveBody("amqp:queue:alfresco.test", 2000);
 
         assertEquals(msg, reply);
     }
 
     @Test
-    public void testJmsComponent()
-    {
+    public void testJmsComponent() {
         final String msg = "ping <jms>";
 
         jmsTemplate.sendBody(msg);
 
-        final Object reply = camelContext
-                .createConsumerTemplate()
-                .receiveBody("jms:queue:alfresco.test", 2000);
+        final Object reply =
+                camelContext.createConsumerTemplate().receiveBody("jms:queue:alfresco.test", 2000);
 
         assertEquals(msg, reply);
     }

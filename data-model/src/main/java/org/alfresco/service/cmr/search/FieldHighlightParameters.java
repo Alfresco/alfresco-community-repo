@@ -25,72 +25,68 @@
  */
 package org.alfresco.service.cmr.search;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Parameters used for search hightlighting that are Field Specific
- */
+import org.alfresco.api.AlfrescoPublicApi;
 
+/** Parameters used for search hightlighting that are Field Specific */
 @AlfrescoPublicApi
-public class FieldHighlightParameters extends HighlightParameters
-{
+public class FieldHighlightParameters extends HighlightParameters {
     private final String field;
 
     @JsonCreator
     public FieldHighlightParameters(
-                @JsonProperty("field") String field,
-                @JsonProperty("snippetCount") Integer snippetCount,
-                @JsonProperty("fragmentSize") Integer fragmentSize,
-                @JsonProperty("mergeContiguous") Boolean mergeContiguous,
-                @JsonProperty("prefix") String prefix,
-                @JsonProperty("postfix") String postfix)
-    {
+            @JsonProperty("field") String field,
+            @JsonProperty("snippetCount") Integer snippetCount,
+            @JsonProperty("fragmentSize") Integer fragmentSize,
+            @JsonProperty("mergeContiguous") Boolean mergeContiguous,
+            @JsonProperty("prefix") String prefix,
+            @JsonProperty("postfix") String postfix) {
         super(snippetCount, fragmentSize, mergeContiguous, prefix, postfix);
         this.field = field;
     }
 
     @Override
-    public String toString()
-    {
-        return "FieldHighlightParameters{" +
-                    "snippetCount=" + snippetCount +
-                    ", fragmentSize=" + fragmentSize +
-                    ", mergeContiguous=" + mergeContiguous +
-                    ", prefix='" + prefix + '\'' +
-                    ", postfix='" + postfix + '\'' +
-                    ", field='" + field + '\'' +
-                    '}';
+    public String toString() {
+        return "FieldHighlightParameters{"
+                + "snippetCount="
+                + snippetCount
+                + ", fragmentSize="
+                + fragmentSize
+                + ", mergeContiguous="
+                + mergeContiguous
+                + ", prefix='"
+                + prefix
+                + '\''
+                + ", postfix='"
+                + postfix
+                + '\''
+                + ", field='"
+                + field
+                + '\''
+                + '}';
     }
 
-    public String getField()
-    {
+    public String getField() {
         return field;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        if (!super.equals(o))
-            return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         FieldHighlightParameters that = (FieldHighlightParameters) o;
 
-        if (field != null ? !field.equals(that.field) : that.field != null)
-            return false;
+        if (field != null ? !field.equals(that.field) : that.field != null) return false;
 
         return true;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (field != null ? field.hashCode() : 0);
         return result;

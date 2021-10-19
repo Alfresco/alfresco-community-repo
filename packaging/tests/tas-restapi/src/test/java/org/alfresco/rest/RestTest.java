@@ -1,7 +1,5 @@
 package org.alfresco.rest;
 
-import java.lang.reflect.Method;
-
 import org.alfresco.dataprep.WorkflowService;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
@@ -23,63 +21,50 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
+import java.lang.reflect.Method;
+
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
-public abstract class RestTest extends AbstractTestNGSpringContextTests
-{
+public abstract class RestTest extends AbstractTestNGSpringContextTests {
     private static Logger LOG = LogFactory.getLogger();
-    
-    @Autowired
-    protected RestProperties restProperties;
 
-    @Autowired
-    protected TasProperties properties;
+    @Autowired protected RestProperties restProperties;
 
-    @Autowired
-    protected ServerHealth serverHealth;
+    @Autowired protected TasProperties properties;
 
-    @Autowired
-    protected RestWrapper restClient;
-    
-    @Autowired
-    protected DataUserAIS dataUser;
+    @Autowired protected ServerHealth serverHealth;
 
-    @Autowired
-    protected DataSite dataSite;
-    
-    @Autowired
-    protected DataContent dataContent;
-    
-    @Autowired
-    protected DataGroup dataGroup;
+    @Autowired protected RestWrapper restClient;
 
-    @Autowired
-    protected DataWorkflow dataWorkflow;
+    @Autowired protected DataUserAIS dataUser;
 
-    @Autowired
-    protected DataLink dataLink;
-    
-    @Autowired
-    protected WorkflowService workflow;
+    @Autowired protected DataSite dataSite;
+
+    @Autowired protected DataContent dataContent;
+
+    @Autowired protected DataGroup dataGroup;
+
+    @Autowired protected DataWorkflow dataWorkflow;
+
+    @Autowired protected DataLink dataLink;
+
+    @Autowired protected WorkflowService workflow;
 
     protected SiteModel testSite;
 
     @BeforeSuite(alwaysRun = true)
-    public void checkServerHealth() throws Exception
-    {
+    public void checkServerHealth() throws Exception {
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
         testSite = dataSite.createPublicRandomSite();
     }
-    
-    @BeforeMethod(alwaysRun=true)
-    public void showStartTestInfo(Method method)
-    {      
-      LOG.info(String.format("*** STARTING Test: [%s] ***",method.getName()));      
+
+    @BeforeMethod(alwaysRun = true)
+    public void showStartTestInfo(Method method) {
+        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
     }
-    
-    @AfterMethod(alwaysRun=true)
-    public void showEndTestInfo(Method method)
-    {      
-      LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
+
+    @AfterMethod(alwaysRun = true)
+    public void showEndTestInfo(Method method) {
+        LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
 }

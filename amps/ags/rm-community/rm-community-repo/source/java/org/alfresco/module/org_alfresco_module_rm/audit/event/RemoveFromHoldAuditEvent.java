@@ -27,9 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -40,6 +37,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * Delete from hold audit event.
  *
@@ -47,11 +47,9 @@ import org.alfresco.service.namespace.QName;
  * @since 3.3
  */
 @BehaviourBean
-public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnRemoveFromHoldPolicy
-{
-    /**
-     * Node Service
-     */
+public class RemoveFromHoldAuditEvent extends AuditEvent
+        implements HoldServicePolicies.OnRemoveFromHoldPolicy {
+    /** Node Service */
     private NodeService nodeService;
 
     /**
@@ -59,26 +57,28 @@ public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServiceP
      *
      * @param nodeService nodeService to set
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy#onRemoveFromHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy#onRemoveFromHold(org.alfresco.service.cmr.repository.NodeRef,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = NotificationFrequency.EVERY_EVENT
-            )
-    public void onRemoveFromHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
-    {
-        Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
-        auditProperties.put(ContentModel.PROP_NAME, nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME));
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "rma:hold",
+            notificationFrequency = NotificationFrequency.EVERY_EVENT)
+    public void onRemoveFromHold(NodeRef holdNodeRef, NodeRef contentNodeRef) {
+        Map<QName, Serializable> auditProperties =
+                HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
+        auditProperties.put(
+                ContentModel.PROP_NAME,
+                nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME));
 
-        recordsManagementAuditService.auditEvent(contentNodeRef, getName(), auditProperties, null, true);
+        recordsManagementAuditService.auditEvent(
+                contentNodeRef, getName(), auditProperties, null, true);
     }
 }

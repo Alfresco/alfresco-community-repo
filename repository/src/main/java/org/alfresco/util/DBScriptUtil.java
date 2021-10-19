@@ -25,75 +25,61 @@
  */
 package org.alfresco.util;
 
+import org.springframework.core.io.support.EncodedResource;
+
 import java.io.IOException;
 import java.io.LineNumberReader;
 
-import org.springframework.core.io.support.EncodedResource;
-
-public abstract class DBScriptUtil
-{
+public abstract class DBScriptUtil {
     private static final String DEFAULT_SCRIPT_COMMENT_PREFIX = "--";
 
     /**
-     * Read a script from the provided EncodedResource and build a String containing
-     * the lines.
+     * Read a script from the provided EncodedResource and build a String containing the lines.
      *
-     * @param resource
-     *            the resource (potentially associated with a specific encoding) to
-     *            load the SQL script from
+     * @param resource the resource (potentially associated with a specific encoding) to load the
+     *     SQL script from
      * @return a String containing the script lines
      */
-    public static String readScript(EncodedResource resource) throws IOException
-    {
+    public static String readScript(EncodedResource resource) throws IOException {
         return readScript(resource, DEFAULT_SCRIPT_COMMENT_PREFIX);
     }
 
     /**
-     * Read a script from the provided EncodedResource, using the supplied line
-     * comment prefix, and build a String containing the lines.
+     * Read a script from the provided EncodedResource, using the supplied line comment prefix, and
+     * build a String containing the lines.
      *
-     * @param resource
-     *            the resource (potentially associated with a specific encoding) to
-     *            load the SQL script from
-     * @param lineCommentPrefix
-     *            the prefix that identifies comments in the SQL script (typically
-     *            "--")
+     * @param resource the resource (potentially associated with a specific encoding) to load the
+     *     SQL script from
+     * @param lineCommentPrefix the prefix that identifies comments in the SQL script (typically
+     *     "--")
      * @return a String containing the script lines
      */
-    private static String readScript(EncodedResource resource, String lineCommentPrefix) throws IOException
-    {
+    private static String readScript(EncodedResource resource, String lineCommentPrefix)
+            throws IOException {
         LineNumberReader lineNumberReader = new LineNumberReader(resource.getReader());
-        try
-        {
+        try {
             return readScript(lineNumberReader, lineCommentPrefix);
-        }
-        finally
-        {
+        } finally {
             lineNumberReader.close();
         }
     }
 
     /**
-     * Read a script from the provided LineNumberReader, using the supplied line
-     * comment prefix, and build a String containing the lines.
+     * Read a script from the provided LineNumberReader, using the supplied line comment prefix, and
+     * build a String containing the lines.
      *
-     * @param lineNumberReader
-     *            the LineNumberReader containing the script to be processed
-     * @param lineCommentPrefix
-     *            the prefix that identifies comments in the SQL script (typically
-     *            "--")
+     * @param lineNumberReader the LineNumberReader containing the script to be processed
+     * @param lineCommentPrefix the prefix that identifies comments in the SQL script (typically
+     *     "--")
      * @return a String containing the script lines
      */
-    private static String readScript(LineNumberReader lineNumberReader, String lineCommentPrefix) throws IOException
-    {
+    private static String readScript(LineNumberReader lineNumberReader, String lineCommentPrefix)
+            throws IOException {
         String statement = lineNumberReader.readLine();
         StringBuilder scriptBuilder = new StringBuilder();
-        while (statement != null)
-        {
-            if (lineCommentPrefix != null && !statement.startsWith(lineCommentPrefix))
-            {
-                if (scriptBuilder.length() > 0)
-                {
+        while (statement != null) {
+            if (lineCommentPrefix != null && !statement.startsWith(lineCommentPrefix)) {
+                if (scriptBuilder.length() > 0) {
                     scriptBuilder.append('\n');
                 }
                 scriptBuilder.append(statement);
@@ -103,5 +89,4 @@ public abstract class DBScriptUtil
 
         return scriptBuilder.toString();
     }
-
 }

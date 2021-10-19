@@ -28,24 +28,19 @@ package org.alfresco.repo.site;
 
 import org.alfresco.service.cmr.site.SiteInfo;
 
-public class AbstractSiteMembership
-{
+public class AbstractSiteMembership {
     protected final SiteInfo siteInfo;
-    protected final String id;  // contains both userId and authority Id
+    protected final String id; // contains both userId and authority Id
     protected final String role;
 
-    public AbstractSiteMembership(SiteInfo siteInfo, String id, String role)
-    {
-        if (siteInfo == null)
-        {
+    public AbstractSiteMembership(SiteInfo siteInfo, String id, String role) {
+        if (siteInfo == null) {
             throw new java.lang.IllegalArgumentException();
         }
-        if (id == null)
-        {
+        if (id == null) {
             throw new java.lang.IllegalArgumentException("Id required building site membership");
         }
-        if (role == null)
-        {
+        if (role == null) {
             throw new java.lang.IllegalArgumentException("Role required building site membership");
         }
         this.siteInfo = siteInfo;
@@ -53,18 +48,15 @@ public class AbstractSiteMembership
         this.role = role;
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public SiteInfo getSiteInfo()
-    {
+    public SiteInfo getSiteInfo() {
         return siteInfo;
     }
 
-    public String getRole()
-    {
+    public String getRole() {
         return role;
     }
 }

@@ -30,30 +30,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Whitelisted DM actions in RM
- */
-public enum WhitelistedDMActions
-{
+/** Whitelisted DM actions in RM */
+public enum WhitelistedDMActions {
     ARCHIVE("archive"),
     RESTORE("restore");
 
     private final String value;
 
-    WhitelistedDMActions(String value)
-    {
+    WhitelistedDMActions(String value) {
         this.value = value;
     }
 
-    public String getValue()
-    {
+    public String getValue() {
         return this.value;
     }
 
-    public static List<String> getActionsList()
-    {
+    public static List<String> getActionsList() {
         return Stream.of(WhitelistedDMActions.values())
-                     .map(WhitelistedDMActions::getValue)
-                     .collect(Collectors.toList());
+                .map(WhitelistedDMActions::getValue)
+                .collect(Collectors.toList());
     }
 }

@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,20 +34,24 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * REST API Tests for Properties Definitions
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
-{
+public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#isCollaborationSiteTest()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#isCollaborationSiteTest()
      */
     @Override
-    protected boolean isCollaborationSiteTest()
-    {
+    protected boolean isCollaborationSiteTest() {
         return true;
     }
 
@@ -65,8 +64,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
      * @throws IOException
      * @throws JSONException
      */
-    public void testRmGetTypeDefinitions() throws IOException, JSONException
-    {
+    public void testRmGetTypeDefinitions() throws IOException, JSONException {
         // Format url and send request
         String url = String.format(RM_TYPES_URL, "type", siteId);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
@@ -85,8 +83,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
 
         // Get the list of rm types from the response and check it
         List<String> rmTypeList = new ArrayList<>();
-        for (int i = 0; i < contentAsJson.length(); i++)
-        {
+        for (int i = 0; i < contentAsJson.length(); i++) {
             String name = contentAsJson.getJSONObject(i).getString("name");
             assertNotNull(name);
             rmTypeList.add(name);
@@ -110,8 +107,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
 
         // Get the list of dm types from the response and check it
         List<String> dmTypeList = new ArrayList<>();
-        for (int i = 0; i < contentAsJson.length(); i++)
-        {
+        for (int i = 0; i < contentAsJson.length(); i++) {
             String name = contentAsJson.getJSONObject(i).getString("name");
             assertNotNull(name);
             dmTypeList.add(name);
@@ -126,14 +122,9 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return A (sub)list of rm types
      */
-    private List<String> getRmTypes()
-    {
-        return Arrays.asList(new String[]
-        {
-            "rma:eventExecution",
-            "rma:nonElectronicDocument",
-            "rma:transfer"
-        });
+    private List<String> getRmTypes() {
+        return Arrays.asList(
+                new String[] {"rma:eventExecution", "rma:nonElectronicDocument", "rma:transfer"});
     }
 
     /**
@@ -141,15 +132,14 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
      *
      * @return A (sub)list of dm types
      */
-    private List<String> getDmTypes()
-    {
-        return Arrays.asList(new String[]
-        {
-            "cm:authority",
-            "sys:descriptor",
-            "app:folderlink",
-            "wf:submitGroupReviewTask",
-            "cmis:policy"
-        });
+    private List<String> getDmTypes() {
+        return Arrays.asList(
+                new String[] {
+                    "cm:authority",
+                    "sys:descriptor",
+                    "app:folderlink",
+                    "wf:submitGroupReviewTask",
+                    "cmis:policy"
+                });
     }
 }

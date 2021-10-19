@@ -32,13 +32,13 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for file plan properties
@@ -51,15 +51,14 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class UnfiledContainerProperties extends TestModel
-{
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class UnfiledContainerProperties extends TestModel {
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty(required = true, value = PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 }

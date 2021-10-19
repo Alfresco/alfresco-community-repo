@@ -22,29 +22,24 @@ import java.util.List;
 
 /**
  * A report on which keys have changed and which keys have not changed.
- * 
- * @since 4.0
  *
+ * @since 4.0
  */
-public class KeysReport
-{
+public class KeysReport {
     private List<String> keysChanged;
     private List<String> keysUnchanged;
-    
-    public KeysReport(List<String> keysChanged, List<String> keysUnchanged)
-    {
+
+    public KeysReport(List<String> keysChanged, List<String> keysUnchanged) {
         super();
         this.keysChanged = keysChanged;
         this.keysUnchanged = keysUnchanged;
     }
 
-    public List<String> getKeysChanged()
-    {
+    public List<String> getKeysChanged() {
         return keysChanged;
     }
 
-    public List<String> getKeysUnchanged()
-    {
+    public List<String> getKeysUnchanged() {
         return keysUnchanged;
     }
 }

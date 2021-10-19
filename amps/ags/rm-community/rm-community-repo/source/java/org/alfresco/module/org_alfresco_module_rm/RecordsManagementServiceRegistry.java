@@ -54,90 +54,90 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 @SuppressWarnings("deprecation")
-public interface RecordsManagementServiceRegistry extends ServiceRegistry
-{
+public interface RecordsManagementServiceRegistry extends ServiceRegistry {
     /** Service QName constants */
-    QName RECORDS_MANAGEMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementService");
-    QName DISPOSITION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DispositionService");
-    QName RECORDS_MANAGEMENT_ADMIN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAdminService");
-    QName RECORDS_MANAGEMENT_ACTION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementActionService");
-    QName RECORDS_MANAGEMENT_EVENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementEventService");
-    QName RECORDS_MANAGEMENT_AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAuditService");
-    QName CAPABILITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CapabilityService");
+    QName RECORDS_MANAGEMENT_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementService");
+
+    QName DISPOSITION_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "DispositionService");
+    QName RECORDS_MANAGEMENT_ADMIN_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAdminService");
+    QName RECORDS_MANAGEMENT_ACTION_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementActionService");
+    QName RECORDS_MANAGEMENT_EVENT_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementEventService");
+    QName RECORDS_MANAGEMENT_AUDIT_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAuditService");
+    QName CAPABILITY_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "CapabilityService");
     QName RECORD_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordService");
     QName FREEZE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FreezeService");
-    QName EXTENDED_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ExtendedSecurityService");
+    QName EXTENDED_SECURITY_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "ExtendedSecurityService");
     QName FILE_PLAN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanService");
-    QName FILE_PLAN_ROLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanRoleService");
-    QName FILE_PLAN_PERMISSION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanPermissionService");
-    QName FILE_PLAN_AUTHENTICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanAuthenticationService");
-    QName IDENTIFIER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "recordsManagementIdentifierService");
-    QName RECORD_FOLDER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordFolderService");
+    QName FILE_PLAN_ROLE_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanRoleService");
+    QName FILE_PLAN_PERMISSION_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanPermissionService");
+    QName FILE_PLAN_AUTHENTICATION_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanAuthenticationService");
+    QName IDENTIFIER_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "recordsManagementIdentifierService");
+    QName RECORD_FOLDER_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordFolderService");
     QName TRANSFER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TransferService");
+
     @Deprecated
-    QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
+    QName RECORDS_MANAGEMENT_SECURITY_SERVICE =
+            QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
 
-
-    /**
-     * @return  records management service
-     */
+    /** @return records management service */
     @NotAuditable
     RecordsManagementService getRecordsManagementService();
 
-    /**
-     * @return  record service
-     */
+    /** @return record service */
     @NotAuditable
     RecordService getRecordService();
 
-    /**
-     * @return disposition service
-     */
+    /** @return disposition service */
     @NotAuditable
     DispositionService getDispositionService();
 
-    /**
-     * @return  records management admin service
-     */
+    /** @return records management admin service */
     @NotAuditable
     RecordsManagementAdminService getRecordsManagementAdminService();
 
-    /**
-     * @return  records management action service
-     */
+    /** @return records management action service */
     @NotAuditable
     RecordsManagementActionService getRecordsManagementActionService();
 
-    /**
-     * @return  records management event service
-     */
+    /** @return records management event service */
     @NotAuditable
     RecordsManagementEventService getRecordsManagementEventService();
 
     /**
-     * @return  records management security service
-     *
-     * @deprecated As of release 2.1, replaced with {@link FilePlanRoleService}, {@link FilePlanPermissionService} and {@link ModelSecurityService}
+     * @return records management security service
+     * @deprecated As of release 2.1, replaced with {@link FilePlanRoleService}, {@link
+     *     FilePlanPermissionService} and {@link ModelSecurityService}
      */
     @Deprecated
     @NotAuditable
     RecordsManagementSecurityService getRecordsManagementSecurityService();
 
-    /**
-     * @return  records management audit service
-     */
+    /** @return records management audit service */
     @NotAuditable
     RecordsManagementAuditService getRecordsManagementAuditService();
 
     /**
-     * @return  capability service
+     * @return capability service
      * @since 2.0
      */
     @NotAuditable
     CapabilityService getCapabilityService();
 
     /**
-     * @return  freeze service
+     * @return freeze service
      * @since 2.1
      */
     @NotAuditable
@@ -151,21 +151,21 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     ExtendedSecurityService getExtendedSecurityService();
 
     /**
-     * @return  file plan service
+     * @return file plan service
      * @since 2.1
      */
     @NotAuditable
     FilePlanService getFilePlanService();
 
     /**
-     * @return  file plan role service
+     * @return file plan role service
      * @since 2.1
      */
     @NotAuditable
     FilePlanRoleService getFilePlanRoleService();
 
     /**
-     * @return  file plan permission service
+     * @return file plan permission service
      * @since 2.1
      */
     @NotAuditable
@@ -178,14 +178,14 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     IdentifierService getIdentifierService();
 
     /**
-     * @return  record folder service
+     * @return record folder service
      * @since 2.2
      */
     @NotAuditable
     RecordFolderService getRecordFolderService();
 
     /**
-     * @return  transfer service
+     * @return transfer service
      * @since 2.2
      */
     @NotAuditable

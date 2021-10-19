@@ -18,9 +18,5 @@
  */
 package org.alfresco.util.testing.category;
 
-/**
- * Super category marker for tests that are not meant to run every build.
- */
-public interface NonBuildTests
-{
-}
+/** Super category marker for tests that are not meant to run every build. */
+public interface NonBuildTests {}

@@ -36,8 +36,7 @@ import static org.alfresco.util.ParameterCheck.mandatoryString;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipDefinitionImpl implements RelationshipDefinition
-{
+public class RelationshipDefinitionImpl implements RelationshipDefinition {
     /** The unique name of the relationship definition */
     private String uniqueName;
 
@@ -54,8 +53,8 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
      * @param type The type of the relationship definition
      * @param displayName The display name of the relationship definition
      */
-    public RelationshipDefinitionImpl(String uniqueName, RelationshipType type, RelationshipDisplayName displayName)
-    {
+    public RelationshipDefinitionImpl(
+            String uniqueName, RelationshipType type, RelationshipDisplayName displayName) {
         mandatoryString("uniqueName", uniqueName);
         mandatory("type", type);
         mandatory("displayName", displayName);
@@ -66,11 +65,11 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getUniqueName()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getUniqueName()
      */
     @Override
-    public String getUniqueName()
-    {
+    public String getUniqueName() {
         return this.uniqueName;
     }
 
@@ -79,8 +78,7 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
      *
      * @param uniqueName The name of the relationship definition
      */
-    private void setUniqueName(String uniqueName)
-    {
+    private void setUniqueName(String uniqueName) {
         this.uniqueName = uniqueName;
     }
 
@@ -88,8 +86,7 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
      * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getType()
      */
     @Override
-    public RelationshipType getType()
-    {
+    public RelationshipType getType() {
         return this.type;
     }
 
@@ -98,17 +95,16 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
      *
      * @param type The type of the relationship definition
      */
-    private void setType(RelationshipType type)
-    {
+    private void setType(RelationshipType type) {
         this.type = type;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getDisplayName()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getDisplayName()
      */
     @Override
-    public RelationshipDisplayName getDisplayName()
-    {
+    public RelationshipDisplayName getDisplayName() {
         return this.displayName;
     }
 
@@ -117,8 +113,7 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
      *
      * @param displayName The display name of the relationship definition
      */
-    private void setDisplayName(RelationshipDisplayName displayName)
-    {
+    private void setDisplayName(RelationshipDisplayName displayName) {
         this.displayName = displayName;
     }
 }

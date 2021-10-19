@@ -27,21 +27,21 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-public interface RMCaveatConfigService
-{
+public interface RMCaveatConfigService {
     void init();
 
     /**
      * Get allowed values for given caveat list (for current user)
+     *
      * @param constraintName
      * @return
      */
@@ -67,6 +67,7 @@ public interface RMCaveatConfigService
 
     /**
      * Get the details of a caveat list
+     *
      * @param listName
      * @return
      */
@@ -80,6 +81,7 @@ public interface RMCaveatConfigService
 
     /**
      * add RM constraint list
+     *
      * @param listName the name of the RMConstraintList
      * @param listTitle
      */
@@ -87,6 +89,7 @@ public interface RMCaveatConfigService
 
     /**
      * update RM constraint list allowed values
+     *
      * @param listName the name of the RMConstraintList - can not be changed
      * @param allowedValues
      */
@@ -94,11 +97,11 @@ public interface RMCaveatConfigService
 
     /**
      * update RM constraint Title
+     *
      * @param listName the name of the RMConstraintList - can not be changed
      * @param newTitle the new value for the title constraint
      */
     RMConstraintInfo updateRMConstraintTitle(String listName, String newTitle);
-
 
     /**
      * delete RM Constraint
@@ -108,7 +111,7 @@ public interface RMCaveatConfigService
     void deleteRMConstraint(String listName);
 
     /**
-     * Add a single value to an authority in a list.   The existing values of the list remain.
+     * Add a single value to an authority in a list. The existing values of the list remain.
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
@@ -118,16 +121,16 @@ public interface RMCaveatConfigService
     void addRMConstraintListValue(String listName, String authorityName, String value);
 
     /**
-     * Replace the values for an authority in a list.
-     * The existing values are removed.
+     * Replace the values for an authority in a list. The existing values are removed.
      *
-     * If the authority does not already exist in the list, it will be added
+     * <p>If the authority does not already exist in the list, it will be added
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
      */
-    void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
+    void updateRMConstraintListAuthority(
+            String listName, String authorityName, List<String> values);
 
     /**
      * Remove an authority from a list
@@ -138,16 +141,15 @@ public interface RMCaveatConfigService
     void removeRMConstraintListAuthority(String listName, String authorityName);
 
     /**
-     * Replace the values for an authority in a list.
-     * The existing values are removed.
+     * Replace the values for an authority in a list. The existing values are removed.
      *
-     * If the authority does not already exist in the list, it will be added
+     * <p>If the authority does not already exist in the list, it will be added
      *
      * @param listName the name of the RMConstraintList
      * @param value
      * @param authorities
      */
-    void updateRMConstraintListValue(String listName, String value, List<String>authorities);
+    void updateRMConstraintListValue(String listName, String value, List<String> authorities);
 
     /**
      * Remove an authority from a list

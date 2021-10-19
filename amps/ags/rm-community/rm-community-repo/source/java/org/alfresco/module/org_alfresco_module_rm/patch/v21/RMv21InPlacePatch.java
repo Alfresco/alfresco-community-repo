@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -47,6 +43,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.springframework.beans.factory.BeanNameAware;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * RM v2.1 patch to support InPlace functional updates
  *
@@ -55,20 +55,14 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv21InPlacePatch extends RMv21PatchComponent
-                               implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
+        implements BeanNameAware, RecordsManagementModel, DOD5015Model {
     /** Extended reader and writer role details */
     private static final String ROLE_READERS_LABEL = "In-Place Readers";
-    private static final String[] ROLE_READERS_CAPABILITIES = new String[]
-    {
-       "ViewRecords"
-    };
+
+    private static final String[] ROLE_READERS_CAPABILITIES = new String[] {"ViewRecords"};
     private static final String ROLE_WRITERS_LABEL = "In-Place Writers";
-    private static final String[] ROLE_WRITERS_CAPABILITIES = new String[]
-    {
-       "ViewRecords",
-       "EditNonRecordMetadata"
-    };
+    private static final String[] ROLE_WRITERS_CAPABILITIES =
+            new String[] {"ViewRecords", "EditNonRecordMetadata"};
 
     /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
@@ -88,79 +82,53 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     /** node service */
     private NodeService nodeService;
 
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
+    /** @param filePlanRoleService file plan role service */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) {
         this.filePlanRoleService = filePlanRoleService;
     }
 
-    /**
-     * @param filePlanPermissionService file plan permission service
-     */
-    public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
-    {
+    /** @param filePlanPermissionService file plan permission service */
+    public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService) {
         this.filePlanPermissionService = filePlanPermissionService;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
-    /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
+    /** @param capabilityService capability service */
+    public void setCapabilityService(CapabilityService capabilityService) {
         this.capabilityService = capabilityService;
     }
 
-    /**
-     * @param ruleService   rule service
-     */
-    public void setRuleService(RuleService ruleService)
-    {
+    /** @param ruleService rule service */
+    public void setRuleService(RuleService ruleService) {
         this.ruleService = ruleService;
     }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
+    /** @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal() */
     @Override
-    protected void executePatch()
-    {
+    protected void executePatch() {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
 
-        if (LOGGER.isDebugEnabled())
-        {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("  ... updating " + filePlans.size() + " file plans");
         }
 
-        for (NodeRef filePlan : filePlans)
-        {
-            if (filePlanService.getUnfiledContainer(filePlan) == null)
-            {
-                if (LOGGER.isDebugEnabled())
-                {
+        for (NodeRef filePlan : filePlans) {
+            if (filePlanService.getUnfiledContainer(filePlan) == null) {
+                if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("  ... updating file plan " + filePlan.toString());
                 }
 
                 ruleService.disableRules();
-                try
-                {
+                try {
                     // create fileplan containers
                     filePlanService.createHoldContainer(filePlan);
                     filePlanService.createTransferContainer(filePlan);
@@ -173,61 +141,65 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
                     moveExistingTransfers(filePlan);
 
                     // add the inplace roles
-                    filePlanRoleService.createRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
-                    filePlanRoleService.createRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
-                }
-                finally
-                {
+                    filePlanRoleService.createRole(
+                            filePlan,
+                            FilePlanRoleService.ROLE_EXTENDED_READERS,
+                            ROLE_READERS_LABEL,
+                            getCapabilities(ROLE_READERS_CAPABILITIES));
+                    filePlanRoleService.createRole(
+                            filePlan,
+                            FilePlanRoleService.ROLE_EXTENDED_WRITERS,
+                            ROLE_WRITERS_LABEL,
+                            getCapabilities(ROLE_WRITERS_CAPABILITIES));
+                } finally {
                     ruleService.enableRules();
                 }
             }
         }
     }
 
-    private Set<Capability> getCapabilities(String[] capabilityNames)
-    {
+    private Set<Capability> getCapabilities(String[] capabilityNames) {
         Set<Capability> capabilities = new HashSet<>(3);
-        for (String capabilityName : capabilityNames)
-        {
+        for (String capabilityName : capabilityNames) {
             capabilities.add(capabilityService.getCapability(capabilityName));
         }
         return capabilities;
     }
 
-    private void moveExistingHolds(NodeRef filePlan)
-    {
-        if (LOGGER.isDebugEnabled())
-        {
+    private void moveExistingHolds(NodeRef filePlan) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("  ... moving existing holds for file plan " + filePlan.toString());
         }
 
         NodeRef container = filePlanService.getHoldContainer(filePlan);
 
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_HOLDS, RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef assoc : assocs)
-        {
+        List<ChildAssociationRef> assocs =
+                nodeService.getChildAssocs(filePlan, ASSOC_HOLDS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef assoc : assocs) {
             NodeRef hold = assoc.getChildRef();
-            String name = (String)nodeService.getProperty(hold, ContentModel.PROP_NAME);
-            nodeService.moveNode(hold, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
+            String name = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+            nodeService.moveNode(
+                    hold, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
         }
     }
 
-    private void moveExistingTransfers(NodeRef filePlan)
-    {
-        if (LOGGER.isDebugEnabled())
-        {
+    private void moveExistingTransfers(NodeRef filePlan) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("  ... moving existing transfers for file plan " + filePlan.toString());
         }
 
         NodeRef container = filePlanService.getTransferContainer(filePlan);
 
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef assoc : assocs)
-        {
+        List<ChildAssociationRef> assocs =
+                nodeService.getChildAssocs(filePlan, ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef assoc : assocs) {
             NodeRef transfer = assoc.getChildRef();
-            String name = (String)nodeService.getProperty(transfer, ContentModel.PROP_NAME);
-            nodeService.moveNode(transfer, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
+            String name = (String) nodeService.getProperty(transfer, ContentModel.PROP_NAME);
+            nodeService.moveNode(
+                    transfer,
+                    container,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(RM_URI, name));
         }
-
     }
 }

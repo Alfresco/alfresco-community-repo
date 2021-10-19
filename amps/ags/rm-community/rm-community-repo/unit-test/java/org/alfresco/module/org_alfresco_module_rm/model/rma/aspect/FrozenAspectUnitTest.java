@@ -35,10 +35,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
@@ -56,48 +52,40 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Test class for frozen aspect
+ *
  * @author Ross Gale
  * @since 3.2
  */
-public class FrozenAspectUnitTest
-{
-    @Mock
-    private NodeService mockNodeService;
+public class FrozenAspectUnitTest {
+    @Mock private NodeService mockNodeService;
 
-    @Mock
-    private ApplicationContext mockApplicationContext;
+    @Mock private ApplicationContext mockApplicationContext;
 
-    @Mock
-    private ChildAssociationRef mockChildAssociationRef;
+    @Mock private ChildAssociationRef mockChildAssociationRef;
 
-    @Mock
-    private NodeTypeUtility mockedNodeTypeUtility;
+    @Mock private NodeTypeUtility mockedNodeTypeUtility;
 
-    @Mock
-    private FreezeService mockFreezeService;
+    @Mock private FreezeService mockFreezeService;
 
-    @Mock
-    private TransactionalResourceHelper mockResourceHelper;
+    @Mock private TransactionalResourceHelper mockResourceHelper;
 
-    @Mock
-    private ChildAssociationRef mockChildRef;
+    @Mock private ChildAssociationRef mockChildRef;
 
-    @Mock
-    private ChildAssociationRef mockParentRef;
+    @Mock private ChildAssociationRef mockParentRef;
 
-    @Mock
-    private ChildAssociationRef mockOldRef;
+    @Mock private ChildAssociationRef mockOldRef;
 
-    @Mock
-    private Set mockSet;
+    @Mock private Set mockSet;
 
-    @Mock
-    private PropertyModificationAllowedCheck mockPropertyModificationAllowedCheck;
+    @Mock private PropertyModificationAllowedCheck mockPropertyModificationAllowedCheck;
 
-    @InjectMocks
-    private FrozenAspect frozenAspect;
+    @InjectMocks private FrozenAspect frozenAspect;
 
     private final List<ChildAssociationRef> children = new ArrayList<>();
 
@@ -108,12 +96,13 @@ public class FrozenAspectUnitTest
     private NodeRef parent = new NodeRef("workspace://content/parent");
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mockNodeService.exists(record)).thenReturn(true);
         when(mockNodeService.getType(record)).thenReturn(ContentModel.TYPE_CONTENT);
-        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(record), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(
+                        mockNodeService.getType(record), ContentModel.TYPE_CONTENT))
+                .thenReturn(true);
         when(mockNodeService.exists(content)).thenReturn(true);
         when(mockNodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
         when(mockNodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
@@ -125,11 +114,11 @@ public class FrozenAspectUnitTest
     }
 
     /**
-     * Test that the held count is reduced on a record folder after the frozen aspect is removed from a record
+     * Test that the held count is reduced on a record folder after the frozen aspect is removed
+     * from a record
      */
     @Test
-    public void testRemoveAspectForRecords()
-    {
+    public void testRemoveAspectForRecords() {
         when(mockNodeService.getPrimaryParent(record)).thenReturn(mockChildAssociationRef);
         when(mockChildAssociationRef.getParentRef()).thenReturn(folder);
         frozenAspect.onRemoveAspect(record, null);
@@ -137,102 +126,89 @@ public class FrozenAspectUnitTest
     }
 
     /**
-     * Test that the held count is reduced on a folder after the frozen aspect is removed from a piece of content
+     * Test that the held count is reduced on a folder after the frozen aspect is removed from a
+     * piece of content
      */
     @Test
-    public void testRemoveAspectForContent()
-    {
+    public void testRemoveAspectForContent() {
         when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
-        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(
+                        mockNodeService.getType(content), ContentModel.TYPE_CONTENT))
+                .thenReturn(true);
         when(mockNodeService.getPrimaryParent(content)).thenReturn(mockChildAssociationRef);
         when(mockChildAssociationRef.getParentRef()).thenReturn(folder);
         frozenAspect.onRemoveAspect(content, null);
         verify(mockNodeService, times(1)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }
 
-    /**
-     * Test that the remove code is only run for records or active content
-     */
+    /** Test that the remove code is only run for records or active content */
     @Test
-    public void testRemoveAspectForContentDoesntUpdateForOtherTypes()
-    {
+    public void testRemoveAspectForContentDoesntUpdateForOtherTypes() {
         when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(
+                        mockNodeService.getType(content), ContentModel.TYPE_CONTENT))
+                .thenReturn(false);
         frozenAspect.onRemoveAspect(content, null);
         verify(mockNodeService, times(0)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }
 
-    /**
-     * Test before delete throws an error if a node is frozen
-     */
+    /** Test before delete throws an error if a node is frozen */
     @Test(expected = PermissionDeniedException.class)
-    public void testBeforeDeleteNodeThrowsExceptionIfNodeFrozen()
-    {
+    public void testBeforeDeleteNodeThrowsExceptionIfNodeFrozen() {
         when(mockFreezeService.isFrozen(content)).thenReturn(true);
         frozenAspect.beforeDeleteNode(content);
     }
 
-    /**
-     * Test before delete is fine for non-frozen nodes
-     */
+    /** Test before delete is fine for non-frozen nodes */
     @Test
-    public void testBeforeDeleteForNonFrozenNodes()
-    {
+    public void testBeforeDeleteForNonFrozenNodes() {
         frozenAspect.beforeDeleteNode(content);
         verify(mockNodeService, times(1)).getChildAssocs(content);
         verify(mockChildRef, times(1)).getChildRef();
     }
 
-    /**
-     * Test before delete throws an error for a node with frozen children
-     */
-    @Test (expected = PermissionDeniedException.class)
-    public void testBeforeDeleteThrowsExceptionForFrozenChild()
-    {
+    /** Test before delete throws an error for a node with frozen children */
+    @Test(expected = PermissionDeniedException.class)
+    public void testBeforeDeleteThrowsExceptionForFrozenChild() {
         when(mockChildRef.getChildRef()).thenReturn(child);
         when(mockFreezeService.isFrozen(child)).thenReturn(true);
         frozenAspect.beforeDeleteNode(content);
     }
 
-    /**
-     * Test on add aspect for a record node
-     */
+    /** Test on add aspect for a record node */
     @Test
-    public void testOnAddAspectForRecord()
-    {
+    public void testOnAddAspectForRecord() {
         when(mockNodeService.getPrimaryParent(record)).thenReturn(mockParentRef);
         when(mockParentRef.getParentRef()).thenReturn(parent);
         when(mockNodeService.hasAspect(parent, ASPECT_HELD_CHILDREN)).thenReturn(true);
         when(mockNodeService.getProperty(parent, PROP_HELD_CHILDREN_COUNT)).thenReturn(0);
-        frozenAspect.onAddAspect(record,null);
+        frozenAspect.onAddAspect(record, null);
         verify(mockNodeService, times(1)).setProperty(parent, PROP_HELD_CHILDREN_COUNT, 1);
     }
 
-    /**
-     * Test on add aspect for a content node
-     */
+    /** Test on add aspect for a content node */
     @Test
-    public void testOnAddAspectForContent()
-    {
+    public void testOnAddAspectForContent() {
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
-        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(
+                        mockNodeService.getType(content), ContentModel.TYPE_CONTENT))
+                .thenReturn(true);
         when(mockNodeService.getPrimaryParent(content)).thenReturn(mockParentRef);
         when(mockParentRef.getParentRef()).thenReturn(parent);
         when(mockNodeService.hasAspect(parent, ASPECT_HELD_CHILDREN)).thenReturn(false);
         when(mockNodeService.getType(parent)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(parent), ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(
+                        mockNodeService.getType(parent), ContentModel.TYPE_FOLDER))
+                .thenReturn(true);
         frozenAspect.onAddAspect(content, null);
         verify(mockNodeService, times(1)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
     }
 
-    /**
-     * Test before move throws an error for a frozen node
-     */
+    /** Test before move throws an error for a frozen node */
     @Test(expected = PermissionDeniedException.class)
-    public void testBeforeMoveThrowsExceptionForFrozenNode()
-    {
+    public void testBeforeMoveThrowsExceptionForFrozenNode() {
         when(mockOldRef.getParentRef()).thenReturn(parent);
         when(mockOldRef.getChildRef()).thenReturn(child);
         when(mockNodeService.exists(child)).thenReturn(true);
@@ -240,12 +216,9 @@ public class FrozenAspectUnitTest
         frozenAspect.beforeMoveNode(mockOldRef, null);
     }
 
-    /**
-     * Test update properties throws an error for frozen nodes
-     */
+    /** Test update properties throws an error for frozen nodes */
     @Test(expected = PermissionDeniedException.class)
-    public void testUpdatePropertiesThrowsExceptionForFrozenNode()
-    {
+    public void testUpdatePropertiesThrowsExceptionForFrozenNode() {
         when(mockFreezeService.isFrozen(content)).thenReturn(true);
         when(mockResourceHelper.getSet(content)).thenReturn(mockSet);
         when(mockSet.contains("frozen")).thenReturn(false);

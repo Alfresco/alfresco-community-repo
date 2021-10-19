@@ -43,70 +43,63 @@ import org.springframework.extensions.webscripts.GUID;
  * @since 2.2
  * @version 1.0
  */
-public class FileReportActionTest extends BaseRMTestCase
-{
+public class FileReportActionTest extends BaseRMTestCase {
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
-    public void testFileReport()
-    {
+    public void testFileReport() {
         fileReport(MimetypeMap.MIMETYPE_HTML);
     }
 
-    public void testfileReportDefaultMimetype()
-    {
+    public void testfileReportDefaultMimetype() {
         fileReport(null);
     }
 
-    private void fileReport(final String mimeType)
-    {
+    private void fileReport(final String mimeType) {
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        
+
         // create record folder
-        final NodeRef recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
-        
+        final NodeRef recordFolder =
+                recordFolderService.createRecordFolder(rmContainer, GUID.generate());
+
         // close the record folder
         recordFolderService.closeRecordFolder(recordFolder);
-        
+
         // create hold
-        final NodeRef hold = holdService.createHold(filePlan, "holdName", "holdReason", "holdDescription");
+        final NodeRef hold =
+                holdService.createHold(filePlan, "holdName", "holdReason", "holdDescription");
 
-        doTestInTransaction(new FailureTest()
-        {
-            @Override
-            public void run() throws Exception
-            {                
-                // execute action
-                executeAction(mimeType, recordFolder, hold);
-            }
-        });
+        doTestInTransaction(
+                new FailureTest() {
+                    @Override
+                    public void run() throws Exception {
+                        // execute action
+                        executeAction(mimeType, recordFolder, hold);
+                    }
+                });
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // reopen the record folder
-                rmActionService.executeRecordsManagementAction(recordFolder, "openRecordFolder");
-                return null;
-            }
-            
-            @Override
-            public void test(Void result) throws Exception
-            {
-                // execute action
-                executeAction(mimeType, recordFolder, hold);
-            }
-        });
+        doTestInTransaction(
+                new Test<Void>() {
+                    public Void run() {
+                        // reopen the record folder
+                        rmActionService.executeRecordsManagementAction(
+                                recordFolder, "openRecordFolder");
+                        return null;
+                    }
+
+                    @Override
+                    public void test(Void result) throws Exception {
+                        // execute action
+                        executeAction(mimeType, recordFolder, hold);
+                    }
+                });
     }
 
-    private void executeAction(String mimeType, NodeRef recordFolder, NodeRef hold)
-    {
+    private void executeAction(String mimeType, NodeRef recordFolder, NodeRef hold) {
         Action action = actionService.createAction(FileReportAction.NAME);
-        if (StringUtils.isNotBlank(mimeType))
-        {
+        if (StringUtils.isNotBlank(mimeType)) {
             action.setParameterValue(FileReportAction.MIMETYPE, mimeType);
         }
         action.setParameterValue(FileReportAction.DESTINATION, recordFolder.toString());

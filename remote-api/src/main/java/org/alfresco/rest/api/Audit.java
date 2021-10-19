@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -36,8 +36,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  *
  * @author janv, anechifor, eknizat
  */
-public interface Audit
-{
+public interface Audit {
     String VALUES_VALUE = "valuesValue";
     String VALUES_KEY = "valuesKey";
     String CREATED_BY_USER = "createdByUser";
@@ -49,7 +48,7 @@ public interface Audit
 
     /**
      * Gets a single audit application by id
-     * 
+     *
      * @param auditAppId
      * @param parameters
      * @return an audit app
@@ -58,7 +57,7 @@ public interface Audit
 
     /**
      * Lists audit applications
-     * 
+     *
      * @param paging
      * @return Collection of audit apps
      */
@@ -66,7 +65,7 @@ public interface Audit
 
     /**
      * Updates a single audit application by id
-     * 
+     *
      * @param auditAppId
      * @param auditApp
      * @param parameters
@@ -86,13 +85,12 @@ public interface Audit
 
     /**
      * Lists audit entries
-     * 
-     * @param auditAppId
-     *            if null then across all audit apps
+     *
+     * @param auditAppId if null then across all audit apps
      * @param parameters
      * @return Collection of audit entries
      */
-     CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
+    CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
 
     /**
      * Delete a single audit entry by id
@@ -112,10 +110,10 @@ public interface Audit
     void deleteAuditEntries(String auditAppId, Parameters parameters);
 
     /**
-     * 
      * @param nodeId
      * @param parameters
      * @return
      */
-    CollectionWithPagingInfo<AuditEntry> listAuditEntriesByNodeId(String nodeId, Parameters parameters);
+    CollectionWithPagingInfo<AuditEntry> listAuditEntriesByNodeId(
+            String nodeId, Parameters parameters);
 }

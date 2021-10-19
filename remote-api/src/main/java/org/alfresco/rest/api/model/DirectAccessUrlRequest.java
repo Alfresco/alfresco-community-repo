@@ -30,17 +30,14 @@ package org.alfresco.rest.api.model;
  *
  * @author Sara Aspery
  */
-public class DirectAccessUrlRequest
-{
+public class DirectAccessUrlRequest {
     private Boolean attachment;
 
-    public Boolean isAttachment()
-    {
+    public Boolean isAttachment() {
         return attachment;
     }
 
-    public void setAttachment(Boolean attachment)
-    {
+    public void setAttachment(Boolean attachment) {
         this.attachment = attachment;
     }
 }

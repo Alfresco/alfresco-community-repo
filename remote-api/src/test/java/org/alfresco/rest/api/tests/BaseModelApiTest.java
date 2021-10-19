@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.tests;
 
 import com.google.common.collect.ImmutableList;
+
 import org.alfresco.rest.api.model.Association;
 import org.alfresco.rest.api.model.AssociationSource;
 import org.alfresco.rest.api.model.Model;
@@ -35,22 +36,36 @@ import org.alfresco.rest.api.tests.client.data.Aspect;
 import org.alfresco.rest.api.tests.client.data.Type;
 import org.junit.Before;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class BaseModelApiTest extends AbstractBaseApiTest
-{
+public class BaseModelApiTest extends AbstractBaseApiTest {
     PublicApiClient.ListResponse<Aspect> aspects = null;
-    Aspect aspect = null, childAspect = null, smartFilterAspect = null,
-            rescanAspect = null, testAspect = null, testAllAspect = null;
+    Aspect aspect = null,
+            childAspect = null,
+            smartFilterAspect = null,
+            rescanAspect = null,
+            testAspect = null,
+            testAllAspect = null;
 
     PublicApiClient.ListResponse<Type> types = null;
-    Type type = null, whitePaperType = null, docType = null, publishableType = null, apiBaseType = null,
-            apiFileType = null, apiFileDerivedType = null, apiForcedType = null, apiFileDerivedNoArchiveType = null,
-            apiFolderType = null, apiOverrideType = null, apiOverride2Type = null, apiOverride3Type = null, apiNamedPropConstraintType = null;
+    Type type = null,
+            whitePaperType = null,
+            docType = null,
+            publishableType = null,
+            apiBaseType = null,
+            apiFileType = null,
+            apiFileDerivedType = null,
+            apiForcedType = null,
+            apiFileDerivedNoArchiveType = null,
+            apiFolderType = null,
+            apiOverrideType = null,
+            apiOverride2Type = null,
+            apiOverride3Type = null,
+            apiNamedPropConstraintType = null;
 
     List<Type> allTypes = null;
 
@@ -58,8 +73,7 @@ public class BaseModelApiTest extends AbstractBaseApiTest
     Map<String, String> otherParams = new HashMap<>();
 
     @Before
-    public void setup() throws Exception
-    {
+    public void setup() throws Exception {
         super.setup();
 
         Model myCompanyModel = new Model();
@@ -148,9 +162,19 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiModel.setNamespaceUri("http://www.api.t1/model/1.0");
         apiModel.setNamespacePrefix("api");
 
-        AssociationSource testAllAspectSource =  new AssociationSource(null, "test2:aspect-all", true, true, null);
-        AssociationSource testAllAspectTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association testAllAspectAssociation = new Association("api:assoc-all", null, null, null, false, testAllAspectSource, testAllAspectTarget);
+        AssociationSource testAllAspectSource =
+                new AssociationSource(null, "test2:aspect-all", true, true, null);
+        AssociationSource testAllAspectTarget =
+                new AssociationSource(null, "api:referenceable", false, false, false);
+        Association testAllAspectAssociation =
+                new Association(
+                        "api:assoc-all",
+                        null,
+                        null,
+                        null,
+                        false,
+                        testAllAspectSource,
+                        testAllAspectTarget);
         testAllAspect = new org.alfresco.rest.api.tests.client.data.Aspect();
         testAllAspect.setId("test2:aspect-all");
         testAllAspect.setTitle("Aspect derived from other namespace");
@@ -159,23 +183,46 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         testAllAspect.setIsContainer(false);
         testAllAspect.setModel(testModel);
         testAllAspect.setAssociations(Collections.singletonList(testAllAspectAssociation));
-        testAllAspect.setMandatoryAspects(Arrays.asList("test2:aspect-three", "api:aspect-one", "api:aspect-two"));
+        testAllAspect.setMandatoryAspects(
+                Arrays.asList("test2:aspect-three", "api:aspect-one", "api:aspect-two"));
 
-        AssociationSource apiBaseSource =  new AssociationSource(null, "api:base", false, true, null);
-        AssociationSource apiBaseTarget =  new AssociationSource(null, "api:base", true, false, false);
-        Association apiBaseAssociation = new Association("api:assoc1", null, null, false, false, apiBaseSource, apiBaseTarget);
+        AssociationSource apiBaseSource =
+                new AssociationSource(null, "api:base", false, true, null);
+        AssociationSource apiBaseTarget =
+                new AssociationSource(null, "api:base", true, false, false);
+        Association apiBaseAssociation =
+                new Association(
+                        "api:assoc1", null, null, false, false, apiBaseSource, apiBaseTarget);
 
-        AssociationSource apiChildSource =  new AssociationSource(null, "api:base", true, true, null);
-        AssociationSource apiChildTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association apiChildAssociation = new Association("api:childassoc1", null, null, true, false, apiChildSource, apiChildTarget);
+        AssociationSource apiChildSource =
+                new AssociationSource(null, "api:base", true, true, null);
+        AssociationSource apiChildTarget =
+                new AssociationSource(null, "api:referenceable", false, false, false);
+        Association apiChildAssociation =
+                new Association(
+                        "api:childassoc1", null, null, true, false, apiChildSource, apiChildTarget);
 
-        AssociationSource apiBaseSource2 =  new AssociationSource(null, "api:base", true, true, null);
-        AssociationSource apiBaseTarget2 =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association apiBaseAssociation2 = new Association("api:assoc2", null, null, false, false, apiBaseSource2, apiBaseTarget2);
+        AssociationSource apiBaseSource2 =
+                new AssociationSource(null, "api:base", true, true, null);
+        AssociationSource apiBaseTarget2 =
+                new AssociationSource(null, "api:referenceable", false, false, false);
+        Association apiBaseAssociation2 =
+                new Association(
+                        "api:assoc2", null, null, false, false, apiBaseSource2, apiBaseTarget2);
 
-        AssociationSource apiChildPropagateSource =  new AssociationSource(null, "api:base", true, true, null);
-        AssociationSource apiChildPropagateTarget =  new AssociationSource(null, "api:referenceable", false, false, false);
-        Association apiChildPropagateAssociation = new Association("api:childassocPropagate", null, null, true, false, apiChildPropagateSource, apiChildPropagateTarget);
+        AssociationSource apiChildPropagateSource =
+                new AssociationSource(null, "api:base", true, true, null);
+        AssociationSource apiChildPropagateTarget =
+                new AssociationSource(null, "api:referenceable", false, false, false);
+        Association apiChildPropagateAssociation =
+                new Association(
+                        "api:childassocPropagate",
+                        null,
+                        null,
+                        true,
+                        false,
+                        apiChildPropagateSource,
+                        apiChildPropagateTarget);
 
         apiBaseType = new org.alfresco.rest.api.tests.client.data.Type();
         apiBaseType.setId("api:base");
@@ -184,7 +231,12 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiBaseType.setIncludedInSupertypeQuery(true);
         apiBaseType.setIsContainer(true);
         apiBaseType.setModel(apiModel);
-        apiBaseType.setAssociations(Arrays.asList(apiBaseAssociation, apiChildAssociation, apiBaseAssociation2, apiChildPropagateAssociation));
+        apiBaseType.setAssociations(
+                Arrays.asList(
+                        apiBaseAssociation,
+                        apiChildAssociation,
+                        apiBaseAssociation2,
+                        apiChildPropagateAssociation));
         apiBaseType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
         apiForcedType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -193,12 +245,27 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiForcedType.setIncludedInSupertypeQuery(true);
         apiForcedType.setIsContainer(true);
         apiForcedType.setModel(apiModel);
-        apiForcedType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
+        apiForcedType.setAssociations(
+                Arrays.asList(
+                        apiBaseAssociation2,
+                        apiChildPropagateAssociation,
+                        apiBaseAssociation,
+                        apiChildAssociation));
         apiForcedType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
-        AssociationSource apiChildSource2 =  new AssociationSource(null, "api:file", false, true, null);
-        AssociationSource apiChildTarget2 =  new AssociationSource(null, "api:referenceable", true, false, false);
-        Association apiChildAssociation2 = new Association("api:childassoc2", null, null, true, false, apiChildSource2, apiChildTarget2);
+        AssociationSource apiChildSource2 =
+                new AssociationSource(null, "api:file", false, true, null);
+        AssociationSource apiChildTarget2 =
+                new AssociationSource(null, "api:referenceable", true, false, false);
+        Association apiChildAssociation2 =
+                new Association(
+                        "api:childassoc2",
+                        null,
+                        null,
+                        true,
+                        false,
+                        apiChildSource2,
+                        apiChildTarget2);
         apiFileType = new org.alfresco.rest.api.tests.client.data.Type();
         apiFileType.setId("api:file");
         apiFileType.setParentId("api:base");
@@ -206,7 +273,13 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFileType.setIncludedInSupertypeQuery(true);
         apiFileType.setIsContainer(true);
         apiFileType.setModel(apiModel);
-        apiFileType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
+        apiFileType.setAssociations(
+                Arrays.asList(
+                        apiBaseAssociation2,
+                        apiChildAssociation2,
+                        apiChildPropagateAssociation,
+                        apiBaseAssociation,
+                        apiChildAssociation));
         apiFileType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
         apiFileDerivedType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -216,7 +289,13 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFileDerivedType.setIncludedInSupertypeQuery(true);
         apiFileDerivedType.setIsContainer(true);
         apiFileDerivedType.setModel(apiModel);
-        apiFileDerivedType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
+        apiFileDerivedType.setAssociations(
+                Arrays.asList(
+                        apiBaseAssociation2,
+                        apiChildAssociation2,
+                        apiChildPropagateAssociation,
+                        apiBaseAssociation,
+                        apiChildAssociation));
         apiFileDerivedType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
         apiFileDerivedNoArchiveType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -226,8 +305,15 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFileDerivedNoArchiveType.setIncludedInSupertypeQuery(true);
         apiFileDerivedNoArchiveType.setIsContainer(true);
         apiFileDerivedNoArchiveType.setModel(apiModel);
-        apiFileDerivedNoArchiveType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
-        apiFileDerivedNoArchiveType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
+        apiFileDerivedNoArchiveType.setAssociations(
+                Arrays.asList(
+                        apiBaseAssociation2,
+                        apiChildAssociation2,
+                        apiChildPropagateAssociation,
+                        apiBaseAssociation,
+                        apiChildAssociation));
+        apiFileDerivedNoArchiveType.setMandatoryAspects(
+                Collections.singletonList("api:referenceable"));
 
         apiFolderType = new org.alfresco.rest.api.tests.client.data.Type();
         apiFolderType.setId("api:folder");
@@ -235,7 +321,12 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiFolderType.setIncludedInSupertypeQuery(true);
         apiFolderType.setIsContainer(true);
         apiFolderType.setModel(apiModel);
-        apiFolderType.setAssociations(Arrays.asList(apiBaseAssociation2, apiChildPropagateAssociation, apiBaseAssociation, apiChildAssociation));
+        apiFolderType.setAssociations(
+                Arrays.asList(
+                        apiBaseAssociation2,
+                        apiChildPropagateAssociation,
+                        apiBaseAssociation,
+                        apiChildAssociation));
         apiFolderType.setMandatoryAspects(Collections.singletonList("api:referenceable"));
 
         apiOverrideType = new org.alfresco.rest.api.tests.client.data.Type();
@@ -268,7 +359,8 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiNamedPropConstraintType = new org.alfresco.rest.api.tests.client.data.Type();
         apiNamedPropConstraintType.setId("api:typeWithNamedPropConstraint");
         apiNamedPropConstraintType.setTitle("Type with named property-defined constraint.");
-        apiNamedPropConstraintType.setDescription("A type with a named constraint defined within one of its properties.");
+        apiNamedPropConstraintType.setDescription(
+                "A type with a named constraint defined within one of its properties.");
         apiNamedPropConstraintType.setParentId("api:overridetype2");
         apiNamedPropConstraintType.setIncludedInSupertypeQuery(true);
         apiNamedPropConstraintType.setIsContainer(false);
@@ -276,14 +368,22 @@ public class BaseModelApiTest extends AbstractBaseApiTest
         apiNamedPropConstraintType.setAssociations(Collections.emptyList());
         apiNamedPropConstraintType.setMandatoryAspects(Collections.emptyList());
 
-        allTypes = ImmutableList.of(apiBaseType, apiForcedType, apiFileType, apiFileDerivedType,
-                apiFileDerivedNoArchiveType, apiFolderType, apiOverrideType, apiOverride2Type,
-                apiOverride3Type, apiNamedPropConstraintType);
+        allTypes =
+                ImmutableList.of(
+                        apiBaseType,
+                        apiForcedType,
+                        apiFileType,
+                        apiFileDerivedType,
+                        apiFileDerivedNoArchiveType,
+                        apiFolderType,
+                        apiOverrideType,
+                        apiOverride2Type,
+                        apiOverride3Type,
+                        apiNamedPropConstraintType);
     }
 
     @Override
-    public String getScope()
-    {
+    public String getScope() {
         return "public";
     }
 }

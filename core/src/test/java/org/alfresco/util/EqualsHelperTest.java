@@ -18,6 +18,10 @@
  */
 package org.alfresco.util;
 
+import junit.framework.TestCase;
+
+import org.alfresco.util.EqualsHelper.MapValueComparison;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,54 +30,44 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.util.EqualsHelper.MapValueComparison;
-
-import junit.framework.TestCase;
-
 /**
  * @see EqualsHelper
- * 
  * @author Derek Hulley
  * @since 3.1SP2
  */
-public class EqualsHelperTest extends TestCase
-{
+public class EqualsHelperTest extends TestCase {
     private File fileOne;
     private File fileTwo;
-    
+
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         fileOne = TempFileProvider.createTempFile(getName(), "-one.txt");
         fileTwo = TempFileProvider.createTempFile(getName(), "-two.txt");
-        
+
         OutputStream osOne = new FileOutputStream(fileOne);
         osOne.write("1234567890 - ONE".getBytes("UTF-8"));
         osOne.close();
-        
+
         OutputStream osTwo = new FileOutputStream(fileTwo);
         osTwo.write("1234567890 - TWO".getBytes("UTF-8"));
         osTwo.close();
     }
-    
-    public void testStreamsNotEqual() throws Exception
-    {
+
+    public void testStreamsNotEqual() throws Exception {
         InputStream isLeft = new FileInputStream(fileOne);
         InputStream isRight = new FileInputStream(fileTwo);
         boolean equal = EqualsHelper.binaryStreamEquals(isLeft, isRight);
         assertFalse("Should not be the same", equal);
     }
-    
-    public void testStreamsEqual() throws Exception
-    {
+
+    public void testStreamsEqual() throws Exception {
         InputStream isLeft = new FileInputStream(fileOne);
         InputStream isRight = new FileInputStream(fileOne);
         boolean equal = EqualsHelper.binaryStreamEquals(isLeft, isRight);
         assertTrue("Should be the same", equal);
     }
-    
-    public void testMapComparison() throws Exception
-    {
+
+    public void testMapComparison() throws Exception {
         Map<Integer, String> left = new HashMap<Integer, String>();
         Map<Integer, String> right = new HashMap<Integer, String>();
         // EQUAL

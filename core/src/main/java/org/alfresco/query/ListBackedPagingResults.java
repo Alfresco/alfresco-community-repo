@@ -18,74 +18,60 @@
  */
 package org.alfresco.query;
 
+import org.alfresco.util.Pair;
+
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.util.Pair;
-
 /**
- * Wraps a list of items as a {@link PagingResults}, used typically when
- *  migrating from a full listing system to a paged one.
- * 
+ * Wraps a list of items as a {@link PagingResults}, used typically when migrating from a full
+ * listing system to a paged one.
+ *
  * @author Nick Burch
  * @since Odin
  */
-public class ListBackedPagingResults<R> implements PagingResults<R>
-{
+public class ListBackedPagingResults<R> implements PagingResults<R> {
     private List<R> results;
     private int size;
     private boolean hasMore;
-    
-    public ListBackedPagingResults(List<R> list)
-    {
+
+    public ListBackedPagingResults(List<R> list) {
         this.results = Collections.unmodifiableList(list);
-        
+
         // No more items remain, the page is everything
         size = list.size();
         hasMore = false;
     }
-    public ListBackedPagingResults(List<R> list, PagingRequest paging)
-    {
+
+    public ListBackedPagingResults(List<R> list, PagingRequest paging) {
         // Excerpt
         int start = paging.getSkipCount();
         int end = Math.min(list.size(), start + paging.getMaxItems());
-        if (paging.getMaxItems() == 0)
-        {
+        if (paging.getMaxItems() == 0) {
             end = list.size();
         }
-        
-        this.results = Collections.unmodifiableList(
-                list.subList(start, end));
+
+        this.results = Collections.unmodifiableList(list.subList(start, end));
         this.size = list.size();
-        this.hasMore = ! (list.size() == end);
+        this.hasMore = !(list.size() == end);
     }
-    
-    /**
-     * Returns the whole set of results as one page
-     */
-    public List<R> getPage()
-    {
-       return results;
+
+    /** Returns the whole set of results as one page */
+    public List<R> getPage() {
+        return results;
     }
-    
-    public boolean hasMoreItems()
-    {
-       return hasMore;
+
+    public boolean hasMoreItems() {
+        return hasMore;
     }
-    
-    /**
-     * We know exactly how many results there are
-     */
-    public Pair<Integer, Integer> getTotalResultCount()
-    {
-       return new Pair<Integer,Integer>(size, size);
+
+    /** We know exactly how many results there are */
+    public Pair<Integer, Integer> getTotalResultCount() {
+        return new Pair<Integer, Integer>(size, size);
     }
-    
-    /**
-     * There is no unique query ID, as no query was done
-     */
-    public String getQueryExecutionId()
-    {
-       return null;
+
+    /** There is no unique query ID, as no query was done */
+    public String getQueryExecutionId() {
+        return null;
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,15 +31,17 @@ import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.search.StatsResultSet;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
+
 /**
  * Solr client interface
- * @author Michael Suzuki
  *
+ * @author Michael Suzuki
  */
-public interface SolrQueryClient extends BeanFactoryAware, InitializingBean
-{
+public interface SolrQueryClient extends BeanFactoryAware, InitializingBean {
     public ResultSet executeQuery(final SearchParameters searchParameters, String language);
-    //TODO deprecate this method and separate stats into its own SolrStatsQueryHttpClient with an executeQuery() 
+    // TODO deprecate this method and separate stats into its own SolrStatsQueryHttpClient with an
+    // executeQuery()
     public StatsResultSet executeStatsQuery(StatsParameters searchParameters);
+
     public boolean isSharded();
 }

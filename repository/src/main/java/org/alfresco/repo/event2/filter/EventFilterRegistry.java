@@ -38,15 +38,13 @@ import org.springframework.lang.NonNull;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventFilterRegistry implements BeanFactoryAware
-{
+public class EventFilterRegistry implements BeanFactoryAware {
     private static final Log LOGGER = LogFactory.getLog(EventFilterRegistry.class);
 
     private BeanFactory beanFactory;
 
     @Override
-    public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException
-    {
+    public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
     }
 
@@ -57,41 +55,32 @@ public class EventFilterRegistry implements BeanFactoryAware
      * @return an instance of the filter bean matching the required type
      * @throws NoSuchBeanDefinitionException - if no bean of the given type was found
      */
-    public <F extends EventFilter<?>> F getFilter(String beanName, Class<F> filterClass)
-    {
-        try
-        {
+    public <F extends EventFilter<?>> F getFilter(String beanName, Class<F> filterClass) {
+        try {
             return beanFactory.getBean(beanName, filterClass);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             LOGGER.error(ex);
             throw ex;
         }
     }
 
-    public NodeTypeFilter getNodeTypeFilter()
-    {
+    public NodeTypeFilter getNodeTypeFilter() {
         return getFilter("event2NodeTypeFilter", NodeTypeFilter.class);
     }
 
-    public NodeAspectFilter getNodeAspectFilter()
-    {
+    public NodeAspectFilter getNodeAspectFilter() {
         return getFilter("event2NodeAspectFilter", NodeAspectFilter.class);
     }
 
-    public NodePropertyFilter getNodePropertyFilter()
-    {
+    public NodePropertyFilter getNodePropertyFilter() {
         return getFilter("event2NodePropertyFilter", NodePropertyFilter.class);
     }
 
-    public ChildAssociationTypeFilter getChildAssociationTypeFilter()
-    {
+    public ChildAssociationTypeFilter getChildAssociationTypeFilter() {
         return getFilter("event2ChildAssociationTypeFilter", ChildAssociationTypeFilter.class);
     }
 
-    public EventUserFilter getEventUserFilter()
-    {
+    public EventUserFilter getEventUserFilter() {
         return getFilter("event2UserFilter", EventUserFilter.class);
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,126 +31,86 @@ import org.alfresco.util.schemacomp.DiffContext;
 
 /**
  * Represents a column in a database table.
- * 
+ *
  * @author Matt Ward
  */
-public class Column extends AbstractDbObject
-{
+public class Column extends AbstractDbObject {
     private String type;
     private boolean nullable;
     private boolean autoIncrement;
     private int order;
     private boolean compareOrder = true;
-    
-    public Column(String name)
-    {
+
+    public Column(String name) {
         super(null, name);
     }
-    
+
     /**
      * Construct a Column.
-     * 
+     *
      * @param table the parent table
      * @param name String
      * @param type String
      * @param nullable boolean
      */
-    public Column(Table table, String name, String type, boolean nullable)
-    {
+    public Column(Table table, String name, String type, boolean nullable) {
         super(table, name);
         this.type = type;
         this.nullable = nullable;
     }
 
-    /**
-     * @return the type
-     */
-    public String getType()
-    {
+    /** @return the type */
+    public String getType() {
         return this.type;
     }
-    
-    /**
-     * @param type the type to set
-     */
-    public void setType(String type)
-    {
+
+    /** @param type the type to set */
+    public void setType(String type) {
         this.type = type;
     }
-    
-    /**
-     * @return the nullable
-     */
-    public boolean isNullable()
-    {
+
+    /** @return the nullable */
+    public boolean isNullable() {
         return this.nullable;
     }
-    
-    /**
-     * @param nullable the nullable to set
-     */
-    public void setNullable(boolean nullable)
-    {
+
+    /** @param nullable the nullable to set */
+    public void setNullable(boolean nullable) {
         this.nullable = nullable;
     }
-    
-    
-    /**
-     * @return the order
-     */
-    public int getOrder()
-    {
+
+    /** @return the order */
+    public int getOrder() {
         return this.order;
     }
 
-    /**
-     * @param order the order to set
-     */
-    public void setOrder(int order)
-    {
+    /** @param order the order to set */
+    public void setOrder(int order) {
         this.order = order;
     }
 
-    
-    /**
-     * @return whether the column has an auto-increment flag set.
-     */
-    public boolean isAutoIncrement()
-    {
+    /** @return whether the column has an auto-increment flag set. */
+    public boolean isAutoIncrement() {
         return this.autoIncrement;
     }
 
-    /**
-     * @param autoIncrement whether this column has the auto-increment flag set.
-     */
-    public void setAutoIncrement(boolean autoIncrement)
-    {
+    /** @param autoIncrement whether this column has the auto-increment flag set. */
+    public void setAutoIncrement(boolean autoIncrement) {
         this.autoIncrement = autoIncrement;
     }
 
-
-    /**
-     * @return the compareOrder
-     */
-    public boolean isCompareOrder()
-    {
+    /** @return the compareOrder */
+    public boolean isCompareOrder() {
         return this.compareOrder;
     }
 
-    /**
-     * @param compareOrder the compareOrder to set
-     */
-    public void setCompareOrder(boolean compareOrder)
-    {
+    /** @param compareOrder the compareOrder to set */
+    public void setCompareOrder(boolean compareOrder) {
         this.compareOrder = compareOrder;
     }
 
-
-    
-
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + (this.autoIncrement ? 1231 : 1237);
@@ -162,8 +122,7 @@ public class Column extends AbstractDbObject
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!super.equals(obj)) return false;
         if (getClass() != obj.getClass()) return false;
@@ -172,40 +131,35 @@ public class Column extends AbstractDbObject
         if (this.compareOrder != other.compareOrder) return false;
         if (this.nullable != other.nullable) return false;
         if (this.order != other.order) return false;
-        if (this.type == null)
-        {
+        if (this.type == null) {
             if (other.type != null) return false;
-        }
-        else if (!this.type.equals(other.type)) return false;
+        } else if (!this.type.equals(other.type)) return false;
         return true;
     }
 
     @Override
-    protected void doDiff(DbObject right, DiffContext ctx)
-    {
+    protected void doDiff(DbObject right, DiffContext ctx) {
         DbProperty thisTypeProp = new DbProperty(this, "type");
         DbProperty thisNullableProp = new DbProperty(this, "nullable");
         DbProperty thisOrderProp = new DbProperty(this, "order");
         DbProperty thisAutoIncProp = new DbProperty(this, "autoIncrement");
-        
+
         Column thatColumn = (Column) right;
         DbProperty thatTypeProp = new DbProperty(thatColumn, "type");
         DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
         DbProperty thatOrderProp = new DbProperty(thatColumn, "order");
         DbProperty thatAutoIncProp = new DbProperty(thatColumn, "autoIncrement");
-        
+
         comparisonUtils.compareSimple(thisTypeProp, thatTypeProp, ctx);
         comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);
-        if (compareOrder)
-        {
+        if (compareOrder) {
             comparisonUtils.compareSimple(thisOrderProp, thatOrderProp, ctx);
         }
-        comparisonUtils.compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);        
+        comparisonUtils.compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);
     }
 
     @Override
-    public void accept(DbObjectVisitor visitor)
-    {
+    public void accept(DbObjectVisitor visitor) {
         visitor.visit(this);
     }
 }

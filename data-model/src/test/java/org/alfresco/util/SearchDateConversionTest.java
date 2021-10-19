@@ -26,12 +26,10 @@
 package org.alfresco.util;
 
 import static org.junit.Assert.*;
+
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.joda.time.DateTimeZone;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
@@ -39,18 +37,14 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/**
- * Basic calls
- */
-public class SearchDateConversionTest
-{
+/** Basic calls */
+public class SearchDateConversionTest {
     SearchDateConversion subject = new SearchDateConversion();
 
     @Test
-    public void parseDateString() throws Exception
-    {
+    public void parseDateString() throws Exception {
         setDefaults();
-        Pair<Date, Integer>  result = subject.parseDateString("2017");
+        Pair<Date, Integer> result = subject.parseDateString("2017");
         assertEquals(Calendar.YEAR, result.getSecond().intValue());
         assertEquals(1483228800000l, result.getFirst().getTime());
 
@@ -85,8 +79,7 @@ public class SearchDateConversionTest
     }
 
     @Test
-    public void getDateEnd() throws Exception
-    {
+    public void getDateEnd() throws Exception {
         setDefaults();
         Pair<Date, Integer> result = subject.parseDateString("2017-12");
         assertEquals("2017-12-31T23:59:59.999Z", subject.getDateEnd(result));
@@ -99,8 +92,7 @@ public class SearchDateConversionTest
     }
 
     @Test
-    public void getDateStart() throws Exception
-    {
+    public void getDateStart() throws Exception {
         setDefaults();
         Pair<Date, Integer> result = subject.parseDateString("2017-12");
         assertEquals("2017-12-01T00:00:00.000Z", subject.getDateStart(result));
@@ -113,8 +105,7 @@ public class SearchDateConversionTest
     }
 
     @Test
-    public void testIntervalDates() throws UnsupportedEncodingException
-    {
+    public void testIntervalDates() throws UnsupportedEncodingException {
         setDefaults();
         IntervalSet intervalSet = new IntervalSet("1", "10", "just numbers", false, true);
         IntervalSet validated = subject.parseDateInterval(intervalSet, false);
@@ -163,10 +154,8 @@ public class SearchDateConversionTest
         assertFalse(validated.isEndInclusive());
     }
 
-
-    protected void setDefaults()
-    {
-        DateTimeZone.setDefault(DateTimeZone.UTC); //Joda
+    protected void setDefaults() {
+        DateTimeZone.setDefault(DateTimeZone.UTC); // Joda
         Locale.setDefault(Locale.UK);
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }

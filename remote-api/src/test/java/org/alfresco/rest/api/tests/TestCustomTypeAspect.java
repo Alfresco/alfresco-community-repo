@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,17 +31,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.api.model.CustomModel;
+import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.model.CustomModelProperty;
 import org.alfresco.rest.api.model.CustomType;
-import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -52,16 +48,18 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Tests the REST API of the types and aspects of the {@link CustomModelService}.
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  */
-public class TestCustomTypeAspect extends BaseCustomModelApiTest
-{
+public class TestCustomTypeAspect extends BaseCustomModelApiTest {
     @Test
-    public void testCreateCustomModel() throws Exception
-    {
+    public void testCreateCustomModel() throws Exception {
         setRequestContext(customModelAdmin);
 
         String modelName = "testModel" + System.currentTimeMillis();
@@ -71,16 +69,16 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
         // Retrieve the created model
         HttpResponse response = getSingle("cmm", modelName, 200);
-        CustomModel returnedModel = RestApiUtil
-            .parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+        CustomModel returnedModel =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertNull(returnedModel.getTypes());
         assertNull(returnedModel.getAspects());
 
-        // Retrieve the created model with its types and aspects 
+        // Retrieve the created model with its types and aspects
         // - empty arrays expected as we did not set any aspects, types or constraints
         response = getSingle("cmm", modelName + SELECT_ALL, 200);
-        returnedModel = RestApiUtil
-            .parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+        returnedModel =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertNotNull(returnedModel.getTypes());
         assertTrue(returnedModel.getTypes().isEmpty());
         assertNotNull(returnedModel.getAspects());
@@ -90,10 +88,9 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
     }
 
     @Test
-    public void testCreateAspectsAndTypes_ExistingModel() throws Exception
-    {
+    public void testCreateAspectsAndTypes_ExistingModel() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -125,10 +122,14 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             post("cmm/" + modelName + "/aspects", RestApiUtil.toJsonAsString(aspect), 409);
 
             // Retrieve the created aspect
-            HttpResponse response = getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
-            CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            HttpResponse response =
+                    getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
+            CustomAspect returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
             compareCustomTypesAspects(aspect, returnedAspect, "prefixedName");
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectName, returnedAspect.getPrefixedName());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectName,
+                    returnedAspect.getPrefixedName());
         }
 
         String typeName = "testType" + System.currentTimeMillis();
@@ -161,16 +162,21 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
             // Retrieve the created type
             HttpResponse response = getSingle("cmm/" + modelName + "/types", type.getName(), 200);
-            CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            CustomType returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             compareCustomTypesAspects(type, returnedType, "prefixedName");
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName, returnedType.getPrefixedName());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName,
+                    returnedType.getPrefixedName());
 
             // for now this is the simplest way to check for the imported namespaces
             CustomModelDefinition modelDef = getModelDefinition(modelName);
             assertNotNull(modelDef);
             Collection<NamespaceDefinition> importedNamespaces = modelDef.getImportedNamespaces();
 
-            assertTrue(hasNamespaceUri(importedNamespaces, "http://www.alfresco.org/model/content/1.0"));
+            assertTrue(
+                    hasNamespaceUri(
+                            importedNamespaces, "http://www.alfresco.org/model/content/1.0"));
             assertTrue(hasNamespacePrefix(importedNamespaces, "cm"));
         }
 
@@ -192,10 +198,9 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
     }
 
     @Test
-    public void testCreateModel_WithAspectsAndTypes_Invalid() throws Exception
-    {
+    public void testCreateModel_WithAspectsAndTypes_Invalid() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -249,10 +254,9 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
     }
 
     @Test
-    public void testCreateAspectsAndTypesWithProperties() throws Exception
-    {
+    public void testCreateAspectsAndTypesWithProperties() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -275,19 +279,26 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             // Create aspect as a Model Administrator
             post("cmm/" + modelName + "/aspects", RestApiUtil.toJsonAsString(aspect), 201);
             // Retrieve the created aspect
-            HttpResponse response = getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
-            CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
-            compareCustomTypesAspects(aspect, returnedAspect, "prefixedName", "dataType", "indexTokenisationMode");
+            HttpResponse response =
+                    getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
+            CustomAspect returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            compareCustomTypesAspects(
+                    aspect, returnedAspect, "prefixedName", "dataType", "indexTokenisationMode");
             assertEquals(1, returnedAspect.getProperties().size());
             CustomModelProperty customModelProperty = returnedAspect.getProperties().get(0);
             assertEquals(aspectPropName, customModelProperty.getName());
             assertEquals("property title", customModelProperty.getTitle());
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectPropName, customModelProperty.getPrefixedName());
-            assertEquals("Default data type is 'd:text'.", "d:text", customModelProperty.getDataType());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectPropName,
+                    customModelProperty.getPrefixedName());
+            assertEquals(
+                    "Default data type is 'd:text'.", "d:text", customModelProperty.getDataType());
             // Test default indexing options
             assertTrue(customModelProperty.isIndexed());
             assertEquals(Facetable.UNSET, customModelProperty.getFacetable());
-            assertEquals(IndexTokenisationMode.TRUE, customModelProperty.getIndexTokenisationMode());
+            assertEquals(
+                    IndexTokenisationMode.TRUE, customModelProperty.getIndexTokenisationMode());
         }
 
         {
@@ -315,17 +326,24 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
             // Retrieve the created type
             HttpResponse response = getSingle("cmm/" + modelName + "/types", type.getName(), 200);
-            CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            CustomType returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             compareCustomTypesAspects(type, returnedType, "prefixedName", "indexTokenisationMode");
-            assertEquals("Shouldn't list the inherited properties from 'cm:content'.", 1, returnedType.getProperties().size());
+            assertEquals(
+                    "Shouldn't list the inherited properties from 'cm:content'.",
+                    1,
+                    returnedType.getProperties().size());
             CustomModelProperty customModelProperty = returnedType.getProperties().get(0);
             assertEquals(typePropName, customModelProperty.getName());
             assertEquals("d:int", customModelProperty.getDataType());
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typePropName, customModelProperty.getPrefixedName());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typePropName,
+                    customModelProperty.getPrefixedName());
             // Test default indexing options
             assertTrue(customModelProperty.isIndexed());
             assertEquals(Facetable.UNSET, customModelProperty.getFacetable());
-            assertEquals(IndexTokenisationMode.TRUE, customModelProperty.getIndexTokenisationMode());
+            assertEquals(
+                    IndexTokenisationMode.TRUE, customModelProperty.getIndexTokenisationMode());
         }
 
         {
@@ -353,13 +371,15 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
         {
             // Retrieve the created model
             HttpResponse response = getSingle("cmm", modelName, 200);
-            CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+            CustomModel returnedModel =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
             assertNull(returnedModel.getTypes());
             assertNull(returnedModel.getAspects());
-            
+
             // Retrieve the created model with its types and aspects
             response = getSingle("cmm", modelName + SELECT_ALL, 200);
-            returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+            returnedModel =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
             assertNotNull(returnedModel.getTypes());
             assertEquals(3, returnedModel.getTypes().size());
             assertNotNull(returnedModel.getAspects());
@@ -368,11 +388,10 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
     }
 
     @Test
-    //SHA-679
-    public void testCustomModelTypesAspectsDependencies() throws Exception
-    {
+    // SHA-679
+    public void testCustomModelTypesAspectsDependencies() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelNameOne = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -380,25 +399,45 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
         // Add type
         String typeBaseName = "testTypeBase" + System.currentTimeMillis();
-        final String typeBaseNameWithPrefix = namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeBaseName;
-        createTypeAspect(CustomType.class, modelNameOne, typeBaseName, "test typeBase title", "test typeBase Desc", "cm:content");
+        final String typeBaseNameWithPrefix =
+                namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeBaseName;
+        createTypeAspect(
+                CustomType.class,
+                modelNameOne,
+                typeBaseName,
+                "test typeBase title",
+                "test typeBase Desc",
+                "cm:content");
 
         // Activate the model
         CustomModel modelOneStatusPayload = new CustomModel();
         modelOneStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
+        put(
+                "cmm",
+                modelNameOne,
+                RestApiUtil.toJsonAsString(modelOneStatusPayload),
+                SELECT_STATUS_QS,
+                200);
 
         HttpResponse response = getSingle("cmm", modelNameOne, 200);
-        CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
+        CustomModel returnedModel =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.ACTIVE, returnedModel.getStatus());
 
         // Add another type with 'typeBaseName' as its parent
         String typeName2 = "testTypeChild" + System.currentTimeMillis();
-        createTypeAspect(CustomType.class, modelNameOne, typeName2, "test typeChild title", "test typeChild Desc", typeBaseNameWithPrefix);
+        createTypeAspect(
+                CustomType.class,
+                modelNameOne,
+                typeName2,
+                "test typeChild title",
+                "test typeChild Desc",
+                typeBaseNameWithPrefix);
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         response = getAll("cmm/" + modelNameOne + "/types", paging, 200);
-        List<CustomType> returnedTypes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), CustomType.class);
+        List<CustomType> returnedTypes =
+                RestApiUtil.parseRestApiEntries(response.getJsonResponse(), CustomType.class);
         assertEquals(2, returnedTypes.size());
 
         // Create another model
@@ -408,39 +447,69 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
         // Add a type with 'typeBaseName' from the modelOne as its parent
         String modelTwoTypeName = "testModelTwoChild" + System.currentTimeMillis();
-        createTypeAspect(CustomType.class, modelNameTwo, modelTwoTypeName, "test model two type child title", null, typeBaseNameWithPrefix);
+        createTypeAspect(
+                CustomType.class,
+                modelNameTwo,
+                modelTwoTypeName,
+                "test model two type child title",
+                null,
+                typeBaseNameWithPrefix);
 
         // Try to deactivate modelOne
         modelOneStatusPayload = new CustomModel();
         modelOneStatusPayload.setStatus(ModelStatus.DRAFT);
-        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 409); // ModelTwo depends on ModelOne
+        put(
+                "cmm",
+                modelNameOne,
+                RestApiUtil.toJsonAsString(modelOneStatusPayload),
+                SELECT_STATUS_QS,
+                409); // ModelTwo depends on ModelOne
 
         // Activate modelTwo
         CustomModel modelTwoStatusPayload = new CustomModel();
         modelTwoStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", modelNameTwo, RestApiUtil.toJsonAsString(modelTwoStatusPayload), SELECT_STATUS_QS, 200);
-  
-        // Try to deactivate modelOne again. The dependent model is Active now, however, the result should be the same.
-        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 409); // ModelTwo depends on ModelOne
+        put(
+                "cmm",
+                modelNameTwo,
+                RestApiUtil.toJsonAsString(modelTwoStatusPayload),
+                SELECT_STATUS_QS,
+                200);
+
+        // Try to deactivate modelOne again. The dependent model is Active now, however, the result
+        // should be the same.
+        put(
+                "cmm",
+                modelNameOne,
+                RestApiUtil.toJsonAsString(modelOneStatusPayload),
+                SELECT_STATUS_QS,
+                409); // ModelTwo depends on ModelOne
 
         // Deactivate modelTwo
         modelTwoStatusPayload = new CustomModel();
         modelTwoStatusPayload.setStatus(ModelStatus.DRAFT);
-        put("cmm", modelNameTwo, RestApiUtil.toJsonAsString(modelTwoStatusPayload), SELECT_STATUS_QS, 200);
+        put(
+                "cmm",
+                modelNameTwo,
+                RestApiUtil.toJsonAsString(modelTwoStatusPayload),
+                SELECT_STATUS_QS,
+                200);
 
         // Delete the modelTwo's type as a Model Administrator
         delete("cmm/" + modelNameTwo + "/types", modelTwoTypeName, 204);
 
         // Try to deactivate modelOne again. There is no dependency
-        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
-
+        put(
+                "cmm",
+                modelNameOne,
+                RestApiUtil.toJsonAsString(modelOneStatusPayload),
+                SELECT_STATUS_QS,
+                200);
     }
 
     @Test
-    public void testDeleteTypeAspect() throws Exception
-    {
+    public void testDeleteTypeAspect() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         final String modelName = "testDeleteTypeModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -448,23 +517,33 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
         // Add type
         final String typeName = "testType" + System.currentTimeMillis();
-        final String typeNameWithPrefix = namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName;
-        CustomType type = createTypeAspect(CustomType.class, modelName, typeName, "test type title", "test type Desc", "cm:content");
+        final String typeNameWithPrefix =
+                namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName;
+        CustomType type =
+                createTypeAspect(
+                        CustomType.class,
+                        modelName,
+                        typeName,
+                        "test type title",
+                        "test type Desc",
+                        "cm:content");
 
         // Add aspect
         final String aspectName = "testAspect" + System.currentTimeMillis();
-        final String aspectNameWithPrefix = namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectName;
-        CustomAspect aspect = createTypeAspect(CustomAspect.class, modelName, aspectName, null, null, null);
+        final String aspectNameWithPrefix =
+                namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectName;
+        CustomAspect aspect =
+                createTypeAspect(CustomAspect.class, modelName, aspectName, null, null, null);
 
         // Delete type
         {
             setRequestContext(nonAdminUserName);
-            
+
             // Try to delete the model's type as a non Admin user
             delete("cmm/" + modelName + "/types", typeName, 403);
 
             setRequestContext(customModelAdmin);
-            
+
             // Delete the model's type as a Model Administrator
             delete("cmm/" + modelName + "/types", typeName, 204);
             // Try to retrieve the deleted type
@@ -473,12 +552,12 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
         // Delete Aspect
         {
             setRequestContext(nonAdminUserName);
-            
+
             // Try to delete the model's aspect as a non Admin user
             delete("cmm/" + modelName + "/aspects", aspectName, 403);
 
             setRequestContext(customModelAdmin);
-            
+
             // Delete the model's aspect as a Model Administrator
             delete("cmm/" + modelName + "/aspects", aspectName, 204);
             // Try to retrieve the deleted aspect
@@ -491,14 +570,16 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
         post("cmm/" + modelName + "/types", RestApiUtil.toJsonAsString(type), 201);
         // Retrieve the created type
         HttpResponse response = getSingle("cmm/" + modelName + "/types", type.getName(), 200);
-        CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+        CustomType returnedType =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
         compareCustomTypesAspects(type, returnedType, "prefixedName");
 
         // Create the aspect again
         post("cmm/" + modelName + "/aspects", RestApiUtil.toJsonAsString(aspect), 201);
         // Retrieve the created aspect
         response = getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
-        CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+        CustomAspect returnedAspect =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
         compareCustomTypesAspects(aspect, returnedAspect, "prefixedName");
 
         // Update the Type by adding property
@@ -513,7 +594,12 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
         List<CustomModelProperty> props = new ArrayList<>(1);
         props.add(typeProp);
         payload.setProperties(props);
-        put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/types",
+                typeName,
+                RestApiUtil.toJsonAsString(payload),
+                SELECT_PROPS_QS,
+                200);
 
         // Activate the model
         CustomModel statusPayload = new CustomModel();
@@ -524,17 +610,35 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
         // Test for SHA-703
         // Add another type with 'typeName' as its parent
         final String childTypeName = "testChildType" + System.currentTimeMillis();
-        createTypeAspect(CustomType.class, modelName, childTypeName, "test child type title", null, typeNameWithPrefix);
+        createTypeAspect(
+                CustomType.class,
+                modelName,
+                childTypeName,
+                "test child type title",
+                null,
+                typeNameWithPrefix);
 
         // Add another aspect with 'aspectName' as its parent
         final String childAspectName = "testChildAspect" + System.currentTimeMillis();
-        createTypeAspect(CustomAspect.class, modelName, childAspectName, "test child aspect title", null, aspectNameWithPrefix);
+        createTypeAspect(
+                CustomAspect.class,
+                modelName,
+                childAspectName,
+                "test child aspect title",
+                null,
+                aspectNameWithPrefix);
 
         // Delete the model's type as a Model Administrator
-        delete("cmm/" + modelName + "/types", typeName, 409); // Cannot delete a type of an active model
+        delete(
+                "cmm/" + modelName + "/types",
+                typeName,
+                409); // Cannot delete a type of an active model
 
         // Delete the model's aspect as a Model Administrator
-        delete("cmm/" + modelName + "/aspects", childAspectName, 409); // Cannot delete an aspect of an active model
+        delete(
+                "cmm/" + modelName + "/aspects",
+                childAspectName,
+                409); // Cannot delete an aspect of an active model
 
         // Deactivate the model
         statusPayload = new CustomModel();
@@ -545,25 +649,30 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
         // Delete type
         {
             // Try to delete the model's type (parent) as a Model Administrator
-            delete("cmm/" + modelName + "/types", typeName, 409); // conflict: childTypeName depends on typeName
+            delete(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    409); // conflict: childTypeName depends on typeName
 
             // Delete the child type first
-            delete("cmm/" + modelName + "/types", childTypeName, 204); 
+            delete("cmm/" + modelName + "/types", childTypeName, 204);
             // Try to retrieve the deleted child type
             getSingle("cmm/" + modelName + "/types", childTypeName, 404);
 
             // Now delete the parent type
-            delete("cmm/" + modelName + "/types", typeName, 204); 
+            delete("cmm/" + modelName + "/types", typeName, 204);
             // Try to retrieve the deleted parent type
             getSingle("cmm/" + modelName + "/types", typeName, 404);
-            
         }
 
         // Delete Aspect
         {
             // Try to delete the model's aspect (parent) as a Model Administrator
-            delete("cmm/" + modelName + "/aspects", aspectName, 409); // conflict: childAspectName depends on aspectName
-            
+            delete(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    409); // conflict: childAspectName depends on aspectName
+
             // Delete the child aspect first
             delete("cmm/" + modelName + "/aspects", childAspectName, 204);
             // Try to retrieve the deleted child aspect
@@ -577,10 +686,9 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
     }
 
     @Test
-    public void testUpdateAspectsTypes() throws Exception
-    {
+    public void testUpdateAspectsTypes() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModeEditAspectType" + System.currentTimeMillis();
         final Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -600,25 +708,47 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             setRequestContext(nonAdminUserName);
 
             // Try to update the aspect as a non Admin user
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), null, 403);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    null,
+                    403);
 
             setRequestContext(customModelAdmin);
-            
+
             // Modify the name
             aspectPayload.setName(aspectName + "Modified");
             // Try to update the aspect as a Model Administrator
             // Note: aspect/type name cannot be modified
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), null, 404);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    null,
+                    404);
 
             aspectPayload.setName(aspectName);
             // Update the aspect as a Model Administrator
-            HttpResponse response = put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), null, 200);
-            CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            HttpResponse response =
+                    put(
+                            "cmm/" + modelName + "/aspects",
+                            aspectName,
+                            RestApiUtil.toJsonAsString(aspectPayload),
+                            null,
+                            200);
+            CustomAspect returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
             compareCustomTypesAspects(aspectPayload, returnedAspect, "prefixedName");
 
             // Update the aspect with an invalid parent
             aspectPayload.setParentName("cm:titled" + System.currentTimeMillis());
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), null, 409);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    null,
+                    409);
 
             // Activate the model
             CustomModel statusPayload = new CustomModel();
@@ -628,18 +758,28 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             // Remove the aspect's parent
             // Note: cannot update the parent of an ACTIVE type/aspect.
             aspectPayload.setParentName(null);
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), null, 409);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    null,
+                    409);
 
             statusPayload = new CustomModel();
             statusPayload.setStatus(ModelStatus.DRAFT);
             put("cmm", modelName, RestApiUtil.toJsonAsString(statusPayload), SELECT_STATUS_QS, 200);
 
             // now update the aspect's parent - model is inactive
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), null, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    null,
+                    200);
         }
-        
+
         // Test update type
-        { 
+        {
             // Create type
             String typeName = "testType" + System.currentTimeMillis();
             createTypeAspect(CustomType.class, modelName, typeName, "title", "desc", "cm:content");
@@ -656,7 +796,12 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             props.add(typeProp);
             addPropertyPayload.setProperties(props);
             // Create the property
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(addPropertyPayload), SELECT_PROPS_QS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(addPropertyPayload),
+                    SELECT_PROPS_QS,
+                    200);
 
             // Update the type
             CustomType typePayload = new CustomType();
@@ -666,20 +811,37 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             setRequestContext(nonAdminUserName);
 
             // Try to update the type as a non Admin user
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), null, 403);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(typePayload),
+                    null,
+                    403);
 
             setRequestContext(customModelAdmin);
-            
+
             // Modify the name
             typePayload.setName(typeName + "Modified");
             // Try to update the type as a Model Administrator
             // Note: type/type name cannot be modified
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), null, 404);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(typePayload),
+                    null,
+                    404);
 
             typePayload.setName(typeName);
             // Update the type as a Model Administrator
-            HttpResponse response = put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), null, 200);
-            CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            HttpResponse response =
+                    put(
+                            "cmm/" + modelName + "/types",
+                            typeName,
+                            RestApiUtil.toJsonAsString(typePayload),
+                            null,
+                            200);
+            CustomType returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             assertEquals(typePayload.getDescription(), returnedType.getDescription());
             assertEquals(typePayload.getTitle(), returnedType.getTitle());
             // Check that properties are unmodified
@@ -689,7 +851,12 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
 
             // Update the type with an invalid parent
             typePayload.setParentName("cm:folder" + System.currentTimeMillis());
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), null, 409);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(typePayload),
+                    null,
+                    409);
 
             // Activate the model
             CustomModel statusPayload = new CustomModel();
@@ -699,15 +866,27 @@ public class TestCustomTypeAspect extends BaseCustomModelApiTest
             // Remove the type's parent
             // Note: cannot update the parent of an ACTIVE type/type.
             typePayload.setParentName("cm:folder");
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), null, 409);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(typePayload),
+                    null,
+                    409);
 
             statusPayload = new CustomModel();
             statusPayload.setStatus(ModelStatus.DRAFT);
             put("cmm", modelName, RestApiUtil.toJsonAsString(statusPayload), SELECT_STATUS_QS, 200);
 
             // now update the type's parent - model is inactive
-            response = put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), null, 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            response =
+                    put(
+                            "cmm/" + modelName + "/types",
+                            typeName,
+                            RestApiUtil.toJsonAsString(typePayload),
+                            null,
+                            200);
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             assertEquals(typePayload.getParentName(), returnedType.getParentName());
         }
     }

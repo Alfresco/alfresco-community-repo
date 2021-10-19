@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,12 +28,6 @@ package org.alfresco.rest.api.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -53,301 +47,390 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestSiteContainers extends EnterpriseTestApi
-{
-	private TestNetwork network1;
-	private TestNetwork network2;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-	private List<TestPerson> people1 = new ArrayList<TestPerson>(2);
-	private List<TestPerson> people2 = new ArrayList<TestPerson>(2);
-	
-	private TestPerson person11; // site creator
-	private TestPerson person12; // same network, not invited to site
-	private TestPerson person13; // same network, invited to site
-	private TestPerson person21; // different network, not invited to site
-	
-	private TestSite site1;
-	
-	@Override
-	@Before
-	public void setup() throws Exception
-	{
-		// init networks
-		super.setup();
-		
-		Iterator<TestNetwork> networksIt = getTestFixture().getNetworksIt();
+public class TestSiteContainers extends EnterpriseTestApi {
+    private TestNetwork network1;
+    private TestNetwork network2;
 
-		assertTrue(networksIt.hasNext());
-		this.network1 = networksIt.next();
+    private List<TestPerson> people1 = new ArrayList<TestPerson>(2);
+    private List<TestPerson> people2 = new ArrayList<TestPerson>(2);
 
-		assertTrue(networksIt.hasNext());
-		this.network2 = networksIt.next();
+    private TestPerson person11; // site creator
+    private TestPerson person12; // same network, not invited to site
+    private TestPerson person13; // same network, invited to site
+    private TestPerson person21; // different network, not invited to site
 
-		// Create some users in different networks
-		TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-				// add as external user
-				TestPerson person1 = network1.createUser();
-				people1.add(person1);
-				TestPerson person2 = network1.createUser();
-				people1.add(person2);
-				TestPerson person3 = network1.createUser();
-				people1.add(person3);
+    private TestSite site1;
 
-				return null;
-			}
-		}, network1.getId());
+    @Override
+    @Before
+    public void setup() throws Exception {
+        // init networks
+        super.setup();
 
-		TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-				TestPerson person1 = network2.createUser();
-				people2.add(person1);
+        Iterator<TestNetwork> networksIt = getTestFixture().getNetworksIt();
 
-				return null;
-			}
-		}, network2.getId());
+        assertTrue(networksIt.hasNext());
+        this.network1 = networksIt.next();
 
-		this.person11 = people1.get(0); // site creator
-		this.person12 = people1.get(1); // same network, not invited to site
-		this.person21 = people2.get(0); // different network, not invited to site
-		this.person13 = people1.get(2); // same network, invited to site
-		
-//		TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-//		{
-//			@Override
-//			public Void doWork() throws Exception
-//			{
-//				// add as external user
-//				TestPerson person1 = network2.createUser();
-//				network2People.add(person1);
-//
-//				return null;
-//			}
-//		}, network2.getId());
-//		
-//		final TestPerson person3 = network2People.get(0);
-		
-		// Create a public site
-		this.site1 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-		{
-			@Override
-			public TestSite doWork() throws Exception
-			{
-				TestSite testSite = network1.createSite(SiteVisibility.PUBLIC);
-				return testSite;
-			}
-		}, person11.getId(), network1.getId());
+        assertTrue(networksIt.hasNext());
+        this.network2 = networksIt.next();
 
-		TenantUtil.runAsUserTenant(new TenantRunAsWork<Map<String, NodeRef>>()
-		{
-			@Override
-			public Map<String, NodeRef> doWork() throws Exception
-			{
-				Map<String, NodeRef> containers = new HashMap<String, NodeRef>();
-				containers.put("test1", site1.createContainer("test1"));
-				containers.put("test2", site1.createContainer("test2"));
-				containers.put("test3", site1.createContainer("test3"));
-				return containers;
-			}
-		}, person11.getId(), network1.getId());
-	}
-	
-	@Test
-	public void testSiteContainers() throws Exception
-	{
-		Sites sitesProxy = publicApiClient.sites();
-		
-		List<SiteContainer> expectedSiteContainers = network1.getSiteContainers(site1.getSiteId(), person11);
+        // Create some users in different networks
+        TenantUtil.runAsSystemTenant(
+                new TenantRunAsWork<Void>() {
+                    @Override
+                    public Void doWork() throws Exception {
+                        // add as external user
+                        TestPerson person1 = network1.createUser();
+                        people1.add(person1);
+                        TestPerson person2 = network1.createUser();
+                        people1.add(person2);
+                        TestPerson person3 = network1.createUser();
+                        people1.add(person3);
 
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-	
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			ListResponse<SiteContainer> resp = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			checkList(expectedSiteContainers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
-	
-			skipCount = 2;
-			maxItems = expectedSiteContainers.size();
-			paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			resp = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			checkList(expectedSiteContainers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
-	
-			skipCount = 2;
-			maxItems = expectedSiteContainers.size() + 2;
-			paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			resp = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			checkList(expectedSiteContainers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
-		}
+                        return null;
+                    }
+                },
+                network1.getId());
 
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+        TenantUtil.runAsSystemTenant(
+                new TenantRunAsWork<Void>() {
+                    @Override
+                    public Void doWork() throws Exception {
+                        TestPerson person1 = network2.createUser();
+                        people2.add(person1);
 
-			SiteContainer expectedSiteContainer = new SiteContainer(site1.getSiteId(), "test2", null);
-			SiteContainer sc = sitesProxy.getSingleSiteContainer(site1.getSiteId(), "test2");
-			check(expectedSiteContainer, sc);
-		}
+                        return null;
+                    }
+                },
+                network2.getId());
 
-		// site does not exist
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+        this.person11 = people1.get(0); // site creator
+        this.person12 = people1.get(1); // same network, not invited to site
+        this.person21 = people2.get(0); // different network, not invited to site
+        this.person13 = people1.get(2); // same network, invited to site
 
-			sitesProxy.getSingleSiteContainer("gfyuosfgsf8y7s", "documentLibrary");
-			fail("");
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-		}
+        //		TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+        //		{
+        //			@Override
+        //			public Void doWork() throws Exception
+        //			{
+        //				// add as external user
+        //				TestPerson person1 = network2.createUser();
+        //				network2People.add(person1);
+        //
+        //				return null;
+        //			}
+        //		}, network2.getId());
+        //
+        //		final TestPerson person3 = network2People.get(0);
 
-		// container does not exist
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+        // Create a public site
+        this.site1 =
+                TenantUtil.runAsUserTenant(
+                        new TenantRunAsWork<TestSite>() {
+                            @Override
+                            public TestSite doWork() throws Exception {
+                                TestSite testSite = network1.createSite(SiteVisibility.PUBLIC);
+                                return testSite;
+                            }
+                        },
+                        person11.getId(),
+                        network1.getId());
 
-			sitesProxy.getSingleSiteContainer(site1.getSiteId(), "container1");
-			fail("");
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-		}
+        TenantUtil.runAsUserTenant(
+                new TenantRunAsWork<Map<String, NodeRef>>() {
+                    @Override
+                    public Map<String, NodeRef> doWork() throws Exception {
+                        Map<String, NodeRef> containers = new HashMap<String, NodeRef>();
+                        containers.put("test1", site1.createContainer("test1"));
+                        containers.put("test2", site1.createContainer("test2"));
+                        containers.put("test3", site1.createContainer("test3"));
+                        return containers;
+                    }
+                },
+                person11.getId(),
+                network1.getId());
+    }
 
-		// site containers - site does not exist
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+    @Test
+    public void testSiteContainers() throws Exception {
+        Sites sitesProxy = publicApiClient.sites();
 
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			sitesProxy.getSiteContainers(GUID.generate(), createParams(paging, null));
-			fail("");
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-		}
-		
-		// a user in the same network, not invited to the site
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person12.getId()));
+        List<SiteContainer> expectedSiteContainers =
+                network1.getSiteContainers(site1.getSiteId(), person11);
 
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			ListResponse<SiteContainer> ret = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			checkList(expectedSiteContainers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), ret);
-		}
+        {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person11.getId()));
 
-		// a user in a different network
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person21.getId()));
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            ListResponse<SiteContainer> resp =
+                    sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            checkList(
+                    expectedSiteContainers.subList(
+                            skipCount, skipCount + paging.getExpectedPaging().getCount()),
+                    paging.getExpectedPaging(),
+                    resp);
 
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
-		}
+            skipCount = 2;
+            maxItems = expectedSiteContainers.size();
+            paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            resp = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            checkList(
+                    expectedSiteContainers.subList(
+                            skipCount, skipCount + paging.getExpectedPaging().getCount()),
+                    paging.getExpectedPaging(),
+                    resp);
 
-		// TODO a user in the same network, invited to the site
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person12.getId()));
+            skipCount = 2;
+            maxItems = expectedSiteContainers.size() + 2;
+            paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            resp = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            checkList(
+                    expectedSiteContainers.subList(
+                            skipCount, skipCount + paging.getExpectedPaging().getCount()),
+                    paging.getExpectedPaging(),
+                    resp);
+        }
 
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			ListResponse<SiteContainer> ret = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			checkList(expectedSiteContainers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), ret);
-		}
+        {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person11.getId()));
 
-		// person invited to site
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person13.getId()));
+            SiteContainer expectedSiteContainer =
+                    new SiteContainer(site1.getSiteId(), "test2", null);
+            SiteContainer sc = sitesProxy.getSingleSiteContainer(site1.getSiteId(), "test2");
+            check(expectedSiteContainer, sc);
+        }
 
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSiteContainers.size(), expectedSiteContainers.size());
-			ListResponse<SiteContainer> resp = sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
-			checkList(expectedSiteContainers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
-		}
+        // site does not exist
+        try {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person11.getId()));
 
-		// invalid methods
-		try
-		{
-			sitesProxy.create("sites", site1.getSiteId(), "containers", null, null, "Unable to POST to site containers");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
+            sitesProxy.getSingleSiteContainer("gfyuosfgsf8y7s", "documentLibrary");
+            fail("");
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+        }
 
-		try
-		{
-			sitesProxy.create("sites", site1.getSiteId(), "containers", "documentLibrary", null, "Unable to POST to a site container");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
+        // container does not exist
+        try {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person11.getId()));
 
-		try
-		{
-			sitesProxy.update("sites", site1.getSiteId(), "containers", null, null, "Unable to PUT site containers");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
+            sitesProxy.getSingleSiteContainer(site1.getSiteId(), "container1");
+            fail("");
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+        }
 
-		try
-		{
-			sitesProxy.update("sites", site1.getSiteId(), "containers", "documentLibrary", null, "Unable to PUT a site container");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
-		
-		try
-		{
-			sitesProxy.remove("sites", site1.getSiteId(), "containers", null, "Unable to DELETE site containers");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
+        // site containers - site does not exist
+        try {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person11.getId()));
 
-		try
-		{
-			sitesProxy.remove("sites", site1.getSiteId(), "containers", "documentLibrary", "Unable to DELETE a site container");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
-		
-		// 1481
-		// user in external network, list site containers
-	}
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            sitesProxy.getSiteContainers(GUID.generate(), createParams(paging, null));
+            fail("");
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+        }
+
+        // a user in the same network, not invited to the site
+        {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person12.getId()));
+
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            ListResponse<SiteContainer> ret =
+                    sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            checkList(
+                    expectedSiteContainers.subList(
+                            skipCount, skipCount + paging.getExpectedPaging().getCount()),
+                    paging.getExpectedPaging(),
+                    ret);
+        }
+
+        // a user in a different network
+        try {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person21.getId()));
+
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
+        }
+
+        // TODO a user in the same network, invited to the site
+        {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person12.getId()));
+
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            ListResponse<SiteContainer> ret =
+                    sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            checkList(
+                    expectedSiteContainers.subList(
+                            skipCount, skipCount + paging.getExpectedPaging().getCount()),
+                    paging.getExpectedPaging(),
+                    ret);
+        }
+
+        // person invited to site
+        {
+            publicApiClient.setRequestContext(
+                    new RequestContext(network1.getId(), person13.getId()));
+
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging =
+                    getPaging(
+                            skipCount,
+                            maxItems,
+                            expectedSiteContainers.size(),
+                            expectedSiteContainers.size());
+            ListResponse<SiteContainer> resp =
+                    sitesProxy.getSiteContainers(site1.getSiteId(), createParams(paging, null));
+            checkList(
+                    expectedSiteContainers.subList(
+                            skipCount, skipCount + paging.getExpectedPaging().getCount()),
+                    paging.getExpectedPaging(),
+                    resp);
+        }
+
+        // invalid methods
+        try {
+            sitesProxy.create(
+                    "sites",
+                    site1.getSiteId(),
+                    "containers",
+                    null,
+                    null,
+                    "Unable to POST to site containers");
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        try {
+            sitesProxy.create(
+                    "sites",
+                    site1.getSiteId(),
+                    "containers",
+                    "documentLibrary",
+                    null,
+                    "Unable to POST to a site container");
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        try {
+            sitesProxy.update(
+                    "sites",
+                    site1.getSiteId(),
+                    "containers",
+                    null,
+                    null,
+                    "Unable to PUT site containers");
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        try {
+            sitesProxy.update(
+                    "sites",
+                    site1.getSiteId(),
+                    "containers",
+                    "documentLibrary",
+                    null,
+                    "Unable to PUT a site container");
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        try {
+            sitesProxy.remove(
+                    "sites",
+                    site1.getSiteId(),
+                    "containers",
+                    null,
+                    "Unable to DELETE site containers");
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        try {
+            sitesProxy.remove(
+                    "sites",
+                    site1.getSiteId(),
+                    "containers",
+                    "documentLibrary",
+                    "Unable to DELETE a site container");
+            fail();
+        } catch (PublicApiException e) {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        // 1481
+        // user in external network, list site containers
+    }
 }

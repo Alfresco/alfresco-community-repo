@@ -25,12 +25,21 @@
  */
 package org.alfresco.repo.event2;
 
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static java.lang.Thread.sleep;
+
+import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,16 +52,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.repo.event.v1.model.RepoEvent;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-public class EventGeneratorQueueUnitTest
-{
+public class EventGeneratorQueueUnitTest {
     private EventGeneratorQueue queue;
 
     private Event2MessageProducer bus;
@@ -62,8 +62,7 @@ public class EventGeneratorQueueUnitTest
     private Map<String, RepoEvent<?>> events;
 
     @Before
-    public void setup() 
-    {
+    public void setup() {
         queue = new EventGeneratorQueue();
 
         enqueuePool = newThreadPool();
@@ -80,30 +79,28 @@ public class EventGeneratorQueueUnitTest
     }
 
     @After
-    public void teardown() 
-    {
+    public void teardown() {
         enqueuePool.shutdown();
     }
 
-    private void setupEventsRecorder()
-    {
+    private void setupEventsRecorder() {
         recordedEvents = new CopyOnWriteArrayList<>();
 
-        Mockito.doAnswer(new Answer<Void>()
-        {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable
-            {
-                RepoEvent<?> event = invocation.getArgument(0, RepoEvent.class);
-                recordedEvents.add(event);
-                return null;
-            }
-        }).when(bus).send(any());
+        Mockito.doAnswer(
+                        new Answer<Void>() {
+                            @Override
+                            public Void answer(InvocationOnMock invocation) throws Throwable {
+                                RepoEvent<?> event = invocation.getArgument(0, RepoEvent.class);
+                                recordedEvents.add(event);
+                                return null;
+                            }
+                        })
+                .when(bus)
+                .send(any());
     }
 
     @Test
-    public void shouldReceiveSingleQuickMessage() throws Exception 
-    {
+    public void shouldReceiveSingleQuickMessage() throws Exception {
         queue.accept(messageWithDelay("A", 55l));
 
         sleep(150l);
@@ -113,9 +110,11 @@ public class EventGeneratorQueueUnitTest
     }
 
     @Test
-    public void shouldNotReceiveEventsWhenMessageIsNull() throws Exception 
-    {
-        queue.accept(() -> { return null; });
+    public void shouldNotReceiveEventsWhenMessageIsNull() throws Exception {
+        queue.accept(
+                () -> {
+                    return null;
+                });
 
         sleep(150l);
 
@@ -137,8 +136,7 @@ public class EventGeneratorQueueUnitTest
     }
 
     @Test
-    public void shouldReceiveMultipleMessagesPreservingOrderScenarioTwo() throws Exception
-    {
+    public void shouldReceiveMultipleMessagesPreservingOrderScenarioTwo() throws Exception {
         queue.accept(messageWithDelay("A", 300l));
         queue.accept(messageWithDelay("B", 150l));
         queue.accept(messageWithDelay("C", 0l));
@@ -152,10 +150,13 @@ public class EventGeneratorQueueUnitTest
     }
 
     @Test
-    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisoned() throws Exception
-    {
+    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisoned()
+            throws Exception {
         queue.accept(messageWithDelay("A", 300l));
-        queue.accept(() -> {throw new RuntimeException("Boom! (not to worry, this is a test)");});
+        queue.accept(
+                () -> {
+                    throw new RuntimeException("Boom! (not to worry, this is a test)");
+                });
         queue.accept(messageWithDelay("B", 55l));
         queue.accept(messageWithDelay("C", 0l));
 
@@ -166,13 +167,15 @@ public class EventGeneratorQueueUnitTest
         assertEquals("B", recordedEvents.get(1).getId());
         assertEquals("C", recordedEvents.get(2).getId());
     }
-    
+
     @Test
-    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisoned() throws Exception
-    {
+    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisoned()
+            throws Exception {
         Callable<RepoEvent<?>> makerB = messageWithDelay("B", 55l);
         RepoEvent<?> messageB = makerB.call();
-        doThrow(new RuntimeException("Boom! (not to worry, this is a test)")).when(bus).send(messageB);
+        doThrow(new RuntimeException("Boom! (not to worry, this is a test)"))
+                .when(bus)
+                .send(messageB);
         queue.accept(messageWithDelay("A", 300l));
         queue.accept(makerB);
         queue.accept(messageWithDelay("C", 0l));
@@ -185,10 +188,13 @@ public class EventGeneratorQueueUnitTest
     }
 
     @Test
-    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisonedWithError() throws Exception
-    {
+    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisonedWithError()
+            throws Exception {
         queue.accept(messageWithDelay("A", 300l));
-        queue.accept(() -> {throw new OutOfMemoryError("Boom! (not to worry, this is a test)");});
+        queue.accept(
+                () -> {
+                    throw new OutOfMemoryError("Boom! (not to worry, this is a test)");
+                });
         queue.accept(messageWithDelay("B", 55l));
         queue.accept(messageWithDelay("C", 0l));
 
@@ -199,13 +205,15 @@ public class EventGeneratorQueueUnitTest
         assertEquals("B", recordedEvents.get(1).getId());
         assertEquals("C", recordedEvents.get(2).getId());
     }
-    
+
     @Test
-    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisonedWithError() throws Exception
-    {
+    public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisonedWithError()
+            throws Exception {
         Callable<RepoEvent<?>> makerB = messageWithDelay("B", 55l);
         RepoEvent<?> messageB = makerB.call();
-        doThrow(new OutOfMemoryError("Boom! (not to worry, this is a test)")).when(bus).send(messageB);
+        doThrow(new OutOfMemoryError("Boom! (not to worry, this is a test)"))
+                .when(bus)
+                .send(messageB);
         queue.accept(messageWithDelay("A", 300l));
         queue.accept(makerB);
         queue.accept(messageWithDelay("C", 0l));
@@ -217,35 +225,30 @@ public class EventGeneratorQueueUnitTest
         assertEquals("C", recordedEvents.get(1).getId());
     }
 
-    private Callable<RepoEvent<?>> messageWithDelay(String id, long delay)
-    {
-        Callable<RepoEvent<?>> res = new Callable<RepoEvent<?>>() {
+    private Callable<RepoEvent<?>> messageWithDelay(String id, long delay) {
+        Callable<RepoEvent<?>> res =
+                new Callable<RepoEvent<?>>() {
 
-            @Override
-            public RepoEvent<?> call() throws Exception
-            {
-                if(delay != 0)
-                {
-                    sleep(delay); 
-                }
-                return newRepoEvent(id);
-            } 
-            
-            @Override
-            public String toString()
-            {
-                return id;
-            }
-        };
+                    @Override
+                    public RepoEvent<?> call() throws Exception {
+                        if (delay != 0) {
+                            sleep(delay);
+                        }
+                        return newRepoEvent(id);
+                    }
+
+                    @Override
+                    public String toString() {
+                        return id;
+                    }
+                };
         return res;
     }
-    
-    private RepoEvent<?> newRepoEvent(String id)
-    {
+
+    private RepoEvent<?> newRepoEvent(String id) {
         RepoEvent<?> ev = events.get(id);
-        if (ev!=null)
-            return ev;
-        
+        if (ev != null) return ev;
+
         ev = mock(RepoEvent.class);
         when(ev.getId()).thenReturn(id);
         when(ev.toString()).thenReturn(id);
@@ -254,37 +257,30 @@ public class EventGeneratorQueueUnitTest
         return ev;
     }
 
-    public static ExecutorService newThreadPool() 
-    {
-        return new ThreadPoolExecutor(2, Integer.MAX_VALUE,
-                                      60L, TimeUnit.SECONDS,
-                                      new SynchronousQueue<Runnable>());
+    public static ExecutorService newThreadPool() {
+        return new ThreadPoolExecutor(
+                2, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
     }
 
-    public static final Executor SYNC_EXECUTOR_SAME_THREAD = new Executor()
-    {
-        @Override
-        public void execute(Runnable command)
-        {
-            command.run();
-        }
-    };
+    public static final Executor SYNC_EXECUTOR_SAME_THREAD =
+            new Executor() {
+                @Override
+                public void execute(Runnable command) {
+                    command.run();
+                }
+            };
 
-    public static final Executor SYNC_EXECUTOR_NEW_THREAD = new Executor()
-    {
-        @Override
-        public void execute(Runnable command)
-        {
-            Thread t = new Thread(command);
-            t.start();
-            try
-            {
-                t.join();
-            }
-            catch (InterruptedException e)
-            {
-                Thread.currentThread().interrupt();
-            }
-        }
-    };
+    public static final Executor SYNC_EXECUTOR_NEW_THREAD =
+            new Executor() {
+                @Override
+                public void execute(Runnable command) {
+                    Thread t = new Thread(command);
+                    t.start();
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            };
 }

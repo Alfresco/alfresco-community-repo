@@ -29,14 +29,10 @@ package org.alfresco.rest.api.model;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 
-public class Type extends AbstractClass
-{
-    public Type()
-    {
-    }
+public class Type extends AbstractClass {
+    public Type() {}
 
-    public Type(TypeDefinition typeDefinition, MessageLookup messageLookup)
-    {
+    public Type(TypeDefinition typeDefinition, MessageLookup messageLookup) {
         this.id = typeDefinition.getName().toPrefixString();
         this.title = typeDefinition.getTitle(messageLookup);
         this.description = typeDefinition.getDescription(messageLookup);
@@ -45,22 +41,31 @@ public class Type extends AbstractClass
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder(512);
-        builder.append("Type [id=").append(this.id)
-                .append(", title=").append(this.title)
-                .append(", description=").append(this.description)
-                .append(", parentId=").append(parentId)
-                .append(", properties=").append(properties)
-                .append(", mandatoryAspects=").append(mandatoryAspects)
-                .append(", isContainer=").append(isContainer)
-                .append(", isArchive=").append(isArchive)
-                .append(", associations=").append(associations)
-                .append(", model=").append(model)
-                .append(", includedInSupertypeQuery=").append(includedInSupertypeQuery)
+        builder.append("Type [id=")
+                .append(this.id)
+                .append(", title=")
+                .append(this.title)
+                .append(", description=")
+                .append(this.description)
+                .append(", parentId=")
+                .append(parentId)
+                .append(", properties=")
+                .append(properties)
+                .append(", mandatoryAspects=")
+                .append(mandatoryAspects)
+                .append(", isContainer=")
+                .append(isContainer)
+                .append(", isArchive=")
+                .append(isArchive)
+                .append(", associations=")
+                .append(associations)
+                .append(", model=")
+                .append(model)
+                .append(", includedInSupertypeQuery=")
+                .append(includedInSupertypeQuery)
                 .append(']');
         return builder.toString();
     }
 }
-

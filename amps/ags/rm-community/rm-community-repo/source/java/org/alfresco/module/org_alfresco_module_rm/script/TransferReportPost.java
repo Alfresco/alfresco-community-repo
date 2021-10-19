@@ -27,19 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -67,14 +54,27 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Files a transfer report as a record.
  *
  * @author Gavin Cornwell
  */
 @Deprecated
-public class TransferReportPost extends BaseTransferWebScript
-{
+public class TransferReportPost extends BaseTransferWebScript {
     /** Logger */
     private static Log logger = LogFactory.getLog(TransferReportPost.class);
 
@@ -95,18 +95,16 @@ public class TransferReportPost extends BaseTransferWebScript
      *
      * @param ddService The DictionaryService instance
      */
-    public void setDictionaryService(DictionaryService ddService)
-    {
+    public void setDictionaryService(DictionaryService ddService) {
         this.ddService = ddService;
     }
 
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    disposition service
+     * @param dispositionService disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
@@ -115,8 +113,7 @@ public class TransferReportPost extends BaseTransferWebScript
      *
      * @param rmActionService RecordsManagementActionService instance
      */
-    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
-    {
+    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService) {
         this.rmActionService = rmActionService;
     }
 
@@ -125,16 +122,18 @@ public class TransferReportPost extends BaseTransferWebScript
      *
      * @param contentService ContentService instance
      */
-    public void setContentService(ContentService contentService)
-    {
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
     @Override
-    protected File executeTransfer(NodeRef transferNode,
-                WebScriptRequest req, WebScriptResponse res,
-                Status status, Cache cache) throws IOException
-    {
+    protected File executeTransfer(
+            NodeRef transferNode,
+            WebScriptRequest req,
+            WebScriptResponse res,
+            Status status,
+            Cache cache)
+            throws IOException {
         File report = null;
 
         // retrieve requested format
@@ -143,15 +142,14 @@ public class TransferReportPost extends BaseTransferWebScript
         model.put("status", status);
         model.put("cache", cache);
 
-        try
-        {
+        try {
             // extract the destination parameter, ensure it's present and it is
             // a record folder
             JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            if (!json.has(PARAM_DESTINATION))
-            {
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST,
-                            "Mandatory '" + PARAM_DESTINATION + "' parameter has not been supplied");
+            if (!json.has(PARAM_DESTINATION)) {
+                status.setCode(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Mandatory '" + PARAM_DESTINATION + "' parameter has not been supplied");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return null;
@@ -160,27 +158,27 @@ public class TransferReportPost extends BaseTransferWebScript
             String destinationParam = json.getString(PARAM_DESTINATION);
             NodeRef destination = new NodeRef(destinationParam);
 
-            if (!this.nodeService.exists(destination))
-            {
-                status.setCode(HttpServletResponse.SC_NOT_FOUND,
-                            "Node " + destination.toString() + " does not exist");
+            if (!this.nodeService.exists(destination)) {
+                status.setCode(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "Node " + destination.toString() + " does not exist");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return null;
             }
 
             // ensure the node is a filePlan object
-            if (!RecordsManagementModel.TYPE_RECORD_FOLDER.equals(this.nodeService.getType(destination)))
-            {
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST,
-                            "Node " + destination.toString() + " is not a record folder");
+            if (!RecordsManagementModel.TYPE_RECORD_FOLDER.equals(
+                    this.nodeService.getType(destination))) {
+                status.setCode(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Node " + destination.toString() + " is not a record folder");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return null;
             }
 
-            if (logger.isDebugEnabled())
-            {
+            if (logger.isDebugEnabled()) {
                 logger.debug("Filing transfer report as record in record folder: " + destination);
             }
 
@@ -190,19 +188,18 @@ public class TransferReportPost extends BaseTransferWebScript
             // file the report as a record
             NodeRef record = fileTransferReport(report, destination);
 
-            if (logger.isDebugEnabled())
-            {
+            if (logger.isDebugEnabled()) {
                 logger.debug("Filed transfer report as new record: " + record);
             }
 
             // return success flag and record noderef as JSON
             JSONObject responseJSON = new JSONObject();
             responseJSON.put(RESPONSE_SUCCESS, (record != null));
-            if (record != null)
-            {
+            if (record != null) {
                 responseJSON.put(RESPONSE_RECORD, record.toString());
-                responseJSON.put(RESPONSE_RECORD_NAME,
-                            (String)nodeService.getProperty(record, ContentModel.PROP_NAME));
+                responseJSON.put(
+                        RESPONSE_RECORD_NAME,
+                        (String) nodeService.getProperty(record, ContentModel.PROP_NAME));
             }
 
             // setup response
@@ -213,9 +210,7 @@ public class TransferReportPost extends BaseTransferWebScript
 
             // write the JSON response
             res.getWriter().write(jsonString);
-        }
-        catch (JSONException je)
-        {
+        } catch (JSONException je) {
             throw createStatusException(je, req, res);
         }
 
@@ -230,45 +225,47 @@ public class TransferReportPost extends BaseTransferWebScript
      * @return File containing JSON representation of a transfer report
      * @throws IOException
      */
-    File generateHTMLTransferReport(NodeRef transferNode) throws IOException
-    {
+    File generateHTMLTransferReport(NodeRef transferNode) throws IOException {
         File report = TempFileProvider.createTempFile(REPORT_FILE_PREFIX, REPORT_FILE_SUFFIX);
 
         // create the writer
-        try (FileOutputStream fileOutputStream = new FileOutputStream(report) ;
-            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8")))
-        {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(report);
+                Writer writer =
+                        new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8"))) {
             // get all 'transferred' nodes
             NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Generating HTML transfer report for " + itemsToTransfer.length +
-                            " items into file: " + report.getAbsolutePath());
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Generating HTML transfer report for "
+                                + itemsToTransfer.length
+                                + " items into file: "
+                                + report.getAbsolutePath());
             }
 
             // use RMService to get disposition authority
             String dispositionAuthority = null;
-            if (itemsToTransfer.length > 0)
-            {
+            if (itemsToTransfer.length > 0) {
                 // use the first transfer item to get to disposition schedule
-                DispositionSchedule ds = dispositionService.getDispositionSchedule(itemsToTransfer[0]);
-                if (ds != null)
-                {
+                DispositionSchedule ds =
+                        dispositionService.getDispositionSchedule(itemsToTransfer[0]);
+                if (ds != null) {
                     dispositionAuthority = ds.getDispositionAuthority();
                 }
             }
 
             // write the HTML header
-            writer.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
+            writer.write(
+                    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\""
+                            + " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
             writer.write("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n");
-            Boolean isAccession = (Boolean)this.nodeService.getProperty(transferNode, PROP_TRANSFER_ACCESSION_INDICATOR);
-            if (isAccession)
-            {
+            Boolean isAccession =
+                    (Boolean)
+                            this.nodeService.getProperty(
+                                    transferNode, PROP_TRANSFER_ACCESSION_INDICATOR);
+            if (isAccession) {
                 writer.write("<title>Accession Report</title></head>\n");
-            }
-            else
-            {
+            } else {
                 writer.write("<title>Transfer Report</title></head>\n");
             }
             writer.write("<style>\n");
@@ -277,39 +274,46 @@ public class TransferReportPost extends BaseTransferWebScript
             writer.write(".record { padding: 5px; }\n");
             writer.write(".label { color: #111; }\n");
             writer.write(".nodeName { font-weight: bold; }\n");
-            writer.write(".transferred-item { background-color: #eee; padding: 10px; margin-bottom: 15px; }\n");
+            writer.write(
+                    ".transferred-item { background-color: #eee; padding: 10px; margin-bottom:"
+                            + " 15px; }\n");
             writer.write("</style>\n");
-            if (isAccession)
-            {
+            if (isAccession) {
                 writer.write("<body>\n<h1>Accession Report</h1>\n");
-            }
-            else
-            {
+            } else {
                 writer.write("<body>\n<h1>Transfer Report</h1>\n");
             }
 
             writer.write("<table cellpadding=\"3\" cellspacing=\"3\">");
             writer.write("<tr><td class=\"label\">Transfer Date:</td><td>");
-            Date transferDate = (Date)this.nodeService.getProperty(transferNode, ContentModel.PROP_CREATED);
+            Date transferDate =
+                    (Date) this.nodeService.getProperty(transferNode, ContentModel.PROP_CREATED);
             writer.write(StringEscapeUtils.escapeHtml4(transferDate.toString()));
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Transfer Location:</td><td>");
-            if (isAccession)
-            {
+            if (isAccession) {
                 writer.write("NARA");
-            }
-            else
-            {
-                writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(transferNode,
-                        RecordsManagementModel.PROP_TRANSFER_LOCATION)));
+            } else {
+                writer.write(
+                        StringEscapeUtils.escapeHtml4(
+                                (String)
+                                        this.nodeService.getProperty(
+                                                transferNode,
+                                                RecordsManagementModel.PROP_TRANSFER_LOCATION)));
             }
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Performed By:</td><td>");
-            writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(transferNode,
-                        ContentModel.PROP_CREATOR)));
+            writer.write(
+                    StringEscapeUtils.escapeHtml4(
+                            (String)
+                                    this.nodeService.getProperty(
+                                            transferNode, ContentModel.PROP_CREATOR)));
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Disposition Authority:</td><td>");
-            writer.write(dispositionAuthority != null ? StringEscapeUtils.escapeHtml4(dispositionAuthority) : "");
+            writer.write(
+                    dispositionAuthority != null
+                            ? StringEscapeUtils.escapeHtml4(dispositionAuthority)
+                            : "");
             writer.write("</td></tr></table>\n");
 
             writer.write("<h2>Transferred Items</h2>\n");
@@ -332,17 +336,12 @@ public class TransferReportPost extends BaseTransferWebScript
      * @throws IOException
      */
     protected void generateTransferItemsHTML(Writer writer, NodeRef[] itemsToTransfer)
-        throws IOException
-    {
-        for (NodeRef item : itemsToTransfer)
-        {
+            throws IOException {
+        for (NodeRef item : itemsToTransfer) {
             writer.write("<div class=\"transferred-item\">\n");
-            if (ddService.isSubClass(nodeService.getType(item), ContentModel.TYPE_FOLDER))
-            {
+            if (ddService.isSubClass(nodeService.getType(item), ContentModel.TYPE_FOLDER)) {
                 generateTransferFolderHTML(writer, item);
-            }
-            else
-            {
+            } else {
                 generateTransferRecordHTML(writer, item);
             }
             writer.write("</div>\n");
@@ -357,14 +356,17 @@ public class TransferReportPost extends BaseTransferWebScript
      * @throws IOException
      */
     protected void generateTransferFolderHTML(Writer writer, NodeRef folderNode)
-        throws IOException
-    {
+            throws IOException {
         writer.write("<span class=\"nodeName\">");
-        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(folderNode,
-                    ContentModel.PROP_NAME)));
+        writer.write(
+                StringEscapeUtils.escapeHtml4(
+                        (String) this.nodeService.getProperty(folderNode, ContentModel.PROP_NAME)));
         writer.write("</span>&nbsp;(Unique Folder Identifier:&nbsp;");
-        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(folderNode,
-                    RecordsManagementModel.PROP_IDENTIFIER)));
+        writer.write(
+                StringEscapeUtils.escapeHtml4(
+                        (String)
+                                this.nodeService.getProperty(
+                                        folderNode, RecordsManagementModel.PROP_IDENTIFIER)));
         writer.write(")\n");
 
         writer.write("<div class=\"records\">\n");
@@ -372,13 +374,12 @@ public class TransferReportPost extends BaseTransferWebScript
         // NOTE: we don't expect any nested folder structures so just render
         //       the records contained in the folder.
 
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(folderNode,
-                    ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef child : assocs)
-        {
+        List<ChildAssociationRef> assocs =
+                this.nodeService.getChildAssocs(
+                        folderNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef child : assocs) {
             NodeRef childRef = child.getChildRef();
-            if (this.nodeService.hasAspect(childRef, RecordsManagementModel.ASPECT_RECORD))
-            {
+            if (this.nodeService.hasAspect(childRef, RecordsManagementModel.ASPECT_RECORD)) {
                 generateTransferRecordHTML(writer, childRef);
             }
         }
@@ -394,23 +395,31 @@ public class TransferReportPost extends BaseTransferWebScript
      * @throws IOException
      */
     protected void generateTransferRecordHTML(Writer writer, NodeRef recordNode)
-        throws IOException
-    {
+            throws IOException {
         writer.write("<div class=\"record\">\n");
         writer.write("  <span class=\"nodeName\">");
-        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(recordNode,
-                    ContentModel.PROP_NAME)));
+        writer.write(
+                StringEscapeUtils.escapeHtml4(
+                        (String) this.nodeService.getProperty(recordNode, ContentModel.PROP_NAME)));
         writer.write("</span>&nbsp;(Unique Record Identifier:&nbsp;");
-        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(recordNode,
-                    RecordsManagementModel.PROP_IDENTIFIER)));
+        writer.write(
+                StringEscapeUtils.escapeHtml4(
+                        (String)
+                                this.nodeService.getProperty(
+                                        recordNode, RecordsManagementModel.PROP_IDENTIFIER)));
         writer.write(")");
 
-        if (this.nodeService.hasAspect(recordNode, RecordsManagementModel.ASPECT_DECLARED_RECORD))
-        {
-            Date declaredOn = (Date)this.nodeService.getProperty(recordNode, RecordsManagementModel.PROP_DECLARED_AT);
+        if (this.nodeService.hasAspect(recordNode, RecordsManagementModel.ASPECT_DECLARED_RECORD)) {
+            Date declaredOn =
+                    (Date)
+                            this.nodeService.getProperty(
+                                    recordNode, RecordsManagementModel.PROP_DECLARED_AT);
             writer.write(" declared by ");
-            writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(recordNode,
-                        RecordsManagementModel.PROP_DECLARED_BY)));
+            writer.write(
+                    StringEscapeUtils.escapeHtml4(
+                            (String)
+                                    this.nodeService.getProperty(
+                                            recordNode, RecordsManagementModel.PROP_DECLARED_BY)));
             writer.write(" on ");
             writer.write(StringEscapeUtils.escapeHtml4(declaredOn.toString()));
         }
@@ -425,8 +434,7 @@ public class TransferReportPost extends BaseTransferWebScript
      * @param destination The destination record folder
      * @return NodeRef of the created record
      */
-    protected NodeRef fileTransferReport(File report, NodeRef destination)
-    {
+    protected NodeRef fileTransferReport(File report, NodeRef destination) {
         ParameterCheck.mandatory("report", report);
         ParameterCheck.mandatory("destination", destination);
 
@@ -436,11 +444,17 @@ public class TransferReportPost extends BaseTransferWebScript
         properties.put(ContentModel.PROP_NAME, report.getName());
 
         // file the transfer report as an undeclared record
-        record = this.nodeService.createNode(destination,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                QName.createValidLocalName(report.getName())),
-                    ContentModel.TYPE_CONTENT, properties).getChildRef();
+        record =
+                this.nodeService
+                        .createNode(
+                                destination,
+                                ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(
+                                        NamespaceService.CONTENT_MODEL_1_0_URI,
+                                        QName.createValidLocalName(report.getName())),
+                                ContentModel.TYPE_CONTENT,
+                                properties)
+                        .getChildRef();
 
         // Set the content
         ContentWriter writer = contentService.getWriter(record, ContentModel.PROP_CONTENT, true);

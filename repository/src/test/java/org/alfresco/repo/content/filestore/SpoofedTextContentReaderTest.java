@@ -4,29 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.content.filestore;
-
-import java.io.InputStream;
-import java.util.Locale;
 
 import junit.framework.TestCase;
 
@@ -39,80 +36,78 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.FileCopyUtils;
 
+import java.io.InputStream;
+import java.util.Locale;
+
 /**
  * Text spoofing as a {@link ContentReader}
- * 
+ *
  * @see SpoofedTextContentReader
- * 
  * @author Derek Hulley
  * @since 5.1
  */
 @Category(OwnJVMTestsCategory.class)
-public class SpoofedTextContentReaderTest extends TestCase
-{
+public class SpoofedTextContentReaderTest extends TestCase {
     @Before
-    public void before()
-    {
+    public void before() {
         // Nothing
     }
-    
-    public void testStaticUrlHandlingErr()
-    {
-        try
-        {
+
+    public void testStaticUrlHandlingErr() {
+        try {
             SpoofedTextContentReader.createContentUrl(null, 12345L, 1024L);
             fail();
-        }
-        catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             // Expected
         }
-        try
-        {
+        try {
             SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, -1L);
             fail();
-        }
-        catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             // Expected
         }
-        try
-        {
+        try {
             SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 1024L, (String) null);
             fail();
-        }
-        catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             // Expected
         }
-        try
-        {
+        try {
             SpoofedTextContentReader.createContentUrl(Locale.FRENCH, 12345L, 1024L);
             fail();
-        }
-        catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             // Expected
         }
-        try
-        {
+        try {
             SpoofedTextContentReader.createContentUrl(
-                    Locale.ENGLISH, 12345L, 1024L,
-                    "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ",
-                    "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ",
-                    "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ", "1234567890ABCDEFGHIJ");
+                    Locale.ENGLISH,
+                    12345L,
+                    1024L,
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ",
+                    "1234567890ABCDEFGHIJ");
             fail();
-        }
-        catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             // Expected
         }
     }
-    
-    public void testStaticUrlForm_01()
-    {
+
+    public void testStaticUrlForm_01() {
         // To URL
-        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 1024L, "harry");
+        String url =
+                SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 1024L, "harry");
         assertTrue(url.startsWith("spoof://{"));
         assertTrue(url.contains("\"locale\":\"en\""));
         assertTrue(url.contains("\"seed\":\"12345\""));
@@ -131,9 +126,8 @@ public class SpoofedTextContentReaderTest extends TestCase
         assertEquals(1, reader.getWords().length);
         assertEquals("harry", reader.getWords()[0]);
     }
-    
-    public void testStaticUrlForm_02()
-    {
+
+    public void testStaticUrlForm_02() {
         // To URL
         String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 1024L);
         assertTrue(url.startsWith("spoof://{"));
@@ -153,23 +147,20 @@ public class SpoofedTextContentReaderTest extends TestCase
         assertNotNull(reader.getWords());
         assertEquals(0, reader.getWords().length);
     }
-    
-    public void testGetContentString_01()
-    {
+
+    public void testGetContentString_01() {
         // To URL
-        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 56L, "harry");
+        String url =
+                SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 56L, "harry");
         // To Reader
         ContentReader reader = new SpoofedTextContentReader(url);
         String readerText = reader.getContentString();
         assertEquals("harry have voice the from countered growth invited      ", readerText);
         // Cannot repeat
-        try
-        {
+        try {
             reader.getContentString();
             fail("Should not be able to reread content.");
-        }
-        catch (ContentIOException e)
-        {
+        } catch (ContentIOException e) {
             // Expected
         }
         // Get a new Reader
@@ -177,21 +168,18 @@ public class SpoofedTextContentReaderTest extends TestCase
         // Get exactly the same text
         assertEquals(readerText, reader.getContentString());
     }
-    
-    public void testGetContentBinary_01() throws Exception
-    {
+
+    public void testGetContentBinary_01() throws Exception {
         // To URL
-        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 56L, "harry");
+        String url =
+                SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 12345L, 56L, "harry");
         // To Reader
         ContentReader reader = new SpoofedTextContentReader(url);
         InputStream is = reader.getContentInputStream();
-        try
-        {
+        try {
             byte[] bytes = FileCopyUtils.copyToByteArray(is);
             assertEquals(56L, bytes.length);
-        }
-        finally
-        {
+        } finally {
             is.close();
         }
         // Compare readers

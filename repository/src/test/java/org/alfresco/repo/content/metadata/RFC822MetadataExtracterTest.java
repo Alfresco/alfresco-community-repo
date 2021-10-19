@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_DOD_5015_RECORD;
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_RECORD;
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.DOD_URI;
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.RM_URI;
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -40,22 +47,14 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_DOD_5015_RECORD;
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_RECORD;
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.DOD_URI;
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.RM_URI;
-import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
-import static org.mockito.Mockito.when;
-
 /**
- * Test the ability of RFC822MetadataExtracter when overridden by RM, to control which properties are extracted
- * from T-Engines. RFC822MetadataExtracter no longer extracts.
+ * Test the ability of RFC822MetadataExtracter when overridden by RM, to control which properties
+ * are extracted from T-Engines. RFC822MetadataExtracter no longer extracts.
  *
  * @author adavis
  */
-//@RunWith(MockitoJUnitRunner.class)
-public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
-{
+// @RunWith(MockitoJUnitRunner.class)
+public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest {
     private RFC822MetadataExtracter extracter;
     private RFC822MetadataExtracter rmExtracter;
     @Mock private NodeService mockNodeService;
@@ -65,60 +64,57 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
     private NodeRef nodeRefWithBoth = new NodeRef("workspace://spacesStore/test-both");
     private NodeRef nodeRefWithNeither = new NodeRef("workspace://spacesStore/test-neither");
 
-    private static final QName MESSAGE_FROM_TEST_PROPERTY =
-            QName.createQName("MessageToTest");
-    private static final QName MESSAGE_TO_TEST_PROPERTY =
-            QName.createQName("MessageFromTest");
-    private static final QName MESSAGE_CC_TEST_PROPERTY =
-            QName.createQName("MessageCCTest");
+    private static final QName MESSAGE_FROM_TEST_PROPERTY = QName.createQName("MessageToTest");
+    private static final QName MESSAGE_TO_TEST_PROPERTY = QName.createQName("MessageFromTest");
+    private static final QName MESSAGE_CC_TEST_PROPERTY = QName.createQName("MessageCCTest");
 
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         super.setUp();
 
         extracter = (RFC822MetadataExtracter) ctx.getBean("extracter.RFC822");
 
         MockitoAnnotations.initMocks(this);
-        when(mockNodeService.hasAspect(nodeRefWithDodRecord, ASPECT_DOD_5015_RECORD)).thenReturn(true);
+        when(mockNodeService.hasAspect(nodeRefWithDodRecord, ASPECT_DOD_5015_RECORD))
+                .thenReturn(true);
         when(mockNodeService.hasAspect(nodeRefWithRecord, ASPECT_RECORD)).thenReturn(true);
         when(mockNodeService.hasAspect(nodeRefWithBoth, ASPECT_DOD_5015_RECORD)).thenReturn(true);
         when(mockNodeService.hasAspect(nodeRefWithBoth, ASPECT_RECORD)).thenReturn(true);
 
-        rmExtracter = new RFC822MetadataExtracter()
-        {
-            @Override
-            // Needed so the init method runs.
-            protected Map<String, Set<QName>> getDefaultMapping()
-            {
-                return Collections.emptyMap();
-            }
-        };
+        rmExtracter =
+                new RFC822MetadataExtracter() {
+                    @Override
+                    // Needed so the init method runs.
+                    protected Map<String, Set<QName>> getDefaultMapping() {
+                        return Collections.emptyMap();
+                    }
+                };
         rmExtracter.setNodeService(mockNodeService);
         rmExtracter.init();
     }
 
     @Override
-    protected MetadataExtracter getExtracter()
-    {
+    protected MetadataExtracter getExtracter() {
         return extracter;
     }
 
     @Override
-    protected void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties)
-    {
+    protected void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {
         // ignore as this is no longer an extractor
     }
 
-    public void testMatch()
-    {
-        assertFalse("Normal class should never match", extracter.match(MimetypeMap.MIMETYPE_RFC822));
-        assertTrue("RM class should match with correct type", rmExtracter.match(MimetypeMap.MIMETYPE_RFC822));
-        assertFalse("RM class should not match with other types", rmExtracter.match(MimetypeMap.MIMETYPE_PDF));
+    public void testMatch() {
+        assertFalse(
+                "Normal class should never match", extracter.match(MimetypeMap.MIMETYPE_RFC822));
+        assertTrue(
+                "RM class should match with correct type",
+                rmExtracter.match(MimetypeMap.MIMETYPE_RFC822));
+        assertFalse(
+                "RM class should not match with other types",
+                rmExtracter.match(MimetypeMap.MIMETYPE_PDF));
     }
 
-    public void testGetExtractMapping()
-    {
+    public void testGetExtractMapping() {
         Properties properties = new Properties();
         properties.put("namespace.prefix.rm", RM_URI);
         properties.put("namespace.prefix.dod", DOD_URI);
@@ -129,31 +125,44 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
         properties.put("d", "cm:d, rm:d1, rm:d2");
         rmExtracter.setMappingProperties(properties);
 
-        assertEquals("No properties should have been removed", 7, countSystemProperties(nodeRefWithBoth));
-        assertEquals("The 1 dod and 4 record properties should have been removed", 2, countSystemProperties(nodeRefWithNeither));
-        assertEquals("The 4 record properties should have been removed", 3, countSystemProperties(nodeRefWithDodRecord));
-        assertEquals("The 1 dod property should have been removed", 6, countSystemProperties(nodeRefWithRecord));
+        assertEquals(
+                "No properties should have been removed",
+                7,
+                countSystemProperties(nodeRefWithBoth));
+        assertEquals(
+                "The 1 dod and 4 record properties should have been removed",
+                2,
+                countSystemProperties(nodeRefWithNeither));
+        assertEquals(
+                "The 4 record properties should have been removed",
+                3,
+                countSystemProperties(nodeRefWithDodRecord));
+        assertEquals(
+                "The 1 dod property should have been removed",
+                6,
+                countSystemProperties(nodeRefWithRecord));
 
-        // Check that we have the fully qualified version as the T-Engine know nothing about the repo's prefixes.
+        // Check that we have the fully qualified version as the T-Engine know nothing about the
+        // repo's prefixes.
         // Check just one of them.
-        assertEquals("{http://www.alfresco.org/model/content/1.0}d, " +
-                "{http://www.alfresco.org/model/content/1.0}a, " +
-                "{http://www.alfresco.org/model/dod5015/1.0}b", getSystemProperties(nodeRefWithDodRecord));
+        assertEquals(
+                "{http://www.alfresco.org/model/content/1.0}d, "
+                        + "{http://www.alfresco.org/model/content/1.0}a, "
+                        + "{http://www.alfresco.org/model/dod5015/1.0}b",
+                getSystemProperties(nodeRefWithDodRecord));
     }
 
-    private int countSystemProperties(NodeRef nodeRef)
-    {
+    private int countSystemProperties(NodeRef nodeRef) {
         Map<String, Set<String>> extractMapping = rmExtracter.getExtractMapping(nodeRef);
         AtomicInteger count = new AtomicInteger();
-        extractMapping.forEach((k,v) -> count.addAndGet(v.size()));
+        extractMapping.forEach((k, v) -> count.addAndGet(v.size()));
         return count.get();
     }
 
-    private String getSystemProperties(NodeRef nodeRef)
-    {
+    private String getSystemProperties(NodeRef nodeRef) {
         Map<String, Set<String>> extractMapping = rmExtracter.getExtractMapping(nodeRef);
         StringJoiner sj = new StringJoiner(", ");
-        extractMapping.forEach((k,v) -> v.forEach(p -> sj.add(p.toString())));
+        extractMapping.forEach((k, v) -> v.forEach(p -> sj.add(p.toString())));
         return sj.toString();
     }
 }

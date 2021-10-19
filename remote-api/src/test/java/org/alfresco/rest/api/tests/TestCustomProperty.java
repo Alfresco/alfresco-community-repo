@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,20 +32,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.api.model.CustomModel;
+import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.model.CustomModelConstraint;
 import org.alfresco.rest.api.model.CustomModelNamedValue;
 import org.alfresco.rest.api.model.CustomModelProperty;
 import org.alfresco.rest.api.model.CustomType;
-import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
@@ -53,18 +48,21 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Tests the REST API of the properties of the {@link CustomModelService}.
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class TestCustomProperty extends BaseCustomModelApiTest
-{
+public class TestCustomProperty extends BaseCustomModelApiTest {
     @Test
-    public void testCreateProperties() throws Exception
-    {
+    public void testCreateProperties() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -73,7 +71,8 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         {
             // Create aspect
             String aspectName = "testAspect1" + System.currentTimeMillis();
-            CustomAspect aspect = createTypeAspect(CustomAspect.class, modelName, aspectName, null, null, null);
+            CustomAspect aspect =
+                    createTypeAspect(CustomAspect.class, modelName, aspectName, null, null, null);
 
             // Update the Aspect by adding property
             CustomAspect payload = new CustomAspect();
@@ -90,29 +89,49 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             payload.setProperties(props);
 
             setRequestContext(nonAdminUserName);
-            
+
             // Try to update the aspect as a non Admin user
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 403);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    403);
 
             setRequestContext(customModelAdmin);
-            
+
             // Try to update the aspect as a Model Administrator
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 400); // Type name is mandatory
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    400); // Type name is mandatory
 
             // Add the mandatory aspect name to the payload
             payload.setName(aspectName);
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    200);
 
             // Retrieve the updated aspect
-            HttpResponse response = getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
-            CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            HttpResponse response =
+                    getSingle("cmm/" + modelName + "/aspects", aspect.getName(), 200);
+            CustomAspect returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
             // Check the aspect's added property
             assertEquals(1, returnedAspect.getProperties().size());
             CustomModelProperty customModelProperty = returnedAspect.getProperties().get(0);
             assertEquals(aspectPropName, customModelProperty.getName());
             assertEquals("property title", customModelProperty.getTitle());
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectPropName, customModelProperty.getPrefixedName());
-            assertEquals("Default data type is 'd:text'.", "d:text", customModelProperty.getDataType());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + aspectPropName,
+                    customModelProperty.getPrefixedName());
+            assertEquals(
+                    "Default data type is 'd:text'.", "d:text", customModelProperty.getDataType());
             assertNull(customModelProperty.getDescription());
             assertTrue(customModelProperty.isMultiValued());
             assertFalse(customModelProperty.isMandatory());
@@ -120,7 +139,8 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             assertNull(customModelProperty.getDefaultValue());
             assertTrue(customModelProperty.isIndexed());
             assertEquals(Facetable.TRUE, customModelProperty.getFacetable());
-            assertEquals(IndexTokenisationMode.BOTH, customModelProperty.getIndexTokenisationMode());
+            assertEquals(
+                    IndexTokenisationMode.BOTH, customModelProperty.getIndexTokenisationMode());
 
             // Test duplicate property name
             aspectProp = new CustomModelProperty();
@@ -130,13 +150,25 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             props.add(aspectProp);
             payload.setProperties(props);
             // Try to update the aspect as a Model Administrator
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 409); // property name already exists
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    409); // property name already exists
         }
 
         {
             // Create type
             String typeName = "testType1" + System.currentTimeMillis();
-            CustomType type = createTypeAspect(CustomType.class, modelName, typeName, "test type1 title", "test type1 Desc", "cm:content");
+            CustomType type =
+                    createTypeAspect(
+                            CustomType.class,
+                            modelName,
+                            typeName,
+                            "test type1 title",
+                            "test type1 Desc",
+                            "cm:content");
 
             // Update the Type by adding property
             CustomType payload = new CustomType();
@@ -153,28 +185,46 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             payload.setProperties(props);
 
             setRequestContext(nonAdminUserName);
-            
+
             // Try to update the type as a non Admin user
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 403);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    403);
 
             setRequestContext(customModelAdmin);
-            
+
             // Try to update the type as a Model Administrator
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 400); // Type name is mandatory
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    400); // Type name is mandatory
 
             // Add the mandatory type name to the payload
             payload.setName(typeName);
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    200);
 
             // Retrieve the updated type
             HttpResponse response = getSingle("cmm/" + modelName + "/types", type.getName(), 200);
-            CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            CustomType returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             // Check the type's added property
             assertEquals(1, returnedType.getProperties().size());
             CustomModelProperty customModelProperty = returnedType.getProperties().get(0);
             assertEquals(typePropName, customModelProperty.getName());
             assertEquals("property title", customModelProperty.getTitle());
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typePropName, customModelProperty.getPrefixedName());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typePropName,
+                    customModelProperty.getPrefixedName());
             assertEquals("d:int", customModelProperty.getDataType());
             assertNull(customModelProperty.getDescription());
             assertFalse(customModelProperty.isMultiValued());
@@ -183,16 +233,20 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             assertNull(customModelProperty.getDefaultValue());
             assertFalse(customModelProperty.isIndexed());
             assertEquals(Facetable.FALSE, customModelProperty.getFacetable());
-            assertEquals(IndexTokenisationMode.FALSE, customModelProperty.getIndexTokenisationMode());
+            assertEquals(
+                    IndexTokenisationMode.FALSE, customModelProperty.getIndexTokenisationMode());
 
             // Retrieve the updated type with all the properties (include inherited)
-            response = getSingle("cmm/" + modelName + "/types", type.getName()+SELECT_ALL_PROPS, 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            response =
+                    getSingle(
+                            "cmm/" + modelName + "/types", type.getName() + SELECT_ALL_PROPS, 200);
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             assertEquals(3, returnedType.getProperties().size());
             // Check for the inherited properties
             assertNotNull(getProperty(returnedType.getProperties(), "content")); // cm:content
             assertNotNull(getProperty(returnedType.getProperties(), "name")); // cm:name
-   
+
             // Create another property and set all of its attributes
             payload = new CustomType();
             payload.setName(typeName);
@@ -209,18 +263,26 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             props = new ArrayList<>(1);
             props.add(typeProp);
             payload.setProperties(props);
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    200);
 
             // Retrieve the updated type
             response = getSingle("cmm/" + modelName + "/types", type.getName(), 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             // Check the type's added property
             assertEquals(2, returnedType.getProperties().size());
             customModelProperty = getProperty(returnedType.getProperties(), typePropName2);
             assertNotNull(customModelProperty);
             assertEquals(typePropName2, customModelProperty.getName());
             assertEquals("property2 title", customModelProperty.getTitle());
-            assertEquals(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typePropName2, customModelProperty.getPrefixedName());
+            assertEquals(
+                    namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typePropName2,
+                    customModelProperty.getPrefixedName());
             assertEquals("d:int", customModelProperty.getDataType());
             assertEquals("property2 desciption", customModelProperty.getDescription());
             assertFalse(customModelProperty.isMultiValued());
@@ -236,15 +298,19 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             props = new ArrayList<>(1);
             props.add(typeProp);
             payload.setProperties(props);
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(payload), SELECT_PROPS_QS, 409); // property name already exists
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(payload),
+                    SELECT_PROPS_QS,
+                    409); // property name already exists
         }
     }
 
     @Test
-    public void testDeleteProperty() throws Exception
-    {
+    public void testDeleteProperty() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModelDeleteProp" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -268,7 +334,12 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         props.add(aspectPropOne);
         aspectPayload.setProperties(props);
         // create property one
-        put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/aspects",
+                aspectName,
+                RestApiUtil.toJsonAsString(aspectPayload),
+                SELECT_PROPS_QS,
+                200);
 
         // Update the Aspect by adding another property - property two
         aspectPayload = new CustomAspect();
@@ -285,11 +356,17 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         props.add(aspectPropTwo);
         aspectPayload.setProperties(props);
         // create property two
-        put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/aspects",
+                aspectName,
+                RestApiUtil.toJsonAsString(aspectPayload),
+                SELECT_PROPS_QS,
+                200);
 
         // Retrieve the updated aspect
         HttpResponse response = getSingle("cmm/" + modelName + "/aspects", aspectName, 200);
-        CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+        CustomAspect returnedAspect =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
         // Check the aspect's added properties
         assertEquals(2, returnedAspect.getProperties().size());
 
@@ -297,7 +374,8 @@ public class TestCustomProperty extends BaseCustomModelApiTest
          * Create type and update it by adding two properties
          */
         String typeName = "testType1" + System.currentTimeMillis();
-        createTypeAspect(CustomType.class, modelName, typeName, "test type1 title", null, "cm:content");
+        createTypeAspect(
+                CustomType.class, modelName, typeName, "test type1 title", null, "cm:content");
 
         // Update the Type by adding property - property one
         CustomType typePayload = new CustomType();
@@ -311,7 +389,12 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         props.add(typePropOne);
         typePayload.setProperties(props);
         // create property one
-        put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/types",
+                typeName,
+                RestApiUtil.toJsonAsString(typePayload),
+                SELECT_PROPS_QS,
+                200);
 
         // Update the Type by adding another property - property two
         typePayload = new CustomType();
@@ -333,16 +416,23 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         typePropTwo.setName(typePropNameTwo);
         typePropTwo.setTitle("type property two title");
         typePropTwo.setDataType("d:int");
-        typePropTwo.setConstraints(Arrays.asList(inlineMinMaxConstraint)); // add the inline constraint
+        typePropTwo.setConstraints(
+                Arrays.asList(inlineMinMaxConstraint)); // add the inline constraint
         props = new ArrayList<>(1);
         props.add(typePropTwo);
         typePayload.setProperties(props);
         // create property one
-        put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/types",
+                typeName,
+                RestApiUtil.toJsonAsString(typePayload),
+                SELECT_PROPS_QS,
+                200);
 
         // Retrieve the updated type
         response = getSingle("cmm/" + modelName + "/types", typeName, 200);
-        CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+        CustomType returnedType =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
         // Check the type's added properties
         assertEquals(2, returnedType.getProperties().size());
 
@@ -350,57 +440,112 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         {
             final String deletePropOneAspectQS = getPropDeleteUpdateQS(aspectPropNameOne, true);
             // Try to delete propertyOne from aspect
-            put("cmm/" + modelName + "/aspects", aspectName, null, deletePropOneAspectQS, 400); // missing payload
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    null,
+                    deletePropOneAspectQS,
+                    400); // missing payload
 
             CustomAspect deletePropAspectPayload = new CustomAspect();
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropOneAspectQS, 400); // missing aspect name
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(deletePropAspectPayload),
+                    deletePropOneAspectQS,
+                    400); // missing aspect name
 
             setRequestContext(nonAdminUserName);
-            
+
             deletePropAspectPayload.setName(aspectName);
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropOneAspectQS, 403); // unauthorised
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(deletePropAspectPayload),
+                    deletePropOneAspectQS,
+                    403); // unauthorised
 
             setRequestContext(customModelAdmin);
-            
+
             // Delete as a Model Administrator
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropOneAspectQS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(deletePropAspectPayload),
+                    deletePropOneAspectQS,
+                    200);
 
             // Check the property has been deleted
             response = getSingle("cmm/" + modelName + "/aspects", aspectName, 200);
-            returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
             assertEquals(1, returnedAspect.getProperties().size());
-            assertFalse("Property one should have been deleted.", aspectPropNameOne.equals(returnedAspect.getProperties().get(0).getName()));
+            assertFalse(
+                    "Property one should have been deleted.",
+                    aspectPropNameOne.equals(returnedAspect.getProperties().get(0).getName()));
 
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropOneAspectQS, 404); //Not found
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(deletePropAspectPayload),
+                    deletePropOneAspectQS,
+                    404); // Not found
         }
 
         // Delete type's property two - model is inactive
         {
             final String deletePropTwoTypeQS = getPropDeleteUpdateQS(typePropNameTwo, true);
             // Try to delete propertyOne from type
-            put("cmm/" + modelName + "/types", typeName, null, deletePropTwoTypeQS, 400); // missing payload
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    null,
+                    deletePropTwoTypeQS,
+                    400); // missing payload
 
             CustomType deletePropTypePayload = new CustomType();
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropTwoTypeQS,
-                        400); // missing type name
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(deletePropTypePayload),
+                    deletePropTwoTypeQS,
+                    400); // missing type name
 
             setRequestContext(nonAdminUserName);
-            
+
             deletePropTypePayload.setName(typeName);
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropTwoTypeQS, 403); // unauthorised
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(deletePropTypePayload),
+                    deletePropTwoTypeQS,
+                    403); // unauthorised
 
             setRequestContext(customModelAdmin);
-            
+
             // Delete as a Model Administrator
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropTwoTypeQS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(deletePropTypePayload),
+                    deletePropTwoTypeQS,
+                    200);
 
             // Check the property has been deleted
             response = getSingle("cmm/" + modelName + "/types", typeName, 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             assertEquals(1, returnedType.getProperties().size());
-            assertFalse("Property two should have been deleted.", typePropNameTwo.equals(returnedType.getProperties().get(0).getName()));
+            assertFalse(
+                    "Property two should have been deleted.",
+                    typePropNameTwo.equals(returnedType.getProperties().get(0).getName()));
 
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropTwoTypeQS, 404); //Not found
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(deletePropTypePayload),
+                    deletePropTwoTypeQS,
+                    404); // Not found
         }
 
         /*
@@ -419,14 +564,28 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             deletePropAspectPayload.setName(aspectName);
 
             // Delete as a Model Administrator
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropTwoAspectQS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(deletePropAspectPayload),
+                    deletePropTwoAspectQS,
+                    200);
 
             // Check the property has been deleted
             response = getSingle("cmm/" + modelName + "/aspects", aspectName, 200);
-            returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
-            assertEquals("Property two should have been deleted.", 0, returnedAspect.getProperties().size());
+            returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            assertEquals(
+                    "Property two should have been deleted.",
+                    0,
+                    returnedAspect.getProperties().size());
 
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropTwoAspectQS, 404); //Not found
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(deletePropAspectPayload),
+                    deletePropTwoAspectQS,
+                    404); // Not found
         }
 
         // Delete type's property one - model is active
@@ -437,22 +596,35 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             deletePropTypePayload.setName(typeName);
 
             // Delete as a Model Administrator
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropOneTypeQS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(deletePropTypePayload),
+                    deletePropOneTypeQS,
+                    200);
 
             // Check the property has been deleted
             response = getSingle("cmm/" + modelName + "/types", typeName, 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
-            assertEquals("Property one should have been deleted.", 0, returnedType.getProperties().size());
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            assertEquals(
+                    "Property one should have been deleted.",
+                    0,
+                    returnedType.getProperties().size());
 
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropOneTypeQS, 404); //Not found
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(deletePropTypePayload),
+                    deletePropOneTypeQS,
+                    404); // Not found
         }
     }
 
     @Test
-    public void testUpdateProperty() throws Exception
-    {
+    public void testUpdateProperty() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModelUpdateProp" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -476,11 +648,17 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         props.add(aspectProp);
         aspectPayload.setProperties(props);
         // create property
-        put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/aspects",
+                aspectName,
+                RestApiUtil.toJsonAsString(aspectPayload),
+                SELECT_PROPS_QS,
+                200);
 
         // Retrieve the updated aspect
         HttpResponse response = getSingle("cmm/" + modelName + "/aspects", aspectName, 200);
-        CustomAspect returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+        CustomAspect returnedAspect =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
         // Check the aspect's added property
         assertEquals(1, returnedAspect.getProperties().size());
 
@@ -488,7 +666,8 @@ public class TestCustomProperty extends BaseCustomModelApiTest
          * Create type and update it by adding a property
          */
         String typeName = "testType1" + System.currentTimeMillis();
-        createTypeAspect(CustomType.class, modelName, typeName, "test type1 title", null, "cm:content");
+        createTypeAspect(
+                CustomType.class, modelName, typeName, "test type1 title", null, "cm:content");
 
         // Update the Type by adding property - property one
         CustomType typePayload = new CustomType();
@@ -516,11 +695,17 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         props.add(typeProp);
         typePayload.setProperties(props);
         // create property
-        put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(typePayload), SELECT_PROPS_QS, 200);
+        put(
+                "cmm/" + modelName + "/types",
+                typeName,
+                RestApiUtil.toJsonAsString(typePayload),
+                SELECT_PROPS_QS,
+                200);
 
         // Retrieve the updated type
         response = getSingle("cmm/" + modelName + "/types", typeName, 200);
-        CustomType returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+        CustomType returnedType =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
         // Check the type's added property
         assertEquals(1, returnedType.getProperties().size());
 
@@ -528,7 +713,12 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         {
             final String updatePropOneAspectQS = getPropDeleteUpdateQS(aspectPropName, false);
             // Try to update property from aspect
-            put("cmm/" + modelName + "/aspects", aspectName, null, updatePropOneAspectQS, 400); // missing payload
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    null,
+                    updatePropOneAspectQS,
+                    400); // missing payload
 
             CustomAspect updatePropAspectPayload = new CustomAspect();
             CustomModelProperty propertyAspect = new CustomModelProperty();
@@ -541,34 +731,64 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             List<CustomModelProperty> modifiedProp = new ArrayList<>(1);
             modifiedProp.add(propertyAspect);
             updatePropAspectPayload.setProperties(modifiedProp);
- 
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(updatePropAspectPayload), updatePropOneAspectQS, 400); // missing aspect name
+
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(updatePropAspectPayload),
+                    updatePropOneAspectQS,
+                    400); // missing aspect name
 
             // set a random name
             updatePropAspectPayload.setName(aspectName + System.currentTimeMillis());
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(updatePropAspectPayload), updatePropOneAspectQS, 404); // Aspect not found
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(updatePropAspectPayload),
+                    updatePropOneAspectQS,
+                    404); // Aspect not found
 
             // set the correct name
             updatePropAspectPayload.setName(aspectName);
             // the requested property name dose not match the payload
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(updatePropAspectPayload), updatePropOneAspectQS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(updatePropAspectPayload),
+                    updatePropOneAspectQS,
+                    400);
 
             // set the property name that matches the requested property
             propertyAspect.setName(aspectPropName);
-            
+
             setRequestContext(nonAdminUserName);
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(updatePropAspectPayload), updatePropOneAspectQS, 403); // unauthorised
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(updatePropAspectPayload),
+                    updatePropOneAspectQS,
+                    403); // unauthorised
 
             setRequestContext(customModelAdmin);
             // Update as a Model Administrator
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(updatePropAspectPayload), updatePropOneAspectQS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(updatePropAspectPayload),
+                    updatePropOneAspectQS,
+                    200);
 
             // Check the property has been updated
             response = getSingle("cmm/" + modelName + "/aspects", aspectName, 200);
-            returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            returnedAspect =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
             assertEquals(1, returnedAspect.getProperties().size());
             CustomModelProperty modifiedAspectProperty = returnedAspect.getProperties().get(0);
-            compareCustomModelProperties(propertyAspect, modifiedAspectProperty, "prefixedName", "indexTokenisationMode");
+            compareCustomModelProperties(
+                    propertyAspect,
+                    modifiedAspectProperty,
+                    "prefixedName",
+                    "indexTokenisationMode");
         }
 
         // Activate the model
@@ -592,30 +812,56 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             updatePropTypePayload.setProperties(modifiedProp);
 
             setRequestContext(nonAdminUserName);
-            
+
             // Unauthorised
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 403);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    403);
 
             setRequestContext(customModelAdmin);
-            
-            // Try to update an active model as a Model Administrator - Cannot change the data type of the property of an active model
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 409);
+
+            // Try to update an active model as a Model Administrator - Cannot change the data type
+            // of the property of an active model
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    409);
 
             // Set the data type with its original value
             propertyType.setDataType("d:int");
-            propertyType.setMultiValued(true);// the original value was false
+            propertyType.setMultiValued(true); // the original value was false
             // Cannot change the multi-valued option of the property of an active model
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 409);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    409);
 
             propertyType.setMultiValued(false);
-            propertyType.setMandatory(true);// the original value was false
+            propertyType.setMandatory(true); // the original value was false
             // Cannot change the mandatory option of the property of an active model
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 409);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    409);
 
             propertyType.setMandatory(false);
-            propertyType.setMandatoryEnforced(true);// the original value was false
+            propertyType.setMandatoryEnforced(true); // the original value was false
             // Cannot change the mandatory-enforced option of the property of an active model
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 409);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    409);
 
             // Set the mandatory-enforced with its original value
             propertyType.setMandatoryEnforced(false);
@@ -625,31 +871,51 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             parameters.add(buildNamedValue("minValue", "20.0")); // the original value was 0.0
             // Add the parameters into the constraint
             inlineMinMaxConstraint.setParameters(parameters);
-            propertyType.setConstraints(Arrays.asList(inlineMinMaxConstraint)); // add the updated inline constraint
+            propertyType.setConstraints(
+                    Arrays.asList(inlineMinMaxConstraint)); // add the updated inline constraint
 
-            // Try to Update - constraint violation. The default value is 5 which is not in the MinMax range [20, 120]
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 409);
+            // Try to Update - constraint violation. The default value is 5 which is not in the
+            // MinMax range [20, 120]
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    409);
 
             propertyType.setDefaultValue("25"); // we changed the MinMax constraint to be [20, 120]
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    200);
 
             // Check the property has been updated
             response = getSingle("cmm/" + modelName + "/types", typeName, 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             assertEquals(1, returnedType.getProperties().size());
             CustomModelProperty modifiedTypeProperty = returnedType.getProperties().get(0);
             assertEquals("new Title", modifiedTypeProperty.getTitle());
             assertEquals("new Desc", modifiedTypeProperty.getDescription());
             assertEquals("25", modifiedTypeProperty.getDefaultValue());
-            assertEquals("Shouldn't be able to change the data type of the property of an active model." ,"d:int", modifiedTypeProperty.getDataType());
+            assertEquals(
+                    "Shouldn't be able to change the data type of the property of an active model.",
+                    "d:int",
+                    modifiedTypeProperty.getDataType());
             assertFalse(modifiedTypeProperty.isMandatory());
             assertFalse(modifiedTypeProperty.isMultiValued());
             assertFalse(modifiedTypeProperty.isMandatoryEnforced());
             assertEquals(1, modifiedTypeProperty.getConstraints().size());
             CustomModelConstraint modifiedConstraint = modifiedTypeProperty.getConstraints().get(0);
             assertEquals("MINMAX", modifiedConstraint.getType());
-            assertEquals("120.0", getParameterSimpleValue(modifiedConstraint.getParameters(), "maxValue"));
-            assertEquals("20.0", getParameterSimpleValue(modifiedConstraint.getParameters(), "minValue"));
+            assertEquals(
+                    "120.0",
+                    getParameterSimpleValue(modifiedConstraint.getParameters(), "maxValue"));
+            assertEquals(
+                    "20.0",
+                    getParameterSimpleValue(modifiedConstraint.getParameters(), "minValue"));
 
             // Change the constraint type and parameter
             inlineMinMaxConstraint.setType("LENGTH");
@@ -661,14 +927,25 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             inlineMinMaxConstraint.setParameters(parameters);
             propertyType.setConstraints(Arrays.asList(inlineMinMaxConstraint));
             // LENGTH can only be used with textual data type
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 400);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    400);
 
-            //update the property by removing the constraint
+            // update the property by removing the constraint
             propertyType.setConstraints(Collections.<CustomModelConstraint>emptyList());
-            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(updatePropTypePayload), updatePropTwoTypeQS, 200);
+            put(
+                    "cmm/" + modelName + "/types",
+                    typeName,
+                    RestApiUtil.toJsonAsString(updatePropTypePayload),
+                    updatePropTwoTypeQS,
+                    200);
 
             response = getSingle("cmm/" + modelName + "/types", typeName, 200);
-            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            returnedType =
+                    RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
             assertEquals(1, returnedType.getProperties().size());
             modifiedTypeProperty = returnedType.getProperties().get(0);
             assertEquals(0, modifiedTypeProperty.getConstraints().size());
@@ -676,10 +953,9 @@ public class TestCustomProperty extends BaseCustomModelApiTest
     }
 
     @Test
-    public void testValidatePropertyDefaultValue() throws Exception
-    {
+    public void testValidatePropertyDefaultValue() throws Exception {
         setRequestContext(customModelAdmin);
-        
+
         String modelName = "testModelPropDefaultValue" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -707,77 +983,151 @@ public class TestCustomProperty extends BaseCustomModelApiTest
         // d:int tests
         {
             aspectProp.setDataType("d:int");
-            aspectProp.setDefaultValue(" ");// space
+            aspectProp.setDefaultValue(" "); // space
 
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
 
             aspectProp.setDefaultValue("abc"); // text
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
 
             aspectProp.setDefaultValue("1.0"); // double
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
 
             aspectProp.setDefaultValue("1,2,3"); // text
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
         }
 
         // d:float tests
         {
             aspectProp.setDataType("d:float");
-            aspectProp.setDefaultValue(" ");// space
+            aspectProp.setDefaultValue(" "); // space
 
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
 
             aspectProp.setDefaultValue("abc"); // text
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
 
             aspectProp.setDefaultValue("1,2,3"); // text
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    400);
 
             aspectProp.setDefaultValue("1.0"); // float
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), SELECT_PROPS_QS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    SELECT_PROPS_QS,
+                    200);
 
             aspectProp.setDefaultValue("1.0f"); // float - update
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    200);
 
             aspectProp.setDefaultValue("1.0d"); // double - update
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    200);
         }
 
         // d:boolean tests
         {
             aspectProp.setDataType("d:boolean");
-            aspectProp.setDefaultValue(" ");// space
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 400);
+            aspectProp.setDefaultValue(" "); // space
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    400);
 
             aspectProp.setDefaultValue("abc"); // text
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 400);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    400);
 
             aspectProp.setDefaultValue("1"); // number
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 400);
-            
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    400);
+
             aspectProp.setDefaultValue("true"); // valid value
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 200);
- 
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    200);
+
             aspectProp.setDefaultValue("false"); // valid value
             // create property
-            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(aspectPayload), updatePropAspectQS, 200);
+            put(
+                    "cmm/" + modelName + "/aspects",
+                    aspectName,
+                    RestApiUtil.toJsonAsString(aspectPayload),
+                    updatePropAspectQS,
+                    200);
         }
     }
 
-    private String getPropDeleteUpdateQS(String propName, boolean isDelete)
-    {
+    private String getPropDeleteUpdateQS(String propName, boolean isDelete) {
         String req = (isDelete ? "&delete=" : "&update=");
         return SELECT_PROPS_QS + req + propName;
     }

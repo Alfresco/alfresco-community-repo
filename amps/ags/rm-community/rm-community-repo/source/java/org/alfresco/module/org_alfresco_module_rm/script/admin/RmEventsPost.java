@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.util.GUID;
@@ -44,13 +40,16 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Records management event POST web script
  *
  * @author Roy Wetherall
  */
-public class RmEventsPost extends RMEventBase
-{
+public class RmEventsPost extends RMEventBase {
     /** Records management event service */
     private RecordsManagementEventService rmEventService;
 
@@ -59,25 +58,23 @@ public class RmEventsPost extends RMEventBase
      *
      * @param rmEventService
      */
-    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
-    {
+    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService) {
         this.rmEventService = rmEventService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         ParameterCheck.mandatory("req", req);
 
         Map<String, Object> model = new HashMap<>();
         JSONObject json = null;
-        try
-        {
+        try {
             // Convert the request content to JSON
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
@@ -96,19 +93,16 @@ public class RmEventsPost extends RMEventBase
             doCheck(eventType, "No event type was provided.");
 
             // Create event
-            RecordsManagementEvent event = rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
+            RecordsManagementEvent event =
+                    rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
 
             model.put("event", event);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+        } catch (IOException iox) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
+        } catch (JSONException je) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
         }
 
         return model;
@@ -121,12 +115,10 @@ public class RmEventsPost extends RMEventBase
      * @return String The event name. A generated GUID if it doesn't exist
      * @throws JSONException If there is no string value for the key
      */
-    private String getEventName(JSONObject json) throws JSONException
-    {
+    private String getEventName(JSONObject json) throws JSONException {
         String eventName = getValue(json, "eventName");
 
-        if (StringUtils.isBlank(eventName))
-        {
+        if (StringUtils.isBlank(eventName)) {
             // Generate the event name
             eventName = GUID.generate();
         }
@@ -135,21 +127,21 @@ public class RmEventsPost extends RMEventBase
     }
 
     /**
-     * Helper method for checking if an event can be created or not. Throws an
-     * error if the event already exists.
+     * Helper method for checking if an event can be created or not. Throws an error if the event
+     * already exists.
      *
      * @param eventDisplayLabel The display label of the event
      * @param eventName The name of the event
      */
-    private boolean canCreateEvent(String eventDisplayLabel, String eventName)
-    {
+    private boolean canCreateEvent(String eventDisplayLabel, String eventName) {
         boolean canCreateEvent = true;
 
-        if (!rmEventService.canCreateEvent(eventDisplayLabel, eventName))
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+        if (!rmEventService.canCreateEvent(eventDisplayLabel, eventName)) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST,
                     "Cannot create event. An event with the display label '"
-                          + eventDisplayLabel + "' already exists.");
+                            + eventDisplayLabel
+                            + "' already exists.");
         }
 
         return canCreateEvent;

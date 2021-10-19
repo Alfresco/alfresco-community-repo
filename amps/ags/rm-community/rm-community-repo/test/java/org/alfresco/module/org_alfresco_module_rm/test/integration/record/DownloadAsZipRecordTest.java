@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
 import net.sf.acegisecurity.Authentication;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -38,106 +39,102 @@ import org.alfresco.util.GUID;
 
 /**
  * Download as zip record test.
+ *
  * <pre>Tests for <a href="https://issues.alfresco.com/jira/browse/MNT-21292">MNT-21292</a> </pre>
+ *
  * @author Rodica Sutu
  * @since 3.2.0.1
  */
-public class DownloadAsZipRecordTest extends BaseRMTestCase
-{
+public class DownloadAsZipRecordTest extends BaseRMTestCase {
     private DownloadService downloadService;
 
     @Override
-    protected boolean isCollaborationSiteTest()
-    {
+    protected boolean isCollaborationSiteTest() {
         return true;
     }
 
-    /**
-     * @see BaseRMTestCase#initServices()
-     */
+    /** @see BaseRMTestCase#initServices() */
     @Override
-    protected void initServices()
-    {
+    protected void initServices() {
         super.initServices();
         downloadService = (DownloadService) applicationContext.getBean("DownloadService");
     }
 
     /**
-     * Given a record and a user without view record capability
-     * When the user downloads the record
+     * Given a record and a user without view record capability When the user downloads the record
      * Then Access Denied exception is thrown
      */
-    public void testDownloadRecordUserNoReadCapability()
-    {
+    public void testDownloadRecordUserNoReadCapability() {
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            /** user with no view record capability */
-            String userDownload;
-            Authentication previousAuthentication;
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest(AccessDeniedException.class) {
+                    /** user with no view record capability */
+                    String userDownload;
 
-            public void given()
-            {
-                // create an inplace record
-                AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
-                    recordService.createRecord(filePlan, dmDocument);
-                    return null;
-                }, AuthenticationUtil.getAdminUserName());
-                // create user
-                userDownload = GUID.generate();
-                createPerson(userDownload);
-            }
+                    Authentication previousAuthentication;
 
-            public void when()
-            {
-                previousAuthentication = AuthenticationUtil.getFullAuthentication();
-                AuthenticationUtil.setFullyAuthenticatedUser(userDownload);
-                downloadService.createDownload(new NodeRef[] { dmDocument }, true);
-            }
+                    public void given() {
+                        // create an inplace record
+                        AuthenticationUtil.runAs(
+                                (RunAsWork<Void>)
+                                        () -> {
+                                            recordService.createRecord(filePlan, dmDocument);
+                                            return null;
+                                        },
+                                AuthenticationUtil.getAdminUserName());
+                        // create user
+                        userDownload = GUID.generate();
+                        createPerson(userDownload);
+                    }
 
-            public void after()
-            {
-                AuthenticationUtil.setFullAuthentication(previousAuthentication);
-                personService.deletePerson(userDownload);
-            }
-        });
+                    public void when() {
+                        previousAuthentication = AuthenticationUtil.getFullAuthentication();
+                        AuthenticationUtil.setFullyAuthenticatedUser(userDownload);
+                        downloadService.createDownload(new NodeRef[] {dmDocument}, true);
+                    }
+
+                    public void after() {
+                        AuthenticationUtil.setFullAuthentication(previousAuthentication);
+                        personService.deletePerson(userDownload);
+                    }
+                });
     }
 
     /**
-     * Given a record and a user with view record capability
-     * When the user downloads the record
-     * Then download node is created
+     * Given a record and a user with view record capability When the user downloads the record Then
+     * download node is created
      */
-    public void testDownloadRecordUserWithReadCapability()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            NodeRef downloadStorageNode;
+    public void testDownloadRecordUserWithReadCapability() {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest() {
+                    NodeRef downloadStorageNode;
 
-            public void given()
-            {
-                // Create an inplace record
-                AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
-                    // Declare record
-                    recordService.createRecord(filePlan, dmDocument);
-                    return null;
-                }, dmCollaborator);
-            }
+                    public void given() {
+                        // Create an inplace record
+                        AuthenticationUtil.runAs(
+                                (RunAsWork<Void>)
+                                        () -> {
+                                            // Declare record
+                                            recordService.createRecord(filePlan, dmDocument);
+                                            return null;
+                                        },
+                                dmCollaborator);
+                    }
 
-            public void when()
-            {
-                Authentication previousAuthentication = AuthenticationUtil.getFullAuthentication();
-                AuthenticationUtil.setFullyAuthenticatedUser(dmCollaborator);
-                //  request to download the record
-                downloadStorageNode = downloadService.createDownload(new NodeRef[] { dmDocument }, true);
-                AuthenticationUtil.setFullAuthentication(previousAuthentication);
-            }
+                    public void when() {
+                        Authentication previousAuthentication =
+                                AuthenticationUtil.getFullAuthentication();
+                        AuthenticationUtil.setFullyAuthenticatedUser(dmCollaborator);
+                        //  request to download the record
+                        downloadStorageNode =
+                                downloadService.createDownload(new NodeRef[] {dmDocument}, true);
+                        AuthenticationUtil.setFullAuthentication(previousAuthentication);
+                    }
 
-            public void then()
-            {
-                // check the download storage node is created
-                assertTrue(nodeService.exists(downloadStorageNode));
-            }
-        });
+                    public void then() {
+                        // check the download storage node is created
+                        assertTrue(nodeService.exists(downloadStorageNode));
+                    }
+                });
     }
 }

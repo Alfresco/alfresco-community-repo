@@ -19,10 +19,8 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that can't really be run on the build servers because they are meant to compare performance
- * of some component on the same system. It usually requires manually running them locally for multiple times and
- * comparing the results.
+ * Category marker for tests that can't really be run on the build servers because they are meant to
+ * compare performance of some component on the same system. It usually requires manually running
+ * them locally for multiple times and comparing the results.
  */
-public interface PerformanceTests extends NonBuildTests
-{
-}
+public interface PerformanceTests extends NonBuildTests {}

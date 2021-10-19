@@ -30,9 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.makePropertiesMap;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -41,6 +38,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * Add an authority to a user group.
  *
@@ -48,8 +48,7 @@ import org.alfresco.service.namespace.QName;
  * @since 2.7
  */
 @BehaviourBean(defaultType = "cm:authorityContainer")
-public class AddToUserGroupAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy
-{
+public class AddToUserGroupAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy {
     /** Node Service */
     private NodeService nodeService;
 
@@ -58,17 +57,19 @@ public class AddToUserGroupAuditEvent extends AuditEvent implements OnCreateChil
      *
      * @param nodeService nodeService to set
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /** Behaviour to audit adding an authority to a user group. */
     @Override
-    @Behaviour(kind = BehaviourKind.ASSOCIATION, notificationFrequency = EVERY_EVENT, assocType = "cm:member")
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            notificationFrequency = EVERY_EVENT,
+            assocType = "cm:member")
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode) {
         Map<QName, Serializable> auditProperties = makePropertiesMap(childAssocRef, nodeService);
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties, true);
+        recordsManagementAuditService.auditEvent(
+                childAssocRef.getChildRef(), getName(), null, auditProperties, true);
     }
 }

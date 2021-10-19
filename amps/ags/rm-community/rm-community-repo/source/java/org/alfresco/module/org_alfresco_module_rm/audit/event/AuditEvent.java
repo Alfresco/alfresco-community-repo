@@ -42,9 +42,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 1.0
  */
 @AlfrescoPublicApi
-public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent>
-{
-	/** Name */
+public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent> {
+    /** Name */
     private String name;
 
     /** Label */
@@ -53,41 +52,32 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     /** Records management audit service */
     protected RecordsManagementAuditService recordsManagementAuditService;
 
-    /**
-     * @param recordsManagementAuditService     records management audit service
-     */
-    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
-    {
+    /** @param recordsManagementAuditService records management audit service */
+    public void setRecordsManagementAuditService(
+            RecordsManagementAuditService recordsManagementAuditService) {
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
 
-    /**
-     * Init method
-     */
-    public void init()
-    {
+    /** Init method */
+    public void init() {
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("label", label);
 
         recordsManagementAuditService.registerAuditEvent(this);
     }
 
-    /**
-     * Default constructor.
-     */
-    public AuditEvent()
-    {
+    /** Default constructor. */
+    public AuditEvent() {
         // do nothing
     }
 
     /**
      * Default constructor.
      *
-     * @param name  audit event name
+     * @param name audit event name
      * @param label audit event label (can be actual label or I18N lookup key)
      */
-    public AuditEvent(String name, String label)
-    {
+    public AuditEvent(String name, String label) {
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("label", label);
 
@@ -95,52 +85,38 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
         setLabel(label);
     }
 
-    /**
-     * @return  audit event name
-     */
-    public String getName()
-    {
+    /** @return audit event name */
+    public String getName() {
         return this.name;
     }
 
-    /**
-     * @param name  audit event name
-     */
-    public void setName(String name)
-    {
-		this.name = name;
-	}
-
-    /**
-     * @return   audit event label
-     */
-    public String getLabel()
-    {
-    	String lookup = I18NUtil.getMessage(label);
-    	if (StringUtils.isBlank(lookup))
-    	{
-    		lookup = label;
-    	}
-    	return lookup;
+    /** @param name audit event name */
+    public void setName(String name) {
+        this.name = name;
     }
 
-    /**
-     * @param label audit event label
-     */
-    public void setLabel(String label)
-    {
-		this.label = label;
-	}
+    /** @return audit event label */
+    public String getLabel() {
+        String lookup = I18NUtil.getMessage(label);
+        if (StringUtils.isBlank(lookup)) {
+            lookup = label;
+        }
+        return lookup;
+    }
+
+    /** @param label audit event label */
+    public void setLabel(String label) {
+        this.label = label;
+    }
 
     /**
      * Compare by label.
      *
-     * @param compare   compare to audit event
+     * @param compare compare to audit event
      * @return int
      */
     @Override
-    public int compareTo(AuditEvent compare)
-    {
+    public int compareTo(AuditEvent compare) {
         return getLabel().compareTo(compare.getLabel());
     }
 }

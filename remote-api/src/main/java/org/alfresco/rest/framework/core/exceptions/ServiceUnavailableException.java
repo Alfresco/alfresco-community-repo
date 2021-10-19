@@ -25,24 +25,17 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import java.io.Serializable;
-
-/**
- * A service is currently unavailable.
- */
-public class ServiceUnavailableException extends ApiException
-{
+/** A service is currently unavailable. */
+public class ServiceUnavailableException extends ApiException {
     private static final long serialVersionUID = 7266627408681826999L;
 
     public static String DEFAULT_MESSAGE_ID = "framework.exception.ServiceUnavailableException";
 
-    public ServiceUnavailableException()
-    {
+    public ServiceUnavailableException() {
         super(DEFAULT_MESSAGE_ID);
     }
 
-    public ServiceUnavailableException(String msgId)
-    {
+    public ServiceUnavailableException(String msgId) {
         super(msgId);
     }
 }

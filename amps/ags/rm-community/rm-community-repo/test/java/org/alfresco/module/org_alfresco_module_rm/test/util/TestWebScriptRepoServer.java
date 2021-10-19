@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -41,131 +37,104 @@ import org.alfresco.util.EqualsHelper;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
  * Stand-alone Web Script Test Server
  *
  * @author davidc
  */
-public class TestWebScriptRepoServer extends TestWebScriptServer
-{
-    /**
-     * Main entry point.
-     */
-    public static void main(String[] args)
-    {
-        try
-        {
+public class TestWebScriptRepoServer extends TestWebScriptServer {
+    /** Main entry point. */
+    public static void main(String[] args) {
+        try {
             TestWebScriptServer testServer = getTestServer();
             AuthenticationUtil.setRunAsUserSystem();
             testServer.rep();
-        }
-        catch(Throwable e)
-        {
+        } catch (Throwable e) {
             StringWriter strWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(strWriter);
             e.printStackTrace(printWriter);
             System.out.println(strWriter.toString());
-        }
-        finally
-        {
+        } finally {
             System.exit(0);
         }
     }
 
-    private final static String[] CONFIG_LOCATIONS = new String[]
-    {
-        "classpath:alfresco/application-context.xml",
-        "classpath:alfresco/web-scripts-application-context.xml",
-        "classpath:alfresco/web-scripts-application-context-test.xml"
-    };
+    private static final String[] CONFIG_LOCATIONS =
+            new String[] {
+                "classpath:alfresco/application-context.xml",
+                "classpath:alfresco/web-scripts-application-context.xml",
+                "classpath:alfresco/web-scripts-application-context-test.xml"
+            };
 
     /** A static reference to the application context being used */
     private static ClassPathXmlApplicationContext ctx;
+
     private static String appendedTestConfiguration;
 
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthenticationService authenticationService;
 
-
-    /**
-     * Sets helper that provides transaction callbacks
-     */
-    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
+    /** Sets helper that provides transaction callbacks */
+    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper) {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
-    /**
-     * @param authenticationService
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
+    /** @param authenticationService */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
-    /**
-     * Get default user name
-     */
-    protected String getDefaultUserName()
-    {
+    /** Get default user name */
+    protected String getDefaultUserName() {
         return AuthenticationUtil.getAdminUserName();
     }
 
-    /**
-     * {@inheritDoc #getTestServer(String)}
-     */
-    public static TestWebScriptServer getTestServer()
-    {
+    /** {@inheritDoc #getTestServer(String)} */
+    public static TestWebScriptServer getTestServer() {
         return getTestServer(null);
     }
 
     /**
      * Start up a context and get the server bean.
-     * <p>
-     * This method will close and restart the application context only if the configuration has
+     *
+     * <p>This method will close and restart the application context only if the configuration has
      * changed.
      *
-     * @param appendTestConfigLocation      additional context file to include in the application context
-     * @return  Test Server
+     * @param appendTestConfigLocation additional context file to include in the application context
+     * @return Test Server
      */
-    public static synchronized TestWebScriptServer getTestServer(String appendTestConfigLocation)
-    {
-        if (TestWebScriptRepoServer.ctx != null)
-        {
-            boolean configChanged = !EqualsHelper.nullSafeEquals(
-                    appendTestConfigLocation,
-                    TestWebScriptRepoServer.appendedTestConfiguration);
-            if (configChanged)
-            {
+    public static synchronized TestWebScriptServer getTestServer(String appendTestConfigLocation) {
+        if (TestWebScriptRepoServer.ctx != null) {
+            boolean configChanged =
+                    !EqualsHelper.nullSafeEquals(
+                            appendTestConfigLocation,
+                            TestWebScriptRepoServer.appendedTestConfiguration);
+            if (configChanged) {
                 // The config changed, so close the context (it'll be restarted later)
-                try
-                {
+                try {
                     ctx.close();
                     ctx = null;
+                } catch (Throwable e) {
+                    throw new RuntimeException(
+                            "Failed to shut down existing application context", e);
                 }
-                catch (Throwable e)
-                {
-                    throw new RuntimeException("Failed to shut down existing application context", e);
-                }
-            }
-            else
-            {
+            } else {
                 // There is already a context with the required configuration
             }
         }
 
         // Check if we need to start/restart the context
-        if (TestWebScriptRepoServer.ctx == null)
-        {
+        if (TestWebScriptRepoServer.ctx == null) {
             // Restart it
             final String[] configLocations;
-            if (appendTestConfigLocation == null)
-            {
+            if (appendTestConfigLocation == null) {
                 configLocations = CONFIG_LOCATIONS;
-            }
-            else
-            {
-                configLocations = new String[CONFIG_LOCATIONS.length+1];
+            } else {
+                configLocations = new String[CONFIG_LOCATIONS.length + 1];
                 System.arraycopy(CONFIG_LOCATIONS, 0, configLocations, 0, CONFIG_LOCATIONS.length);
                 configLocations[CONFIG_LOCATIONS.length] = appendTestConfigLocation;
             }
@@ -174,7 +143,9 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         }
 
         // Get the bean
-        TestWebScriptServer testServer = (org.alfresco.repo.web.scripts.TestWebScriptRepoServer)TestWebScriptRepoServer.ctx.getBean("webscripts.test");
+        TestWebScriptServer testServer =
+                (org.alfresco.repo.web.scripts.TestWebScriptRepoServer)
+                        TestWebScriptRepoServer.ctx.getBean("webscripts.test");
         return testServer;
     }
 
@@ -185,45 +156,34 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
      * @return The textual output of the command.
      */
     @Override
-    protected String interpretCommand(final String line)
-        throws IOException
-    {
-        try
-        {
-            if (username.startsWith("TICKET_"))
-            {
-                try
-                {
-                    retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                    {
-                        public Object execute() throws Exception
-                        {
-                            authenticationService.validate(username);
-                            return null;
-                        }
-                    });
+    protected String interpretCommand(final String line) throws IOException {
+        try {
+            if (username.startsWith("TICKET_")) {
+                try {
+                    retryingTransactionHelper.doInTransaction(
+                            new RetryingTransactionCallback<Object>() {
+                                public Object execute() throws Exception {
+                                    authenticationService.validate(username);
+                                    return null;
+                                }
+                            });
                     return executeCommand(line);
-                }
-                finally
-                {
+                } finally {
                     authenticationService.clearCurrentSecurityContext();
                 }
             }
-        }
-        catch(AuthenticationException e)
-        {
+        } catch (AuthenticationException e) {
             executeCommand("user " + getDefaultUserName());
         }
 
         // execute command in context of currently selected user
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
-            @SuppressWarnings("synthetic-access")
-            public String doWork() throws Exception
-            {
-                return executeCommand(line);
-            }
-        }, username);
+        return AuthenticationUtil.runAs(
+                new RunAsWork<String>() {
+                    @SuppressWarnings("synthetic-access")
+                    public String doWork() throws Exception {
+                        return executeCommand(line);
+                    }
+                },
+                username);
     }
-
 }

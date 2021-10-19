@@ -27,10 +27,6 @@
 
 package org.alfresco.rm.rest.api.sites;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -40,54 +36,52 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
 
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * RM Site operations
  *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
 @EntityResource(name = "gs-sites", title = "GS Sites")
-public class RMSiteEntityResource implements EntityResourceAction.Delete, EntityResourceAction.Create<RMSite>,
-            EntityResourceAction.Update<RMSite>, EntityResourceAction.ReadById<RMSite>
-{
+public class RMSiteEntityResource
+        implements EntityResourceAction.Delete,
+                EntityResourceAction.Create<RMSite>,
+                EntityResourceAction.Update<RMSite>,
+                EntityResourceAction.ReadById<RMSite> {
     private static final String RM_SITE_ID = "rm";
     private RMSites sites;
     private String PARAM_PERMANENT = "permanent";
 
-    public void setSites(RMSites sites)
-    {
+    public void setSites(RMSites sites) {
         this.sites = sites;
     }
 
     @Override
-    public List<RMSite> create(List<RMSite> entity, Parameters parameters)
-    {
+    public List<RMSite> create(List<RMSite> entity, Parameters parameters) {
         List<RMSite> result = new ArrayList<>(1);
         result.add(sites.createRMSite(entity.get(0), parameters));
         return result;
     }
 
     @Override
-    public void delete(String siteId, Parameters parameters)
-    {
-        if (!RM_SITE_ID.equals(siteId))
-        {
+    public void delete(String siteId, Parameters parameters) {
+        if (!RM_SITE_ID.equals(siteId)) {
             throw new InvalidParameterException("The Deletion is supported only for siteId = rm.");
         }
         String permanentParameter = parameters.getParameter(PARAM_PERMANENT);
-        if(permanentParameter != null)
-        {
+        if (permanentParameter != null) {
             throw new InvalidArgumentException("DELETE does not support parameter: permanent");
         }
         sites.deleteRMSite(siteId, parameters);
     }
 
     @Override
-    public RMSite update(String siteId, RMSite site, Parameters parameters)
-    {
-        if (!RM_SITE_ID.equals(siteId))
-        {
+    public RMSite update(String siteId, RMSite site, Parameters parameters) {
+        if (!RM_SITE_ID.equals(siteId)) {
             throw new InvalidParameterException("The Update is supported only for siteId = rm.");
         }
 
@@ -95,55 +89,44 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
     }
 
     @Override
-    public RMSite readById(String siteId, Parameters parameters)
-    {
-        if (!RM_SITE_ID.equals(siteId))
-        {
+    public RMSite readById(String siteId, Parameters parameters) {
+        if (!RM_SITE_ID.equals(siteId)) {
             throw new InvalidParameterException("GET is supported only for siteId = rm.");
         }
         return sites.getRMSite(siteId);
     }
 
-    protected SiteUpdate convert(RMSite site)
-    {
+    protected SiteUpdate convert(RMSite site) {
         // Until REPO-110 is solved, we need to explicitly test for the presence of fields
         // on the Site object that aren't valid SiteUpdate fields. Once REPO-110 is solved,
         // the update method will take a SiteUpdate as a parameter rather than a Site
         // and only the correct fields will be exposed. Any attempt to access illegal fields
         // should then result in the framework returning a 400 automatically.
-        if (site.wasSet(Site.ID))
-        {
+        if (site.wasSet(Site.ID)) {
             throw new InvalidArgumentException("Site update does not support field: id");
         }
-        if (site.wasSet(Site.GUID))
-        {
+        if (site.wasSet(Site.GUID)) {
             throw new InvalidArgumentException("Site update does not support field: guid");
         }
-        if (site.wasSet(Site.ROLE))
-        {
+        if (site.wasSet(Site.ROLE)) {
             throw new InvalidArgumentException("Site update does not support field: role");
         }
-        if (site.wasSet(Site.PRESET))
-        {
+        if (site.wasSet(Site.PRESET)) {
             throw new InvalidArgumentException("Site update does not support field: preset");
         }
-        if (site.wasSet(RMSite.COMPLIANCE))
-        {
+        if (site.wasSet(RMSite.COMPLIANCE)) {
             throw new InvalidArgumentException("Site update does not support field: compliance");
         }
-        if (site.wasSet(Site.VISIBILITY))
-        {
+        if (site.wasSet(Site.VISIBILITY)) {
             throw new InvalidArgumentException("Site update does not support field: visibility");
         }
 
         // Bind valid fields to a SiteUpdate instance.
         SiteUpdate siteUpdate = new SiteUpdate();
-        if (site.wasSet(Site.TITLE))
-        {
+        if (site.wasSet(Site.TITLE)) {
             siteUpdate.setTitle(site.getTitle());
         }
-        if (site.wasSet(Site.DESCRIPTION))
-        {
+        if (site.wasSet(Site.DESCRIPTION)) {
             siteUpdate.setDescription(site.getDescription());
         }
 

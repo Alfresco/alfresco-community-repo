@@ -14,11 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-/**
- * @author iulia.cojocea
- */
-public class UpdateTaskVariableTestsBulk1 extends RestTest
-{
+/** @author iulia.cojocea */
+public class UpdateTaskVariableTestsBulk1 extends RestTest {
     private UserModel userModel;
     private UserModel adminUser;
     private SiteModel siteModel;
@@ -29,50 +26,81 @@ public class UpdateTaskVariableTestsBulk1 extends RestTest
     private RestVariableModel taskVariable;
     private RestVariableModel variableModel;
 
-    @BeforeClass(alwaysRun=true)
-    public void dataPreparation() throws Exception
-    {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception {
         adminUser = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        fileModel = dataContent.usingUser(userModel).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        fileModel =
+                dataContent
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .createContent(DocumentType.TEXT_PLAIN);
         assigneeUser = dataUser.createRandomTestUser();
-        taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
+        taskModel =
+                dataWorkflow
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .usingResource(fileModel)
+                        .createNewTaskAndAssignTo(assigneeUser);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    public void createTaskVariable() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    public void createTaskVariable() throws Exception {
         restClient.authenticateUser(adminUser);
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        
-        taskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
+
+        taskVariable =
+                restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskVariable.assertThat().field("scope").is(taskVariable.getScope())
-                    .and().field("name").is(taskVariable.getName())
-                    .and().field("type").is(taskVariable.getType())
-                    .and().field("value").is(taskVariable.getValue());
+        taskVariable
+                .assertThat()
+                .field("scope")
+                .is(taskVariable.getScope())
+                .and()
+                .field("name")
+                .is(taskVariable.getName())
+                .and()
+                .field("type")
+                .is(taskVariable.getType())
+                .and()
+                .field("value")
+                .is(taskVariable.getValue());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.SANITY,
             description = "Update existing task variable")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    public void updateExistingTaskVariable() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    public void updateExistingTaskVariable() throws Exception {
         restClient.authenticateUser(adminUser);
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        
-        taskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
+
+        taskVariable =
+                restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskVariable.assertThat().field("scope").is(taskVariable.getScope())
-                    .and().field("name").is(taskVariable.getName())
-                    .and().field("type").is(taskVariable.getType())
-                    .and().field("value").is(taskVariable.getValue());
-        
+        taskVariable
+                .assertThat()
+                .field("scope")
+                .is(taskVariable.getScope())
+                .and()
+                .field("name")
+                .is(taskVariable.getName())
+                .and()
+                .field("type")
+                .is(taskVariable.getType())
+                .and()
+                .field("value")
+                .is(taskVariable.getValue());
+
         variableModel.setValue("updatedValue");
-        taskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
+        taskVariable =
+                restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskVariable.assertThat().field("value").is("updatedValue");
     }

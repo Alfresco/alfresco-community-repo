@@ -43,39 +43,30 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-        defaultType = "rma:scheduled"
-)
-public class ScheduledAspect extends    BaseBehaviourBean
-                             implements NodeServicePolicies.OnAddAspectPolicy
-{
+@BehaviourBean(defaultType = "rma:scheduled")
+public class ScheduledAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.OnAddAspectPolicy {
     /** disposition service */
     private DispositionService dispositionService;
 
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    /** @param dispositionService disposition service */
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     *     org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (nodeService.exists(nodeRef) &&
-            dispositionService.getAssociatedDispositionSchedule(nodeRef) == null)
-        {
-           dispositionService.createDispositionSchedule(nodeRef, null);
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
+    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName) {
+        if (nodeService.exists(nodeRef)
+                && dispositionService.getAssociatedDispositionSchedule(nodeRef) == null) {
+            dispositionService.createDispositionSchedule(nodeRef, null);
         }
     }
 }

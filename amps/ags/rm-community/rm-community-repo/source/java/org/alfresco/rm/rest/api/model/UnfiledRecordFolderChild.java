@@ -32,22 +32,18 @@ package org.alfresco.rm.rest.api.model;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class UnfiledRecordFolderChild extends UnfiledChild
-{
+public class UnfiledRecordFolderChild extends UnfiledChild {
     protected String relativePath;
 
-    public UnfiledRecordFolderChild()
-    {
+    public UnfiledRecordFolderChild() {
         super();
     }
 
-    public void setRelativePath(String relativePath)
-    {
+    public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
     }
 
-    public String getRelativePath()
-    {
+    public String getRelativePath() {
         return relativePath;
     }
 }

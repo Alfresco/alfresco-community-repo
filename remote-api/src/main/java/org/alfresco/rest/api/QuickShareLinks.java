@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -40,22 +40,20 @@ import java.util.List;
  *
  * @author janv
  * @author Jamal Kaabi-Mofrad
- * 
  * @since publicapi1.0
  */
-public interface QuickShareLinks
-{
+public interface QuickShareLinks {
     /**
      * Returns limited metadata regarding the shared (content) link.
      *
-     * Note: does *not* require authenticated access for (public) shared link.
+     * <p>Note: does *not* require authenticated access for (public) shared link.
      */
     QuickShareLink readById(String sharedId, Parameters parameters);
 
     /**
      * Download file content (or rendition content) via shared link.
      *
-     * Note: does *not* require authenticated access for (public) shared link.
+     * <p>Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
      * @param renditionId - optional
@@ -63,7 +61,8 @@ public interface QuickShareLinks
      * @return
      * @throws EntityNotFoundException
      */
-    BinaryResource readProperty(String sharedId, String renditionId, Parameters parameters) throws EntityNotFoundException;
+    BinaryResource readProperty(String sharedId, String renditionId, Parameters parameters)
+            throws EntityNotFoundException;
 
     /**
      * Gets information about a rendition of a shared link.
@@ -77,7 +76,7 @@ public interface QuickShareLinks
     /**
      * List renditions info - note: only returns available (=> created) renditions.
      *
-     * Note: does *not* require authenticated access for (public) shared link.
+     * <p>Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
      * @return
@@ -87,10 +86,11 @@ public interface QuickShareLinks
     /**
      * Delete the shared link.
      *
-     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404).
-     * If the link is later re-created then a new unique shared id will be generated.
+     * <p>Once deleted, the shared link will no longer exist hence get/download will no longer work
+     * (ie. return 404). If the link is later re-created then a new unique shared id will be
+     * generated.
      *
-     * Requires authenticated access.
+     * <p>Requires authenticated access.
      *
      * @param sharedId String id of the quick share
      */
@@ -99,7 +99,7 @@ public interface QuickShareLinks
     /**
      * Create quick share.
      *
-     * Requires authenticated access.
+     * <p>Requires authenticated access.
      *
      * @param nodeIds
      * @param parameters
@@ -110,24 +110,23 @@ public interface QuickShareLinks
     /**
      * Notifies users by email that a content has been shared with them.
      *
-     * @param sharedId     The string id of the quick share
+     * @param sharedId The string id of the quick share
      * @param emailRequest The email details including its template details
-     * @param parameters   The {@link Parameters} object to get the parameters passed into the request
+     * @param parameters The {@link Parameters} object to get the parameters passed into the request
      */
-    void emailSharedLink(String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
+    void emailSharedLink(
+            String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
 
     /**
-     * Find (search) for shared links visible to current user.
-     * Optionally filter by "sharedByUser/id" (if -me- then filter by current user).
+     * Find (search) for shared links visible to current user. Optionally filter by
+     * "sharedByUser/id" (if -me- then filter by current user).
      *
      * @param parameters
      * @return
      */
     CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters);
 
-    /**
-     * API Constants - query parameters, etc
-     */
+    /** API Constants - query parameters, etc */
     String PARAM_SHAREDBY = "sharedByUser";
 
     String PARAM_INCLUDE_ALLOWABLEOPERATIONS = Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;

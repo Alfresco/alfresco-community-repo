@@ -25,31 +25,28 @@
  */
 package org.alfresco.repo.event2.filter;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.namespace.QName;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Implementation of the node types filter.
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodeTypeFilter extends AbstractNodeEventFilter
-{
+public class NodeTypeFilter extends AbstractNodeEventFilter {
     private final List<String> nodeTypesBlackList;
 
-    public NodeTypeFilter(String filteredNodeTypes)
-    {
+    public NodeTypeFilter(String filteredNodeTypes) {
         this.nodeTypesBlackList = parseFilterList(filteredNodeTypes);
     }
 
     @Override
-    public Set<QName> getExcludedTypes()
-    {
+    public Set<QName> getExcludedTypes() {
         // include all system folder types to be filtered out
         Set<QName> result = new HashSet<>(getSystemFolderTypes());
 
@@ -59,8 +56,7 @@ public class NodeTypeFilter extends AbstractNodeEventFilter
         return result;
     }
 
-    private Collection<QName> getSystemFolderTypes()
-    {
+    private Collection<QName> getSystemFolderTypes() {
         return dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
     }
 }

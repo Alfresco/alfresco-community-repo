@@ -34,19 +34,23 @@ import java.util.Map;
  *
  * @author adavis
  */
-public class DummyTransformServiceRegistry implements TransformServiceRegistry
-{
+public class DummyTransformServiceRegistry implements TransformServiceRegistry {
     @Override
-    public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> actualOptions,
-                            String transformName)
-    {
+    public long findMaxSize(
+            String sourceMimetype,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String transformName) {
         return 0;
     }
 
     @Override
-    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
-                                      Map<String, String> actualOptions, String renditionName)
-    {
+    public String findTransformerName(
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String renditionName) {
         return null;
     }
 }

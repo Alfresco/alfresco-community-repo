@@ -28,13 +28,13 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static java.util.Collections.unmodifiableList;
 
+import org.alfresco.service.namespace.QName;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.alfresco.service.namespace.QName;
 
 /**
  * Utility check for modification of a properties based off presence in a whitelist.
@@ -42,16 +42,11 @@ import org.alfresco.service.namespace.QName;
  * @author Ross Gale
  * @since 3.2
  */
-public class PropertyModificationAllowedCheck
-{
-    /**
-     * List of qnames that can be modified
-     */
+public class PropertyModificationAllowedCheck {
+    /** List of qnames that can be modified */
     private List<QName> whiteList;
 
-    /**
-     * List of model URI's for which the properties can be updated
-     */
+    /** List of model URI's for which the properties can be updated */
     private List<String> editableURIs;
 
     /**
@@ -59,8 +54,7 @@ public class PropertyModificationAllowedCheck
      *
      * @return return the list of model URI's
      */
-    private List<String> getEditableURIs()
-    {
+    private List<String> getEditableURIs() {
         return unmodifiableList(editableURIs);
     }
 
@@ -69,8 +63,7 @@ public class PropertyModificationAllowedCheck
      *
      * @param editableURIs List<String>
      */
-    public void setEditableURIs(List<String> editableURIs)
-    {
+    public void setEditableURIs(List<String> editableURIs) {
         this.editableURIs = unmodifiableList(editableURIs);
     }
 
@@ -79,41 +72,38 @@ public class PropertyModificationAllowedCheck
      *
      * @param whiteList List<QName>
      */
-    public void setWhiteList(List<QName> whiteList)
-    {
+    public void setWhiteList(List<QName> whiteList) {
         this.whiteList = unmodifiableList(whiteList);
-
     }
 
     /**
-     * Compares the node properties with the requested update to make sure all potential updates are permitted
+     * Compares the node properties with the requested update to make sure all potential updates are
+     * permitted
      *
      * @param before current node properties
-     * @param after  updated properties for the node
-     * @return true -  if all modified property keys are in the whitelist or
-     *                    in the list of model URI's for which the properties can be modified
+     * @param after updated properties for the node
+     * @return true - if all modified property keys are in the whitelist or in the list of model
+     *     URI's for which the properties can be modified
      */
-    public boolean check(Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
+    public boolean check(Map<QName, Serializable> before, Map<QName, Serializable> after) {
         boolean proceed = true;
         // Initially check for changes to existing keys and values.
-        for (final Map.Entry<QName, Serializable> entry : before.entrySet())
-        {
+        for (final Map.Entry<QName, Serializable> entry : before.entrySet()) {
             final QName key = entry.getKey();
             final Serializable beforeValue = entry.getValue();
-            //check if property has been updated
-            final boolean modified = after.containsKey(key) && after.get(key) != null
-                    && !after.get(key).equals(beforeValue);
+            // check if property has been updated
+            final boolean modified =
+                    after.containsKey(key)
+                            && after.get(key) != null
+                            && !after.get(key).equals(beforeValue);
 
-            //check if the property has been emptied or removed
-            final boolean propertyRemovedEmptied = (after.get(key) == null && beforeValue != null)
-                                            || !after.containsKey(key);
-            if (modified || propertyRemovedEmptied)
-            {
+            // check if the property has been emptied or removed
+            final boolean propertyRemovedEmptied =
+                    (after.get(key) == null && beforeValue != null) || !after.containsKey(key);
+            if (modified || propertyRemovedEmptied) {
                 proceed = allowPropertyUpdate(key);
             }
-            if (!proceed)
-            {
+            if (!proceed) {
                 return proceed;
             }
         }
@@ -121,11 +111,9 @@ public class PropertyModificationAllowedCheck
         // Check for new values. Record individual values and group as a single map.
         final Set<QName> newKeys = new HashSet<>(after.keySet());
         newKeys.removeAll(before.keySet());
-        for (final QName key : newKeys)
-        {
+        for (final QName key : newKeys) {
             proceed = allowPropertyUpdate(key);
-            if (!proceed)
-            {
+            if (!proceed) {
                 break;
             }
         }
@@ -138,9 +126,7 @@ public class PropertyModificationAllowedCheck
      * @param key property
      * @return true if property update is allowed
      */
-    private boolean allowPropertyUpdate(QName key)
-    {
+    private boolean allowPropertyUpdate(QName key) {
         return whiteList.contains(key) || getEditableURIs().contains(key.getNamespaceURI());
     }
-
 }

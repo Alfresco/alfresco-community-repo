@@ -25,6 +25,16 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
+
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
@@ -45,27 +55,16 @@ import org.mockito.Spy;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
-
 /**
  * Tests the retry mechanism in the RemoteTransformerClient.
  *
  * @since 6.0
- *
- * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new
+ *     async RenditionService2 or other external libraries.
  */
 @Deprecated
 @Category(NeverRunsTests.class)
-public class RemoteTransformerClientTest
-{
+public class RemoteTransformerClientTest {
     public static final int STARTUP_RETRY_PERIOD_SECONDS = 2;
 
     @Mock private ContentReader mockReader;
@@ -79,7 +78,9 @@ public class RemoteTransformerClientTest
     @Mock private StatusLine mockStatusLine;
     @Mock private HttpEntity mockReqEntity;
 
-    @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test");
+    @Spy
+    private RemoteTransformerClient remoteTransformerClient =
+            new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test");
 
     private String sourceMimetype = "application/msword";
     private String sourceExtension = "doc";
@@ -87,113 +88,119 @@ public class RemoteTransformerClientTest
     private long timeoutMs = 120000;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
         remoteTransformerClient.setStartupRetryPeriodSeconds(STARTUP_RETRY_PERIOD_SECONDS);
 
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
-        doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
-        doReturn(mockRequestEntity).when(remoteTransformerClient).getRequestEntity(any(), any(),
-                any(), any(), anyLong(), any(), any());//,
+        doReturn(mockHttpResponse)
+                .when(remoteTransformerClient)
+                .execute(any(), any(HttpPost.class));
+        doReturn(mockRequestEntity)
+                .when(remoteTransformerClient)
+                .getRequestEntity(any(), any(), any(), any(), anyLong(), any(), any()); // ,
 
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockHttpResponse.getEntity()).thenReturn(mockResponseEntity);
         when(mockStatusLine.getStatusCode()).thenReturn(200);
 
-//        when(mockResponseEntity.getContentLength()).thenReturn(1024L);
-//        when(mockResponseEntity.getContentType()).thenReturn(mockResponseContentType);
-//        when(mockResponseEntity.getContentEncoding()).thenReturn(mockResponseContentEncoding);
-//        long responseContentLength = resEntity.getContentLength();
-//        Header responseContentType = resEntity.getContentType();
-//        Header responseContentEncoding = resEntity.getContentEncoding();
+        //        when(mockResponseEntity.getContentLength()).thenReturn(1024L);
+        //        when(mockResponseEntity.getContentType()).thenReturn(mockResponseContentType);
+        //
+        // when(mockResponseEntity.getContentEncoding()).thenReturn(mockResponseContentEncoding);
+        //        long responseContentLength = resEntity.getContentLength();
+        //        Header responseContentType = resEntity.getContentType();
+        //        Header responseContentEncoding = resEntity.getContentEncoding();
 
-//        when(mockInputStream.)
+        //        when(mockInputStream.)
 
     }
 
-    private void assertRequestTransformError(String expectedMessage)
-    {
-        try
-        {
+    private void assertRequestTransformError(String expectedMessage) {
+        try {
             requestTransform();
             fail("There should have been an exception");
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             assertEquals(expectedMessage, getMessage(e));
         }
     }
 
-    private void requestTransform() throws IllegalAccessException
-    {
-        remoteTransformerClient.request(mockReader, mockWriter, sourceMimetype, sourceExtension, targetExtension,
-                timeoutMs, mockLogger);
+    private void requestTransform() throws IllegalAccessException {
+        remoteTransformerClient.request(
+                mockReader,
+                mockWriter,
+                sourceMimetype,
+                sourceExtension,
+                targetExtension,
+                timeoutMs,
+                mockLogger);
     }
 
     // Strip the number for AlfrescoRuntimeExceptions
-    // 03030000 Remote TRANSFORMER check command returned a 0 status AN ERROR MESSAGE http://localhost:1234/test/version
-    private String getMessage(Exception e)
-    {
+    // 03030000 Remote TRANSFORMER check command returned a 0 status AN ERROR MESSAGE
+    // http://localhost:1234/test/version
+    private String getMessage(Exception e) {
         String msg = e.getMessage();
         return getMessage(msg);
     }
 
-    private String getMessage(String msg)
-    {
+    private String getMessage(String msg) {
         int i = msg.indexOf(' ');
-        if (i > 0)
-        {
-            msg = msg.substring(i+1);
+        if (i > 0) {
+            msg = msg.substring(i + 1);
         }
         return msg;
     }
 
     @Test
-    public void successCheckTest() throws Exception
-    {
+    public void successCheckTest() throws Exception {
         remoteTransformerClient.check(mockLogger);
         // TODO get the version
     }
 
     @Test
-    public void successRequestTest() throws Exception
-    {
+    public void successRequestTest() throws Exception {
         requestTransform();
     }
 
     @Test
-    public void non200CheckTest() throws Exception
-    {
+    public void non200CheckTest() throws Exception {
         when(mockStatusLine.getStatusCode()).thenReturn(1234);
-        doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":").when(remoteTransformerClient).getContent(any());
+        doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":")
+                .when(remoteTransformerClient)
+                .getContent(any());
 
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
-        assertEquals("TRANSFORMER check returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/version",
+        assertEquals(
+                "TRANSFORMER check returned a 1234 status AN ERROR MESSAGE"
+                        + " http://localhost:1234/test/version",
                 getMessage(available.getSecond()));
     }
 
     @Test
-    public void non200RequestTest() throws Exception
-    {
+    public void non200RequestTest() throws Exception {
         when(mockStatusLine.getStatusCode()).thenReturn(1234);
-        doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":").when(remoteTransformerClient).getContent(any());
+        doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":")
+                .when(remoteTransformerClient)
+                .getContent(any());
 
-        assertRequestTransformError("TRANSFORMER returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/transform");
+        assertRequestTransformError(
+                "TRANSFORMER returned a 1234 status AN ERROR MESSAGE"
+                        + " http://localhost:1234/test/transform");
     }
 
     @Test
     // Test the initial alfresco startup when the transformer is not there yet.
-    public void noConnectionCheckTest() throws Exception
-    {
+    public void noConnectionCheckTest() throws Exception {
         // Mock a connection failure
         doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
 
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
-        assertEquals("TRANSFORMER check failed to connect or to read the response",
+        assertEquals(
+                "TRANSFORMER check failed to connect or to read the response",
                 getMessage(available.getSecond()));
 
         assertTransformerBecomesAvailableAgainAfterFailure();
@@ -201,15 +208,18 @@ public class RemoteTransformerClientTest
 
     @Test
     // Test the restart of the transformer at some point after it has been running for a while.
-    public void noConnectionRequestTest() throws Exception
-    {
+    public void noConnectionRequestTest() throws Exception {
         requestTransform();
 
         // Mock a connection failure, check the error and reset the mock
-        doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
+        doThrow(IOException.class)
+                .when(remoteTransformerClient)
+                .execute(any(), any(HttpPost.class));
         assertRequestTransformError("TRANSFORMER failed to connect or to read the response");
         assertFalse(remoteTransformerClient.isAvailable());
-        doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
+        doReturn(mockHttpResponse)
+                .when(remoteTransformerClient)
+                .execute(any(), any(HttpPost.class));
 
         doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
         assertTransformerBecomesAvailableAgainAfterFailure();
@@ -218,37 +228,40 @@ public class RemoteTransformerClientTest
     }
 
     @Test
-    public void assertOnceAvailableAlwaysAvailable() throws Exception
-    {
+    public void assertOnceAvailableAlwaysAvailable() throws Exception {
         // Mock a connection failure
         doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
 
-        // Mock a normal response from the /version request. It will not be made until the end of the wait period
+        // Mock a normal response from the /version request. It will not be made until the end of
+        // the wait period
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
-        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS*1000);
+        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS * 1000);
         available = remoteTransformerClient.check(mockLogger);
         assertTrue("No failure so should result in true", available.getFirst());
 
-        // Mock another connection failure. This time the code should not check but simply return success.
+        // Mock another connection failure. This time the code should not check but simply return
+        // success.
         doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
         available = remoteTransformerClient.check(mockLogger);
         assertTrue("Should return true as it has before", available.getFirst());
-        }
+    }
 
-    protected void assertTransformerBecomesAvailableAgainAfterFailure() throws InterruptedException, IOException
-    {
+    protected void assertTransformerBecomesAvailableAgainAfterFailure()
+            throws InterruptedException, IOException {
         assertFalse(remoteTransformerClient.isAvailable());
 
-        // ------------- If the transformer takes a long time to start, the request will fail again even after the wait period
+        // ------------- If the transformer takes a long time to start, the request will fail again
+        // even after the wait period
 
-        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS*1000);
+        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS * 1000);
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
         assertFalse(remoteTransformerClient.isAvailable());
 
-        // Mock a normal response from the /version request. It will not be made until the end of the wait period
+        // Mock a normal response from the /version request. It will not be made until the end of
+        // the wait period
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
 
         // ------------- If we check during the wait period there should be no request
@@ -265,7 +278,7 @@ public class RemoteTransformerClientTest
         assertFalse(remoteTransformerClient.isAvailable());
 
         // Wait until the end of the period.
-        Thread.sleep((STARTUP_RETRY_PERIOD_SECONDS-1)*1000);
+        Thread.sleep((STARTUP_RETRY_PERIOD_SECONDS - 1) * 1000);
 
         // ------------- After the wait period
 

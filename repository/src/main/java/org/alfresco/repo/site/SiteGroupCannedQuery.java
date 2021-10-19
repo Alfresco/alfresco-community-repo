@@ -35,82 +35,80 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteService.SiteMembersCallback;
 import org.alfresco.util.Pair;
 
-import java.util.Set;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 // TODO currently have to read all sites into memory for sorting purposes. Find a way that doesn't
-public class SiteGroupCannedQuery extends AbstractCannedQuery<SiteGroupMembership>
-{
-  private AuthorityService authorityService;
-  private SiteService siteService;
+public class SiteGroupCannedQuery extends AbstractCannedQuery<SiteGroupMembership> {
+    private AuthorityService authorityService;
+    private SiteService siteService;
 
-  protected SiteGroupCannedQuery(SiteService siteService, AuthorityService authorityService, CannedQueryParameters parameters)
-  {
-    super(parameters);
-    this.authorityService = authorityService;
-    this.siteService = siteService;
-  }
-
-  @Override
-  protected List<SiteGroupMembership> queryAndFilter(CannedQueryParameters parameters)
-  {
-    SiteMembersCannedQueryParams paramBean = (SiteMembersCannedQueryParams) parameters.getParameterBean();
-
-    String siteShortName = paramBean.getShortName();
-    CannedQuerySortDetails sortDetails = parameters.getSortDetails();
-
-    final CQSiteGroupsCallback callback = new CQSiteGroupsCallback(siteShortName, sortDetails.getSortPairs());
-    siteService.listMembers(siteShortName, null, null, false, true, paramBean.isExpandGroups(), callback);
-    callback.done();
-
-    return callback.getSiteMembers();
-  }
-
-  @Override
-  protected boolean isApplyPostQuerySorting()
-  {
-    // already sorted as a side effect
-    return false;
-  }
-
-  private class CQSiteGroupsCallback implements SiteMembersCallback
-  {
-    private SiteInfo siteInfo;
-    private Set<SiteGroupMembership> siteGroups;
-
-    CQSiteGroupsCallback(String siteShortName, List<Pair<? extends Object, SortOrder>> sortPairs)
-    {
-      this.siteInfo = siteService.getSite(siteShortName);
-      this.siteGroups = sortPairs != null && sortPairs.size() > 0
-              ? new TreeSet<>(SiteGroupMembership.getComparator(sortPairs))
-              : new HashSet<>();
+    protected SiteGroupCannedQuery(
+            SiteService siteService,
+            AuthorityService authorityService,
+            CannedQueryParameters parameters) {
+        super(parameters);
+        this.authorityService = authorityService;
+        this.siteService = siteService;
     }
 
     @Override
-    public void siteMember(String authority, String role)
-    {
-		if(authorityService.authorityExists(authority))
-		{
-		  String displayName = authorityService.getAuthorityDisplayName(authority);
-		  siteGroups.add(new SiteGroupMembership(siteInfo, authority, role, displayName));
-		}
+    protected List<SiteGroupMembership> queryAndFilter(CannedQueryParameters parameters) {
+        SiteMembersCannedQueryParams paramBean =
+                (SiteMembersCannedQueryParams) parameters.getParameterBean();
+
+        String siteShortName = paramBean.getShortName();
+        CannedQuerySortDetails sortDetails = parameters.getSortDetails();
+
+        final CQSiteGroupsCallback callback =
+                new CQSiteGroupsCallback(siteShortName, sortDetails.getSortPairs());
+        siteService.listMembers(
+                siteShortName, null, null, false, true, paramBean.isExpandGroups(), callback);
+        callback.done();
+
+        return callback.getSiteMembers();
     }
 
     @Override
-    public boolean isDone()
-    {
-      // need to read in all site members for sort
-      return false;
+    protected boolean isApplyPostQuerySorting() {
+        // already sorted as a side effect
+        return false;
     }
 
-    List<SiteGroupMembership> getSiteMembers()
-    {
-      return new ArrayList<>(siteGroups);
-    }
+    private class CQSiteGroupsCallback implements SiteMembersCallback {
+        private SiteInfo siteInfo;
+        private Set<SiteGroupMembership> siteGroups;
 
-    void done() {}
-  }
+        CQSiteGroupsCallback(
+                String siteShortName, List<Pair<? extends Object, SortOrder>> sortPairs) {
+            this.siteInfo = siteService.getSite(siteShortName);
+            this.siteGroups =
+                    sortPairs != null && sortPairs.size() > 0
+                            ? new TreeSet<>(SiteGroupMembership.getComparator(sortPairs))
+                            : new HashSet<>();
+        }
+
+        @Override
+        public void siteMember(String authority, String role) {
+            if (authorityService.authorityExists(authority)) {
+                String displayName = authorityService.getAuthorityDisplayName(authority);
+                siteGroups.add(new SiteGroupMembership(siteInfo, authority, role, displayName));
+            }
+        }
+
+        @Override
+        public boolean isDone() {
+            // need to read in all site members for sort
+            return false;
+        }
+
+        List<SiteGroupMembership> getSiteMembers() {
+            return new ArrayList<>(siteGroups);
+        }
+
+        void done() {}
+    }
 }

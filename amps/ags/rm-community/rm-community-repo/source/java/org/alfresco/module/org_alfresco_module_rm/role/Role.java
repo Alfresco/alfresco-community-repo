@@ -27,10 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.role;
 
-import java.util.Set;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+
+import java.util.Set;
 
 /**
  * Records management role class
@@ -38,8 +38,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public class Role
-{
+public class Role {
     /** Role name */
     private String name;
 
@@ -61,8 +60,8 @@ public class Role
      * @param capabilities
      * @param roleGroupName
      */
-    public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName)
-    {
+    public Role(
+            String name, String displayLabel, Set<Capability> capabilities, String roleGroupName) {
         this.name = name;
         this.displayLabel = displayLabel;
         this.capabilities = capabilities;
@@ -76,50 +75,38 @@ public class Role
      * @param roleGroupName
      * @param groupShortName
      */
-    public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName, String groupShortName)
-    {
+    public Role(
+            String name,
+            String displayLabel,
+            Set<Capability> capabilities,
+            String roleGroupName,
+            String groupShortName) {
         this(name, displayLabel, capabilities, roleGroupName);
         this.groupShortName = groupShortName;
     }
 
-    /**
-     * @return the name
-     */
-    public String getName()
-    {
+    /** @return the name */
+    public String getName() {
         return name;
     }
 
-    /**
-     * @return the displayLabel
-     */
-    public String getDisplayLabel()
-    {
+    /** @return the displayLabel */
+    public String getDisplayLabel() {
         return displayLabel;
     }
 
-    /**
-     * @return the capabilities
-     */
-    public Set<Capability> getCapabilities()
-    {
+    /** @return the capabilities */
+    public Set<Capability> getCapabilities() {
         return capabilities;
     }
 
-    /**
-     * @return the roleGroupName
-     */
-    public String getRoleGroupName()
-    {
+    /** @return the roleGroupName */
+    public String getRoleGroupName() {
         return roleGroupName;
     }
 
-    /**
-     * @return the groupShortName
-     */
-    public String getGroupShortName()
-    {
+    /** @return the groupShortName */
+    public String getGroupShortName() {
         return this.groupShortName;
     }
-
 }

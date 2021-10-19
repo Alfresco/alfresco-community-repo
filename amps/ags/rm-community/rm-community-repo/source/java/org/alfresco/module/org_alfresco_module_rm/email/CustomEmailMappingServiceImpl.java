@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.email;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -63,24 +56,31 @@ import org.json.JSONTokener;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
-/**
- * Custom Email Mapping Service
- */
-public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean implements CustomEmailMappingService
-{
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** Custom Email Mapping Service */
+public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean
+        implements CustomEmailMappingService {
     /** Logger */
     private static Log logger = LogFactory.getLog(CustomEmailMappingServiceImpl.class);
 
     /** Node reference's to configuration elements */
-    private static final NodeRef CONFIG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_emailmapping_config");
-    private static final NodeRef CONFIG_FOLDER_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
+    private static final NodeRef CONFIG_NODE_REF =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_emailmapping_config");
+
+    private static final NodeRef CONFIG_FOLDER_NODE_REF =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
 
     /** Config file name */
     private static final String CONFIG_NAME = "imapConfig.json";
 
     /** Default custom mappings (TODO move to spring config) */
-    private static final CustomMapping[] DEFAULT_MAPPINGS =
-    {
+    private static final CustomMapping[] DEFAULT_MAPPINGS = {
         new CustomMapping("Date", "dod:dateReceived"),
         new CustomMapping("messageTo", "dod:address"),
         new CustomMapping("messageFrom", "dod:originator"),
@@ -93,6 +93,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
     /** Services */
     private NodeService nodeService;
+
     private NamespacePrefixResolver nspr;
     private ContentService contentService;
     private TransactionService transactionService;
@@ -103,79 +104,55 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     /** List of email mapping keys */
     private List<String> emailMappingKeys;
 
-    /**
-     * @param nspr  namespace service
-     */
-    public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
-    {
+    /** @param nspr namespace service */
+    public void setNamespacePrefixResolver(NamespacePrefixResolver nspr) {
         this.nspr = nspr;
     }
 
-    /**
-     * @param extractor extractor component
-     */
-    public void setExtracter(RFC822MetadataExtracter extractor)
-    {
+    /** @param extractor extractor component */
+    public void setExtracter(RFC822MetadataExtracter extractor) {
         this.extracter = extractor;
     }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param contentService    content service
-     */
-    public void setContentService(ContentService contentService)
-    {
+    /** @param contentService content service */
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
-    /**
-     * @param transactionService    transaction service
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
+    /** @param transactionService transaction service */
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
-    /**
-     * @param emailMappingKeys    email mapping keys
-     */
-    public void setEmailMappingKeys(List<String> emailMappingKeys)
-    {
+    /** @param emailMappingKeys email mapping keys */
+    public void setEmailMappingKeys(List<String> emailMappingKeys) {
         this.emailMappingKeys = emailMappingKeys;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#getCustomMappings()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#getCustomMappings()
      */
-    public Set<CustomMapping> getCustomMappings()
-    {
-        if (customMappings == null)
-        {
+    public Set<CustomMapping> getCustomMappings() {
+        if (customMappings == null) {
             // if we have a config file
-            if (nodeService.exists(CONFIG_NODE_REF))
-            {
+            if (nodeService.exists(CONFIG_NODE_REF)) {
                 // load the contents of the config file
                 customMappings = loadConfig();
-            }
-            else
-            {
+            } else {
                 customMappings = new HashSet<>();
 
                 // load the contents of the extractors property file
                 Map<String, Set<QName>> currentMapping = extracter.getCurrentMapping();
-                for (Map.Entry<String, Set<QName>> entry : currentMapping.entrySet())
-                {
+                for (Map.Entry<String, Set<QName>> entry : currentMapping.entrySet()) {
                     Set<QName> set = entry.getValue();
 
-                    for (QName qname : set)
-                    {
+                    for (QName qname : set) {
                         CustomMapping value = new CustomMapping();
                         value.setFrom(entry.getKey());
                         QName resolvedQname = qname.getPrefixedQName(nspr);
@@ -186,16 +163,14 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
                 // if we have an old config file
                 NodeRef oldConfigNode = getOldConfigNode();
-                if (oldConfigNode != null)
-                {
+                if (oldConfigNode != null) {
                     // load the contents of the old config file
                     Set<CustomMapping> oldMappings = readOldConfig(oldConfigNode);
                     customMappings.addAll(oldMappings);
                 }
 
                 // load the hard coded mappings
-                for(CustomMapping mapping : DEFAULT_MAPPINGS)
-                {
+                for (CustomMapping mapping : DEFAULT_MAPPINGS) {
                     customMappings.add(mapping);
                 }
 
@@ -208,12 +183,12 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#addCustomMapping(java.lang.String, java.lang.String)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#addCustomMapping(java.lang.String,
+     *     java.lang.String)
      */
-    public void addCustomMapping(String from, String to)
-    {
-        if (StringUtils.isBlank(from) || StringUtils.isBlank(to))
-        {
+    public void addCustomMapping(String from, String to) {
+        if (StringUtils.isBlank(from) || StringUtils.isBlank(to)) {
             throw new AlfrescoRuntimeException("Invalid values for from/to.");
         }
 
@@ -222,9 +197,9 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
         // check whether we already have this mapping or not
         Set<CustomMapping> customMappings = getCustomMappings();
-        if (customMappings.contains(customMapping))
-        {
-            throw new AlfrescoRuntimeException("Can not add custom email mapping, because duplicate mapping already exists.");
+        if (customMappings.contains(customMapping)) {
+            throw new AlfrescoRuntimeException(
+                    "Can not add custom email mapping, because duplicate mapping already exists.");
         }
 
         // else add the custom mapping (since we have already called getCustomMapping we can be sure
@@ -239,12 +214,12 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#deleteCustomMapping(java.lang.String, java.lang.String)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#deleteCustomMapping(java.lang.String,
+     *     java.lang.String)
      */
-    public void deleteCustomMapping(String from, String to)
-    {
-        if (StringUtils.isBlank(from) || StringUtils.isBlank(to))
-        {
+    public void deleteCustomMapping(String from, String to) {
+        if (StringUtils.isBlank(from) || StringUtils.isBlank(to)) {
             throw new AlfrescoRuntimeException("Invalid values for from/to.");
         }
 
@@ -253,9 +228,9 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
         // check whether we already have this mapping or not
         Set<CustomMapping> customMappings = getCustomMappings();
-        if (customMappings.contains(customMapping))
-        {
-            // else remove the custom mapping (since we have already called getCustomMapping we can be sure
+        if (customMappings.contains(customMapping)) {
+            // else remove the custom mapping (since we have already called getCustomMapping we can
+            // be sure
             // the member variable is populated)
             customMappings.remove(customMapping);
 
@@ -268,38 +243,33 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#getEmailMappingKeys()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#getEmailMappingKeys()
      */
     @Override
-    public List<String> getEmailMappingKeys()
-    {
+    public List<String> getEmailMappingKeys() {
         return emailMappingKeys;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#registerEMailMappingKey(java.lang.String)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#registerEMailMappingKey(java.lang.String)
      */
     @Override
-    public void registerEMailMappingKey(String emailMappingKey)
-    {
+    public void registerEMailMappingKey(String emailMappingKey) {
         ParameterCheck.mandatoryString("emailMappingKey", emailMappingKey);
 
         emailMappingKeys.add(emailMappingKey);
     }
 
-    /**
-     * Updates the extractor with the custom configuration.
-     */
-    private void updateExtractor()
-    {
+    /** Updates the extractor with the custom configuration. */
+    private void updateExtractor() {
         // convert the mapping information into the form understood by the extractor
         Map<String, Set<QName>> newMapping = new HashMap<>(17);
-        for(CustomMapping mapping : getCustomMappings())
-        {
+        for (CustomMapping mapping : getCustomMappings()) {
             QName newQName = QName.createQName(mapping.getTo(), nspr);
             Set<QName> values = newMapping.get(mapping.getFrom());
-            if(values == null)
-            {
+            if (values == null) {
                 values = new HashSet<>();
                 newMapping.put(mapping.getFrom(), values);
             }
@@ -315,28 +285,22 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      *
      * @return
      */
-    private Set<CustomMapping> loadConfig()
-    {
+    private Set<CustomMapping> loadConfig() {
         Set<CustomMapping> result = new HashSet<>();
         ContentReader cr = contentService.getReader(CONFIG_NODE_REF, ContentModel.PROP_CONTENT);
-        if (cr != null)
-        {
+        if (cr != null) {
             String text = cr.getContentString();
 
-            try
-            {
+            try {
                 JSONArray jsonArray = new JSONArray(new JSONTokener(text));
-                for(int i = 0 ; i < jsonArray.length(); i++)
-                {
+                for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject obj = jsonArray.getJSONObject(i);
                     CustomMapping mapping = new CustomMapping();
                     mapping.setFrom(obj.getString("from"));
                     mapping.setTo(obj.getString("to"));
                     result.add(mapping);
                 }
-            }
-            catch (JSONException je)
-            {
+            } catch (JSONException je) {
                 throw new AlfrescoRuntimeException("Unable to read custom email configuration", je);
             }
         }
@@ -344,14 +308,9 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
         return result;
     }
 
-    /**
-     *
-     * @param customMappingsToSave
-     */
-    private void saveConfig(Set<CustomMapping> customMappingsToSave)
-    {
-        if (!nodeService.exists(CONFIG_NODE_REF))
-        {
+    /** @param customMappingsToSave */
+    private void saveConfig(Set<CustomMapping> customMappingsToSave) {
+        if (!nodeService.exists(CONFIG_NODE_REF)) {
             // create the config node
             Map<QName, Serializable> properties = new HashMap<>(2);
             properties.put(ContentModel.PROP_NAME, CONFIG_NAME);
@@ -366,115 +325,105 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
         // build JSON array of mappings
         JSONArray jsonMappings = new JSONArray();
-        try
-        {
-            for(CustomMapping mapping : customMappingsToSave)
-            {
+        try {
+            for (CustomMapping mapping : customMappingsToSave) {
                 JSONObject obj = new JSONObject();
                 obj.put("from", mapping.getFrom());
                 obj.put("to", mapping.getTo());
                 jsonMappings.put(obj);
             }
-        }
-        catch (JSONException je)
-        {
-            throw new AlfrescoRuntimeException("Unable to create JSON email mapping configuration during save.", je);
+        } catch (JSONException je) {
+            throw new AlfrescoRuntimeException(
+                    "Unable to create JSON email mapping configuration during save.", je);
         }
 
         // update the content
-        ContentWriter writer = this.contentService.getWriter(CONFIG_NODE_REF, ContentModel.PROP_CONTENT, true);
+        ContentWriter writer =
+                this.contentService.getWriter(CONFIG_NODE_REF, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(jsonMappings.toString());
     }
 
     /**
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see
+     *     org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
+    protected void onBootstrap(ApplicationEvent event) {
         // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute()
-                    {
-                        try
-                        {
-                            // update the extractor with the custom mappings
-                            updateExtractor();
-                        }
-                        catch (RuntimeException e)
-                        {
-                            // log a warning
-                            if (logger.isWarnEnabled())
-                            {
-                                logger.warn(e.getMessage());
-                            }
+        AuthenticationUtil.runAs(
+                new RunAsWork<Object>() {
+                    public Object doWork() {
+                        RetryingTransactionCallback<Void> callback =
+                                new RetryingTransactionCallback<Void>() {
+                                    public Void execute() {
+                                        try {
+                                            // update the extractor with the custom mappings
+                                            updateExtractor();
+                                        } catch (RuntimeException e) {
+                                            // log a warning
+                                            if (logger.isWarnEnabled()) {
+                                                logger.warn(e.getMessage());
+                                            }
 
-                            // reset the mappings
-                            customMappings = null;
+                                            // reset the mappings
+                                            customMappings = null;
 
-                            // rethrow
-                            throw e;
-                        }
+                                            // rethrow
+                                            throw e;
+                                        }
+                                        return null;
+                                    }
+                                };
+                        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+
                         return null;
                     }
-                };
-                transactionService.getRetryingTransactionHelper().doInTransaction(callback);
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+                },
+                AuthenticationUtil.getSystemUserName());
     }
 
     /**
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see
+     *     org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
      */
     @Override
-    protected void onShutdown(ApplicationEvent arg0)
-    {
+    protected void onShutdown(ApplicationEvent arg0) {
         // No implementation
     }
 
     /**
-     * Helper method to get the old configuration node.  This is used during the migration
-     * from 1.0 to 2.0.
-     * <p>
-     * Returns null if it does not exist.
+     * Helper method to get the old configuration node. This is used during the migration from 1.0
+     * to 2.0.
      *
-     * @return  {@link NodeRef} node reference of the old configuration node, null otherwise
+     * <p>Returns null if it does not exist.
+     *
+     * @return {@link NodeRef} node reference of the old configuration node, null otherwise
      */
-    private NodeRef getOldConfigNode()
-    {
+    private NodeRef getOldConfigNode() {
         NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        return nodeService.getChildByName(rootNode, RecordsManagementModel.ASSOC_EMAIL_CONFIG, CONFIG_NAME);
+        return nodeService.getChildByName(
+                rootNode, RecordsManagementModel.ASSOC_EMAIL_CONFIG, CONFIG_NAME);
     }
 
     /**
-     * Reads the old configuration node.  This is used during the migration from 1.0 to 2.0.
+     * Reads the old configuration node. This is used during the migration from 1.0 to 2.0.
      *
-     * @param nodeRef   the old configuration node reference
-     * @return {@link Set}<{@link CustomMapping}>   set of the custom mappings stored in the old configuration
+     * @param nodeRef the old configuration node reference
+     * @return {@link Set}<{@link CustomMapping}> set of the custom mappings stored in the old
+     *     configuration
      */
-    private Set<CustomMapping> readOldConfig(NodeRef nodeRef)
-    {
+    private Set<CustomMapping> readOldConfig(NodeRef nodeRef) {
         Set<CustomMapping> newMappings = new HashSet<>();
 
         ContentReader cr = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-        if (cr != null)
-        {
+        if (cr != null) {
             String text = cr.getContentString();
 
-            try
-            {
+            try {
                 JSONArray jsonArray = new JSONArray(new JSONTokener(text));
-                for(int i = 0 ; i < jsonArray.length(); i++)
-                {
+                for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject obj = jsonArray.getJSONObject(i);
                     CustomMapping mapping = new CustomMapping();
                     mapping.setFrom(obj.getString("from"));
@@ -482,13 +431,10 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
                     newMappings.add(mapping);
                 }
                 return newMappings;
-            }
-            catch (JSONException je)
-            {
+            } catch (JSONException je) {
                 logger.warn("unable to read custom email configuration", je);
                 return newMappings;
             }
-
         }
         return newMappings;
     }

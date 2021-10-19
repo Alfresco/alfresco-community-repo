@@ -25,21 +25,18 @@
  */
 package org.alfresco.rest.api.discovery;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.junit.Test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-/**
- * @author Mikołaj Brzeziński
- */
-public class DiscoveryApiWebscriptUnitTest
-{
+/** @author Mikołaj Brzeziński */
+public class DiscoveryApiWebscriptUnitTest {
     private static final Boolean ENABLED = Boolean.TRUE;
     private static final Boolean DISABLED = Boolean.FALSE;
 
@@ -47,41 +44,44 @@ public class DiscoveryApiWebscriptUnitTest
     private RestApiDirectUrlConfig restApiDirectUrlConfig = mock(RestApiDirectUrlConfig.class);
     private ContentService contentService = mock(ContentService.class);
 
-    public void mockedAsserts(boolean restEnabled, boolean systemwideEnabled)
-    {
+    public void mockedAsserts(boolean restEnabled, boolean systemwideEnabled) {
         when(contentService.isContentDirectUrlEnabled()).thenReturn(systemwideEnabled);
         when(restApiDirectUrlConfig.isEnabled()).thenReturn(restEnabled);
         assertEquals(systemwideEnabled, contentService.isContentDirectUrlEnabled());
         assertEquals(restEnabled, restApiDirectUrlConfig.isEnabled());
-        when(discoveryApiWebscript.isContentDirectUrlEnabled()).thenReturn(restEnabled && systemwideEnabled);
+        when(discoveryApiWebscript.isContentDirectUrlEnabled())
+                .thenReturn(restEnabled && systemwideEnabled);
     }
 
     @Test
-    public void testEnabledConfig_RestEnabledAndSystemwideEnabled()
-    {
-        mockedAsserts(ENABLED,ENABLED);
-        assertTrue("Direct Acess URLs are enabled",discoveryApiWebscript.isContentDirectUrlEnabled());
+    public void testEnabledConfig_RestEnabledAndSystemwideEnabled() {
+        mockedAsserts(ENABLED, ENABLED);
+        assertTrue(
+                "Direct Acess URLs are enabled", discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
     @Test
-    public void testDisabledConfig_RestEnabledAndSystemwideDisabled()
-    {
-        mockedAsserts(ENABLED,DISABLED);
-        assertFalse("Direct Access URLs are disabled system-wide",discoveryApiWebscript.isContentDirectUrlEnabled());
+    public void testDisabledConfig_RestEnabledAndSystemwideDisabled() {
+        mockedAsserts(ENABLED, DISABLED);
+        assertFalse(
+                "Direct Access URLs are disabled system-wide",
+                discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
     @Test
-    public void testDisabledConfig_RestDisabledAndSystemwideDisabled()
-    {
-        mockedAsserts(DISABLED,DISABLED);
-        assertFalse("REST API Direct Access URLs are disabled and Direct Access URLs are disabled system-wide ",discoveryApiWebscript.isContentDirectUrlEnabled());
+    public void testDisabledConfig_RestDisabledAndSystemwideDisabled() {
+        mockedAsserts(DISABLED, DISABLED);
+        assertFalse(
+                "REST API Direct Access URLs are disabled and Direct Access URLs are disabled"
+                        + " system-wide ",
+                discoveryApiWebscript.isContentDirectUrlEnabled());
     }
 
     @Test
-    public void testDisabledConfig_RestDisabledAndSystemwideEnabled()
-    {
-        mockedAsserts(DISABLED,ENABLED);
-        assertFalse("REST API direct access URLs are disabled",discoveryApiWebscript.isContentDirectUrlEnabled());
+    public void testDisabledConfig_RestDisabledAndSystemwideEnabled() {
+        mockedAsserts(DISABLED, ENABLED);
+        assertFalse(
+                "REST API direct access URLs are disabled",
+                discoveryApiWebscript.isContentDirectUrlEnabled());
     }
-
 }

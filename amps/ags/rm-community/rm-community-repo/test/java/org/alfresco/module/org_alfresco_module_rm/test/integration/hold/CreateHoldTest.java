@@ -33,9 +33,6 @@ import static org.alfresco.repo.site.SiteModel.SITE_CONSUMER;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.util.GUID.generate;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeCreateHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnCreateHoldPolicy;
@@ -49,35 +46,35 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Tests that the user who created the hold has filing permissions on the created hold.
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPolicy, OnCreateHoldPolicy
-{
+public class CreateHoldTest extends BaseRMTestCase
+        implements BeforeCreateHoldPolicy, OnCreateHoldPolicy {
     // Test user
     private String testUser = null;
 
     private boolean beforeCreateHoldFlag = false;
     private boolean onCreateHoldFlag = false;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest() */
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestUsersImpl(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestUsersImpl(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void setupTestUsersImpl(NodeRef filePlan)
-    {
+    protected void setupTestUsersImpl(NodeRef filePlan) {
         super.setupTestUsersImpl(filePlan);
 
         // Create test user
@@ -97,105 +94,110 @@ public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPo
         filePlanRoleService.assignRoleToAuthority(filePlan, role.getName(), testUser);
     }
 
-    public void testFilingPermissionOnCreatedHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser)
-        {
-            // Hold
-            private NodeRef hold;
+    public void testFilingPermissionOnCreatedHold() {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest(testUser) {
+                    // Hold
+                    private NodeRef hold;
 
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
-             */
-            @Override
-            public void given() throws Exception
-            {
-                // Give test user filing permissions on hold container
-                runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        // ensure the user has the correct permission to create the hold
-                        filePlanPermissionService.setPermission(holdsContainer, testUser, FILING);
+                    /**
+                     * @see
+                     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
+                     */
+                    @Override
+                    public void given() throws Exception {
+                        // Give test user filing permissions on hold container
+                        runAs(
+                                new RunAsWork<Void>() {
+                                    public Void doWork() throws Exception {
+                                        // ensure the user has the correct permission to create the
+                                        // hold
+                                        filePlanPermissionService.setPermission(
+                                                holdsContainer, testUser, FILING);
 
-                        return null;
+                                        return null;
+                                    }
+                                },
+                                getAdminUserName());
                     }
-                }, getAdminUserName());
-            }
 
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
-             */
-            @Override
-            public void when() throws Exception
-            {
-                // Create a hold
-                hold = holdService.createHold(filePlan, generate(), generate(), generate());
-            }
+                    /**
+                     * @see
+                     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
+                     */
+                    @Override
+                    public void when() throws Exception {
+                        // Create a hold
+                        hold = holdService.createHold(filePlan, generate(), generate(), generate());
+                    }
 
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
-             */
-            @Override
-            public void then() throws Exception
-            {
-                // Check the permission on the hold
-                assertEquals(ALLOWED, permissionService.hasPermission(hold, FILING));
-            }
-        });
+                    /**
+                     * @see
+                     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
+                     */
+                    @Override
+                    public void then() throws Exception {
+                        // Check the permission on the hold
+                        assertEquals(ALLOWED, permissionService.hasPermission(hold, FILING));
+                    }
+                });
     }
 
-    public void testPolicyNotificationForCreateHold() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour;
-            BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour;
+    public void testPolicyNotificationForCreateHold() throws Exception {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest() {
+                    BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour;
+                    BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour;
 
-            public void given()
-            {
-                beforeCreateHoldBehaviour = policyComponent.bindClassBehaviour(BeforeCreateHoldPolicy.QNAME,
-                            RecordsManagementModel.TYPE_HOLD_CONTAINER,
-                            new JavaBehaviour(CreateHoldTest.this, "beforeCreateHold", NotificationFrequency.EVERY_EVENT));
+                    public void given() {
+                        beforeCreateHoldBehaviour =
+                                policyComponent.bindClassBehaviour(
+                                        BeforeCreateHoldPolicy.QNAME,
+                                        RecordsManagementModel.TYPE_HOLD_CONTAINER,
+                                        new JavaBehaviour(
+                                                CreateHoldTest.this,
+                                                "beforeCreateHold",
+                                                NotificationFrequency.EVERY_EVENT));
 
-                onCreateHoldBehaviour = policyComponent.bindClassBehaviour(OnCreateHoldPolicy.QNAME,
-                            RecordsManagementModel.TYPE_HOLD,
-                            new JavaBehaviour(CreateHoldTest.this, "onCreateHold", NotificationFrequency.EVERY_EVENT));
+                        onCreateHoldBehaviour =
+                                policyComponent.bindClassBehaviour(
+                                        OnCreateHoldPolicy.QNAME,
+                                        RecordsManagementModel.TYPE_HOLD,
+                                        new JavaBehaviour(
+                                                CreateHoldTest.this,
+                                                "onCreateHold",
+                                                NotificationFrequency.EVERY_EVENT));
 
-                assertFalse(beforeCreateHoldFlag);
-                assertFalse(onCreateHoldFlag);
-            }
+                        assertFalse(beforeCreateHoldFlag);
+                        assertFalse(onCreateHoldFlag);
+                    }
 
-            public void when()
-            {
-                // Create a hold
-                NodeRef hold = holdService.createHold(filePlan, generate(), generate(), generate());
-            }
+                    public void when() {
+                        // Create a hold
+                        NodeRef hold =
+                                holdService.createHold(
+                                        filePlan, generate(), generate(), generate());
+                    }
 
-            public void then()
-            {
-                assertTrue(beforeCreateHoldFlag);
-                assertTrue(onCreateHoldFlag);
-            }
+                    public void then() {
+                        assertTrue(beforeCreateHoldFlag);
+                        assertTrue(onCreateHoldFlag);
+                    }
 
-            public void after()
-            {
-                policyComponent.removeClassDefinition(beforeCreateHoldBehaviour);
-                policyComponent.removeClassDefinition(onCreateHoldBehaviour);
-            }
-        });
-
+                    public void after() {
+                        policyComponent.removeClassDefinition(beforeCreateHoldBehaviour);
+                        policyComponent.removeClassDefinition(onCreateHoldBehaviour);
+                    }
+                });
     }
 
     @Override
-    public void beforeCreateHold(String name, String reason)
-    {
+    public void beforeCreateHold(String name, String reason) {
         beforeCreateHoldFlag = true;
     }
 
     @Override
-    public void onCreateHold(NodeRef hold)
-    {
+    public void onCreateHold(NodeRef hold) {
         onCreateHoldFlag = true;
     }
 }

@@ -4,29 +4,27 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
 package org.alfresco.repo.rule;
-
-import java.util.List;
 
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -35,57 +33,55 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 
+import java.util.List;
+
 /**
  * Action implementation to unlink the rules from one folder to another
- * 
+ *
  * @author Roy Wetherall
  */
-public class UnlinkRules extends ActionExecuterAbstractBase
-{
+public class UnlinkRules extends ActionExecuterAbstractBase {
     /** Constants */
     public static final String NAME = "unlink-rules";
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Runtime rule service */
     private RuntimeRuleService ruleService;
-    
+
     /**
      * Set rule service
-     * 
-     * @param ruleService   rule service
+     *
+     * @param ruleService rule service
      */
-    public void setRuleService(RuntimeRuleService ruleService)
-    {
+    public void setRuleService(RuntimeRuleService ruleService) {
         this.ruleService = ruleService;
     }
-    
+
     /**
      * Set node service
-     * 
-     * @param nodeService   node service
+     *
+     * @param nodeService node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (nodeService.exists(actionedUponNodeRef) == true)
-        {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        if (nodeService.exists(actionedUponNodeRef) == true) {
             // Check that the actioned upon node has the rules aspect applied
-            if (nodeService.hasAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES) == true)
-            {                 
+            if (nodeService.hasAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES) == true) {
                 // Get the rule node the actioned upon node is linked to
-                NodeRef linkedToNode = ((RuleService)ruleService).getLinkedToRuleNode(actionedUponNodeRef);
-                if (linkedToNode != null)
-                {
+                NodeRef linkedToNode =
+                        ((RuleService) ruleService).getLinkedToRuleNode(actionedUponNodeRef);
+                if (linkedToNode != null) {
                     nodeService.removeAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES);
                 }
             }
@@ -93,10 +89,9 @@ public class UnlinkRules extends ActionExecuterAbstractBase
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-    }
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {}
 }

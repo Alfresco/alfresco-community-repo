@@ -4,47 +4,44 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.search.adaptor;
 
-import java.util.List;
-
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+import java.util.List;
+
 /**
- * Adaptor class to wrap search parser implementations and encapsulate changes between search versions of query
- * building.
- * 
+ * Adaptor class to wrap search parser implementations and encapsulate changes between search
+ * versions of query building.
+ *
  * @param <Q> the query type used by the query engine implementation
  * @param <S> the sort type used by the query engine implementation
- * @param <E> the exception it throws 
- * 
+ * @param <E> the exception it throws
  * @author Andy
- *
  */
-public interface QueryParserAdaptor<Q, S, E extends Throwable>
-{
+public interface QueryParserAdaptor<Q, S, E extends Throwable> {
 
     /**
      * @param field String
@@ -53,7 +50,12 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @param luceneFunction LuceneFunction
      * @return Q
      */
-    Q getFieldQuery(String field, String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws E;
+    Q getFieldQuery(
+            String field,
+            String queryText,
+            AnalysisMode analysisMode,
+            LuceneFunction luceneFunction)
+            throws E;
 
     /**
      * @param field String
@@ -65,20 +67,27 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @param luceneFunction LuceneFunction
      * @return Q
      */
-    Q getRangeQuery(String field, String lower, String upper, boolean includeLower, boolean includeUpper, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws E;
+    Q getRangeQuery(
+            String field,
+            String lower,
+            String upper,
+            boolean includeLower,
+            boolean includeUpper,
+            AnalysisMode analysisMode,
+            LuceneFunction luceneFunction)
+            throws E;
 
-    
     /**
      * A query that matches all docs
-     * 
+     *
      * @return Q
      * @throws E
      */
     Q getMatchAllQuery() throws E;
-    
+
     /**
      * A query that matches no docs.
-     * 
+     *
      * @return Q
      * @throws E
      */
@@ -92,9 +101,7 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      */
     Q getLikeQuery(String field, String sqlLikeClause, AnalysisMode analysisMode) throws E;
 
-    /**
-     * @return SearchParameters
-     */
+    /** @return SearchParameters */
     SearchParameters getSearchParameters();
 
     /**
@@ -105,18 +112,23 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
 
     /**
      * Wrap generating a potentially complex id + version query
-     * 
+     *
      * @param field String
      * @param stringValue String
      * @param analysisMode AnalysisMode
      * @param luceneFunction LuceneFunction
      * @return Q
      */
-    Q getIdentifierQuery(String field, String stringValue, AnalysisMode analysisMode, LuceneFunction luceneFunction) throws E;
+    Q getIdentifierQuery(
+            String field,
+            String stringValue,
+            AnalysisMode analysisMode,
+            LuceneFunction luceneFunction)
+            throws E;
 
     /**
      * Wrap generating a potentially complex id + version query
-     * 
+     *
      * @param field String
      * @param stringValue String
      * @param analysisMode AnalysisMode
@@ -142,7 +154,7 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @param list List
      * @param functionContext FunctionEvaluationContext
      * @return S
-     * @throws E 
+     * @throws E
      */
     S buildSort(List<Ordering> list, FunctionEvaluationContext functionContext) throws E;
 
@@ -157,14 +169,14 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
 
     /**
      * Get the default field
-     * 
+     *
      * @return String
      */
     String getField();
 
     /**
      * Get the default phrase slop
-     * 
+     *
      * @return int
      */
     int getPhraseSlop();
@@ -177,7 +189,13 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @param luceneFunction LuceneFunction
      * @return Q
      */
-    Q getFieldQuery(String luceneFieldName, String term, AnalysisMode analysisMode, Integer slop, LuceneFunction luceneFunction) throws E;
+    Q getFieldQuery(
+            String luceneFieldName,
+            String term,
+            AnalysisMode analysisMode,
+            Integer slop,
+            LuceneFunction luceneFunction)
+            throws E;
 
     /**
      * @param luceneFieldName String
@@ -195,7 +213,8 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @param inOrder boolean
      * @return Q
      */
-    Q getSpanQuery(String luceneFieldName, String first, String last, int slop, boolean inOrder) throws E;
+    Q getSpanQuery(String luceneFieldName, String first, String last, int slop, boolean inOrder)
+            throws E;
 
     /**
      * @param luceneFieldName String
@@ -204,24 +223,25 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @return Q
      */
     Q getWildcardQuery(String luceneFieldName, String term, AnalysisMode mode) throws E;
-    
+
     /**
-     * Invert a query - add a mandatory must not match anything query alnogside 
-     * 
+     * Invert a query - add a mandatory must not match anything query alnogside
+     *
      * @param query Q
      * @return Q
      */
     Q getNegatedQuery(Q query) throws E;
-    
+
     /**
      * Utility to build conjunctions, disjunctions and negation
+     *
      * @return QueryParserExpressionAdaptor
      */
     QueryParserExpressionAdaptor<Q, E> getExpressionAdaptor();
 
     /**
      * A query that matches all alfresco nodes (not extra stuff that may be in the underlying index)
-     * 
+     *
      * @return Q
      */
     Q getMatchAllNodesQuery();
@@ -231,5 +251,5 @@ public interface QueryParserAdaptor<Q, S, E extends Throwable>
      * @param propertyDef PropertyDefinition
      * @return String
      */
-    String getDatetimeSortField(String field, PropertyDefinition propertyDef); 
+    String getDatetimeSortField(String field, PropertyDefinition propertyDef);
 }

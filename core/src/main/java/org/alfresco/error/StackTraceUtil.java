@@ -18,16 +18,15 @@
  */
 package org.alfresco.error;
 
-
 /**
  * Helper class around outputting stack traces.
- * 
+ *
  * @author Derek Hulley
  */
-public class StackTraceUtil
-{
+public class StackTraceUtil {
     /**
      * Builds a message with the stack trace of the form:
+     *
      * <pre>
      *    SOME MESSAGE:
      *       Started at:
@@ -35,32 +34,24 @@ public class StackTraceUtil
      *          com.package...
      *          ...
      * </pre>
-     * 
+     *
      * @param msg the initial error message
      * @param stackTraceElements the stack trace elements
      * @param sb the buffer to append to
-     * @param maxDepth the maximum number of trace elements to output.  0 or less means output all.
+     * @param maxDepth the maximum number of trace elements to output. 0 or less means output all.
      */
     public static void buildStackTrace(
-            String msg,
-            StackTraceElement[] stackTraceElements,
-            StringBuilder sb,
-            int maxDepth)
-    {
+            String msg, StackTraceElement[] stackTraceElements, StringBuilder sb, int maxDepth) {
         String lineEnding = System.getProperty("line.separator", "\n");
 
-        sb.append(msg).append(" ").append(lineEnding)
-          .append("   Started at: ").append(lineEnding);
-        for (int i = 0; i < stackTraceElements.length; i++)
-        {
-            if (i > maxDepth && maxDepth > 0)
-            {
+        sb.append(msg).append(" ").append(lineEnding).append("   Started at: ").append(lineEnding);
+        for (int i = 0; i < stackTraceElements.length; i++) {
+            if (i > maxDepth && maxDepth > 0) {
                 sb.append("      ...");
                 break;
             }
             sb.append("      ").append(stackTraceElements[i]);
-            if (i < stackTraceElements.length - 1)
-            {
+            if (i < stackTraceElements.length - 1) {
                 sb.append(lineEnding);
             }
         }

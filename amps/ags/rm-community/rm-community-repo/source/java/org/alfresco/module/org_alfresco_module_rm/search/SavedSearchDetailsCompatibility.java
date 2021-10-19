@@ -27,24 +27,25 @@
 
 package org.alfresco.module.org_alfresco_module_rm.search;
 
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-
 /**
  * Compatibility class.
  *
- * Used to bridge between the old style of saved search passed and required by the UI and the new actual saved search details.
- * Eventually will be factored out as web scripts are brought up to date.
+ * <p>Used to bridge between the old style of saved search passed and required by the UI and the new
+ * actual saved search details. Eventually will be factored out as web scripts are brought up to
+ * date.
  */
-// Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is not public API.
-public class SavedSearchDetailsCompatibility implements RecordsManagementModel
-{
+// Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is
+// not public API.
+public class SavedSearchDetailsCompatibility implements RecordsManagementModel {
     /** Saved search details */
     private final SavedSearchDetails savedSearchDetails;
 
@@ -56,24 +57,19 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Retrieve the search from the parameter string
-     * @param params    parameter string
-     * @return String   search term
+     *
+     * @param params parameter string
+     * @return String search term
      */
-    public static String getSearchFromParams(String params)
-    {
+    public static String getSearchFromParams(String params) {
         String search = null;
         String[] values = params.split("&");
-        for (String value : values)
-        {
-            if (value.startsWith("terms"))
-            {
+        for (String value : values) {
+            if (value.startsWith("terms")) {
                 String[] terms = value.trim().split("=");
-                try
-                {
+                try {
                     search = URLDecoder.decode(terms[1], "UTF-8");
-                }
-                catch (UnsupportedEncodingException e)
-                {
+                } catch (UnsupportedEncodingException e) {
                     // Do nothing just return null
                     search = null;
                 }
@@ -84,73 +80,55 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
         return search;
     }
 
-    public static RecordsManagementSearchParameters createSearchParameters(String params, String sort, NamespaceService namespaceService)
-    {
-        return createSearchParameters(params, new String[]{"&", "="}, sort, namespaceService);
+    public static RecordsManagementSearchParameters createSearchParameters(
+            String params, String sort, NamespaceService namespaceService) {
+        return createSearchParameters(params, new String[] {"&", "="}, sort, namespaceService);
     }
 
     /**
-     *
      * @param params
      * @param sort
      * @param namespaceService
      * @return
      */
-    public static RecordsManagementSearchParameters createSearchParameters(String params, String[] paramsDelim, String sort, NamespaceService namespaceService)
-    {
+    public static RecordsManagementSearchParameters createSearchParameters(
+            String params, String[] paramsDelim, String sort, NamespaceService namespaceService) {
         RecordsManagementSearchParameters result = new RecordsManagementSearchParameters();
         List<QName> includedContainerTypes = new ArrayList<>(2);
 
         // Map the param values into the search parameter object
         String[] values = params.split(paramsDelim[0]);
-        for (String value : values)
-        {
+        for (String value : values) {
             String[] paramValues = value.split(paramsDelim[1]);
             String paramName = paramValues[0].trim();
             String paramValue = paramValues[1].trim();
-            if ("records".equals(paramName))
-            {
+            if ("records".equals(paramName)) {
                 result.setIncludeRecords(Boolean.parseBoolean(paramValue));
-            }
-            else if ("undeclared".equals(paramName))
-            {
+            } else if ("undeclared".equals(paramName)) {
                 result.setIncludeUndeclaredRecords(Boolean.parseBoolean(paramValue));
-            }
-            else if ("vital".equals(paramName))
-            {
+            } else if ("vital".equals(paramName)) {
                 result.setIncludeVitalRecords(Boolean.parseBoolean(paramValue));
-            }
-            else if ("folders".equals(paramName))
-            {
+            } else if ("folders".equals(paramName)) {
                 result.setIncludeRecordFolders(Boolean.parseBoolean(paramValue));
-            }
-            else if ("frozen".equals(paramName))
-            {
+            } else if ("frozen".equals(paramName)) {
                 result.setIncludeFrozen(Boolean.parseBoolean(paramValue));
-            }
-            else if ("cutoff".equals(paramName))
-            {
+            } else if ("cutoff".equals(paramName)) {
                 result.setIncludeCutoff(Boolean.parseBoolean(paramValue));
-            }
-            else if ("categories".equals(paramName) && Boolean.parseBoolean(paramValue))
-            {
+            } else if ("categories".equals(paramName) && Boolean.parseBoolean(paramValue)) {
                 includedContainerTypes.add(TYPE_RECORD_CATEGORY);
             }
         }
         result.setIncludedContainerTypes(includedContainerTypes);
 
-        if (sort != null)
-        {
+        if (sort != null) {
             // Map the sort string into the search details
             String[] sortPairs = sort.split(",");
             List<SortItem> sortOrder = new ArrayList<>(sortPairs.length);
-            for (String sortPairString : sortPairs)
-            {
+            for (String sortPairString : sortPairs) {
                 String[] sortPair = sortPairString.split("/");
                 QName field = QName.createQName(sortPair[0], namespaceService);
                 Boolean isAcsending = Boolean.FALSE;
-                if ("asc".equals(sortPair[1]))
-                {
+                if ("asc".equals(sortPair[1])) {
                     isAcsending = Boolean.TRUE;
                 }
                 sortOrder.add(new SortItem(field, isAcsending));
@@ -163,12 +141,13 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Constructor
+     *
      * @param savedSearchDetails
      */
-    public SavedSearchDetailsCompatibility(SavedSearchDetails savedSearchDetails,
-                                           NamespaceService namespaceService,
-                                           RecordsManagementSearchServiceImpl searchService)
-    {
+    public SavedSearchDetailsCompatibility(
+            SavedSearchDetails savedSearchDetails,
+            NamespaceService namespaceService,
+            RecordsManagementSearchServiceImpl searchService) {
         this.savedSearchDetails = savedSearchDetails;
         this.namespaceService = namespaceService;
         this.searchService = searchService;
@@ -176,27 +155,24 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Get the sort string from the saved search details
+     *
      * @return
      */
-    public String getSort()
-    {
+    public String getSort() {
         StringBuilder builder = new StringBuilder(64);
 
-        for (SortItem entry : this.savedSearchDetails.getSearchParameters().getSortOrder())
-        {
-            if (builder.length() !=0)
-            {
+        for (SortItem entry : this.savedSearchDetails.getSearchParameters().getSortOrder()) {
+            if (builder.length() != 0) {
                 builder.append(",");
             }
 
             String order = "desc";
-            if (entry.assc)
-            {
+            if (entry.assc) {
                 order = "asc";
             }
             builder.append(entry.property.toPrefixString(this.namespaceService))
-                   .append("/")
-                   .append(order);
+                    .append("/")
+                    .append(order);
         }
 
         return builder.toString();
@@ -204,30 +180,49 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 
     /**
      * Get the parameter string from the saved search details
+     *
      * @return
      */
-    public String getParams()
-    {
-        List<QName> includeContainerTypes = this.savedSearchDetails.getSearchParameters().getIncludedContainerTypes();
+    public String getParams() {
+        List<QName> includeContainerTypes =
+                this.savedSearchDetails.getSearchParameters().getIncludedContainerTypes();
         StringBuilder builder = new StringBuilder(128);
-        builder.append("terms=").append(this.savedSearchDetails.getSearch()).append("&")
-               .append("records=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecords()).append("&")
-               .append("undeclared=").append(this.savedSearchDetails.getSearchParameters().isIncludeUndeclaredRecords()).append("&")
-               .append("vital=").append(this.savedSearchDetails.getSearchParameters().isIncludeVitalRecords()).append("&")
-               .append("folders=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecordFolders()).append("&")
-               .append("frozen=").append(this.savedSearchDetails.getSearchParameters().isIncludeFrozen()).append("&")
-               .append("cutoff=").append(this.savedSearchDetails.getSearchParameters().isIncludeCutoff()).append("&")
-               .append("categories=").append(includeContainerTypes.contains(TYPE_RECORD_CATEGORY)).append("&")
-               .append("series=").append(false);
+        builder.append("terms=")
+                .append(this.savedSearchDetails.getSearch())
+                .append("&")
+                .append("records=")
+                .append(this.savedSearchDetails.getSearchParameters().isIncludeRecords())
+                .append("&")
+                .append("undeclared=")
+                .append(this.savedSearchDetails.getSearchParameters().isIncludeUndeclaredRecords())
+                .append("&")
+                .append("vital=")
+                .append(this.savedSearchDetails.getSearchParameters().isIncludeVitalRecords())
+                .append("&")
+                .append("folders=")
+                .append(this.savedSearchDetails.getSearchParameters().isIncludeRecordFolders())
+                .append("&")
+                .append("frozen=")
+                .append(this.savedSearchDetails.getSearchParameters().isIncludeFrozen())
+                .append("&")
+                .append("cutoff=")
+                .append(this.savedSearchDetails.getSearchParameters().isIncludeCutoff())
+                .append("&")
+                .append("categories=")
+                .append(includeContainerTypes.contains(TYPE_RECORD_CATEGORY))
+                .append("&")
+                .append("series=")
+                .append(false);
         return builder.toString();
     }
 
     /**
      * Build the full query string
+     *
      * @return
      */
-    public String getQuery()
-    {
-        return searchService.buildQueryString(this.savedSearchDetails.getSearch(), this.savedSearchDetails.getSearchParameters());
+    public String getQuery() {
+        return searchService.buildQueryString(
+                this.savedSearchDetails.getSearch(), this.savedSearchDetails.getSearchParameters());
     }
 }

@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -45,11 +39,14 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.util.StringUtils;
 
-/**
- * @author Roy Wetherall
- */
-public class DispositionPropertiesGet extends DeclarativeWebScript
-{
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/** @author Roy Wetherall */
+public class DispositionPropertiesGet extends DeclarativeWebScript {
     protected DispositionService dispositionService;
     protected NamespaceService namespaceService;
     protected DictionaryService dictionaryService;
@@ -57,10 +54,9 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    the disposition service
+     * @param dispositionService the disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
@@ -69,8 +65,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
      *
      * @param namespaceService The NamespaceService instance
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
@@ -79,8 +74,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
      *
      * @param dictionaryService The DictionaryService instance
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
@@ -88,29 +82,25 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         boolean recordLevel = false;
         String recordLevelValue = req.getParameter("recordlevel");
-        if (recordLevelValue != null)
-        {
+        if (recordLevelValue != null) {
             recordLevel = Boolean.valueOf(recordLevelValue);
         }
         String dispositionAction = req.getParameter("dispositionaction");
 
-        Collection<DispositionProperty> dispositionProperties = dispositionService.getDispositionProperties(recordLevel, dispositionAction);
+        Collection<DispositionProperty> dispositionProperties =
+                dispositionService.getDispositionProperties(recordLevel, dispositionAction);
         List<Map<String, String>> items = new ArrayList<>(dispositionProperties.size());
-        for (DispositionProperty dispositionProperty : dispositionProperties)
-        {
+        for (DispositionProperty dispositionProperty : dispositionProperties) {
             PropertyDefinition propDef = dispositionProperty.getPropertyDefinition();
             QName propName = dispositionProperty.getQName();
 
-            if (propDef != null)
-            {
+            if (propDef != null) {
                 Map<String, String> item = new HashMap<>(2);
                 String propTitle = propDef.getTitle(dictionaryService);
-                if (propTitle == null || propTitle.length() == 0)
-                {
+                if (propTitle == null || propTitle.length() == 0) {
                     propTitle = StringUtils.capitalize(propName.getLocalName());
                 }
                 item.put("label", propTitle);

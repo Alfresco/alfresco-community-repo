@@ -19,12 +19,10 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that are duplicate (test the same functionality as other tests), or tests that test
- * deprecated functionality.<p>
+ * Category marker for tests that are duplicate (test the same functionality as other tests), or
+ * tests that test deprecated functionality.
  *
- * Use the {@link NeverRunsTests} interface if the reason a test is not run is unknown. Also see {@link DebugTests},
- * {@link PerformanceTests} if the reason is known.
+ * <p>Use the {@link NeverRunsTests} interface if the reason a test is not run is unknown. Also see
+ * {@link DebugTests}, {@link PerformanceTests} if the reason is known.
  */
-public interface RedundantTests extends NonBuildTests
-{
-}
+public interface RedundantTests extends NonBuildTests {}

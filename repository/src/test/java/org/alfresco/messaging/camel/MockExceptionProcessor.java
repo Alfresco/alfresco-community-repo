@@ -25,23 +25,17 @@
  */
 package org.alfresco.messaging.camel;
 
-/**
- * Exception processor which just saves the last error received
- */
-public class MockExceptionProcessor
-{
+/** Exception processor which just saves the last error received */
+public class MockExceptionProcessor {
     private Throwable lastError;
-    
-    public Throwable getLastError()
-    {
+
+    public Throwable getLastError() {
         return lastError;
     }
-    
-    public void onReceive(Object body)
-    {
+
+    public void onReceive(Object body) {
         // Handler can only deal with Throwables
-        if (body instanceof Throwable)
-        {
+        if (body instanceof Throwable) {
             lastError = (Throwable) body;
         }
     }

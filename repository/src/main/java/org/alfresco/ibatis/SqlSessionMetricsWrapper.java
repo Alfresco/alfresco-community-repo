@@ -39,11 +39,8 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Wrapper around the SqlSession object that allows us to report on the DB executed queries
- */
-public class SqlSessionMetricsWrapper implements SqlSession
-{
+/** Wrapper around the SqlSession object that allows us to report on the DB executed queries */
+public class SqlSessionMetricsWrapper implements SqlSession {
     private Log logger = LogFactory.getLog(getClass());
 
     private static final String SELECT_LABEL = "select";
@@ -54,373 +51,289 @@ public class SqlSessionMetricsWrapper implements SqlSession
     private final DBMetricsReporter dbMetricsReporter;
     private final SqlSession sqlSession;
 
-    public SqlSessionMetricsWrapper(SqlSession sqlSession, DBMetricsReporter dbMetricsReporter)
-    {
+    public SqlSessionMetricsWrapper(SqlSession sqlSession, DBMetricsReporter dbMetricsReporter) {
         this.sqlSession = sqlSession;
         this.dbMetricsReporter = dbMetricsReporter;
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Created a new SqlSessionMetricsWrapper with the DBMetricsReporter instance: " + dbMetricsReporter);
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    "Created a new SqlSessionMetricsWrapper with the DBMetricsReporter instance: "
+                            + dbMetricsReporter);
         }
     }
 
-    private void reportQueryExecuted(final long startTime, final String queryTypeTag, final String statementID)
-    {
-        try
-        {
-            if (dbMetricsReporter != null && dbMetricsReporter.isQueryMetricsEnabled())
-            {
+    private void reportQueryExecuted(
+            final long startTime, final String queryTypeTag, final String statementID) {
+        try {
+            if (dbMetricsReporter != null && dbMetricsReporter.isQueryMetricsEnabled()) {
                 final long delta = System.currentTimeMillis() - startTime;
                 dbMetricsReporter.reportQueryExecutionTime(delta, queryTypeTag, statementID);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             logCouldNotReportDBQueryExecution(e);
         }
     }
 
     @Override
-    public <T> T selectOne(String statement)
-    {
+    public <T> T selectOne(String statement) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectOne(statement);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <T> T selectOne(String statement, Object parameter)
-    {
+    public <T> T selectOne(String statement, Object parameter) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectOne(statement, parameter);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <E> List<E> selectList(String statement)
-    {
+    public <E> List<E> selectList(String statement) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectList(statement);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <E> List<E> selectList(String statement, Object parameter)
-    {
+    public <E> List<E> selectList(String statement, Object parameter) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectList(statement, parameter);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds)
-    {
+    public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectList(statement, parameter, rowBounds);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <K, V> Map<K, V> selectMap(String statement, String mapKey)
-    {
+    public <K, V> Map<K, V> selectMap(String statement, String mapKey) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectMap(statement, mapKey);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey)
-    {
+    public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectMap(statement, parameter, mapKey);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds)
-    {
+    public <K, V> Map<K, V> selectMap(
+            String statement, Object parameter, String mapKey, RowBounds rowBounds) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.selectMap(statement, parameter, mapKey, rowBounds);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 
     @Override
-    public void select(String statement, Object parameter, ResultHandler handler)
-    {
+    public void select(String statement, Object parameter, ResultHandler handler) {
         final long startTime = System.currentTimeMillis();
-        PassThroughMetricsResultsHandler passThroughHandler = new PassThroughMetricsResultsHandler(handler, startTime, statement);
-        try
-        {
+        PassThroughMetricsResultsHandler passThroughHandler =
+                new PassThroughMetricsResultsHandler(handler, startTime, statement);
+        try {
             this.sqlSession.select(statement, parameter, passThroughHandler);
-        }
-        finally
-        {
-            if (!passThroughHandler.hasQueryExecutionTimeBeenReported())
-            {
+        } finally {
+            if (!passThroughHandler.hasQueryExecutionTimeBeenReported()) {
                 reportQueryExecuted(startTime, SELECT_LABEL, statement);
             }
         }
     }
 
     @Override
-    public void select(String statement, ResultHandler handler)
-    {
+    public void select(String statement, ResultHandler handler) {
         long startTime = System.currentTimeMillis();
-        PassThroughMetricsResultsHandler passThroughHandler = new PassThroughMetricsResultsHandler(handler, startTime, statement);
-        try
-        {
+        PassThroughMetricsResultsHandler passThroughHandler =
+                new PassThroughMetricsResultsHandler(handler, startTime, statement);
+        try {
             this.sqlSession.select(statement, passThroughHandler);
-        }
-        finally
-        {
-            if (!passThroughHandler.hasQueryExecutionTimeBeenReported())
-            {
+        } finally {
+            if (!passThroughHandler.hasQueryExecutionTimeBeenReported()) {
                 reportQueryExecuted(startTime, SELECT_LABEL, statement);
             }
         }
     }
 
     @Override
-    public void select(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler)
-    {
+    public void select(
+            String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
         long startTime = System.currentTimeMillis();
-        PassThroughMetricsResultsHandler passThroughHandler = new PassThroughMetricsResultsHandler(handler, startTime, statement);
-        try
-        {
+        PassThroughMetricsResultsHandler passThroughHandler =
+                new PassThroughMetricsResultsHandler(handler, startTime, statement);
+        try {
             this.sqlSession.select(statement, parameter, rowBounds, passThroughHandler);
-        }
-        finally
-        {
-            if (!passThroughHandler.hasQueryExecutionTimeBeenReported())
-            {
+        } finally {
+            if (!passThroughHandler.hasQueryExecutionTimeBeenReported()) {
                 reportQueryExecuted(startTime, SELECT_LABEL, statement);
             }
         }
     }
 
     @Override
-    public int insert(String statement)
-    {
+    public int insert(String statement) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.insert(statement);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, INSERT_LABEL, statement);
         }
     }
 
     @Override
-    public int insert(String statement, Object parameter)
-    {
+    public int insert(String statement, Object parameter) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.insert(statement, parameter);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, INSERT_LABEL, statement);
         }
     }
 
     @Override
-    public int update(String statement)
-    {
+    public int update(String statement) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.update(statement);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, UPDATE_LABEL, statement);
         }
     }
 
     @Override
-    public int update(String statement, Object parameter)
-    {
+    public int update(String statement, Object parameter) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.update(statement, parameter);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, UPDATE_LABEL, statement);
         }
     }
 
     @Override
-    public int delete(String statement)
-    {
+    public int delete(String statement) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.delete(statement);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, DELETE_LABEL, statement);
         }
     }
 
     @Override
-    public int delete(String statement, Object parameter)
-    {
+    public int delete(String statement, Object parameter) {
         long startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             return this.sqlSession.delete(statement, parameter);
-        }
-        finally
-        {
+        } finally {
             reportQueryExecuted(startTime, DELETE_LABEL, statement);
         }
     }
 
     @Override
-    public void commit()
-    {
+    public void commit() {
         this.sqlSession.commit();
     }
 
     @Override
-    public void commit(boolean force)
-    {
+    public void commit(boolean force) {
         this.sqlSession.commit(force);
     }
 
     @Override
-    public void rollback()
-    {
+    public void rollback() {
         this.rollback();
     }
 
     @Override
-    public void rollback(boolean force)
-    {
+    public void rollback(boolean force) {
         this.rollback(force);
     }
 
     @Override
-    public List<BatchResult> flushStatements()
-    {
+    public List<BatchResult> flushStatements() {
         return this.sqlSession.flushStatements();
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         this.sqlSession.close();
     }
 
     @Override
-    public void clearCache()
-    {
+    public void clearCache() {
         this.sqlSession.clearCache();
     }
 
     @Override
-    public Configuration getConfiguration()
-    {
+    public Configuration getConfiguration() {
         return this.sqlSession.getConfiguration();
     }
 
     @Override
-    public <T> T getMapper(Class<T> type)
-    {
+    public <T> T getMapper(Class<T> type) {
         return this.sqlSession.getMapper(type);
     }
 
     @Override
-    public Connection getConnection()
-    {
+    public Connection getConnection() {
         return this.sqlSession.getConnection();
     }
 
-    private void logCouldNotReportDBQueryExecution(Exception e)
-    {
-        if (logger.isDebugEnabled())
-        {
+    private void logCouldNotReportDBQueryExecution(Exception e) {
+        if (logger.isDebugEnabled()) {
             logger.debug("Could not report DB query execution. Message:" + e.getMessage(), e);
         }
     }
 
     /**
-     * Reports on the time it actually took to execute the query.
-     * The execution time is the interval until the first call to "handleResult" method
-     * If there are no results returned by the query, then "handleResult" method is not called
-     * so we need to mark this and report the time outside this utility pass through class
+     * Reports on the time it actually took to execute the query. The execution time is the interval
+     * until the first call to "handleResult" method If there are no results returned by the query,
+     * then "handleResult" method is not called so we need to mark this and report the time outside
+     * this utility pass through class
      */
-    class PassThroughMetricsResultsHandler implements ResultHandler
-    {
+    class PassThroughMetricsResultsHandler implements ResultHandler {
         private final long startTime;
         private boolean firstTime = true;
 
         private final String statementID;
         private final ResultHandler handler;
 
-        PassThroughMetricsResultsHandler(final ResultHandler handler, final String statementID)
-        {
+        PassThroughMetricsResultsHandler(final ResultHandler handler, final String statementID) {
             this.handler = handler;
             this.statementID = statementID;
             this.startTime = System.currentTimeMillis();
         }
 
-        PassThroughMetricsResultsHandler(final ResultHandler handler, long startTime, final String statementID)
-        {
+        PassThroughMetricsResultsHandler(
+                final ResultHandler handler, long startTime, final String statementID) {
             this.handler = handler;
             this.statementID = statementID;
             this.startTime = startTime;
@@ -428,22 +341,20 @@ public class SqlSessionMetricsWrapper implements SqlSession
 
         // this is called for each row returned by the query
         @Override
-        public void handleResult(ResultContext resultContext)
-        {
+        public void handleResult(ResultContext resultContext) {
             // we may never get here if the query does not return results
-            if (firstTime)
-            {
+            if (firstTime) {
                 // report the time only when the first row is returned form the DB
                 // this report method should never throw exceptions
                 reportQueryExecuted(startTime, SELECT_LABEL, statementID);
                 firstTime = false;
             }
-            // In the future we may be interested in summing up all the time the handler took, and report it as a metric
+            // In the future we may be interested in summing up all the time the handler took, and
+            // report it as a metric
             handler.handleResult(resultContext);
         }
 
-        public boolean hasQueryExecutionTimeBeenReported()
-        {
+        public boolean hasQueryExecutionTimeBeenReported() {
             return !firstTime;
         }
     }

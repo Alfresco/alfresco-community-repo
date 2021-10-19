@@ -4,38 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.importer;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.net.URL;
-import java.util.List;
-
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
@@ -61,9 +49,20 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.net.URL;
+import java.util.List;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
+
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
-public class FileImporterTest extends TestCase
-{
+public class FileImporterTest extends TestCase {
     ApplicationContext ctx;
     private NodeService nodeService;
     private SearchService searchService;
@@ -79,18 +78,15 @@ public class FileImporterTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private NodeRef rootNodeRef;
 
-    public FileImporterTest()
-    {
+    public FileImporterTest() {
         super();
     }
 
-    public FileImporterTest(String arg0)
-    {
+    public FileImporterTest(String arg0) {
         super(arg0);
     }
 
-    public void setUp()
-    {
+    public void setUp() {
         ctx = ApplicationContextHelper.getApplicationContext();
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
@@ -106,12 +102,13 @@ public class FileImporterTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
 
         authenticationComponent.setSystemUserAsCurrentUser();
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        StoreRef storeRef =
+                nodeService.createStore(
+                        StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
 
-    private FileImporter createFileImporter(boolean txnPerFile)
-    {
+    private FileImporter createFileImporter(boolean txnPerFile) {
         FileImporterImpl fileImporter = new FileImporterImpl();
         fileImporter.setAuthenticationService(authenticationService);
         fileImporter.setContentService(contentService);
@@ -123,15 +120,13 @@ public class FileImporterTest extends TestCase
         return fileImporter;
     }
 
-    public void testCreateFile() throws Exception
-    {
+    public void testCreateFile() throws Exception {
         FileImporter fileImporter = createFileImporter(false);
         File file = AbstractContentTransformerTest.loadQuickTestFile("xml");
         fileImporter.loadFile(rootNodeRef, file);
     }
 
-    public void testLoadRootNonRecursive1()
-    {
+    public void testLoadRootNonRecursive1() {
         FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("quick");
         File rootFile = new File(url.getFile());
@@ -139,8 +134,7 @@ public class FileImporterTest extends TestCase
         assertEquals("Expected to load a single file", 1, count);
     }
 
-    public void testLoadRootNonRecursive2()
-    {
+    public void testLoadRootNonRecursive2() {
         FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("quick");
         File root = new File(url.getFile());
@@ -148,50 +142,46 @@ public class FileImporterTest extends TestCase
         assertEquals("Expected to load a single file", 1, count);
     }
 
-    public void testLoadXMLFiles()
-    {
+    public void testLoadXMLFiles() {
         FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("quick");
         FileFilter filter = new XMLFileFilter();
         fileImporter.loadFile(rootNodeRef, new File(url.getFile()), filter, true);
     }
 
-    public void testLoadSourceTestResources()
-    {
+    public void testLoadSourceTestResources() {
         FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("quick");
         FileFilter filter = new QuickFileFilter();
         fileImporter.loadFile(rootNodeRef, new File(url.getFile()), filter, true);
     }
 
-    private static class XMLFileFilter implements FileFilter
-    {
-        public boolean accept(File file)
-        {
+    private static class XMLFileFilter implements FileFilter {
+        public boolean accept(File file) {
             return file.getName().endsWith(".xml");
         }
     }
 
-    private static class QuickFileFilter implements FileFilter
-    {
-        public boolean accept(File file)
-        {
+    private static class QuickFileFilter implements FileFilter {
+        public boolean accept(File file) {
             return file.getName().startsWith("quick");
         }
     }
 
     /**
      * @param args
-     *            <ol>
-     *            <li>StoreRef: The store to load the files into
-     *            <li>String: The path within the store into which to load the files (e.g. /app:company_home)
-     *            <li>String: Directory to use as source (e.g. c:/temp)
-     *            <li>String: New name to give the source.  It may have a suffix added (e.g. upload_xxx)
-     *            <li>Integer: Number of times to repeat the load.
-     *            <li>Boolean: (optional - default 'false') Create each file/folder in a new transaction
-     *            <li>String: (optional) user to authenticate as
-     *            <li>String: (optional) password for authentication
-     *            </ol>
+     *     <ol>
+     *       <li>StoreRef: The store to load the files into
+     *       <li>String: The path within the store into which to load the files (e.g.
+     *           /app:company_home)
+     *       <li>String: Directory to use as source (e.g. c:/temp)
+     *       <li>String: New name to give the source. It may have a suffix added (e.g. upload_xxx)
+     *       <li>Integer: Number of times to repeat the load.
+     *       <li>Boolean: (optional - default 'false') Create each file/folder in a new transaction
+     *       <li>String: (optional) user to authenticate as
+     *       <li>String: (optional) password for authentication
+     *     </ol>
+     *
      * @throws SystemException
      * @throws NotSupportedException
      * @throws HeuristicRollbackException
@@ -200,8 +190,7 @@ public class FileImporterTest extends TestCase
      * @throws IllegalStateException
      * @throws SecurityException
      */
-    public static final void main(String[] args) throws Exception
-    {
+    public static final void main(String[] args) throws Exception {
         int grandTotal = 0;
         int count = 0;
         File sourceFile = new File(args[2]);
@@ -210,47 +199,41 @@ public class FileImporterTest extends TestCase
         Boolean txnPerFile = args.length > 5 ? Boolean.parseBoolean(args[5]) : false;
         String userName = args.length > 6 ? args[6] : null;
         String userPwd = args.length > 7 ? args[7] : "";
-        while (count < target)
-        {
+        while (count < target) {
             count++;
             FileImporterTest test = new FileImporterTest();
             test.setUp();
-            
+
             test.authenticationComponent.setSystemUserAsCurrentUser();
             TransactionService transactionService = test.serviceRegistry.getTransactionService();
-            UserTransaction tx = transactionService.getUserTransaction(); 
+            UserTransaction tx = transactionService.getUserTransaction();
             tx.begin();
 
-            try
-            {
+            try {
                 StoreRef spacesStore = new StoreRef(args[0]);
-                if (!test.nodeService.exists(spacesStore))
-                {
-                    test.nodeService.createStore(spacesStore.getProtocol(), spacesStore.getIdentifier());
+                if (!test.nodeService.exists(spacesStore)) {
+                    test.nodeService.createStore(
+                            spacesStore.getProtocol(), spacesStore.getIdentifier());
                 }
 
                 NodeRef storeRoot = test.nodeService.getRootNode(spacesStore);
-                List<NodeRef> importLocations = test.searchService.selectNodes(
-                        storeRoot,
-                        args[1],
-                        null,
-                        test.namespaceService,
-                        false);
-                if (importLocations.size() == 0)
-                {
+                List<NodeRef> importLocations =
+                        test.searchService.selectNodes(
+                                storeRoot, args[1], null, test.namespaceService, false);
+                if (importLocations.size() == 0) {
                     throw new AlfrescoRuntimeException(
-                            "Root node not found, " +
-                            args[1] +
-                            " not found in store, " +
-                            storeRoot);
+                            "Root node not found, "
+                                    + args[1]
+                                    + " not found in store, "
+                                    + storeRoot);
                 }
                 NodeRef importLocation = importLocations.get(0);
-                
+
                 // optionally authenticate as a specific user
-                if (userName != null)
-                {
+                if (userName != null) {
                     // give the user all necessary permissions on the root
-                    test.permissionService.setPermission(importLocation, userName, PermissionService.ALL_PERMISSIONS, true);
+                    test.permissionService.setPermission(
+                            importLocation, userName, PermissionService.ALL_PERMISSIONS, true);
                     // authenticate as the designated user
                     TestWithUserUtils.authenticateUser(
                             userName,
@@ -261,39 +244,38 @@ public class FileImporterTest extends TestCase
                 tx.commit();
 
                 // only begin if we are doing it all in one transaction
-                if (!txnPerFile)
-                {
+                if (!txnPerFile) {
                     tx = transactionService.getUserTransaction();
                     tx.begin();
                 }
-                
+
                 long start = System.nanoTime();
                 FileImporter importer = test.createFileImporter(txnPerFile);
-                int importCount = importer.loadNamedFile(
-                        importLocation,
-                        sourceFile,
-                        true,
-                        String.format("%s-%05d-%s", baseName, count, System.currentTimeMillis()));
+                int importCount =
+                        importer.loadNamedFile(
+                                importLocation,
+                                sourceFile,
+                                true,
+                                String.format(
+                                        "%s-%05d-%s", baseName, count, System.currentTimeMillis()));
                 grandTotal += importCount;
                 long end = System.nanoTime();
-                long first = end-start;
+                long first = end - start;
                 System.out.println("Created in: " + ((end - start) / 1000000.0) + "ms");
                 start = System.nanoTime();
 
-                if (!txnPerFile)
-                {
+                if (!txnPerFile) {
                     tx.commit();
                 }
                 end = System.nanoTime();
-                long second = end-start;
+                long second = end - start;
                 System.out.println("Committed in: " + ((end - start) / 1000000.0) + "ms");
-                double total = ((first+second)/1000000.0);
-                System.out.println("Grand Total: "+ grandTotal);
+                double total = ((first + second) / 1000000.0);
+                System.out.println("Grand Total: " + grandTotal);
                 System.out.println("Imported: " + importCount + " files or directories");
-                System.out.println("Average: " + (importCount / (total / 1000.0)) + " files per second");
-            }
-            catch (Throwable e)
-            {
+                System.out.println(
+                        "Average: " + (importCount / (total / 1000.0)) + " files per second");
+            } catch (Throwable e) {
                 tx.rollback();
                 e.printStackTrace();
             }

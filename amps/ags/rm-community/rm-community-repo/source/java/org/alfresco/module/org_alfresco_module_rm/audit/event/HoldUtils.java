@@ -43,12 +43,13 @@ import java.util.Map;
  * @author Sara Aspery
  * @since 3.3
  */
-class HoldUtils
-{
+class HoldUtils {
     /** A QName to display for the hold name. */
-    public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+    public static final QName HOLD_NAME =
+            QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
     /** A QName to display for the hold node ref. */
-    public static final QName HOLD_NODEREF = QName.createQName(RecordsManagementModel.RM_URI, "Hold NodeRef");
+    public static final QName HOLD_NODEREF =
+            QName.createQName(RecordsManagementModel.RM_URI, "Hold NodeRef");
 
     /**
      * Create a properties map containing the hold name and node ref for the given hold.
@@ -57,8 +58,7 @@ class HoldUtils
      * @param nodeService The node service.
      * @return A map containing the name and noderef of the hold.
      */
-    static Map<QName, Serializable> makePropertiesMap(NodeRef nodeRef, NodeService nodeService)
-    {
+    static Map<QName, Serializable> makePropertiesMap(NodeRef nodeRef, NodeService nodeService) {
         Map<QName, Serializable> auditProperties = new HashMap<>();
 
         auditProperties.put(HOLD_NAME, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));

@@ -26,15 +26,13 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
-import static java.util.Arrays.asList;
-
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_USER_GROUP;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_USER_GROUP;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_USER_GROUP;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_USER_GROUP;
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import java.util.Collections;
+import static java.util.Arrays.asList;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -47,93 +45,128 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
+
 /**
  * This class contains the tests that check the group events are audited
  *
  * @author Claudia Agache
  * @since 2.7
  */
-@AlfrescoTest (jira = "RM-5236")
-public class AuditGroupEventsTests extends BaseRMRestTest
-{
-    @Autowired
-    private RMAuditService rmAuditService;
+@AlfrescoTest(jira = "RM-5236")
+public class AuditGroupEventsTests extends BaseRMRestTest {
+    @Autowired private RMAuditService rmAuditService;
     private GroupModel testGroup;
     private UserModel testUser;
 
-    @BeforeClass (alwaysRun = true)
-    public void cleanAuditLogs()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void cleanAuditLogs() {
         rmAuditService.clearAuditLog();
     }
 
     /**
-     * Given I have created a new group
-     * When I view the RM audit
-     * Then there is an entry showing that I created a group
+     * Given I have created a new group When I view the RM audit Then there is an entry showing that
+     * I created a group
      */
     @Test
-    public void createGroupEventIsAudited()
-    {
+    public void createGroupEventIsAudited() {
         testGroup = dataGroup.createRandomGroup();
 
         STEP("Check the audit log contains the entry for the created group.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
-                Collections.singletonList(ImmutableMap.of("new", testGroup.getGroupIdentifier(), "previous", "",
-                        "name", "authorityDisplayName")));
+        rmAuditService.checkAuditLogForEvent(
+                getAdminUser(),
+                CREATE_USER_GROUP,
+                getAdminUser(),
+                testGroup.getGroupIdentifier(),
+                Collections.singletonList(
+                        ImmutableMap.of(
+                                "new",
+                                testGroup.getGroupIdentifier(),
+                                "previous",
+                                "",
+                                "name",
+                                "authorityDisplayName")));
     }
 
     /**
-     * Given I have added a user to a group
-     * When I view the RM audit
-     * Then there is an entry showing that I have added a user to a group
+     * Given I have added a user to a group When I view the RM audit Then there is an entry showing
+     * that I have added a user to a group
      */
     @Test
-    public void addUserToGroupEventIsAudited()
-    {
+    public void addUserToGroupEventIsAudited() {
         testGroup = dataGroup.createRandomGroup();
         testUser = getDataUser().createRandomTestUser();
         dataGroup.usingUser(testUser).addUserToGroup(testGroup);
 
         STEP("Check the audit log contains the entry for the add user to group event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
-                asList(ImmutableMap.of("new", testUser.getUsername(), "previous", "", "name", "User Name"),
-                        ImmutableMap.of("new", testGroup.getGroupIdentifier(), "previous", "", "name", "Parent Group")));
+        rmAuditService.checkAuditLogForEvent(
+                getAdminUser(),
+                ADD_TO_USER_GROUP,
+                getAdminUser(),
+                testGroup.getGroupIdentifier(),
+                asList(
+                        ImmutableMap.of(
+                                "new", testUser.getUsername(), "previous", "", "name", "User Name"),
+                        ImmutableMap.of(
+                                "new",
+                                testGroup.getGroupIdentifier(),
+                                "previous",
+                                "",
+                                "name",
+                                "Parent Group")));
     }
 
     /**
-     * Given I have removed a user from a group
-     * When I view the RM audit
-     * Then there is an entry showing that I have removed a user from a group
+     * Given I have removed a user from a group When I view the RM audit Then there is an entry
+     * showing that I have removed a user from a group
      */
     @Test
-    public void removeUserFromGroupEventIsAudited()
-    {
+    public void removeUserFromGroupEventIsAudited() {
         testGroup = dataGroup.createRandomGroup();
         testUser = getDataUser().createRandomTestUser();
         dataGroup.usingUser(testUser).addUserToGroup(testGroup);
         dataGroup.removeUserFromGroup(testGroup, testUser);
 
         STEP("Check the audit log contains the entry for the remove user from group event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
-                asList(ImmutableMap.of("new", "", "previous", testUser.getUsername(), "name", "User Name"),
-                        ImmutableMap.of("new", "","previous", testGroup.getGroupIdentifier(), "name", "Parent Group")));
+        rmAuditService.checkAuditLogForEvent(
+                getAdminUser(),
+                REMOVE_FROM_USER_GROUP,
+                getAdminUser(),
+                testGroup.getGroupIdentifier(),
+                asList(
+                        ImmutableMap.of(
+                                "new", "", "previous", testUser.getUsername(), "name", "User Name"),
+                        ImmutableMap.of(
+                                "new",
+                                "",
+                                "previous",
+                                testGroup.getGroupIdentifier(),
+                                "name",
+                                "Parent Group")));
     }
 
     /**
-     * Given I have deleted a group
-     * When I view the RM audit
-     * Then there is an entry showing that I have deleted a group
+     * Given I have deleted a group When I view the RM audit Then there is an entry showing that I
+     * have deleted a group
      */
     @Test
-    public void deleteGroupEventIsAudited()
-    {
+    public void deleteGroupEventIsAudited() {
         testGroup = dataGroup.createRandomGroup();
         dataGroup.deleteGroup(testGroup);
 
         STEP("Check the audit log contains the entry for the delete group event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
-                Collections.singletonList(ImmutableMap.of("new", "", "previous", testGroup.getGroupIdentifier(),
-                        "name", "authorityDisplayName")));
+        rmAuditService.checkAuditLogForEvent(
+                getAdminUser(),
+                DELETE_USER_GROUP,
+                getAdminUser(),
+                testGroup.getGroupIdentifier(),
+                Collections.singletonList(
+                        ImmutableMap.of(
+                                "new",
+                                "",
+                                "previous",
+                                testGroup.getGroupIdentifier(),
+                                "name",
+                                "authorityDisplayName")));
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -42,8 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // note: based on HomeSiteSurfConfig in Cloud/Thor module
-public class SiteSurfConfig implements ApplicationContextAware, InitializingBean
-{
+public class SiteSurfConfig implements ApplicationContextAware, InitializingBean {
     private ApplicationContext applicationContext;
     private String configPath;
     private String packageName = "surf-config";
@@ -51,67 +50,58 @@ public class SiteSurfConfig implements ApplicationContextAware, InitializingBean
     private Map<String, String> importContent;
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    public void setConfigPath(String configPath)
-    {
-        if (!configPath.endsWith("/"))
-        {
+    public void setConfigPath(String configPath) {
+        if (!configPath.endsWith("/")) {
             configPath = configPath + "/";
         }
         this.configPath = configPath;
     }
 
-    public void setPackageName(String packageName)
-    {
+    public void setPackageName(String packageName) {
         this.packageName = packageName;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        if (this.configPath == null)
-        {
+    public void afterPropertiesSet() throws Exception {
+        if (this.configPath == null) {
             setConfigPath("alfresco/bootstrap/site");
         }
         importView = loadImportView();
         importContent = loadContent();
     }
 
-    public String getImportView()
-    {
+    public String getImportView() {
         return importView;
     }
 
-    public String getImportContent(String contentPath)
-    {
+    public String getImportContent(String contentPath) {
         return importContent.get(contentPath);
     }
 
-    private String loadImportView() throws IOException
-    {
-        ClassPathResource importViewResource = new ClassPathResource(configPath + packageName + ".xml");
-        if (!importViewResource.exists())
-        {
-            throw new AlfrescoRuntimeException("Cannot find site config " + importViewResource.getPath());
+    private String loadImportView() throws IOException {
+        ClassPathResource importViewResource =
+                new ClassPathResource(configPath + packageName + ".xml");
+        if (!importViewResource.exists()) {
+            throw new AlfrescoRuntimeException(
+                    "Cannot find site config " + importViewResource.getPath());
         }
         return convert(importViewResource.getInputStream());
     }
 
-    private Map<String, String> loadContent() throws IOException
-    {
-        ClassPathStoreResourceResolver resourceResolver = new ClassPathStoreResourceResolver(applicationContext);
-        Resource[] contentResources = resourceResolver.getResources("classpath*:" + configPath + packageName + "/*.*");
+    private Map<String, String> loadContent() throws IOException {
+        ClassPathStoreResourceResolver resourceResolver =
+                new ClassPathStoreResourceResolver(applicationContext);
+        Resource[] contentResources =
+                resourceResolver.getResources("classpath*:" + configPath + packageName + "/*.*");
         Map<String, String> content = new HashMap<String, String>();
-        for (Resource contentResource : contentResources)
-        {
+        for (Resource contentResource : contentResources) {
             String fileName = contentResource.getFilename();
             // ignore hidden directories / files
-            if (fileName.startsWith("."))
-            {
+            if (fileName.startsWith(".")) {
                 continue;
             }
             String key = packageName + "/" + fileName;
@@ -121,8 +111,7 @@ public class SiteSurfConfig implements ApplicationContextAware, InitializingBean
         return content;
     }
 
-    private String convert(InputStream contentInputStream) throws IOException
-    {
+    private String convert(InputStream contentInputStream) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         FileCopyUtils.copy(contentInputStream, os);
         byte[] bytes = os.toByteArray();

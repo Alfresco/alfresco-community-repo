@@ -30,8 +30,7 @@ package org.alfresco.repo.event2.filter;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public interface EventFilter<T>
-{
+public interface EventFilter<T> {
     /**
      * Indicates whether the given object should be excluded or not.
      *

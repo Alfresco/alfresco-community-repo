@@ -20,87 +20,72 @@ package org.alfresco.util.shard;
 
 import static org.junit.Assert.*;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.junit.Test;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.junit.Test;
-
-/**
- * @author Andy
- */
-public class ExplicitShardingPolicyTest
-{
+/** @author Andy */
+public class ExplicitShardingPolicyTest {
 
     @Test
-    public void tenShards_noReplication_oneNodes()
-    {
+    public void tenShards_noReplication_oneNodes() {
         ExplicitShardingPolicy policy = new ExplicitShardingPolicy(10, 1, 1);
         assertTrue(policy.configurationIsValid());
         List<Integer> shardIds = policy.getShardIdsForNode(1);
         assertEquals(10, shardIds.size());
-        for (int i = 0; i < 10; i++)
-        {
+        for (int i = 0; i < 10; i++) {
             assertTrue(shardIds.contains(i));
         }
         assertEquals(0, policy.getShardIdsForNode(2).size());
-        
-        for (int i = 0; i < 10; i++)
-        {
+
+        for (int i = 0; i < 10; i++) {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(1, nodeInstances.size());
         }
     }
 
     @Test
-    public void tenShards_noReplication_tenNodes()
-    {
+    public void tenShards_noReplication_tenNodes() {
         ExplicitShardingPolicy policy = new ExplicitShardingPolicy(10, 1, 10);
         assertTrue(policy.configurationIsValid());
 
-        for (int i = 0; i < 10; i++)
-        {
+        for (int i = 0; i < 10; i++) {
             List<Integer> shardIds = policy.getShardIdsForNode(i + 1);
             assertEquals(1, shardIds.size());
             assertTrue(shardIds.contains(i));
         }
         assertEquals(0, policy.getShardIdsForNode(11).size());
-        
-        for (int i = 0; i < 10; i++)
-        {
+
+        for (int i = 0; i < 10; i++) {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(1, nodeInstances.size());
-            
         }
     }
 
     @Test
-    public void tenShards_doubled_tenNodes()
-    {
+    public void tenShards_doubled_tenNodes() {
         ExplicitShardingPolicy policy = new ExplicitShardingPolicy(10, 2, 10);
         assertTrue(policy.configurationIsValid());
 
-        for (int i = 0; i < 10; i++)
-        {
+        for (int i = 0; i < 10; i++) {
             List<Integer> shardIds = policy.getShardIdsForNode(i + 1);
             assertEquals(2, shardIds.size());
             assertTrue(shardIds.contains(i));
             assertTrue(shardIds.contains((i + 1) % 10));
         }
         assertEquals(0, policy.getShardIdsForNode(11).size());
-        
-        for (int i = 0; i < 10; i++)
-        {
+
+        for (int i = 0; i < 10; i++) {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(2, nodeInstances.size());
-            
         }
     }
 
     @Test
-    public void check_24_3()
-    {
+    public void check_24_3() {
         buildAndTest(24, 3, 72);
         buildAndTest(24, 3, 36);
         buildAndTest(24, 3, 24);
@@ -112,41 +97,39 @@ public class ExplicitShardingPolicyTest
         buildAndTest(24, 3, 4);
         buildAndTest(24, 3, 3);
     }
-    
+
     @Test
-    
-    public void failing()
-    {
+    public void failing() {
         buildAndTest(10, 2, 4);
     }
 
-    /** ExplicitShardingPolicy algorithm fails for 2 shards, 3 replicas, 3 nodes. (See SEARCH-1785) */
+    /**
+     * ExplicitShardingPolicy algorithm fails for 2 shards, 3 replicas, 3 nodes. (See SEARCH-1785)
+     */
     @Test(expected = AlfrescoRuntimeException.class)
-    public void search1785_233()
-    {
+    public void search1785_233() {
         buildAndTest(2, 3, 3);
     }
 
-    /** ExplicitShardingPolicy algorithm fails for 4 shards, 3 replicas, 6 nodes. (See SEARCH-1785) */
-    @Test (expected = AlfrescoRuntimeException.class)
-    public void search1785_436()
-    {
+    /**
+     * ExplicitShardingPolicy algorithm fails for 4 shards, 3 replicas, 6 nodes. (See SEARCH-1785)
+     */
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void search1785_436() {
         buildAndTest(4, 3, 6);
     }
-    
+
     @Test
-    public void check_10_2()
-    {
+    public void check_10_2() {
         buildAndTest(10, 2, 20);
         buildAndTest(10, 2, 10);
         buildAndTest(10, 2, 5);
         buildAndTest(10, 2, 4);
         buildAndTest(10, 2, 2);
     }
-    
+
     @Test
-    public void check_12_2()
-    {
+    public void check_12_2() {
         buildAndTest(12, 2, 24);
         buildAndTest(12, 2, 12);
         buildAndTest(12, 2, 8);
@@ -157,8 +140,7 @@ public class ExplicitShardingPolicyTest
     }
 
     @Test
-    public void invalidConfiguration_nodes()
-    {
+    public void invalidConfiguration_nodes() {
         ExplicitShardingPolicy policy = new ExplicitShardingPolicy(10, 2, 11);
         assertFalse(policy.configurationIsValid());
 
@@ -172,34 +154,29 @@ public class ExplicitShardingPolicyTest
         assertFalse(policy.configurationIsValid());
     }
 
-    private void buildAndTest(int numShards, int replicationFactor, int numNodes)
-    {
-        ExplicitShardingPolicy policy = new ExplicitShardingPolicy(numShards, replicationFactor, numNodes);
+    private void buildAndTest(int numShards, int replicationFactor, int numNodes) {
+        ExplicitShardingPolicy policy =
+                new ExplicitShardingPolicy(numShards, replicationFactor, numNodes);
         assertTrue(policy.configurationIsValid());
 
         int[] found = new int[numShards];
-        for (int i = 0; i < numNodes; i++)
-        {
+        for (int i = 0; i < numNodes; i++) {
             // Convert to a set to remove any duplicates.
             Set<Integer> shardIds = new HashSet<>(policy.getShardIdsForNode(i + 1));
             assertEquals(numShards * replicationFactor / numNodes, shardIds.size());
-            for (Integer shardId : shardIds)
-            {
+            for (Integer shardId : shardIds) {
                 found[shardId]++;
             }
         }
         check(found, replicationFactor);
         assertEquals(0, policy.getShardIdsForNode(numNodes + 1).size());
-        
-        
-        int[] nodes  = new int[numNodes];
-        for(int i = 0; i < numShards; i++)
-        {
+
+        int[] nodes = new int[numNodes];
+        for (int i = 0; i < numShards; i++) {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(replicationFactor, nodeInstances.size());
-            for (Integer nodeInstance : nodeInstances)
-            {
-                nodes[nodeInstance-1]++;
+            for (Integer nodeInstance : nodeInstances) {
+                nodes[nodeInstance - 1]++;
             }
         }
         check(nodes, numShards * replicationFactor / numNodes);
@@ -209,10 +186,8 @@ public class ExplicitShardingPolicyTest
      * @param found
      * @param i
      */
-    private void check(int[] found, int count)
-    {
-        for (int i = 0; i < found.length; i++)
-        {
+    private void check(int[] found, int count) {
+        for (int i = 0; i < found.length; i++) {
             assertEquals(count, found[i]);
         }
     }

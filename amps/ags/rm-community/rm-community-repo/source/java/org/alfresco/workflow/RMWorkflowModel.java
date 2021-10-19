@@ -35,8 +35,7 @@ import org.alfresco.service.namespace.QName;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public interface RMWorkflowModel
-{
+public interface RMWorkflowModel {
     // Namespace URI
     String RM_WORKFLOW_URI = "http://www.alfresco.org/model/rmworkflow/1.0";
 

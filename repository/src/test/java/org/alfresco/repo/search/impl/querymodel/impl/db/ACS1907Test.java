@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
 import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
@@ -54,8 +55,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
-public class ACS1907Test extends TestCase
-{
+public class ACS1907Test extends TestCase {
 
     private ApplicationContext ctx;
 
@@ -76,8 +76,7 @@ public class ACS1907Test extends TestCase
     private NodeRef rootNodeRef;
 
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         setupServices();
         this.authenticationComponent.setSystemUserAsCurrentUser();
         rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -87,13 +86,11 @@ public class ACS1907Test extends TestCase
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         authenticationComponent.clearCurrentSecurityContext();
     }
 
-    private void setupServices()
-    {
+    private void setupServices() {
         ctx = ApplicationContextHelper.getApplicationContext();
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
@@ -105,7 +102,8 @@ public class ACS1907Test extends TestCase
         aclCache = (TransactionalCache) ctx.getBean("aclCache");
         aclEntityCache = (TransactionalCache) ctx.getBean("aclEntityCache");
         permissionEntityCache = (TransactionalCache) ctx.getBean("permissionEntityCache");
-        SwitchableApplicationContextFactory searchContextFactory = (SwitchableApplicationContextFactory) ctx.getBean("Search");
+        SwitchableApplicationContextFactory searchContextFactory =
+                (SwitchableApplicationContextFactory) ctx.getBean("Search");
         ApplicationContext searchCtx = searchContextFactory.getApplicationContext();
         queryEngine = (DBQueryEngine) searchCtx.getBean("search.dbQueryEngineImpl");
         txnHelper = new RetryingTransactionHelper();
@@ -117,101 +115,110 @@ public class ACS1907Test extends TestCase
         txnHelper.setRetryWaitIncrementMs(1);
     }
 
-    private void setupTestUser(String userName)
-    {
-        if (!authenticationDAO.userExists(userName))
-        {
+    private void setupTestUser(String userName) {
+        if (!authenticationDAO.userExists(userName)) {
             authenticationService.createAuthentication(userName, userName.toCharArray());
         }
     }
 
-    private void setupTestUsers()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
-            @Override
-            public Object execute() throws Throwable {
-                setupTestUser("userA");
-                setupTestUser("userB");
-                setupTestUser(AuthenticationUtil.getAdminUserName());
-                return null;
-            }
-        }, false, false);
+    private void setupTestUsers() {
+        txnHelper.doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        setupTestUser("userA");
+                        setupTestUser("userB");
+                        setupTestUser(AuthenticationUtil.getAdminUserName());
+                        return null;
+                    }
+                },
+                false,
+                false);
     }
 
-    private void setupTestContent()
-    {
-        for(int f = 0; f < 5; f++)
-        {
+    private void setupTestContent() {
+        for (int f = 0; f < 5; f++) {
             final int ff = f;
-            txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
-                @Override
-                public Object execute() throws Throwable {
-                    Map<QName, Serializable> testFolderProps = new HashMap<>();
-                    testFolderProps.put(ContentModel.PROP_NAME, "folder"+ff);
-                    NodeRef testFolder = nodeService.createNode(
-                            rootNodeRef,
-                            ContentModel.ASSOC_CHILDREN,
-                            QName.createQName("https://example.com/test", "folder"+ff),
-                            ContentModel.TYPE_FOLDER,
-                            testFolderProps
-                    ).getChildRef();
-                    for(int c = 0; c < 5; c++)
-                    {
-                        Map<QName, Serializable> testContentProps = new HashMap<>();
-                        testContentProps.put(ContentModel.PROP_NAME, "content"+c);
-                        NodeRef testContent = nodeService.createNode(
-                                testFolder,
-                                ContentModel.ASSOC_CONTAINS,
-                                QName.createQName("https://example.com/test", "content"+c),
-                                ContentModel.TYPE_CONTENT,
-                                testContentProps
-                        ).getChildRef();
-                        String user = c % 2 == 0 ? "userA" : "userB";
-                        pubPermissionService.setPermission(testContent, user, "Read", true);
-                    }
-                    return null;
-                }
-            }, false, false);
+            txnHelper.doInTransaction(
+                    new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
+                        @Override
+                        public Object execute() throws Throwable {
+                            Map<QName, Serializable> testFolderProps = new HashMap<>();
+                            testFolderProps.put(ContentModel.PROP_NAME, "folder" + ff);
+                            NodeRef testFolder =
+                                    nodeService
+                                            .createNode(
+                                                    rootNodeRef,
+                                                    ContentModel.ASSOC_CHILDREN,
+                                                    QName.createQName(
+                                                            "https://example.com/test",
+                                                            "folder" + ff),
+                                                    ContentModel.TYPE_FOLDER,
+                                                    testFolderProps)
+                                            .getChildRef();
+                            for (int c = 0; c < 5; c++) {
+                                Map<QName, Serializable> testContentProps = new HashMap<>();
+                                testContentProps.put(ContentModel.PROP_NAME, "content" + c);
+                                NodeRef testContent =
+                                        nodeService
+                                                .createNode(
+                                                        testFolder,
+                                                        ContentModel.ASSOC_CONTAINS,
+                                                        QName.createQName(
+                                                                "https://example.com/test",
+                                                                "content" + c),
+                                                        ContentModel.TYPE_CONTENT,
+                                                        testContentProps)
+                                                .getChildRef();
+                                String user = c % 2 == 0 ? "userA" : "userB";
+                                pubPermissionService.setPermission(testContent, user, "Read", true);
+                            }
+                            return null;
+                        }
+                    },
+                    false,
+                    false);
         }
     }
 
-    private void dropCaches()
-    {
+    private void dropCaches() {
         aclCache.clear();
         aclEntityCache.clear();
         permissionEntityCache.clear();
     }
 
-    public void testACS1907()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
-            @Override
-            public Object execute() throws Throwable {
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+    public void testACS1907() {
+        txnHelper.doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
                     @Override
-                    public Object doWork() throws Exception {
-                        SearchParameters sp = new SearchParameters();
-                        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
-                        sp.setQuery("TYPE:\"cm:content\"");
-                        ResultSet rs = pubSearchService.query(sp);
-                        int cnt = 0;
-                        for (ResultSetRow row : rs)
-                        {
-                            assertNotNull(row.getValue(ContentModel.PROP_NAME));
-                            cnt++;
-                        }
+                    public Object execute() throws Throwable {
+                        AuthenticationUtil.runAs(
+                                new AuthenticationUtil.RunAsWork<Object>() {
+                                    @Override
+                                    public Object doWork() throws Exception {
+                                        SearchParameters sp = new SearchParameters();
+                                        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                                        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                                        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+                                        sp.setQuery("TYPE:\"cm:content\"");
+                                        ResultSet rs = pubSearchService.query(sp);
+                                        int cnt = 0;
+                                        for (ResultSetRow row : rs) {
+                                            assertNotNull(row.getValue(ContentModel.PROP_NAME));
+                                            cnt++;
+                                        }
+                                        return null;
+                                    }
+                                },
+                                "userA");
                         return null;
                     }
-                }, "userA");
-                return null;
-            }
-        }, false, false);
+                },
+                false,
+                false);
     }
 
-    public void testPaging()
-    {
+    public void testPaging() {
         HashSet<NodeRef> resultPageSize2 = queryNodes(2);
         HashSet<NodeRef> resultPageSize5 = queryNodes(5);
         HashSet<NodeRef> resultPageSize10 = queryNodes(10);
@@ -238,8 +245,7 @@ public class ACS1907Test extends TestCase
         queryEngine.setMaxPagingBatchSize(10000);
     }
 
-    HashSet<NodeRef> queryNodes(int pageSize)
-    {
+    HashSet<NodeRef> queryNodes(int pageSize) {
         queryEngine.setMinPagingBatchSize(pageSize);
         queryEngine.setMaxPagingBatchSize(pageSize);
         HashSet<NodeRef> result = new HashSet<>();
@@ -250,11 +256,9 @@ public class ACS1907Test extends TestCase
         sp.setQuery("TYPE:\"cm:content\"");
         ResultSet rs = pubSearchService.query(sp);
         int cnt = 0;
-        for (ResultSetRow row : rs)
-        {
+        for (ResultSetRow row : rs) {
             result.add(row.getNodeRef());
         }
         return result;
     }
-
 }

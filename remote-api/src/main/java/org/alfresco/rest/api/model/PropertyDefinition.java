@@ -26,13 +26,13 @@
 package org.alfresco.rest.api.model;
 
 import java.util.List;
+
 /**
  * Represents a property of the node definition.
  *
  * @author gfertuso
  */
-public class PropertyDefinition
-{
+public class PropertyDefinition {
     private String id;
     private String title;
     private String description;
@@ -44,104 +44,83 @@ public class PropertyDefinition
     private Boolean isProtected;
     private List<ConstraintDefinition> constraints;
 
-    public String getId() 
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id) 
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getTitle() 
-    {
+    public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) 
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public String getDescription() 
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) 
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getDefaultValue() 
-    {
+    public String getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue)
-    {
+    public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
 
-    public String getDataType()
-    {
+    public String getDataType() {
         return dataType;
     }
 
-    public void setDataType(String dataType)
-    {
+    public void setDataType(String dataType) {
         this.dataType = dataType;
     }
 
-    public boolean getIsProtected()
-    {
+    public boolean getIsProtected() {
         return isProtected;
     }
 
-    public void setIsProtected(boolean isProtected)
-    {
+    public void setIsProtected(boolean isProtected) {
         this.isProtected = isProtected;
     }
 
-    public List<ConstraintDefinition> getConstraints()
-    {
+    public List<ConstraintDefinition> getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(List<ConstraintDefinition> constraints)
-    {
+    public void setConstraints(List<ConstraintDefinition> constraints) {
         this.constraints = constraints;
     }
 
-    public boolean getIsMultiValued() 
-    {
+    public boolean getIsMultiValued() {
         return isMultiValued;
     }
 
-    public void setIsMultiValued(boolean isMultiValued) 
-    {
+    public void setIsMultiValued(boolean isMultiValued) {
         this.isMultiValued = isMultiValued;
     }
 
-    public boolean getIsMandatory() 
-    {
+    public boolean getIsMandatory() {
         return isMandatory;
     }
 
-    public void setIsMandatory(boolean isMandatory) 
-    {
+    public void setIsMandatory(boolean isMandatory) {
         this.isMandatory = isMandatory;
     }
 
-    public boolean getIsMandatoryEnforced() 
-    {
+    public boolean getIsMandatoryEnforced() {
         return isMandatoryEnforced;
     }
 
-    public void setIsMandatoryEnforced(boolean isMandatoryEnforced) 
-    {
+    public void setIsMandatoryEnforced(boolean isMandatoryEnforced) {
         this.isMandatoryEnforced = isMandatoryEnforced;
     }
-    
 }

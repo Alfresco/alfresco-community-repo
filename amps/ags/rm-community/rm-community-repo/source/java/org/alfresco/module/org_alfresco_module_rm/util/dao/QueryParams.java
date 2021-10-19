@@ -26,12 +26,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util.dao;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.util.Pair;
+
+import java.util.List;
 
 /**
  * Options when listing something.
@@ -40,8 +40,7 @@ import org.alfresco.util.Pair;
  * @since 2.6
  */
 @AlfrescoPublicApi
-public class QueryParams<T extends QueryField>
-{
+public class QueryParams<T extends QueryField> {
     /** The ordered list of columns to sort on (and their sort direction). */
     private List<Pair<T, Boolean>> sortProps;
     /** The number of items to skip before creating the list. */
@@ -54,21 +53,18 @@ public class QueryParams<T extends QueryField>
      *
      * @param sortProps A list of fields to sort on, and the direction to sort in.
      */
-    public QueryParams(List<Pair<T, Boolean>> sortProps)
-    {
+    public QueryParams(List<Pair<T, Boolean>> sortProps) {
         setSortProps(sortProps);
     }
 
     /** Sets the skip count required. */
-    public QueryParams<T> withSkipCount(final int skipCount)
-    {
+    public QueryParams<T> withSkipCount(final int skipCount) {
         this.skipCount = skipCount;
         return this;
     }
 
     /** Sets the max items count required. */
-    public QueryParams<T> withMaxItems(final int maxItems)
-    {
+    public QueryParams<T> withMaxItems(final int maxItems) {
         this.maxItems = maxItems;
         return this;
     }
@@ -79,8 +75,7 @@ public class QueryParams<T extends QueryField>
      * @param sortProps A list of pairs of properties and sort directions.
      * @return The updated QueryParams object.
      */
-    public QueryParams<T> withSortProps(List<Pair<T, Boolean>> sortProps)
-    {
+    public QueryParams<T> withSortProps(List<Pair<T, Boolean>> sortProps) {
         this.setSortProps(sortProps);
         return this;
     }
@@ -90,35 +85,30 @@ public class QueryParams<T extends QueryField>
      *
      * @param sortProps A list of pairs of properties and sort directions.
      */
-    public void setSortProps(List<Pair<T, Boolean>> sortProps)
-    {
+    public void setSortProps(List<Pair<T, Boolean>> sortProps) {
         this.sortProps = ImmutableList.copyOf(sortProps);
 
-        //validate the list
-        for(Pair<T, Boolean> sortPair : sortProps)
-        {
-            if(sortPair == null || sortPair.getFirst() == null || sortPair.getSecond() == null)
-            {
-                throw new IllegalArgumentException("Unexpected null or null containing element in list: " + sortProps);
+        // validate the list
+        for (Pair<T, Boolean> sortPair : sortProps) {
+            if (sortPair == null || sortPair.getFirst() == null || sortPair.getSecond() == null) {
+                throw new IllegalArgumentException(
+                        "Unexpected null or null containing element in list: " + sortProps);
             }
         }
     }
 
     /** Get the ordered list of columns to sort on (and their sort direction). */
-    public List<Pair<T, Boolean>> getSortProps()
-    {
+    public List<Pair<T, Boolean>> getSortProps() {
         return this.sortProps;
     }
 
     /** Get the number of items to skip before creating the list. */
-    public int getSkipCount()
-    {
+    public int getSkipCount() {
         return this.skipCount;
     }
 
     /** Get the total number of items to return (assuming enough are available). */
-    public int getMaxItems()
-    {
+    public int getMaxItems() {
         return this.maxItems;
     }
 }

@@ -29,8 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 
 import static org.alfresco.model.ContentModel.ASPECT_PENDING_DELETE;
 
-import java.util.List;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -45,14 +43,16 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.ParameterCheck;
 
+import java.util.List;
+
 /**
  * Inplace record service implementation.
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class InplaceRecordServiceImpl extends ServiceBaseImpl implements InplaceRecordService, RecordsManagementModel
-{
+public class InplaceRecordServiceImpl extends ServiceBaseImpl
+        implements InplaceRecordService, RecordsManagementModel {
     /** Site service */
     private SiteService siteService;
 
@@ -62,133 +62,125 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
     /** File folder service */
     private FileFolderService fileFolderService;
 
-    /**
-     * @param siteService site service
-     */
-    public void setSiteService(SiteService siteService)
-    {
+    /** @param siteService site service */
+    public void setSiteService(SiteService siteService) {
         this.siteService = siteService;
     }
 
-    /**
-     * @param extendedSecurityService extended security service
-     */
-    public void setExtendedSecurityService(
-            ExtendedSecurityService extendedSecurityService)
-    {
+    /** @param extendedSecurityService extended security service */
+    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService) {
         this.extendedSecurityService = extendedSecurityService;
     }
 
-    /**
-     * @param fileFolderService file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    /** @param fileFolderService file folder service */
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService#hideRecord(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService#hideRecord(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void hideRecord(final NodeRef nodeRef)
-    {
+    public void hideRecord(final NodeRef nodeRef) {
         ParameterCheck.mandatory("NodeRef", nodeRef);
 
         // do the work of hiding the record as the system user
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                // remove the child association
-                NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-                
-                if (originatingLocation != null)
-                {
-                    List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-                    for (ChildAssociationRef childAssociationRef : parentAssocs)
-                    {
-                        if (!childAssociationRef.isPrimary() &&
-                                childAssociationRef.getParentRef().equals(originatingLocation) &&
-                                !nodeService.hasAspect(childAssociationRef.getChildRef(), ASPECT_PENDING_DELETE))
-                        {
-                            nodeService.removeChildAssociation(childAssociationRef);
-                            break;
-                        }
-                    }
-    
-                    // remove the extended security from the node
-                    // this prevents the users from continuing to see the record in searchs and other linked locations
-                    extendedSecurityService.remove(nodeRef);
-                }
+        authenticationUtil.runAsSystem(
+                new RunAsWork<Void>() {
+                    @Override
+                    public Void doWork() {
+                        // remove the child association
+                        NodeRef originatingLocation =
+                                (NodeRef)
+                                        nodeService.getProperty(
+                                                nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
 
-                return null;
-            }
-        });
+                        if (originatingLocation != null) {
+                            List<ChildAssociationRef> parentAssocs =
+                                    nodeService.getParentAssocs(nodeRef);
+                            for (ChildAssociationRef childAssociationRef : parentAssocs) {
+                                if (!childAssociationRef.isPrimary()
+                                        && childAssociationRef
+                                                .getParentRef()
+                                                .equals(originatingLocation)
+                                        && !nodeService.hasAspect(
+                                                childAssociationRef.getChildRef(),
+                                                ASPECT_PENDING_DELETE)) {
+                                    nodeService.removeChildAssociation(childAssociationRef);
+                                    break;
+                                }
+                            }
+
+                            // remove the extended security from the node
+                            // this prevents the users from continuing to see the record in searchs
+                            // and other linked locations
+                            extendedSecurityService.remove(nodeRef);
+                        }
+
+                        return null;
+                    }
+                });
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService#moveRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService#moveRecord(org.alfresco.service.cmr.repository.NodeRef,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void moveRecord(final NodeRef nodeRef, final NodeRef targetNodeRef)
-    {
+    public void moveRecord(final NodeRef nodeRef, final NodeRef targetNodeRef) {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("targetNodeRef", targetNodeRef);
 
         NodeRef sourceParentNodeRef = null;
 
-        NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-        for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
-        {
-            if (!parentAssoc.isPrimary() && parentAssoc.getParentRef().equals(originatingLocation))
-            {
+        NodeRef originatingLocation =
+                (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
+        for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef)) {
+            if (!parentAssoc.isPrimary()
+                    && parentAssoc.getParentRef().equals(originatingLocation)) {
                 sourceParentNodeRef = parentAssoc.getParentRef();
                 break;
             }
         }
 
-        if (sourceParentNodeRef == null)
-        {
+        if (sourceParentNodeRef == null) {
             throw new AlfrescoRuntimeException("Could not find source parent node reference.");
         }
 
         SiteInfo sourceSite = siteService.getSite(sourceParentNodeRef);
         SiteInfo targetSite = siteService.getSite(targetNodeRef);
 
-        if (!sourceSite.equals(targetSite))
-        {
-            throw new AlfrescoRuntimeException("The record can only be moved within the same collaboration site.");
+        if (!sourceSite.equals(targetSite)) {
+            throw new AlfrescoRuntimeException(
+                    "The record can only be moved within the same collaboration site.");
         }
 
-        if (!sourceSite.getSitePreset().equals("site-dashboard"))
-        {
-            throw new AlfrescoRuntimeException("Only records within a collaboration site can be moved.");
+        if (!sourceSite.getSitePreset().equals("site-dashboard")) {
+            throw new AlfrescoRuntimeException(
+                    "Only records within a collaboration site can be moved.");
         }
 
         final NodeRef source = sourceParentNodeRef;
 
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                try
-                {
-                    // Move the record
-                    fileFolderService.moveFrom(nodeRef, source, targetNodeRef, null);
+        authenticationUtil.runAsSystem(
+                new RunAsWork<Void>() {
+                    @Override
+                    public Void doWork() {
+                        try {
+                            // Move the record
+                            fileFolderService.moveFrom(nodeRef, source, targetNodeRef, null);
 
-                    // Update the originating location property
-                    nodeService.setProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION, targetNodeRef);
-                }
-                catch (FileExistsException | FileNotFoundException ex)
-                {
-                    throw new AlfrescoRuntimeException("Can't move node: " +  ex);
-                }
+                            // Update the originating location property
+                            nodeService.setProperty(
+                                    nodeRef, PROP_RECORD_ORIGINATING_LOCATION, targetNodeRef);
+                        } catch (FileExistsException | FileNotFoundException ex) {
+                            throw new AlfrescoRuntimeException("Can't move node: " + ex);
+                        }
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,24 +27,20 @@ package org.alfresco.repo.web.util.paging;
 
 import junit.framework.TestCase;
 
-
 /**
  * Test Paged and Window Based Cursors
- * 
+ *
  * @author davidc
  */
-public class PagingTest extends TestCase
-{
+public class PagingTest extends TestCase {
     protected Paging paging;
-    
+
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         paging = new Paging();
     }
 
-    public void testZeroBasedBooleans()
-    {
+    public void testZeroBasedBooleans() {
         assertFalse(paging.isZeroBasedPage());
         paging.setZeroBasedPage(true);
         assertTrue(paging.isZeroBasedPage());
@@ -53,15 +49,14 @@ public class PagingTest extends TestCase
         assertFalse(paging.isZeroBasedRow());
     }
 
-    public void testCreatePage()
-    {
+    public void testCreatePage() {
         Page page = paging.createPage(1, 10);
         assertNotNull(page);
         assertEquals(Paging.PageType.PAGE, page.getType());
         assertFalse(page.isZeroBasedIdx());
         assertEquals(1, page.getNumber());
         assertEquals(10, page.getSize());
-        
+
         Page window = paging.createWindow(1, 10);
         assertNotNull(window);
         assertEquals(Paging.PageType.WINDOW, window.getType());
@@ -70,8 +65,7 @@ public class PagingTest extends TestCase
         assertEquals(10, window.getSize());
     }
 
-    public void testZeroRowsPage()
-    {
+    public void testZeroRowsPage() {
         Cursor cursor = paging.createCursor(0, paging.createPage(1, 10));
         assertNotNull(cursor);
         assertEquals(0, cursor.getTotalRows());
@@ -88,8 +82,7 @@ public class PagingTest extends TestCase
         assertEquals(0, cursor.getRowCount());
     }
 
-    public void testOutOfBoundsPage()
-    {
+    public void testOutOfBoundsPage() {
         Cursor cursor1 = paging.createCursor(1, paging.createPage(1, 1));
         assertNotNull(cursor1);
         assertTrue(cursor1.isInRange());
@@ -142,8 +135,7 @@ public class PagingTest extends TestCase
         assertFalse(cursor17.isInRange());
     }
 
-    public void testTotalPage()
-    {
+    public void testTotalPage() {
         Cursor cursor1 = paging.createCursor(10, paging.createPage(1, 1));
         assertEquals(10, cursor1.getTotalRows());
         assertEquals(10, cursor1.getTotalPages());
@@ -161,8 +153,7 @@ public class PagingTest extends TestCase
         assertEquals(2, cursor5.getTotalPages());
     }
 
-    public void testCursorPage()
-    {
+    public void testCursorPage() {
         Cursor cursor1 = paging.createCursor(10, paging.createPage(1, 1));
         assertEquals(1, cursor1.getCurrentPage());
         assertEquals(1, cursor1.getFirstPage());
@@ -237,8 +228,7 @@ public class PagingTest extends TestCase
         assertEquals(1, cursor8.getRowCount());
     }
 
-    public void testUnlimitedPage()
-    {
+    public void testUnlimitedPage() {
         Cursor cursor1 = paging.createCursor(100, paging.createPage(1, -1));
         assertTrue(cursor1.isInRange());
         assertEquals(1, cursor1.getCurrentPage());
@@ -252,31 +242,29 @@ public class PagingTest extends TestCase
         assertFalse(cursor2.isInRange());
     }
 
-    public void testScrollPage()
-    {
+    public void testScrollPage() {
         int count = 0;
         long[] coll = new long[100];
 
         Cursor cursor = paging.createCursor(coll.length, paging.createPage(1, 10));
-        while (cursor.isInRange())
-        {
-           for (long i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
-           {
-              coll[(int)i] = i;
-              count++;
-           }
-           cursor = paging.createCursor(coll.length, paging.createPage(cursor.getNextPage(), cursor.getPageSize()));
+        while (cursor.isInRange()) {
+            for (long i = cursor.getStartRow(); i <= cursor.getEndRow(); i++) {
+                coll[(int) i] = i;
+                count++;
+            }
+            cursor =
+                    paging.createCursor(
+                            coll.length,
+                            paging.createPage(cursor.getNextPage(), cursor.getPageSize()));
         }
-        
+
         assertEquals(100, count);
-        for (int test = 0; test < count; test++)
-        {
+        for (int test = 0; test < count; test++) {
             assertEquals(test, coll[test]);
         }
     }
 
-    public void testZeroRowsWindow()
-    {
+    public void testZeroRowsWindow() {
         Cursor rows = paging.createCursor(0, paging.createWindow(0, 10));
         assertNotNull(rows);
         assertEquals(0, rows.getTotalRows());
@@ -288,8 +276,7 @@ public class PagingTest extends TestCase
         assertEquals(-1, rows.getNextPage());
     }
 
-    public void testOutOfBoundsWindow()
-    {
+    public void testOutOfBoundsWindow() {
         Cursor cursor1 = paging.createCursor(1, paging.createWindow(0, 1));
         assertNotNull(cursor1);
         assertTrue(cursor1.isInRange());
@@ -301,14 +288,12 @@ public class PagingTest extends TestCase
         assertTrue(cursor3.isInRange());
     }
 
-    public void testTotalWindow()
-    {
+    public void testTotalWindow() {
         Cursor cursor1 = paging.createCursor(10, paging.createWindow(1, 1));
         assertEquals(10, cursor1.getTotalRows());
     }
 
-    public void testCursorWindow()
-    {
+    public void testCursorWindow() {
         Cursor cursor1 = paging.createCursor(10, paging.createWindow(0, 1));
         assertEquals(0, cursor1.getStartRow());
         assertEquals(0, cursor1.getEndRow());
@@ -336,8 +321,7 @@ public class PagingTest extends TestCase
         assertEquals(-1, cursor5.getNextPage());
     }
 
-    public void testUnlimitedWindow()
-    {
+    public void testUnlimitedWindow() {
         Cursor cursor1 = paging.createCursor(100, paging.createWindow(0, -1));
         assertTrue(cursor1.isInRange());
         assertEquals(0, cursor1.getStartRow());
@@ -346,27 +330,25 @@ public class PagingTest extends TestCase
         assertEquals(-1, cursor1.getNextPage());
     }
 
-    public void testScrollWindow()
-    {
+    public void testScrollWindow() {
         int count = 0;
         long[] coll = new long[100];
 
         Cursor cursor = paging.createCursor(coll.length, paging.createWindow(0, 10));
-        while (cursor.isInRange())
-        {
-           for (long i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
-           {
-              coll[(int)i] = i;
-              count++;
-           }
-           cursor = paging.createCursor(coll.length, paging.createWindow(cursor.getNextPage(), cursor.getPageSize()));
+        while (cursor.isInRange()) {
+            for (long i = cursor.getStartRow(); i <= cursor.getEndRow(); i++) {
+                coll[(int) i] = i;
+                count++;
+            }
+            cursor =
+                    paging.createCursor(
+                            coll.length,
+                            paging.createWindow(cursor.getNextPage(), cursor.getPageSize()));
         }
-        
+
         assertEquals(100, count);
-        for (int test = 0; test < count; test++)
-        {
+        for (int test = 0; test < count; test++) {
             assertEquals(test, coll[test]);
         }
     }
-
 }

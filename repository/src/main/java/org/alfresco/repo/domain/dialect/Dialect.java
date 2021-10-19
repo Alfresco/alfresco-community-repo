@@ -27,45 +27,38 @@ package org.alfresco.repo.domain.dialect;
 
 /**
  * Class partially copied from patched hibernate 3.2.6
- * 
+ *
  * @since 6.0
  */
-public class Dialect
-{
+public class Dialect {
     private final TypeNames typeNames = new TypeNames();
 
-    protected Dialect()
-    {
-    }
+    protected Dialect() {}
 
-    public String toString()
-    {
+    public String toString() {
         return getClass().getName();
     }
 
     /**
-     * Subclasses register a type name for the given type code and maximum
-     * column length. <tt>$l</tt> in the type name with be replaced by the
-     * column length (if appropriate).
+     * Subclasses register a type name for the given type code and maximum column length.
+     * <tt>$l</tt> in the type name with be replaced by the column length (if appropriate).
      *
      * @param code The {@link java.sql.Types} typecode
      * @param capacity The maximum length of database type
      * @param name The database type name
      */
-    protected void registerColumnType(int code, int capacity, String name)
-    {
-        typeNames.put( code, capacity, name );
+    protected void registerColumnType(int code, int capacity, String name) {
+        typeNames.put(code, capacity, name);
     }
 
     /**
-     * Subclasses register a type name for the given type code. <tt>$l</tt> in
-     * the type name with be replaced by the column length (if appropriate).
+     * Subclasses register a type name for the given type code. <tt>$l</tt> in the type name with be
+     * replaced by the column length (if appropriate).
      *
      * @param code The {@link java.sql.Types} typecode
      * @param name The database type name
      */
-    protected void registerColumnType(int code, String name)
-    {
-        typeNames.put( code, name );
+    protected void registerColumnType(int code, String name) {
+        typeNames.put(code, name);
     }
 }

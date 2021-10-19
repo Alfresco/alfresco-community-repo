@@ -4,38 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.management.subsystems;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.alfresco.config.JndiPropertiesFactoryBean;
 import org.alfresco.util.ResourceFinder;
@@ -59,64 +47,86 @@ import org.springframework.util.Assert;
 import org.springframework.util.DefaultPropertiesPersister;
 import org.springframework.util.PropertiesPersister;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 /**
- * A factory allowing initialization of an entire 'subsystem' in a child application context. As with other
- * {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested. Each instance possesses a
- * <code>typeName</code> property, that determines where the factory will look for default configuration for the
- * application context. In addition, its <code>id</code> property will determine where the factory will look for
- * override configuration in the extension classpath.
- * <p>
- * The factory will search for a Spring application context in the classpath using the following patterns in order:
- * <ul>
- * <li>alfresco/subsystems/&lt;category>/&lt;typeName>/*-context.xml</li>
- * <li>alfresco/extension/subsystems/&lt;category>/&lt;typeName>/&lt;id>/*-context.xml</li>
- * </ul>
- * The child application context may use <code>${}</code> placeholders, and will be configured with a
- * {@link PropertyPlaceholderConfigurer} initialized with properties files found in classpath matching the following
+ * A factory allowing initialization of an entire 'subsystem' in a child application context. As
+ * with other {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested. Each
+ * instance possesses a <code>typeName</code> property, that determines where the factory will look
+ * for default configuration for the application context. In addition, its <code>id</code> property
+ * will determine where the factory will look for override configuration in the extension classpath.
+ *
+ * <p>The factory will search for a Spring application context in the classpath using the following
  * patterns in order:
+ *
  * <ul>
- * <li>alfresco/subsystems/&lt;category>/&lt;typeName>/*.properties</li>
- * <li>alfresco/extension/subsystems/&lt;category>/&lt;typeName>/&lt;id>/*.properties</li>
+ *   <li>alfresco/subsystems/&lt;category>/&lt;typeName>/*-context.xml
+ *   <li>alfresco/extension/subsystems/&lt;category>/&lt;typeName>/&lt;id>/*-context.xml
  * </ul>
- * This means that the extension classpath can be used to provide instance-specific overrides to product default
- * settings. Of course, if you are using the Enterprise edition, you might want to use a JMX client such as JConsole to
- * edit the settings instead!
- * <p>
- * For advanced purposes, the class also allows management of 'composite' properties, that is properties that can be
- * populated with a sequence of zero or more objects, themselves registered as property-backed beans. Using the
- * <code>compositePropertyTypes</code> property you can register a Map of property names to Java Bean classes. Each
- * property named in this map will then be materialized as a 'composite' property.
- * <p>
- * Composite property settings are best controlled either through a JMX console (Enterprise edition only) or
- * /alfresco-global.properties in the classpath (the replacement to /alfresco/extension/custom-repository.properties).
- * For example, suppose "imap.server.mountPoints" was registered as a composite property of type
- * {@link RepositoryPathConfigBean}. You can then use the property to configure a list of
- * {@link RepositoryPathConfigBean}s. First you specify in the property's value a list of zero or more 'instance names'.
- * Each name must be unique within the property.
- * <p>
- * <code>imap.server.mountPoints=Repository_virtual,Repository_archive</code>
- * <p>
- * Then, by magic you have two separate instances of {@link RepositoryPathConfigBean} whose properties you can address
- * through an extended set of properties prefixed by "imap.server.mountPoints".
- * <p>
- * To set a property on one of the instances, you append ".value.&lt;instance name>.&lt;bean property name>" to the
- * parent property name. For example:
- * <p>
- * <code>imap.server.mountPoints.value.Repository_virtual.store=${spaces.store}</code><br/>
- * <code>imap.server.mountPoints.value.Repository_virtual.path=/${spaces.company_home.childname}</code>
- * <p>
- * To specify a default value for a property on all instances of the bean, you append ".default.&lt;bean property name>"
- * to the parent property name. For example:
- * <p>
- * <code>imap.server.mountPoints.default.store=${spaces.store}</code><br/>
+ *
+ * The child application context may use <code>${}</code> placeholders, and will be configured with
+ * a {@link PropertyPlaceholderConfigurer} initialized with properties files found in classpath
+ * matching the following patterns in order:
+ *
+ * <ul>
+ *   <li>alfresco/subsystems/&lt;category>/&lt;typeName>/*.properties
+ *   <li>alfresco/extension/subsystems/&lt;category>/&lt;typeName>/&lt;id>/*.properties
+ * </ul>
+ *
+ * This means that the extension classpath can be used to provide instance-specific overrides to
+ * product default settings. Of course, if you are using the Enterprise edition, you might want to
+ * use a JMX client such as JConsole to edit the settings instead!
+ *
+ * <p>For advanced purposes, the class also allows management of 'composite' properties, that is
+ * properties that can be populated with a sequence of zero or more objects, themselves registered
+ * as property-backed beans. Using the <code>compositePropertyTypes</code> property you can register
+ * a Map of property names to Java Bean classes. Each property named in this map will then be
+ * materialized as a 'composite' property.
+ *
+ * <p>Composite property settings are best controlled either through a JMX console (Enterprise
+ * edition only) or /alfresco-global.properties in the classpath (the replacement to
+ * /alfresco/extension/custom-repository.properties). For example, suppose "imap.server.mountPoints"
+ * was registered as a composite property of type {@link RepositoryPathConfigBean}. You can then use
+ * the property to configure a list of {@link RepositoryPathConfigBean}s. First you specify in the
+ * property's value a list of zero or more 'instance names'. Each name must be unique within the
+ * property.
+ *
+ * <p><code>imap.server.mountPoints=Repository_virtual,Repository_archive</code>
+ *
+ * <p>Then, by magic you have two separate instances of {@link RepositoryPathConfigBean} whose
+ * properties you can address through an extended set of properties prefixed by
+ * "imap.server.mountPoints".
+ *
+ * <p>To set a property on one of the instances, you append ".value.&lt;instance name>.&lt;bean
+ * property name>" to the parent property name. For example:
+ *
+ * <p><code>imap.server.mountPoints.value.Repository_virtual.store=${spaces.store}</code><br>
+ * <code>imap.server.mountPoints.value.Repository_virtual.path=/${spaces.company_home.childname}
+ * </code>
+ *
+ * <p>To specify a default value for a property on all instances of the bean, you append
+ * ".default.&lt;bean property name>" to the parent property name. For example:
+ *
+ * <p><code>imap.server.mountPoints.default.store=${spaces.store}</code><br>
  * <code>imap.server.mountPoints.default.path=/${spaces.company_home.childname}</code>
- * <p>
- * Note that it's perfectly valid to use placeholders in property values that will be resolved from other global
- * properties.
- * <p>
- * In order to actually utilize this configurable list of beans in your child application context, you simply need to
- * declare a {@link ListFactoryBean} whose ID is the same name as the property. For example:
- * 
+ *
+ * <p>Note that it's perfectly valid to use placeholders in property values that will be resolved
+ * from other global properties.
+ *
+ * <p>In order to actually utilize this configurable list of beans in your child application
+ * context, you simply need to declare a {@link ListFactoryBean} whose ID is the same name as the
+ * property. For example:
+ *
  * <pre>
  * &lt;bean id=&quot;imap.server.mountPoints&quot; class=&quot;org.springframework.beans.factory.config.ListFactoryBean&quot;&gt;
  * &lt;property name=&quot;sourceList&quot;&gt;
@@ -125,20 +135,20 @@ import org.springframework.util.PropertiesPersister;
  * &lt;/property&gt;
  * &lt;/bean&gt;
  * </pre>
- * 
- * Then, when the application context is started and before that bean is initialized, it will be given the current
- * configured list of values for the composite property. Magic! This all sounds like a complex, yet primitive
- * replacement for Spring, but it means you can do powerful things to reconfigure the system through an admin UI rather
- * than editing XML.
- * 
+ *
+ * Then, when the application context is started and before that bean is initialized, it will be
+ * given the current configured list of values for the composite property. Magic! This all sounds
+ * like a complex, yet primitive replacement for Spring, but it means you can do powerful things to
+ * reconfigure the system through an admin UI rather than editing XML.
+ *
  * @author dward
  */
-public class ChildApplicationContextFactory extends AbstractPropertyBackedBean implements ApplicationContextFactory, PropertyBackedBeanWithMonitor
-{
+public class ChildApplicationContextFactory extends AbstractPropertyBackedBean
+        implements ApplicationContextFactory, PropertyBackedBeanWithMonitor {
 
     /** The name of the special read-only property containing the type name. */
     private static final String TYPE_NAME_PROPERTY = "$type";
-    
+
     /** The name of the special read-only property containing the instance path . */
     private static final String INSTANCE_PATH_PROPERTY = "instancePath";
 
@@ -147,7 +157,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
 
     /** The suffix to the context file search path. */
     private static final String CONTEXT_SUFFIX = "/*-context.xml";
-    
+
     /** The suffix to the enterprise context file search path. */
     private static final String ENTERPRISE_CONTEXT_SUFFIX = "/*-enterprise-context.xml";
 
@@ -155,7 +165,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     private static final String CLASSPATH_PREFIX = "classpath*:alfresco/subsystems/";
 
     /** The prefix to extension file search paths. */
-    private static final String EXTENSION_CLASSPATH_PREFIX = "classpath*:alfresco/extension/subsystems/";
+    private static final String EXTENSION_CLASSPATH_PREFIX =
+            "classpath*:alfresco/extension/subsystems/";
 
     /** The logger. */
     private static Log logger = LogFactory.getLog(ChildApplicationContextFactory.class);
@@ -167,40 +178,35 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     private Map<String, Class<?>> compositePropertyTypes = Collections.emptyMap();
 
     private PropertiesPersister persister = new DefaultPropertiesPersister();
-    
+
     private Object monitor;
 
-    /**
-     * Default constructor for container construction.
-     */
-    public ChildApplicationContextFactory()
-    {
-    }
+    /** Default constructor for container construction. */
+    public ChildApplicationContextFactory() {}
 
     /**
-     * Constructor for dynamically created instances, e.g. through {@link DefaultChildApplicationContextManager}.
-     * 
-     * @param parent
-     *            the parent application context
-     * @param registry
-     *            the registry of property backed beans
-     * @param propertyDefaults
-     *            property defaults provided by the installer or System properties
-     * @param encryptedPropertyDefaults
-     *            encrypted property defaults provided by the installer or System properties
-     * @param category
-     *            the category
-     * @param typeName
-     *            the type name
-     * @param instancePath
-     *            the instance path within the category
-     * @throws IOException
-     *             Signals that an I/O exception has occurred.
+     * Constructor for dynamically created instances, e.g. through {@link
+     * DefaultChildApplicationContextManager}.
+     *
+     * @param parent the parent application context
+     * @param registry the registry of property backed beans
+     * @param propertyDefaults property defaults provided by the installer or System properties
+     * @param encryptedPropertyDefaults encrypted property defaults provided by the installer or
+     *     System properties
+     * @param category the category
+     * @param typeName the type name
+     * @param instancePath the instance path within the category
+     * @throws IOException Signals that an I/O exception has occurred.
      */
-    public ChildApplicationContextFactory(ApplicationContext parent, PropertyBackedBeanRegistry registry,
-            Properties propertyDefaults, Properties encryptedPropertyDefaults, String category, String typeName, List<String> instancePath)
-            throws IOException
-    {
+    public ChildApplicationContextFactory(
+            ApplicationContext parent,
+            PropertyBackedBeanRegistry registry,
+            Properties propertyDefaults,
+            Properties encryptedPropertyDefaults,
+            String category,
+            String typeName,
+            List<String> instancePath)
+            throws IOException {
         setApplicationContext(parent);
         setRegistry(registry);
         setPropertyDefaults(propertyDefaults);
@@ -209,94 +215,80 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         setTypeName(typeName);
         setInstancePath(instancePath);
 
-        try
-        {
+        try {
             afterPropertiesSet();
-        }
-        catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             throw e;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
      * Sets the type name.
-     * 
-     * @param typeName
-     *            the typeName to set
+     *
+     * @param typeName the typeName to set
      */
-    public void setTypeName(String typeName)
-    {
+    public void setTypeName(String typeName) {
         this.typeName = typeName;
     }
 
     /**
      * Gets the type name.
-     * 
+     *
      * @return the type name
      */
-    public String getTypeName()
-    {
+    public String getTypeName() {
         return this.typeName;
     }
 
     /**
      * Registers a set of composite propertes and their types.
-     * 
-     * @param compositePropertyTypes
-     *            a map of property names to Java classes. The classes should follow standard Java Bean conventions. If
-     *            the class implements {@link BeanNameAware} the instance name will be propagated to the
-     *            <code>beanName</code> property automatically.
+     *
+     * @param compositePropertyTypes a map of property names to Java classes. The classes should
+     *     follow standard Java Bean conventions. If the class implements {@link BeanNameAware} the
+     *     instance name will be propagated to the <code>beanName</code> property automatically.
      */
-    public void setCompositePropertyTypes(Map<String, Class<?>> compositePropertyTypes)
-    {
+    public void setCompositePropertyTypes(Map<String, Class<?>> compositePropertyTypes) {
         this.compositePropertyTypes = compositePropertyTypes;
     }
 
-    /**
-	 * @return the persister
-	 */
-	public PropertiesPersister getPersister() 
-	{
-		return persister;
-	}
+    /** @return the persister */
+    public PropertiesPersister getPersister() {
+        return persister;
+    }
 
-	/**
-	 * @param persister the persister to set
-	 */
-	public void setPersister(PropertiesPersister persister) 
-	{
-		this.persister = persister;
-	}
+    /** @param persister the persister to set */
+    public void setPersister(PropertiesPersister persister) {
+        this.persister = persister;
+    }
 
     /*
      * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         List<String> idList = getInstancePath();
-        if (idList.isEmpty())
-        {
+        if (idList.isEmpty()) {
             throw new IllegalStateException("Invalid instance path");
         }
-        if (getTypeName() == null)
-        {
+        if (getTypeName() == null) {
             setTypeName(idList.get(0));
         }
 
         super.afterPropertiesSet();
 
         // Validate that context files exist for this path
-        if (new ResourceFinder(getParent()).getResources(getContextResourcePatterns()).length == 0)
-        {
-            throw new IllegalStateException("Invalid type " + getTypeName() + " specified for "+ getCategory() + " subsystem. No context file found");
-        }        
+        if (new ResourceFinder(getParent()).getResources(getContextResourcePatterns()).length
+                == 0) {
+            throw new IllegalStateException(
+                    "Invalid type "
+                            + getTypeName()
+                            + " specified for "
+                            + getCategory()
+                            + " subsystem. No context file found");
+        }
     }
 
     /*
@@ -304,8 +296,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
      */
     @Override
-    protected PropertyBackedBeanState createInitialState() throws IOException
-    {
+    protected PropertyBackedBeanState createInitialState() throws IOException {
         return new ApplicationContextState(false);
     }
 
@@ -316,21 +307,29 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * .subsystems.PropertyBackedBeanState)
      */
     @Override
-    protected void applyDefaultOverrides(PropertyBackedBeanState state) throws IOException
-    {
+    protected void applyDefaultOverrides(PropertyBackedBeanState state) throws IOException {
         // Let the superclass propagate default settings from the global properties and register us
         super.applyDefaultOverrides(state);
 
         List<String> idList = getId();
 
-        // Apply any property overrides from the extension classpath and also allow system properties and JNDI to
+        // Apply any property overrides from the extension classpath and also allow system
+        // properties and JNDI to
         // override. We use the type name and last component of the ID in the path
         JndiPropertiesFactoryBean overrideFactory = new JndiPropertiesFactoryBean();
         overrideFactory.setPropertiesPersister(getPersister());
-        overrideFactory.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE);
-        overrideFactory.setLocations(getParent().getResources(
-                ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
-                        + idList.get(idList.size() - 1) + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
+        overrideFactory.setSystemPropertiesMode(
+                PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE);
+        overrideFactory.setLocations(
+                getParent()
+                        .getResources(
+                                ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX
+                                        + getCategory()
+                                        + '/'
+                                        + getTypeName()
+                                        + '/'
+                                        + idList.get(idList.size() - 1)
+                                        + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
         overrideFactory.setProperties(((ApplicationContextState) state).properties);
         overrideFactory.afterPropertiesSet();
         ((ApplicationContextState) state).properties = (Properties) overrideFactory.getObject();
@@ -341,14 +340,11 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#isUpdateable(java.lang.String)
      */
     @Override
-    public boolean isUpdateable(String name)
-    {
-        if(name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
-        {
+    public boolean isUpdateable(String name) {
+        if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY)) {
             return false;
         }
-        if(name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
-        {
+        if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY)) {
             return false;
         }
         return true;
@@ -359,18 +355,14 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getDescription(java.lang.String)
      */
     @Override
-    public String getDescription(String name)
-    {
-        if(name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
-        {
-             return "Read-only subsystem type name";
+    public String getDescription(String name) {
+        if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY)) {
+            return "Read-only subsystem type name";
         }
-        if(name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
-        {
-             return "Read-only instance path";
+        if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY)) {
+            return "Read-only instance path";
         }
-        if(this.compositePropertyTypes.containsKey(name))
-        {
+        if (this.compositePropertyTypes.containsKey(name)) {
             return "Comma separated list of child object names";
         }
         return super.getDescription(name);
@@ -381,131 +373,119 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#destroy(boolean)
      */
     @Override
-    protected void destroy(boolean permanent)
-    {
+    protected void destroy(boolean permanent) {
         // Cascade the destroy / shutdown
-        if (getState(false) != null)
-        {
+        if (getState(false) != null) {
             boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
-            if (!hadWriteLock)
-            {
+            if (!hadWriteLock) {
                 this.lock.readLock().unlock();
                 this.lock.writeLock().lock();
             }
-            try
-            {
+            try {
                 ApplicationContextState state = (ApplicationContextState) getState(false);
 
                 // Cascade the destroy / shutdown
-                if (state != null)
-                {
+                if (state != null) {
                     state.destroy(permanent);
                 }
                 super.destroy(permanent);
-            }
-            finally
-            {
-                if (!hadWriteLock)
-                {
+            } finally {
+                if (!hadWriteLock) {
                     this.lock.readLock().lock();
                     this.lock.writeLock().unlock();
                 }
             }
-        }
-        else
-        {
-            super.destroy(permanent);            
+        } else {
+            super.destroy(permanent);
         }
     }
-    
-    
+
     /**
-     * Gets the application context.   Will not start a subsystem.
-     * 
+     * Gets the application context. Will not start a subsystem.
+     *
      * @return the application context or null
      */
-    public ApplicationContext getReadOnlyApplicationContext()
-    {
+    public ApplicationContext getReadOnlyApplicationContext() {
         this.lock.readLock().lock();
-        try
-        {
+        try {
             return ((ApplicationContextState) getState(false)).getApplicationContext();
-        }
-        finally
-        {
+        } finally {
             this.lock.readLock().unlock();
-        }  
-        
+        }
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.ManagedApplicationContextFactory#getApplicationContext()
      */
-    public ApplicationContext getApplicationContext()
-    {
+    public ApplicationContext getApplicationContext() {
         this.lock.readLock().lock();
-        try
-        {
+        try {
             return ((ApplicationContextState) getState(true)).getApplicationContext();
-        }
-        finally
-        {
+        } finally {
             this.lock.readLock().unlock();
         }
     }
 
-    private String[] getContextResourcePatterns()
-    {
-        return new String[]
-        {
-            ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
+    private String[] getContextResourcePatterns() {
+        return new String[] {
+            ChildApplicationContextFactory.CLASSPATH_PREFIX
+                    + getCategory()
+                    + '/'
+                    + getTypeName()
                     + ChildApplicationContextFactory.CONTEXT_SUFFIX,
-            ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
+            ChildApplicationContextFactory.CLASSPATH_PREFIX
+                    + getCategory()
+                    + '/'
+                    + getTypeName()
                     + ChildApplicationContextFactory.ENTERPRISE_CONTEXT_SUFFIX,
             ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX
                     + getCategory()
                     + '/'
                     + getTypeName()
                     + '/'
-                    + ChildApplicationContextFactory.this.getId().get(
-                            ChildApplicationContextFactory.this.getId().size() - 1)
+                    + ChildApplicationContextFactory.this
+                            .getId()
+                            .get(ChildApplicationContextFactory.this.getId().size() - 1)
                     + ChildApplicationContextFactory.CONTEXT_SUFFIX
         };
     }
 
     /**
-     * A specialized application context class with the power to propagate simple and composite property values into
-     * beans before they are initialized.
-     * 
+     * A specialized application context class with the power to propagate simple and composite
+     * property values into beans before they are initialized.
+     *
      * @author dward
      */
-    private class ChildApplicationContext extends ClassPathXmlApplicationContext
-    {
+    private class ChildApplicationContext extends ClassPathXmlApplicationContext {
 
         /** The composite property values. */
         private Map<String, Map<String, CompositeDataBean>> compositeProperties;
-        
+
         /**
          * The Constructor.
-         * 
-         * @param properties
-         *            the properties
-         * @param compositeProperties
-         *            the composite properties
-         * @throws BeansException
-         *             the beans exception
+         *
+         * @param properties the properties
+         * @param compositeProperties the composite properties
+         * @throws BeansException the beans exception
          */
-        private ChildApplicationContext(Properties properties,
-                Map<String, Map<String, CompositeDataBean>> compositeProperties) throws BeansException
-        {
-            super(getContextResourcePatterns(), false, ChildApplicationContextFactory.this.getParent());
+        private ChildApplicationContext(
+                Properties properties,
+                Map<String, Map<String, CompositeDataBean>> compositeProperties)
+                throws BeansException {
+            super(
+                    getContextResourcePatterns(),
+                    false,
+                    ChildApplicationContextFactory.this.getParent());
 
             this.compositeProperties = compositeProperties;
 
             // Add a property placeholder configurer, with the subsystem-scoped default properties
             PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-            configurer.setPropertiesArray(new Properties[] {ChildApplicationContextFactory.this.getPropertyDefaults(), properties});
+            configurer.setPropertiesArray(
+                    new Properties[] {
+                        ChildApplicationContextFactory.this.getPropertyDefaults(), properties
+                    });
             configurer.setIgnoreUnresolvablePlaceholders(true);
             configurer.setSearchSystemEnvironment(false);
             addBeanFactoryPostProcessor(configurer);
@@ -520,95 +500,92 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * .beans.factory.config.ConfigurableListableBeanFactory)
          */
         @Override
-        protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-        {
+        protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
             // Propagate composite properties to list factories of the corresponding name
-            beanFactory.addBeanPostProcessor(new BeanPostProcessor()
-            {
+            beanFactory.addBeanPostProcessor(
+                    new BeanPostProcessor() {
 
-                public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException
-                {
-                    return bean;
-                }
+                        public Object postProcessAfterInitialization(Object bean, String beanName)
+                                throws BeansException {
+                            return bean;
+                        }
 
-                public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException
-                {
-                    if (bean instanceof ListFactoryBean
-                            && ChildApplicationContextFactory.this.compositePropertyTypes.containsKey(beanName))
-                    {
-                        Map<String, CompositeDataBean> beans = ChildApplicationContext.this.compositeProperties
-                                .get(beanName);
-                        List<Object> beanList;
-                        if (beans != null)
-                        {
-                            beanList = new ArrayList<Object>(beans.size());
-                            for (CompositeDataBean wrapped : beans.values())
-                            {
-                                beanList.add(wrapped.getBean());
+                        public Object postProcessBeforeInitialization(Object bean, String beanName)
+                                throws BeansException {
+                            if (bean instanceof ListFactoryBean
+                                    && ChildApplicationContextFactory.this.compositePropertyTypes
+                                            .containsKey(beanName)) {
+                                Map<String, CompositeDataBean> beans =
+                                        ChildApplicationContext.this.compositeProperties.get(
+                                                beanName);
+                                List<Object> beanList;
+                                if (beans != null) {
+                                    beanList = new ArrayList<Object>(beans.size());
+                                    for (CompositeDataBean wrapped : beans.values()) {
+                                        beanList.add(wrapped.getBean());
+                                    }
+                                } else {
+                                    beanList = Collections.emptyList();
+                                }
+                                ((ListFactoryBean) bean).setSourceList(beanList);
                             }
+                            return bean;
                         }
-                        else
-                        {
-                            beanList = Collections.emptyList();
-                        }
-                        ((ListFactoryBean) bean).setSourceList(beanList);
-                    }
-                    return bean;
-                }
-            });
+                    });
         }
-        
+
         @Override
-        public void publishEvent(ApplicationEvent event)
-        {
+        public void publishEvent(ApplicationEvent event) {
             Assert.notNull(event, "Event must not be null");
-            if (logger.isTraceEnabled())
-            {
+            if (logger.isTraceEnabled()) {
                 logger.trace("Publishing event in " + getDisplayName() + ": " + event);
             }
-            ((ApplicationEventMulticaster) getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)).multicastEvent(event);
+            ((ApplicationEventMulticaster) getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME))
+                    .multicastEvent(event);
 
-            if (!(getParent() == null || event instanceof ContextRefreshedEvent || event instanceof ContextClosedEvent))
-            {
+            if (!(getParent() == null
+                    || event instanceof ContextRefreshedEvent
+                    || event instanceof ContextClosedEvent)) {
                 getParent().publishEvent(event);
             }
         }
     }
 
-    /**
-     * The Class ApplicationContextState.
-     */
-    protected class ApplicationContextState implements PropertyBackedBeanState
-    {
+    /** The Class ApplicationContextState. */
+    protected class ApplicationContextState implements PropertyBackedBeanState {
         private boolean allowInitAccess = false;
-        
+
         /** The properties to be used in placeholder expansion. */
         private Properties properties;
 
         /** The composite property values. */
-        private Map<String, Map<String, CompositeDataBean>> compositeProperties = new TreeMap<String, Map<String, CompositeDataBean>>();
+        private Map<String, Map<String, CompositeDataBean>> compositeProperties =
+                new TreeMap<String, Map<String, CompositeDataBean>>();
 
         /** The child application context. */
         private ClassPathXmlApplicationContext applicationContext;
-        
+
         /** Error when we last tried to start. */
         private RuntimeException lastStartupError;
 
         /**
          * Instantiates a new application context state.
-         * 
-         * @throws IOException
-         *             Signals that an I/O exception has occurred.
+         *
+         * @throws IOException Signals that an I/O exception has occurred.
          */
-        protected ApplicationContextState(boolean allowInitAccess ) throws IOException
-        {
+        protected ApplicationContextState(boolean allowInitAccess) throws IOException {
             this.allowInitAccess = allowInitAccess;
             // Load the property defaults
             PropertiesFactoryBean factory = new PropertiesFactoryBean();
             factory.setPropertiesPersister(getPersister());
-            factory.setLocations(getParent().getResources(
-                    ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
-                            + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
+            factory.setLocations(
+                    getParent()
+                            .getResources(
+                                    ChildApplicationContextFactory.CLASSPATH_PREFIX
+                                            + getCategory()
+                                            + '/'
+                                            + getTypeName()
+                                            + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
             factory.afterPropertiesSet();
             this.properties = (Properties) factory.getObject();
         }
@@ -618,8 +595,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
          */
         @SuppressWarnings("unchecked")
-        public Set<String> getPropertyNames()
-        {
+        public Set<String> getPropertyNames() {
             Set<String> result = new TreeSet<String>(((Map) this.properties).keySet());
             result.add(ChildApplicationContextFactory.TYPE_NAME_PROPERTY);
             result.add(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY);
@@ -631,26 +607,19 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
          */
-        public String getProperty(String name)
-        {
-            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
-            {
+        public String getProperty(String name) {
+            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY)) {
                 return getTypeName();
             }
-            if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
-            {
+            if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY)) {
                 return getInstancePath().toString();
-            }
-            else if (ChildApplicationContextFactory.this.compositePropertyTypes.containsKey(name))
-            {
+            } else if (ChildApplicationContextFactory.this.compositePropertyTypes.containsKey(
+                    name)) {
                 Map<String, CompositeDataBean> beans = this.compositeProperties.get(name);
-                if (beans != null)
-                {
+                if (beans != null) {
                     StringBuilder list = new StringBuilder(100);
-                    for (String id : beans.keySet())
-                    {
-                        if (list.length() > 0)
-                        {
+                    for (String id : beans.keySet()) {
+                        if (list.length() > 0) {
                             list.append(',');
                         }
                         list.append(id);
@@ -658,12 +627,9 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                     return list.toString();
                 }
                 return "";
-            }
-            else
-            {
+            } else {
                 return this.properties.getProperty(name);
             }
-
         }
 
         /*
@@ -671,57 +637,50 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
          * java.lang.String)
          */
-        public void setProperty(String name, String value)
-        {
-            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
-            {
-                throw new IllegalStateException("Illegal write to property \""
-                        + ChildApplicationContextFactory.TYPE_NAME_PROPERTY + "\"");
+        public void setProperty(String name, String value) {
+            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY)) {
+                throw new IllegalStateException(
+                        "Illegal write to property \""
+                                + ChildApplicationContextFactory.TYPE_NAME_PROPERTY
+                                + "\"");
             }
-            if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
-            {
-                throw new IllegalStateException("Illegal write to property \""
-                        + ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY + "\"");
+            if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY)) {
+                throw new IllegalStateException(
+                        "Illegal write to property \""
+                                + ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY
+                                + "\"");
             }
             this.lastStartupError = null;
             Class<?> type = ChildApplicationContextFactory.this.compositePropertyTypes.get(name);
-            if (type != null)
-            {
+            if (type != null) {
                 updateCompositeProperty(name, value, type);
-            }
-            else
-            {
+            } else {
                 this.properties.setProperty(name, value);
             }
         }
 
         /**
-         * Updates a composite property with a new list of instance names. Properties of those instances that existed
-         * previously will be preserved. Instances that no longer exist will be destroyed. New instances will be brought
-         * into life with default values, as described in the class description.
-         * 
-         * @param name
-         *            the composite property name
-         * @param value
-         *            a list of bean instance IDs
-         * @param type
-         *            the bean class
+         * Updates a composite property with a new list of instance names. Properties of those
+         * instances that existed previously will be preserved. Instances that no longer exist will
+         * be destroyed. New instances will be brought into life with default values, as described
+         * in the class description.
+         *
+         * @param name the composite property name
+         * @param value a list of bean instance IDs
+         * @param type the bean class
          */
-        private void updateCompositeProperty(String name, String value, Class<?> type)
-        {
+        private void updateCompositeProperty(String name, String value, Class<?> type) {
             // Retrieve the map of existing values of this property
             Map<String, CompositeDataBean> propertyValues = this.compositeProperties.get(name);
-            if (propertyValues == null)
-            {
+            if (propertyValues == null) {
                 propertyValues = Collections.emptyMap();
             }
 
-            try
-            {
-                Map<String, CompositeDataBean> newPropertyValues = new LinkedHashMap<String, CompositeDataBean>(11);
+            try {
+                Map<String, CompositeDataBean> newPropertyValues =
+                        new LinkedHashMap<String, CompositeDataBean>(11);
                 StringTokenizer tkn = new StringTokenizer(value, ", \t\n\r\f");
-                while (tkn.hasMoreTokens())
-                {
+                while (tkn.hasMoreTokens()) {
                     String id = tkn.nextToken();
 
                     // Generate a unique ID within the category
@@ -733,10 +692,16 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                     // Look out for new or updated children
                     CompositeDataBean child = propertyValues.get(id);
 
-                    if (child == null)
-                    {
-                        child = new CompositeDataBean(getParent(), ChildApplicationContextFactory.this, getRegistry(),
-                                getPropertyDefaults(), getCategory(), type, childPath);
+                    if (child == null) {
+                        child =
+                                new CompositeDataBean(
+                                        getParent(),
+                                        ChildApplicationContextFactory.this,
+                                        getRegistry(),
+                                        getPropertyDefaults(),
+                                        getCategory(),
+                                        type,
+                                        childPath);
                     }
                     newPropertyValues.put(id, child);
                 }
@@ -744,47 +709,36 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                 // Destroy any children that have been removed
                 Set<String> idsToRemove = new TreeSet<String>(propertyValues.keySet());
                 idsToRemove.removeAll(newPropertyValues.keySet());
-                for (String id : idsToRemove)
-                {
+                for (String id : idsToRemove) {
                     CompositeDataBean child = propertyValues.get(id);
                     child.lock.writeLock().lock();
-                    try
-                    {
+                    try {
                         child.destroy(true);
-                    }
-                    finally
-                    {
+                    } finally {
                         child.lock.writeLock().unlock();
                     }
                 }
                 this.compositeProperties.put(name, newPropertyValues);
-            }
-            catch (RuntimeException e)
-            {
+            } catch (RuntimeException e) {
                 throw e;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
         @Override
-        public void removeProperty(String name)
-        {
-            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
-            {
-                throw new IllegalStateException("Illegal write to property \""
-                        + ChildApplicationContextFactory.TYPE_NAME_PROPERTY + "\"");
+        public void removeProperty(String name) {
+            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY)) {
+                throw new IllegalStateException(
+                        "Illegal write to property \""
+                                + ChildApplicationContextFactory.TYPE_NAME_PROPERTY
+                                + "\"");
             }
             this.lastStartupError = null;
             Class<?> type = ChildApplicationContextFactory.this.compositePropertyTypes.get(name);
-            if (type != null)
-            {
+            if (type != null) {
                 throw new UnsupportedOperationException();
-            }
-            else
-            {
+            } else {
                 this.properties.remove(name);
             }
         }
@@ -793,51 +747,57 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
          */
-        public void start()
-        {
-            // This is where we actually create and start a child application context based on the configured
+        public void start() {
+            // This is where we actually create and start a child application context based on the
+            // configured
             // properties.
-            if (this.applicationContext == null)
-            {
-                // The properties haven't been edited since we last tried to start up and fail, so rethrow the exception
+            if (this.applicationContext == null) {
+                // The properties haven't been edited since we last tried to start up and fail, so
+                // rethrow the exception
                 // without logging
-                if (this.lastStartupError != null)
-                {
+                if (this.lastStartupError != null) {
                     throw this.lastStartupError;
                 }
-                
+
                 Properties prop = new Properties();
                 prop.putAll(this.properties);
-                prop.put(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY, getInstancePath().toString());
-                
-                ChildApplicationContextFactory.logger
-                        .info("Starting '" + getCategory() + "' subsystem, ID: " + getId());
-                ClassPathXmlApplicationContext applicationContext = ChildApplicationContextFactory.this.new ChildApplicationContext(
-                         prop, this.compositeProperties);
-               
-                try
-                {
-                    if(allowInitAccess)
-                    {
+                prop.put(
+                        ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY,
+                        getInstancePath().toString());
+
+                ChildApplicationContextFactory.logger.info(
+                        "Starting '" + getCategory() + "' subsystem, ID: " + getId());
+                ClassPathXmlApplicationContext applicationContext =
+                        ChildApplicationContextFactory.this
+                        .new ChildApplicationContext(prop, this.compositeProperties);
+
+                try {
+                    if (allowInitAccess) {
                         this.applicationContext = applicationContext;
                     }
                     applicationContext.refresh();
                     this.applicationContext = applicationContext;
-                    ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "
-                            + getId() + " complete");
-                    
-                    if(applicationContext.containsBean("monitor"))
-                    {   
-                    	logger.debug("got a monitor object");
-                        Object m =  applicationContext.getBean("monitor");
-                	    monitor = m;
+                    ChildApplicationContextFactory.logger.info(
+                            "Startup of '"
+                                    + getCategory()
+                                    + "' subsystem, ID: "
+                                    + getId()
+                                    + " complete");
+
+                    if (applicationContext.containsBean("monitor")) {
+                        logger.debug("got a monitor object");
+                        Object m = applicationContext.getBean("monitor");
+                        monitor = m;
                     }
-                }
-                catch (RuntimeException e)
-                {
+                } catch (RuntimeException e) {
                     // Log startup errors and remember for next time
-                    ChildApplicationContextFactory.logger.warn("Startup of '" + getCategory() + "' subsystem, ID: "
-                            + getId() + " failed", e);
+                    ChildApplicationContextFactory.logger.warn(
+                            "Startup of '"
+                                    + getCategory()
+                                    + "' subsystem, ID: "
+                                    + getId()
+                                    + " failed",
+                            e);
                     this.lastStartupError = e;
                     throw e;
                 }
@@ -848,94 +808,78 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
          */
-        public void stop()
-        {
-            if (this.applicationContext != null)
-            {
-                ChildApplicationContextFactory.logger
-                        .info("Stopping '" + getCategory() + "' subsystem, ID: " + getId());
-                try
-                {
+        public void stop() {
+            if (this.applicationContext != null) {
+                ChildApplicationContextFactory.logger.info(
+                        "Stopping '" + getCategory() + "' subsystem, ID: " + getId());
+                try {
                     this.applicationContext.close();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     ChildApplicationContextFactory.logger.error(e);
                     // Continue anyway. Perhaps it didn't start properly
                 }
                 this.applicationContext = null;
-                ChildApplicationContextFactory.logger.info("Stopped '" + getCategory() + "' subsystem, ID: " + getId());
+                ChildApplicationContextFactory.logger.info(
+                        "Stopped '" + getCategory() + "' subsystem, ID: " + getId());
             }
         }
 
         /**
          * Releases any resources held by this state.
-         * 
-         * @param permanent
-         *            is the state being destroyed forever, i.e. should persisted values be removed? On server shutdown,
-         *            this value would be <code>false</code>, whereas on the removal of a dynamically created instance,
-         *            this value would be <code>true</code>.
+         *
+         * @param permanent is the state being destroyed forever, i.e. should persisted values be
+         *     removed? On server shutdown, this value would be <code>false</code>, whereas on the
+         *     removal of a dynamically created instance, this value would be <code>true</code>.
          */
-        public void destroy(boolean permanent)
-        {
+        public void destroy(boolean permanent) {
             // Cascade the destroy / shutdown
-            for (Map<String, CompositeDataBean> beans : this.compositeProperties.values())
-            {
-                for (CompositeDataBean bean : beans.values())
-                {
+            for (Map<String, CompositeDataBean> beans : this.compositeProperties.values()) {
+                for (CompositeDataBean bean : beans.values()) {
                     bean.lock.writeLock().lock();
-                    try
-                    {
+                    try {
                         bean.destroy(permanent);
-                    }
-                    finally
-                    {
+                    } finally {
                         bean.lock.writeLock().unlock();
                     }
                 }
             }
         }
-        
+
         /**
-         * Gets the application context.   Will not start a subsystem.
-         * 
+         * Gets the application context. Will not start a subsystem.
+         *
          * @return the application context or null
          */
-        public ApplicationContext getReadOnlyApplicationContext()
-        {
+        public ApplicationContext getReadOnlyApplicationContext() {
             return this.applicationContext;
         }
 
         /**
          * Gets the application context.
-         * 
+         *
          * @return the application context
          */
-        public ApplicationContext getApplicationContext()
-        {
+        public ApplicationContext getApplicationContext() {
             return getApplicationContext(true);
         }
 
         /**
          * Gets the application context.
-         * 
+         *
          * @param start indicates whether state should be started
-         * 
-         * @return the application context or <code>null</code> if state was not already started and start == false
+         * @return the application context or <code>null</code> if state was not already started and
+         *     start == false
          */
-        public ApplicationContext getApplicationContext(boolean start)
-        {
-            if (start)
-            {
+        public ApplicationContext getApplicationContext(boolean start) {
+            if (start) {
                 start();
             }
             return this.applicationContext;
         }
     }
-    
+
     @Override
-    public Object getMonitorObject()
-    {
-    	return monitor;
+    public Object getMonitorObject() {
+        return monitor;
     }
 }

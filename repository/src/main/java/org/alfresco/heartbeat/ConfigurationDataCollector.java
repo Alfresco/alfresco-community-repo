@@ -25,13 +25,6 @@
  */
 package org.alfresco.heartbeat;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -55,107 +48,121 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 /**
  * A collector of data related to repository configuration data for HeartBeat.
- * <ul>
- *  <li>Collector ID: <b>acs.repository.configuration</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>smartFoldersEnabled:</b> Boolean - Smart folder is registered or not. {@link SpringExtensionBundle#isEnabled()}</li>
- *          <li><b>serverReadOnly:</b> Boolean - Repository server read only mode. {@link RepoUsage#isReadOnly()}</li>
- *          <li><b>serverMode:</b> String - The server mode. {@link ServerModeProvider#getServerMode()}</li>
- *          <li><b>ftpEnabled:</b> Boolean - FTP enabled state as reported by the <code>ftp.enabled</code> property
- *          of the fileServers subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>webDAVEnabled:</b> Boolean - WebDAV enabled state. {@link WebDavService#getEnabled()}</li>
- *          <li><b>thumbnailsEnabled:</b> Boolean - Thumbnails enabled state. {@link ThumbnailService#getThumbnailsEnabled()}</li>
- *          <li><b>activitiesFeedEnabled:</b> Boolean - Activities feed enabled state as reported by the <code>activities.feed.notifier.enabled</code> property
- *          of the ActivitiesFeed subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>activitiEngineEnabled:</b> Boolean - Activiti engine enabled state for engine id:
- *          {@link ActivitiConstants#ENGINE_ID} as reported by {@link WorkflowAdminService#isEngineEnabled(String)}</li>
- *          <li><b>inboundServerEnabled:</b> Boolean - Inbound email server enabled state.
- *          The state is calculated as logical AND of the properties <code>email.server.enabled</code> AND <code>email.inbound.enabled</code>
- *          as reported by the InboundSMTP subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>imapEnabled:</b> Boolean - Imap enabled state as reported by the <code>imap.server.enabled</code> property
- *          of the imap subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *          <li><b>replication:</b> Replication configuration.
- *              <ul>
- *                  <li>enabled: Boolean - Replication enabled state as reported by the <code>replication.enabled</code> property
- *          of the Replication subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *                  <li>readOnly: Boolean - Replication transfer readonly as reported by the <code>replication.transfer.readonly</code> property
- *          of the Replication subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
- *              </ul>
- *          </li>
- *          <li><b>db:</b> Database configuration
- *              <ul>
- *                  <li>maxConnections: int - The maximum number of active connections. {@link BasicDataSource#getMaxActive()}</li>
- *              </ul>
- *          </li>
- *          <li><b>authentication</b>: Authentication configuration.
- *              <ul>
- *                  <li><b>chain:</b> String - The authentication chain as reported by <code>chain</code> property
- *                  {@link DefaultChildApplicationContextManager#getProperty(String)}
- *                  </li>
- *              </ul>
- *          </li>
- *          <li><b>module:</b> Module configuration.
- *              <ul>
- *                <li><b>installed:</b> Information about the installed modules {@link ModuleService#getAllModules()}
- *                    <ul>
- *                        <li><b>count</b> int - The number of installed modules.</li>
- *                        <li><b>modules:</b> - List of installed modules.
- *                            <ul>
- *                                <li> <b>{@link ModuleDetails#getId()}</b>
- *                                    <ul>
- *                                        <li><b>version</b> - module version {@link ModuleDetails#getModuleVersionNumber()}</li>
- *                                    </ul>
- *                                </li>
- *                                ...
- *                            </ul>
- *                        </li>
- *                    </ul>
- *                </li>
  *
- *                <li><b>missing:</b> Information about the missing modules, omitted if no missing modules, {@link ModuleService#getMissingModules()}
- *                    <ul>
- *                        <li><b>modules:</b> - List of missing modules.
- *                            <ul>
- *                                <li> <b>{@link ModuleDetails#getId()}</b>
- *                                    <ul>
- *                                        <li><b>version</b> String - module version {@link ModuleDetails#getModuleVersionNumber()}</li>
- *                                    </ul>
- *                                </li>
- *                                ...
- *                            </ul>
- *                        </li>
- *                    </ul>
- *                </li>
- *              </ul>
- *          </li>
- *          <li><b>audit</b>: Audit applications configuration.
- *              <ul>
- *                  <li><b>enabled</b> boolean - The audit enabled state {@link AuditService#isAuditEnabled()}</li>
- *                  <li><b>apps:</b> List of audit applications. {@link AuditService#getAuditApplications()}
- *                      <ul>
- *                          <li> <b>map keys from {@link AuditService#getAuditApplications()}</b> Note that spaces are replaces with hyphens
- *                              <ul>
- *                                  <li><b>enabled</b> - Enabled state of this audit application. {@link AuditService.AuditApplication#isEnabled()}</li>
- *                              </ul>
- *                          </li>
- *                          ...
- *                      </ul>
- *                  </li>
- *              </ul>
- *          </li>
- *      </ul>
- *  </li>
+ * <ul>
+ *   <li>Collector ID: <b>acs.repository.configuration</b>
+ *   <li>Data:
+ *       <ul>
+ *         <li><b>smartFoldersEnabled:</b> Boolean - Smart folder is registered or not. {@link
+ *             SpringExtensionBundle#isEnabled()}
+ *         <li><b>serverReadOnly:</b> Boolean - Repository server read only mode. {@link
+ *             RepoUsage#isReadOnly()}
+ *         <li><b>serverMode:</b> String - The server mode. {@link
+ *             ServerModeProvider#getServerMode()}
+ *         <li><b>ftpEnabled:</b> Boolean - FTP enabled state as reported by the <code>ftp.enabled
+ *             </code> property of the fileServers subsystem {@link
+ *             ChildApplicationContextFactory#getProperty(String)}
+ *         <li><b>webDAVEnabled:</b> Boolean - WebDAV enabled state. {@link
+ *             WebDavService#getEnabled()}
+ *         <li><b>thumbnailsEnabled:</b> Boolean - Thumbnails enabled state. {@link
+ *             ThumbnailService#getThumbnailsEnabled()}
+ *         <li><b>activitiesFeedEnabled:</b> Boolean - Activities feed enabled state as reported by
+ *             the <code>activities.feed.notifier.enabled</code> property of the ActivitiesFeed
+ *             subsystem {@link ChildApplicationContextFactory#getProperty(String)}
+ *         <li><b>activitiEngineEnabled:</b> Boolean - Activiti engine enabled state for engine id:
+ *             {@link ActivitiConstants#ENGINE_ID} as reported by {@link
+ *             WorkflowAdminService#isEngineEnabled(String)}
+ *         <li><b>inboundServerEnabled:</b> Boolean - Inbound email server enabled state. The state
+ *             is calculated as logical AND of the properties <code>email.server.enabled</code> AND
+ *             <code>email.inbound.enabled</code> as reported by the InboundSMTP subsystem {@link
+ *             ChildApplicationContextFactory#getProperty(String)}
+ *         <li><b>imapEnabled:</b> Boolean - Imap enabled state as reported by the <code>
+ *             imap.server.enabled</code> property of the imap subsystem {@link
+ *             ChildApplicationContextFactory#getProperty(String)}
+ *         <li><b>replication:</b> Replication configuration.
+ *             <ul>
+ *               <li>enabled: Boolean - Replication enabled state as reported by the <code>
+ *                   replication.enabled</code> property of the Replication subsystem {@link
+ *                   ChildApplicationContextFactory#getProperty(String)}
+ *               <li>readOnly: Boolean - Replication transfer readonly as reported by the <code>
+ *                   replication.transfer.readonly</code> property of the Replication subsystem
+ *                   {@link ChildApplicationContextFactory#getProperty(String)}
+ *             </ul>
+ *         <li><b>db:</b> Database configuration
+ *             <ul>
+ *               <li>maxConnections: int - The maximum number of active connections. {@link
+ *                   BasicDataSource#getMaxActive()}
+ *             </ul>
+ *         <li><b>authentication</b>: Authentication configuration.
+ *             <ul>
+ *               <li><b>chain:</b> String - The authentication chain as reported by <code>chain
+ *                   </code> property {@link
+ *                   DefaultChildApplicationContextManager#getProperty(String)}
+ *             </ul>
+ *         <li><b>module:</b> Module configuration.
+ *             <ul>
+ *               <li><b>installed:</b> Information about the installed modules {@link
+ *                   ModuleService#getAllModules()}
+ *                   <ul>
+ *                     <li><b>count</b> int - The number of installed modules.
+ *                     <li><b>modules:</b> - List of installed modules.
+ *                         <ul>
+ *                           <li><b>{@link ModuleDetails#getId()}</b>
+ *                               <ul>
+ *                                 <li><b>version</b> - module version {@link
+ *                                     ModuleDetails#getModuleVersionNumber()}
+ *                               </ul>
+ *                               ...
+ *                         </ul>
+ *                   </ul>
+ *               <li><b>missing:</b> Information about the missing modules, omitted if no missing
+ *                   modules, {@link ModuleService#getMissingModules()}
+ *                   <ul>
+ *                     <li><b>modules:</b> - List of missing modules.
+ *                         <ul>
+ *                           <li><b>{@link ModuleDetails#getId()}</b>
+ *                               <ul>
+ *                                 <li><b>version</b> String - module version {@link
+ *                                     ModuleDetails#getModuleVersionNumber()}
+ *                               </ul>
+ *                               ...
+ *                         </ul>
+ *                   </ul>
+ *             </ul>
+ *         <li><b>audit</b>: Audit applications configuration.
+ *             <ul>
+ *               <li><b>enabled</b> boolean - The audit enabled state {@link
+ *                   AuditService#isAuditEnabled()}
+ *               <li><b>apps:</b> List of audit applications. {@link
+ *                   AuditService#getAuditApplications()}
+ *                   <ul>
+ *                     <li><b>map keys from {@link AuditService#getAuditApplications()}</b> Note
+ *                         that spaces are replaces with hyphens
+ *                         <ul>
+ *                           <li><b>enabled</b> - Enabled state of this audit application. {@link
+ *                               AuditService.AuditApplication#isEnabled()}
+ *                         </ul>
+ *                         ...
+ *                   </ul>
+ *             </ul>
+ *       </ul>
  * </ul>
-
+ *
  * @author mpopa
  */
-public class ConfigurationDataCollector extends HBBaseDataCollector implements InitializingBean
-{
+public class ConfigurationDataCollector extends HBBaseDataCollector implements InitializingBean {
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
@@ -179,101 +186,85 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
     private DefaultChildApplicationContextManager authenticationSubsystem;
     private ServerModeProvider serverModeProvider;
 
-    public ConfigurationDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                      HeartBeatJobScheduler hbJobScheduler)
-    {
+    public ConfigurationDataCollector(
+            String collectorId,
+            String collectorVersion,
+            String cronExpression,
+            HeartBeatJobScheduler hbJobScheduler) {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
-    public void setReplicationSubsystem(ChildApplicationContextFactory replicationSubsystem)
-    {
+    public void setReplicationSubsystem(ChildApplicationContextFactory replicationSubsystem) {
         this.replicationSubsystem = replicationSubsystem;
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setSmartFoldersBundle(SpringExtensionBundle smartFoldersBundle)
-    {
+    public void setSmartFoldersBundle(SpringExtensionBundle smartFoldersBundle) {
         this.smartFoldersBundle = smartFoldersBundle;
     }
 
-    public void setAuthenticationSubsystem(DefaultChildApplicationContextManager authenticationSubsystem)
-    {
+    public void setAuthenticationSubsystem(
+            DefaultChildApplicationContextManager authenticationSubsystem) {
         this.authenticationSubsystem = authenticationSubsystem;
     }
 
-    public void setFileServersSubsystem(ChildApplicationContextFactory fileServersSubsystem)
-    {
+    public void setFileServersSubsystem(ChildApplicationContextFactory fileServersSubsystem) {
         this.fileServersSubsystem = fileServersSubsystem;
     }
 
-    public void setActivitiesFeedSubsystem(ChildApplicationContextFactory activitiesFeedSubsystem)
-    {
+    public void setActivitiesFeedSubsystem(ChildApplicationContextFactory activitiesFeedSubsystem) {
         this.activitiesFeedSubsystem = activitiesFeedSubsystem;
     }
 
-    public void setInboundSMTPSubsystem(ChildApplicationContextFactory inboundSMTPSubsystem)
-    {
+    public void setInboundSMTPSubsystem(ChildApplicationContextFactory inboundSMTPSubsystem) {
         this.inboundSMTPSubsystem = inboundSMTPSubsystem;
     }
 
-    public void setImapSubsystem(ChildApplicationContextFactory imapSubsystem)
-    {
+    public void setImapSubsystem(ChildApplicationContextFactory imapSubsystem) {
         this.imapSubsystem = imapSubsystem;
     }
 
-
-    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
-    {
+    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService) {
         this.workflowAdminService = workflowAdminService;
     }
 
-    public void setWebdavService(WebDavService webdavService)
-    {
+    public void setWebdavService(WebDavService webdavService) {
         this.webdavService = webdavService;
     }
 
-    public void setThumbnailService(ThumbnailService thumbnailService)
-    {
+    public void setThumbnailService(ThumbnailService thumbnailService) {
         this.thumbnailService = thumbnailService;
     }
 
-    public void setServerModeProvider(ServerModeProvider serverModeProvider)
-    {
+    public void setServerModeProvider(ServerModeProvider serverModeProvider) {
         this.serverModeProvider = serverModeProvider;
     }
 
-    public void setDataSource(DataSource dataSource)
-    {
+    public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent)
-    {
+    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent) {
         this.repoUsageComponent = repoUsageComponent;
     }
 
-    public void setModuleService(ModuleService moduleService)
-    {
+    public void setModuleService(ModuleService moduleService) {
         this.moduleService = moduleService;
     }
 
-    public void setAuditService(AuditService auditService)
-    {
+    public void setAuditService(AuditService auditService) {
         this.auditService = auditService;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
         PropertyCheck.mandatory(this, "smartFoldersBundle", smartFoldersBundle);
         PropertyCheck.mandatory(this, "dataSource", dataSource);
@@ -294,25 +285,32 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
     }
 
     @Override
-    public List<HBData> collectData()
-    {
+    public List<HBData> collectData() {
         // Collect repository configuration data
         logger.debug("Preparing repository configuration data...");
         Map<String, Object> configurationValues = new HashMap<>();
         configurationValues.put("smartFoldersEnabled", smartFoldersBundle.isEnabled());
-        boolean readOnly = transactionService.getRetryingTransactionHelper().doInTransaction(
-                () -> repoUsageComponent.getUsage().isReadOnly(), true);
+        boolean readOnly =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(() -> repoUsageComponent.getUsage().isReadOnly(), true);
         configurationValues.put("serverReadOnly", readOnly);
         configurationValues.put("serverMode", serverModeProvider.getServerMode().toString());
         boolean ftpEnabled = Boolean.valueOf(fileServersSubsystem.getProperty("ftp.enabled"));
         configurationValues.put("ftpEnabled", ftpEnabled);
         configurationValues.put("webDAVEnabled", webdavService.getEnabled());
         configurationValues.put("thumbnailsEnabled", thumbnailService.getThumbnailsEnabled());
-        boolean activitiesFeedEnabled = Boolean.valueOf(activitiesFeedSubsystem.getProperty("activities.feed.notifier.enabled"));
+        boolean activitiesFeedEnabled =
+                Boolean.valueOf(
+                        activitiesFeedSubsystem.getProperty("activities.feed.notifier.enabled"));
         configurationValues.put("activitiesFeedEnabled", activitiesFeedEnabled);
-        configurationValues.put("activitiEngineEnabled", workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID));
-        boolean inboundEnabled = Boolean.valueOf(inboundSMTPSubsystem.getProperty("email.inbound.enabled"));
-        boolean emailServerEnabled = Boolean.valueOf(inboundSMTPSubsystem.getProperty("email.server.enabled"));
+        configurationValues.put(
+                "activitiEngineEnabled",
+                workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID));
+        boolean inboundEnabled =
+                Boolean.valueOf(inboundSMTPSubsystem.getProperty("email.inbound.enabled"));
+        boolean emailServerEnabled =
+                Boolean.valueOf(inboundSMTPSubsystem.getProperty("email.server.enabled"));
         boolean inboundServerEnabled = inboundEnabled && emailServerEnabled;
         configurationValues.put("inboundServerEnabled", inboundServerEnabled);
         boolean imapEnabled = Boolean.valueOf(imapSubsystem.getProperty("imap.server.enabled"));
@@ -320,11 +318,11 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
 
         Map<String, Object> replicationInfo = new HashMap<>();
         replicationInfo.put("enabled", replicationSubsystem.getProperty("replication.enabled"));
-        replicationInfo.put("readOnly", replicationSubsystem.getProperty("replication.transfer.readonly"));
+        replicationInfo.put(
+                "readOnly", replicationSubsystem.getProperty("replication.transfer.readonly"));
         configurationValues.put("replication", replicationInfo);
 
-        if (dataSource instanceof BasicDataSource)
-        {
+        if (dataSource instanceof BasicDataSource) {
             Map<String, Object> db = new HashMap<>();
             db.put("maxConnections", ((BasicDataSource) dataSource).getMaxActive());
             configurationValues.put("db", db);
@@ -336,14 +334,12 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
         Map<String, Object> installedModules = new HashMap<>();
         installedModules.put("count", rawInstalledModules.size());
         Map<String, Object> installedModulesList = new HashMap<>();
-        for (ModuleDetails md : rawInstalledModules)
-        {
+        for (ModuleDetails md : rawInstalledModules) {
             Map<String, Object> moduleInfo = new HashMap<>();
             moduleInfo.put("version", md.getModuleVersionNumber().toString());
             installedModulesList.put(md.getId(), moduleInfo);
         }
-        if (!installedModulesList.isEmpty())
-        {
+        if (!installedModulesList.isEmpty()) {
             installedModules.put("modules", installedModulesList);
         }
         modules.put("installed", installedModules);
@@ -352,14 +348,12 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
         List<ModuleDetails> rawMissingModules = getMissingModules();
         Map<String, Object> missingModules = new HashMap<>();
         Map<String, Object> missingModulesList = new HashMap<>();
-        for (ModuleDetails md : rawMissingModules)
-        {
+        for (ModuleDetails md : rawMissingModules) {
             Map<String, Object> moduleInfo = new HashMap<>();
             moduleInfo.put("version", md.getModuleVersionNumber().toString());
             missingModulesList.put(md.getId(), moduleInfo);
         }
-        if (!missingModulesList.isEmpty())
-        {
+        if (!missingModulesList.isEmpty()) {
             missingModules.put("modules", missingModulesList);
             modules.put("missing", missingModules);
         }
@@ -367,22 +361,22 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
 
         // Audit information
         Map<String, Object> audit = new HashMap<>();
-        audit.put("enabled",auditService.isAuditEnabled());
+        audit.put("enabled", auditService.isAuditEnabled());
         Map<String, Object> auditAppList = new HashMap<>();
-        Map<String, AuditService.AuditApplication> rawAppList = transactionService.getRetryingTransactionHelper()
-                .doInTransaction( () -> auditService.getAuditApplications(), true);
+        Map<String, AuditService.AuditApplication> rawAppList =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(() -> auditService.getAuditApplications(), true);
 
-        for (Map.Entry<String, AuditService.AuditApplication> entry : rawAppList.entrySet())
-        {
+        for (Map.Entry<String, AuditService.AuditApplication> entry : rawAppList.entrySet()) {
             AuditService.AuditApplication app = entry.getValue();
             Map<String, Object> appInfo = new HashMap<>();
             appInfo.put("enabled", app.isEnabled());
             // replace spaces with hyphens
-            String appName = entry.getKey().replace(" ","-");
+            String appName = entry.getKey().replace(" ", "-");
             auditAppList.put(appName, appInfo);
         }
-        if (!auditAppList.isEmpty())
-        {
+        if (!auditAppList.isEmpty()) {
             audit.put("apps", auditAppList);
         }
         configurationValues.put("audit", audit);
@@ -391,29 +385,28 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
         String chainString = authenticationSubsystem.getProperty("chain");
         configurationValues.put("authenticationChain", chainString);
 
-        HBData configurationData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                configurationValues);
+        HBData configurationData =
+                new HBData(
+                        this.currentRepoDescriptorDAO.getDescriptor().getId(),
+                        this.getCollectorId(),
+                        this.getCollectorVersion(),
+                        new Date(),
+                        configurationValues);
         return Arrays.asList(configurationData);
     }
 
-    private List<ModuleDetails> getMissingModules()
-    {
-        AuthenticationUtil.RunAsWork<List<ModuleDetails>> missingModulesWork = () ->
-        {
-            try
-            {
-                return moduleService.getMissingModules();
-            }
-            catch (Throwable e)
-            {
-                logger.warn("Heartbeat failed to collect information about missing modules: " + e);
-                return Collections.emptyList();
-            }
-        };
+    private List<ModuleDetails> getMissingModules() {
+        AuthenticationUtil.RunAsWork<List<ModuleDetails>> missingModulesWork =
+                () -> {
+                    try {
+                        return moduleService.getMissingModules();
+                    } catch (Throwable e) {
+                        logger.warn(
+                                "Heartbeat failed to collect information about missing modules: "
+                                        + e);
+                        return Collections.emptyList();
+                    }
+                };
         return AuthenticationUtil.runAs(missingModulesWork, AuthenticationUtil.getSystemUserName());
     }
 }

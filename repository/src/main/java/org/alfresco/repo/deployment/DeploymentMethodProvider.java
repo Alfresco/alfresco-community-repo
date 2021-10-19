@@ -25,13 +25,11 @@
  */
 package org.alfresco.repo.deployment;
 
-public interface DeploymentMethodProvider
-{
+public interface DeploymentMethodProvider {
 
     /**
-     *
-     * Get the deployment method used to deploy this Alfresco instance.
-     * The value is configured via alfresco-global.properties or set via JAVA_OPTS
+     * Get the deployment method used to deploy this Alfresco instance. The value is configured via
+     * alfresco-global.properties or set via JAVA_OPTS
      *
      * @return The deployment method.
      */

@@ -4,29 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.web.scripts.rule;
-
-import java.text.MessageFormat;
-import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.LinkRules;
@@ -53,14 +50,15 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import java.text.MessageFormat;
+import java.util.List;
+
 /**
  * Unit test to test rules Web Script API
- * 
- * @author Roy Wetherall
  *
+ * @author Roy Wetherall
  */
-public class RuleServiceTest extends BaseWebScriptTest
-{
+public class RuleServiceTest extends BaseWebScriptTest {
 
     private static final String URL_RULETYPES = "/api/ruletypes";
     private static final String URL_ACTIONDEFINITIONS = "/api/actiondefinitions";
@@ -72,7 +70,8 @@ public class RuleServiceTest extends BaseWebScriptTest
     private static final String URL_QUEUE_ACTION = "/api/actionQueue?async={0}";
 
     private static final String URL_RULES = "/api/node/{0}/{1}/{2}/ruleset/rules";
-    private static final String URL_INHERITED_RULES = "/api/node/{0}/{1}/{2}/ruleset/inheritedrules";
+    private static final String URL_INHERITED_RULES =
+            "/api/node/{0}/{1}/{2}/ruleset/inheritedrules";
     private static final String URL_RULESET = "/api/node/{0}/{1}/{2}/ruleset";
     private static final String URL_RULE = "/api/node/{0}/{1}/{2}/ruleset/rules/{3}";
 
@@ -92,15 +91,21 @@ public class RuleServiceTest extends BaseWebScriptTest
     private NodeRef testWorkNodeRef;
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
-        this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
+        this.transactionService =
+                (TransactionService)
+                        getServer().getApplicationContext().getBean("TransactionService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
-        this.fileFolderService = (FileFolderService) getServer().getApplicationContext().getBean("FileFolderService");
+        this.fileFolderService =
+                (FileFolderService)
+                        getServer().getApplicationContext().getBean("FileFolderService");
         this.ruleService = (RuleService) getServer().getApplicationContext().getBean("RuleService");
-        this.actionService = (ActionService) getServer().getApplicationContext().getBean("ActionService");
-        this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean("authenticationComponent");
+        this.actionService =
+                (ActionService) getServer().getApplicationContext().getBean("ActionService");
+        this.authenticationComponent =
+                (AuthenticationComponent)
+                        getServer().getApplicationContext().getBean("authenticationComponent");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -111,100 +116,119 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertNotNull(testNodeRef2);
     }
 
-    private void createTestFolders()
-    {
+    private void createTestFolders() {
         StoreRef testStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, TEST_STORE_IDENTIFIER);
 
-        if (!nodeService.exists(testStore))
-        {
+        if (!nodeService.exists(testStore)) {
             testStore = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, TEST_STORE_IDENTIFIER);
         }
 
         NodeRef rootNodeRef = nodeService.getRootNode(testStore);
 
-        testWorkNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_FOLDER).getChildRef();
+        testWorkNodeRef =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}testnode"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        testNodeRef = fileFolderService.create(testWorkNodeRef, TEST_FOLDER, ContentModel.TYPE_FOLDER).getNodeRef();
-        testNodeRef2 = fileFolderService.create(testWorkNodeRef, TEST_FOLDER_2, ContentModel.TYPE_FOLDER).getNodeRef();
+        testNodeRef =
+                fileFolderService
+                        .create(testWorkNodeRef, TEST_FOLDER, ContentModel.TYPE_FOLDER)
+                        .getNodeRef();
+        testNodeRef2 =
+                fileFolderService
+                        .create(testWorkNodeRef, TEST_FOLDER_2, ContentModel.TYPE_FOLDER)
+                        .getNodeRef();
     }
 
-    private String formatRulesUrl(NodeRef nodeRef, boolean inherited)
-    {
-        if (inherited)
-        {
-            return MessageFormat.format(URL_INHERITED_RULES, nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId());
+    private String formatRulesUrl(NodeRef nodeRef, boolean inherited) {
+        if (inherited) {
+            return MessageFormat.format(
+                    URL_INHERITED_RULES,
+                    nodeRef.getStoreRef().getProtocol(),
+                    nodeRef.getStoreRef().getIdentifier(),
+                    nodeRef.getId());
+        } else {
+            return MessageFormat.format(
+                    URL_RULES,
+                    nodeRef.getStoreRef().getProtocol(),
+                    nodeRef.getStoreRef().getIdentifier(),
+                    nodeRef.getId());
         }
-        else
-        {
-            return MessageFormat.format(URL_RULES, nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId());
-        }
     }
 
-    private String formatRulesetUrl(NodeRef nodeRef)
-    {
-        return MessageFormat.format(URL_RULESET, nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId());
+    private String formatRulesetUrl(NodeRef nodeRef) {
+        return MessageFormat.format(
+                URL_RULESET,
+                nodeRef.getStoreRef().getProtocol(),
+                nodeRef.getStoreRef().getIdentifier(),
+                nodeRef.getId());
     }
 
-    private String formateRuleUrl(NodeRef nodeRef, String ruleId)
-    {
-        return MessageFormat.format(URL_RULE, nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId(), ruleId);
+    private String formateRuleUrl(NodeRef nodeRef, String ruleId) {
+        return MessageFormat.format(
+                URL_RULE,
+                nodeRef.getStoreRef().getProtocol(),
+                nodeRef.getStoreRef().getIdentifier(),
+                nodeRef.getId(),
+                ruleId);
     }
 
-    private String formateActionConstraintUrl(String name)
-    {
+    private String formateActionConstraintUrl(String name) {
         return MessageFormat.format(URL_ACTIONCONSTRAINT, name);
     }
 
-    private String formateQueueActionUrl(boolean async)
-    {
+    private String formateQueueActionUrl(boolean async) {
         return MessageFormat.format(URL_QUEUE_ACTION, async);
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         super.tearDown();
-        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                deleteNodeIfExists(testNodeRef2);
-                deleteNodeIfExists(testNodeRef);
-                deleteNodeIfExists(testWorkNodeRef);
-                return null;
-            }
-            
-            private void deleteNodeIfExists(NodeRef nodeRef)
-            {
-                if (nodeService.exists(nodeRef))
-                {
-                    nodeService.deleteNode(nodeRef);
-                }
-            }
-        };
+        RetryingTransactionCallback<Void> deleteCallback =
+                new RetryingTransactionCallback<Void>() {
+                    @Override
+                    public Void execute() throws Throwable {
+                        deleteNodeIfExists(testNodeRef2);
+                        deleteNodeIfExists(testNodeRef);
+                        deleteNodeIfExists(testWorkNodeRef);
+                        return null;
+                    }
+
+                    private void deleteNodeIfExists(NodeRef nodeRef) {
+                        if (nodeService.exists(nodeRef)) {
+                            nodeService.deleteNode(nodeRef);
+                        }
+                    }
+                };
         this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
         this.authenticationComponent.clearCurrentSecurityContext();
     }
 
-    private JSONObject createRule(NodeRef ruleOwnerNodeRef) throws Exception
-    {
+    private JSONObject createRule(NodeRef ruleOwnerNodeRef) throws Exception {
         return createRule(ruleOwnerNodeRef, "test_rule");
     }
-    
-    private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title) throws Exception
-    {
+
+    private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title) throws Exception {
         JSONObject jsonRule = buildTestRule(title);
 
-        Response response = sendRequest(new PostRequest(formatRulesUrl(ruleOwnerNodeRef, false), jsonRule.toString(), "application/json"), 200);
+        Response response =
+                sendRequest(
+                        new PostRequest(
+                                formatRulesUrl(ruleOwnerNodeRef, false),
+                                jsonRule.toString(),
+                                "application/json"),
+                        200);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;
     }
 
-    private JSONArray getNodeRules(NodeRef nodeRef, boolean inherited) throws Exception
-    {
+    private JSONArray getNodeRules(NodeRef nodeRef, boolean inherited) throws Exception {
         Response response = sendRequest(new GetRequest(formatRulesUrl(nodeRef, inherited)), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -217,8 +241,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         return data;
     }
 
-    private void checkRuleComplete(JSONObject result) throws Exception
-    {
+    private void checkRuleComplete(JSONObject result) throws Exception {
         assertNotNull("Response is null.", result);
 
         // if id present in response -> rule was created
@@ -246,7 +269,8 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(jsonAction.has("id"));
 
         assertEquals(jsonAction.getString("actionDefinitionName"), "composite-action");
-        assertEquals(jsonAction.getString("description"), "this is description for composite-action");
+        assertEquals(
+                jsonAction.getString("description"), "this is description for composite-action");
         assertEquals(jsonAction.getString("title"), "test_title");
 
         assertTrue(jsonAction.getBoolean("executeAsync"));
@@ -257,8 +281,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(jsonAction.has("url"));
     }
 
-    private void checkRuleSummary(JSONObject result) throws Exception
-    {
+    private void checkRuleSummary(JSONObject result) throws Exception {
         assertNotNull("Response is null.", result);
 
         assertTrue(result.has("data"));
@@ -278,53 +301,67 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         assertFalse(data.getBoolean("disabled"));
         assertTrue(data.has("url"));
-
     }
 
-    private void checkUpdatedRule(JSONObject before, JSONObject after) throws JSONException
-    {
-        // check saving of basic feilds 
-        assertEquals("It seams that 'id' is not correct", before.getString("id"), after.getString("id"));
+    private void checkUpdatedRule(JSONObject before, JSONObject after) throws JSONException {
+        // check saving of basic feilds
+        assertEquals(
+                "It seams that 'id' is not correct", before.getString("id"), after.getString("id"));
 
-        assertEquals("It seams that 'title' was not saved", before.getString("title"), after.getString("title"));
+        assertEquals(
+                "It seams that 'title' was not saved",
+                before.getString("title"),
+                after.getString("title"));
 
-        assertEquals("It seams that 'description' was not saved", before.getString("description"), after.getString("description"));
+        assertEquals(
+                "It seams that 'description' was not saved",
+                before.getString("description"),
+                after.getString("description"));
 
-        assertEquals("It seams that 'ruleType' was not saved", before.getJSONArray("ruleType").length(), after.getJSONArray("ruleType").length());
+        assertEquals(
+                "It seams that 'ruleType' was not saved",
+                before.getJSONArray("ruleType").length(),
+                after.getJSONArray("ruleType").length());
 
         assertEquals(before.getBoolean("applyToChildren"), after.getBoolean("applyToChildren"));
-        assertEquals(before.getBoolean("executeAsynchronously"), after.getBoolean("executeAsynchronously"));
+        assertEquals(
+                before.getBoolean("executeAsynchronously"),
+                after.getBoolean("executeAsynchronously"));
         assertEquals(before.getBoolean("disabled"), after.getBoolean("disabled"));
 
-        // check saving of collections        
+        // check saving of collections
         JSONObject afterAction = after.getJSONObject("action");
 
         // we didn't change actions collection
         assertEquals(1, afterAction.getJSONArray("actions").length());
 
-        // conditions should be empty (should not present in response), 
+        // conditions should be empty (should not present in response),
         assertFalse(afterAction.has("conditions"));
 
         assertEquals(before.has("url"), after.has("url"));
     }
 
-    private void checkRuleset(JSONObject result, int rulesCount, String[] ruleIds, int inhRulesCount, String[] parentRuleIds,
-                                boolean isLinkedFrom, boolean isLinkedTo) throws Exception
-    {
+    private void checkRuleset(
+            JSONObject result,
+            int rulesCount,
+            String[] ruleIds,
+            int inhRulesCount,
+            String[] parentRuleIds,
+            boolean isLinkedFrom,
+            boolean isLinkedTo)
+            throws Exception {
         assertNotNull("Response is null.", result);
 
         assertTrue(result.has("data"));
 
         JSONObject data = result.getJSONObject("data");
 
-        if (data.has("rules"))
-        {
+        if (data.has("rules")) {
             JSONArray rulesArray = data.getJSONArray("rules");
 
             assertEquals(rulesCount, rulesArray.length());
 
-            for (int i = 0; i < rulesArray.length(); i++)
-            {
+            for (int i = 0; i < rulesArray.length(); i++) {
                 JSONObject ruleSum = rulesArray.getJSONObject(i);
                 assertTrue(ruleSum.has("id"));
                 assertEquals(ruleIds[i], ruleSum.getString("id"));
@@ -339,14 +376,12 @@ public class RuleServiceTest extends BaseWebScriptTest
             }
         }
 
-        if (data.has("inheritedRules"))
-        {
+        if (data.has("inheritedRules")) {
             JSONArray inheritedRulesArray = data.getJSONArray("inheritedRules");
 
             assertEquals(inhRulesCount, inheritedRulesArray.length());
 
-            for (int i = 0; i < inheritedRulesArray.length(); i++)
-            {
+            for (int i = 0; i < inheritedRulesArray.length(); i++) {
                 JSONObject ruleSum = inheritedRulesArray.getJSONObject(i);
                 assertTrue(ruleSum.has("id"));
                 assertEquals(parentRuleIds[i], ruleSum.getString("id"));
@@ -362,14 +397,13 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
 
         assertEquals(isLinkedTo, data.has("linkedToRuleSet"));
-        
+
         assertEquals(isLinkedFrom, data.has("linkedFromRuleSets"));
 
         assertTrue(data.has("url"));
     }
 
-    public void testGetRuleTypes() throws Exception
-    {
+    public void testGetRuleTypes() throws Exception {
         Response response = sendRequest(new GetRequest(URL_RULETYPES), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -379,8 +413,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONArray data = result.getJSONArray("data");
 
-        for (int i = 0; i < data.length(); i++)
-        {
+        for (int i = 0; i < data.length(); i++) {
             JSONObject ruleType = data.getJSONObject(i);
 
             assertTrue(ruleType.has("name"));
@@ -389,8 +422,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
 
-    public void testGetActionDefinitions() throws Exception
-    {
+    public void testGetActionDefinitions() throws Exception {
         Response response = sendRequest(new GetRequest(URL_ACTIONDEFINITIONS), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -400,8 +432,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONArray data = result.getJSONArray("data");
 
-        for (int i = 0; i < data.length(); i++)
-        {
+        for (int i = 0; i < data.length(); i++) {
             JSONObject actionDefinition = data.getJSONObject(i);
 
             assertTrue(actionDefinition.has("name"));
@@ -413,8 +444,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
 
-    public void testGetActionConditionDefinitions() throws Exception
-    {
+    public void testGetActionConditionDefinitions() throws Exception {
         Response response = sendRequest(new GetRequest(URL_ACTIONCONDITIONDEFINITIONS), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -424,8 +454,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONArray data = result.getJSONArray("data");
 
-        for (int i = 0; i < data.length(); i++)
-        {
+        for (int i = 0; i < data.length(); i++) {
             JSONObject actionConditionDefinition = data.getJSONObject(i);
 
             assertTrue(actionConditionDefinition.has("name"));
@@ -435,9 +464,8 @@ public class RuleServiceTest extends BaseWebScriptTest
             assertTrue(actionConditionDefinition.has("parameterDefinitions"));
         }
     }
-    
-    public void testGetActionConstraints() throws Exception
-    {
+
+    public void testGetActionConstraints() throws Exception {
         Response response = sendRequest(new GetRequest(URL_ACTIONCONSTRAINTS), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -447,8 +475,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONArray data = result.getJSONArray("data");
 
-        for (int i = 0; i < data.length(); i++)
-        {
+        for (int i = 0; i < data.length(); i++) {
             JSONObject actionConstraint = data.getJSONObject(i);
 
             assertTrue(actionConstraint.has("name"));
@@ -456,8 +483,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
             JSONArray values = actionConstraint.getJSONArray("values");
 
-            for (int j = 0; j < values.length(); j++)
-            {
+            for (int j = 0; j < values.length(); j++) {
                 JSONObject value = values.getJSONObject(j);
 
                 assertTrue(value.has("value"));
@@ -465,14 +491,12 @@ public class RuleServiceTest extends BaseWebScriptTest
             }
         }
     }
-    
-    public void testGetActionConstraint() throws Exception
-    {
+
+    public void testGetActionConstraint() throws Exception {
 
         List<ParameterConstraint> constraints = actionService.getParameterConstraints();
 
-        if (constraints.size() == 0)
-        {
+        if (constraints.size() == 0) {
             return;
         }
 
@@ -492,8 +516,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONArray values = data.getJSONArray("values");
 
-        for (int i = 0; i < values.length(); i++)
-        {
+        for (int i = 0; i < values.length(); i++) {
             JSONObject value = values.getJSONObject(i);
 
             assertTrue(value.has("value"));
@@ -501,8 +524,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
 
-    public void testQueueAction() throws Exception
-    {
+    public void testQueueAction() throws Exception {
         String url = formateQueueActionUrl(false);
 
         JSONObject copyAction = buildCopyAction(testWorkNodeRef);
@@ -510,7 +532,8 @@ public class RuleServiceTest extends BaseWebScriptTest
         copyAction.put("actionedUponNode", testNodeRef);
 
         // execute before response (should be successful)
-        Response successResponse = sendRequest(new PostRequest(url, copyAction.toString(), "application/json"), 200);
+        Response successResponse =
+                sendRequest(new PostRequest(url, copyAction.toString(), "application/json"), 200);
 
         JSONObject successResult = new JSONObject(successResponse.getContentAsString());
 
@@ -531,7 +554,9 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         // execute after response (should fail but error should not present in response)
         String asyncUrl = formateQueueActionUrl(true);
-        Response response = sendRequest(new PostRequest(asyncUrl, copyAction.toString(), "application/json"), 200);
+        Response response =
+                sendRequest(
+                        new PostRequest(asyncUrl, copyAction.toString(), "application/json"), 200);
 
         // wait while action executed
         Thread.sleep(1000);
@@ -551,8 +576,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(data.has("action"));
     }
 
-    public void testCreateRule() throws Exception
-    {
+    public void testCreateRule() throws Exception {
         JSONObject result = createRule(testNodeRef);
 
         checkRuleSummary(result);
@@ -560,11 +584,9 @@ public class RuleServiceTest extends BaseWebScriptTest
         List<Rule> rules = ruleService.getRules(testNodeRef);
 
         assertEquals(1, rules.size());
-
     }
 
-    public void testGetRulesCollection() throws Exception
-    {
+    public void testGetRulesCollection() throws Exception {
         JSONArray data = getNodeRules(testNodeRef, false);
 
         assertEquals(0, data.length());
@@ -575,8 +597,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         assertEquals(1, data.length());
 
-        for (int i = 0; i < data.length(); i++)
-        {
+        for (int i = 0; i < data.length(); i++) {
             JSONObject ruleSum = data.getJSONObject(i);
             assertTrue(ruleSum.has("id"));
             assertTrue(ruleSum.has("title"));
@@ -590,8 +611,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
 
-    public void testGetInheritedRulesCollection() throws Exception
-    {
+    public void testGetInheritedRulesCollection() throws Exception {
         JSONArray data = getNodeRules(testNodeRef, true);
 
         assertEquals(0, data.length());
@@ -602,8 +622,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         assertEquals(1, data.length());
 
-        for (int i = 0; i < data.length(); i++)
-        {
+        for (int i = 0; i < data.length(); i++) {
             JSONObject ruleSum = data.getJSONObject(i);
             assertTrue(ruleSum.has("id"));
             assertTrue(ruleSum.has("title"));
@@ -617,31 +636,31 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
 
-    public void testGetRuleset() throws Exception
-    {
+    public void testGetRuleset() throws Exception {
         JSONObject parentRule = createRule(testWorkNodeRef);
-        String[] parentRuleIds = new String[] { parentRule.getJSONObject("data").getString("id") };
+        String[] parentRuleIds = new String[] {parentRule.getJSONObject("data").getString("id")};
 
         JSONObject jsonRule = createRule(testNodeRef);
-        String[] ruleIds = new String[] { jsonRule.getJSONObject("data").getString("id") };
+        String[] ruleIds = new String[] {jsonRule.getJSONObject("data").getString("id")};
 
         Action linkRulesAction = actionService.createAction(LinkRules.NAME);
         linkRulesAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, testNodeRef);
         actionService.executeAction(linkRulesAction, testNodeRef2);
 
-        Response linkedFromResponse = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef)), 200);
+        Response linkedFromResponse =
+                sendRequest(new GetRequest(formatRulesetUrl(testNodeRef)), 200);
         JSONObject linkedFromResult = new JSONObject(linkedFromResponse.getContentAsString());
-        
+
         checkRuleset(linkedFromResult, 1, ruleIds, 1, parentRuleIds, true, false);
 
-        Response linkedToResponse = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef2)), 200);
+        Response linkedToResponse =
+                sendRequest(new GetRequest(formatRulesetUrl(testNodeRef2)), 200);
         JSONObject linkedToResult = new JSONObject(linkedToResponse.getContentAsString());
-        
+
         checkRuleset(linkedToResult, 1, ruleIds, 1, parentRuleIds, false, true);
     }
 
-    public void testGetRuleDetails() throws Exception
-    {
+    public void testGetRuleDetails() throws Exception {
         JSONObject jsonRule = createRule(testNodeRef);
 
         String ruleId = jsonRule.getJSONObject("data").getString("id");
@@ -652,13 +671,13 @@ public class RuleServiceTest extends BaseWebScriptTest
         checkRuleComplete(result);
     }
 
-    public void testUpdateRule() throws Exception
-    {
+    public void testUpdateRule() throws Exception {
         JSONObject jsonRule = createRule(testNodeRef);
 
         String ruleId = jsonRule.getJSONObject("data").getString("id");
 
-        Response getResponse = sendRequest(new GetRequest(formateRuleUrl(testNodeRef, ruleId)), 200);
+        Response getResponse =
+                sendRequest(new GetRequest(formateRuleUrl(testNodeRef, ruleId)), 200);
 
         JSONObject before = new JSONObject(getResponse.getContentAsString());
 
@@ -667,12 +686,18 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         // do some changes for action object
         JSONObject beforeAction = before.getJSONObject("action");
-        // no changes for actions list  
+        // no changes for actions list
         beforeAction.remove("actions");
         // clear conditions
         beforeAction.put("conditions", new JSONArray());
 
-        Response putResponse = sendRequest(new PutRequest(formateRuleUrl(testNodeRef, ruleId), before.toString(), "application/json"), 200);
+        Response putResponse =
+                sendRequest(
+                        new PutRequest(
+                                formateRuleUrl(testNodeRef, ruleId),
+                                before.toString(),
+                                "application/json"),
+                        200);
 
         JSONObject after = new JSONObject(putResponse.getContentAsString());
 
@@ -681,15 +706,15 @@ public class RuleServiceTest extends BaseWebScriptTest
         checkUpdatedRule(before, after);
     }
 
-    public void testDeleteRule() throws Exception
-    {
+    public void testDeleteRule() throws Exception {
         JSONObject jsonRule = createRule(testNodeRef);
 
         assertEquals(1, ruleService.getRules(testNodeRef).size());
 
         String ruleId = jsonRule.getJSONObject("data").getString("id");
 
-        Response response = sendRequest(new DeleteRequest(formateRuleUrl(testNodeRef, ruleId)), 200);
+        Response response =
+                sendRequest(new DeleteRequest(formateRuleUrl(testNodeRef, ruleId)), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
 
         assertNotNull(result);
@@ -700,30 +725,29 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         assertTrue(success);
 
-        // no more rules present 
+        // no more rules present
         assertEquals(0, ruleService.getRules(testNodeRef).size());
     }
-    
+
     @SuppressWarnings("unused")
-    public void testRuleReorder() throws Exception
-    {
+    public void testRuleReorder() throws Exception {
         assertEquals(0, ruleService.getRules(testNodeRef).size());
-        
+
         // Create 3 rules
         NodeRef rule1 = createRuleNodeRef(testNodeRef, "Rule 1");
         NodeRef rule2 = createRuleNodeRef(testNodeRef, "Rule 2");
         NodeRef rule3 = createRuleNodeRef(testNodeRef, "Rule 3");
-        
+
         List<Rule> rules = ruleService.getRules(testNodeRef);
         assertEquals(3, rules.size());
         assertEquals("Rule 1", rules.get(0).getTitle());
         assertEquals("Rule 2", rules.get(1).getTitle());
         assertEquals("Rule 3", rules.get(2).getTitle());
-        
+
         JSONObject action = new JSONObject();
         action.put("actionDefinitionName", "reorder-rules");
         action.put("actionedUponNode", testNodeRef.toString());
-        
+
         JSONObject params = new JSONObject();
         JSONArray orderArray = new JSONArray();
         orderArray.put(rules.get(2).getNodeRef().toString());
@@ -731,11 +755,12 @@ public class RuleServiceTest extends BaseWebScriptTest
         orderArray.put(rules.get(0).getNodeRef().toString());
         params.put("rules", orderArray);
         action.put("parameterValues", params);
-        
+
         String url = formateQueueActionUrl(false);
 
         // execute before response (should be successful)
-        Response successResponse = sendRequest(new PostRequest(url, action.toString(), "application/json"), 200);
+        Response successResponse =
+                sendRequest(new PostRequest(url, action.toString(), "application/json"), 200);
         JSONObject successResult = new JSONObject(successResponse.getContentAsString());
         assertNotNull(successResult);
         assertTrue(successResult.has("data"));
@@ -745,23 +770,21 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(successData.has("actionedUponNode"));
         assertFalse(successData.has("exception"));
         assertTrue(successData.has("action"));
-        
+
         rules = ruleService.getRules(testNodeRef);
         assertEquals(3, rules.size());
         assertEquals("Rule 3", rules.get(0).getTitle());
         assertEquals("Rule 2", rules.get(1).getTitle());
         assertEquals("Rule 1", rules.get(2).getTitle());
     }
-    
-    private NodeRef createRuleNodeRef(NodeRef folder, String title) throws Exception
-    {
+
+    private NodeRef createRuleNodeRef(NodeRef folder, String title) throws Exception {
         JSONObject jsonRule = createRule(folder, title);
         String id = jsonRule.getJSONObject("data").getString("id");
         return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
     }
 
-    private JSONObject buildCopyAction(NodeRef destination) throws JSONException
-    {
+    private JSONObject buildCopyAction(NodeRef destination) throws JSONException {
         JSONObject result = new JSONObject();
 
         // add actionDefinitionName
@@ -780,8 +803,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         return result;
     }
 
-    private JSONObject buildTestRule(String title) throws JSONException
-    {
+    private JSONObject buildTestRule(String title) throws JSONException {
         JSONObject result = new JSONObject();
 
         result.put("title", title);
@@ -803,23 +825,23 @@ public class RuleServiceTest extends BaseWebScriptTest
         return result;
     }
 
-    private JSONObject buildTestAction(String actionName, boolean addActions, boolean addCompensatingAction) throws JSONException
-    {
+    private JSONObject buildTestAction(
+            String actionName, boolean addActions, boolean addCompensatingAction)
+            throws JSONException {
         JSONObject result = new JSONObject();
 
         result.put("actionDefinitionName", actionName);
         result.put("description", "this is description for " + actionName);
         result.put("title", "test_title");
 
-        //JSONObject parameterValues = new JSONObject();
-        //parameterValues.put("test_name", "test_value");
+        // JSONObject parameterValues = new JSONObject();
+        // parameterValues.put("test_name", "test_value");
 
-        //result.put("parameterValues", parameterValues);
+        // result.put("parameterValues", parameterValues);
 
         result.put("executeAsync", addActions);
 
-        if (addActions)
-        {
+        if (addActions) {
             JSONArray actions = new JSONArray();
 
             actions.put(buildTestAction("counter", false, false));
@@ -833,25 +855,23 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         result.put("conditions", conditions);
 
-        if (addCompensatingAction)
-        {
+        if (addCompensatingAction) {
             result.put("compensatingAction", buildTestAction("script", false, false));
         }
 
         return result;
     }
 
-    private JSONObject buildTestCondition(String conditionName) throws JSONException
-    {
+    private JSONObject buildTestCondition(String conditionName) throws JSONException {
         JSONObject result = new JSONObject();
 
         result.put("conditionDefinitionName", conditionName);
         result.put("invertCondition", false);
 
-        //JSONObject parameterValues = new JSONObject();
-        //parameterValues.put("test_name", "test_value");
+        // JSONObject parameterValues = new JSONObject();
+        // parameterValues.put("test_name", "test_value");
 
-        //result.put("parameterValues", parameterValues);
+        // result.put("parameterValues", parameterValues);
 
         return result;
     }

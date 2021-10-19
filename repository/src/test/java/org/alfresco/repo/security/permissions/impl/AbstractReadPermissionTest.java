@@ -4,33 +4,28 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.security.permissions.impl;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
-import javax.transaction.UserTransaction;
+import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -67,12 +62,17 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-import junit.framework.TestCase;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import javax.transaction.UserTransaction;
 
 @Category(LuceneTests.class)
-public abstract class AbstractReadPermissionTest extends TestCase
-{
-    protected static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+public abstract class AbstractReadPermissionTest extends TestCase {
+    protected static ApplicationContext applicationContext =
+            ApplicationContextHelper.getApplicationContext();
 
     protected static final String ROLE_AUTHENTICATED = "ROLE_AUTHENTICATED";
 
@@ -83,7 +83,7 @@ public abstract class AbstractReadPermissionTest extends TestCase
     protected PermissionServiceSPI permissionService;
 
     protected MutableAuthenticationService authenticationService;
-    
+
     protected MutableAuthenticationDao authenticationDAO;
 
     protected NodeRef rootNodeRef;
@@ -97,15 +97,15 @@ public abstract class AbstractReadPermissionTest extends TestCase
     protected AuthenticationComponent authenticationComponent;
 
     protected ModelDAO permissionModelDAO;
-    
+
     protected PersonService personService;
-    
+
     protected AuthorityService authorityService;
-    
+
     protected AuthorityDAO authorityDAO;
 
     protected NodeDAO nodeDAO;
-    
+
     protected AclDAO aclDaoComponent;
 
     protected RetryingTransactionHelper retryingTransactionHelper;
@@ -113,71 +113,68 @@ public abstract class AbstractReadPermissionTest extends TestCase
     protected TransactionService transactionService;
 
     protected AccessControlListDAO accessControlListDao;
-        
+
     protected FileFolderService fileFolderService;
-    
+
     protected OwnableService ownableService;
-    
+
     protected UserTransaction testTX;
-    
-	protected IndexerAndSearcher fIndexerAndSearcher;
 
-	protected boolean logToFile = false;
+    protected IndexerAndSearcher fIndexerAndSearcher;
 
-	protected String[] webAuthorities = new String[] {"Web1", "Web2", "Web3", "Web4", "Web5"};
+    protected boolean logToFile = false;
 
-	protected String[] authorities = new String[] {"Dynamic","1000","1001","Y","Z","X","10_1","100","10","1","01","001","0001"};
+    protected String[] webAuthorities = new String[] {"Web1", "Web2", "Web3", "Web4", "Web5"};
 
-	final int WEB_COUNT = 100;
+    protected String[] authorities =
+            new String[] {
+                "Dynamic", "1000", "1001", "Y", "Z", "X", "10_1", "100", "10", "1", "01", "001",
+                "0001"
+            };
 
-//	protected final String TEST_RUN = ""+System.currentTimeMillis();
+    final int WEB_COUNT = 100;
 
-	protected class Counter
-	{
-		int i = 0;
-		void increment()
-		{
-			i++;
-		}
-		int count()
-		{
-			return i;
-		}
-	}
+    //	protected final String TEST_RUN = ""+System.currentTimeMillis();
 
-	protected int COUNT = 10;
-	protected Counter c01 = new Counter();
-	protected Counter c001 = new Counter();
-	protected Counter c0001 = new Counter();
+    protected class Counter {
+        int i = 0;
 
-    private Map<QName, Serializable> createPersonProperties(String userName)
-    {
+        void increment() {
+            i++;
+        }
+
+        int count() {
+            return i;
+        }
+    }
+
+    protected int COUNT = 10;
+    protected Counter c01 = new Counter();
+    protected Counter c001 = new Counter();
+    protected Counter c0001 = new Counter();
+
+    private Map<QName, Serializable> createPersonProperties(String userName) {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         return properties;
     }
-    
-    protected void createAuthentication(String name)
-    {
-    	if(authenticationDAO.userExists(name))
-        {
+
+    protected void createAuthentication(String name) {
+        if (authenticationDAO.userExists(name)) {
             authenticationService.deleteAuthentication(name);
         }
         authenticationService.createAuthentication(name, name.toCharArray());
-        if(personService.personExists(name))
-        {
+        if (personService.personExists(name)) {
             personService.deletePerson(name);
         }
         personService.createPerson(createPersonProperties(name));
     }
 
-    protected void createGroup(String name)
-    {
-    	authorityService.createAuthority(AuthorityType.GROUP, name);
+    protected void createGroup(String name) {
+        authorityService.createAuthority(AuthorityType.GROUP, name);
     }
 
-    protected void runAs(String userName)
-    {
+    protected void runAs(String userName) {
         authenticationService.authenticate(userName, userName.toCharArray());
         assertNotNull(authenticationService.getCurrentUserName());
         // for(GrantedAuthority authority : woof.getAuthorities())
@@ -186,371 +183,501 @@ public abstract class AbstractReadPermissionTest extends TestCase
         // }
 
     }
-    
-	protected NodeRef[] build1000Nodes(final String authority, final int returnNodes, final boolean inherit)
-	{
-		return build1000Nodes(authority, PermissionService.READ, returnNodes, inherit);
-	}
-	
-	protected NodeRef[] buildOwnedNodes(final String authority, final int returnNodes)
-	{
-		runAs("admin");
-		
-		final NodeRef[] nodes = new NodeRef[returnNodes];
 
-		RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-		{
-			public Void execute() throws Throwable
-			{
-				int i = 0;
-				int k = returnNodes > 0 ? 1000/returnNodes : 0;
-				String namePrefix = "simple" + System.currentTimeMillis();
+    protected NodeRef[] build1000Nodes(
+            final String authority, final int returnNodes, final boolean inherit) {
+        return build1000Nodes(authority, PermissionService.READ, returnNodes, inherit);
+    }
 
-				NodeRef folder = fileFolderService.create(rootNodeRef, namePrefix, ContentModel.TYPE_FOLDER).getNodeRef();
+    protected NodeRef[] buildOwnedNodes(final String authority, final int returnNodes) {
+        runAs("admin");
 
-				NodeRef folder_1000 = fileFolderService.create(folder, namePrefix + "-1000-", ContentModel.TYPE_FOLDER).getNodeRef();
-				permissionService.setInheritParentPermissions(folder_1000, false);
-				permissionService.setPermission(folder_1000, authority, PermissionService.READ, true);
-				for(int j = 0; j < 1000; j++)
-				{
-					NodeRef file = fileFolderService.create(folder_1000, namePrefix + "-1000-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-					ownableService.setOwner(file, authority);
+        final NodeRef[] nodes = new NodeRef[returnNodes];
 
-					if(returnNodes > 0)
-					{
-						if(j % k == 0)
-						{
-							nodes[i++] = file;
-						}
-					}
-				}
+        RetryingTransactionCallback<Void> cb =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Throwable {
+                        int i = 0;
+                        int k = returnNodes > 0 ? 1000 / returnNodes : 0;
+                        String namePrefix = "simple" + System.currentTimeMillis();
 
-				return null;
-			}
-		};
-		retryingTransactionHelper.doInTransaction(cb, false, false);
+                        NodeRef folder =
+                                fileFolderService
+                                        .create(rootNodeRef, namePrefix, ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
 
-		return nodes;
-	}
-	
-	protected void buildNodes(final String user, final String permission, final int n, final boolean inherit)
-	{
-	    RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-	    {
-	        public Void execute() throws Throwable
-	        {
-	            String namePrefix = "simple" + System.currentTimeMillis();
+                        NodeRef folder_1000 =
+                                fileFolderService
+                                        .create(
+                                                folder,
+                                                namePrefix + "-1000-",
+                                                ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
+                        permissionService.setInheritParentPermissions(folder_1000, false);
+                        permissionService.setPermission(
+                                folder_1000, authority, PermissionService.READ, true);
+                        for (int j = 0; j < 1000; j++) {
+                            NodeRef file =
+                                    fileFolderService
+                                            .create(
+                                                    folder_1000,
+                                                    namePrefix + "-1000-" + j,
+                                                    ContentModel.TYPE_CONTENT)
+                                            .getNodeRef();
+                            ownableService.setOwner(file, authority);
 
-	            NodeRef folder = fileFolderService.create(rootNodeRef, namePrefix, ContentModel.TYPE_FOLDER).getNodeRef();
+                            if (returnNodes > 0) {
+                                if (j % k == 0) {
+                                    nodes[i++] = file;
+                                }
+                            }
+                        }
 
-	            NodeRef folder_n = fileFolderService.create(folder, namePrefix + "-n", ContentModel.TYPE_FOLDER).getNodeRef();
-	            permissionService.setInheritParentPermissions(folder_n, false);
-	            permissionService.setPermission(folder_n, user, PermissionService.READ, true);
-	            for(int j = 0; j < n; j++)
-	            {
-	                NodeRef file = fileFolderService.create(folder_n, namePrefix + "-n-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-	                if(!inherit)
-	                {
-	                    permissionService.setInheritParentPermissions(file, false);
-	                    if(permission != null)
-	                    {
-	                        permissionService.setPermission(file, user, permission, true);
-	                    }
-	                }
-	            }
+                        return null;
+                    }
+                };
+        retryingTransactionHelper.doInTransaction(cb, false, false);
 
-	            return null;
-	        }
-	    };
-	    retryingTransactionHelper.doInTransaction(cb, false, false);
-	}
-	
-	protected NodeRef[] build1000Nodes(final String authority, final String permission, final int returnNodes, final boolean inherit)
-	{
-		runAs("admin");
-		
-		final NodeRef[] nodes = new NodeRef[returnNodes];
+        return nodes;
+    }
 
-		RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-		{
-			public Void execute() throws Throwable
-			{
-				int i = 0;
-				int k = returnNodes > 0 ? 1000/returnNodes : 0;
-				String namePrefix = "simple" + System.currentTimeMillis();
+    protected void buildNodes(
+            final String user, final String permission, final int n, final boolean inherit) {
+        RetryingTransactionCallback<Void> cb =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Throwable {
+                        String namePrefix = "simple" + System.currentTimeMillis();
 
-				NodeRef folder = fileFolderService.create(rootNodeRef, namePrefix, ContentModel.TYPE_FOLDER).getNodeRef();
+                        NodeRef folder =
+                                fileFolderService
+                                        .create(rootNodeRef, namePrefix, ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
 
-				NodeRef folder_1000 = fileFolderService.create(folder, namePrefix + "-1000-", ContentModel.TYPE_FOLDER).getNodeRef();
-				permissionService.setInheritParentPermissions(folder_1000, false);
-				permissionService.setPermission(folder_1000, authority, permission, true);
-				for(int j = 0; j < 1000; j++)
-				{
-					NodeRef file = fileFolderService.create(folder_1000, namePrefix + "-1000-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-					if(!inherit)
-					{
-						permissionService.setInheritParentPermissions(file, false);
-						permissionService.setPermission(file, authority, permission, true);
-					}
-					if(returnNodes > 0)
-					{
-						if(j % k == 0)
-						{
-							nodes[i++] = file;
-						}
-					}
-				}
+                        NodeRef folder_n =
+                                fileFolderService
+                                        .create(folder, namePrefix + "-n", ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
+                        permissionService.setInheritParentPermissions(folder_n, false);
+                        permissionService.setPermission(
+                                folder_n, user, PermissionService.READ, true);
+                        for (int j = 0; j < n; j++) {
+                            NodeRef file =
+                                    fileFolderService
+                                            .create(
+                                                    folder_n,
+                                                    namePrefix + "-n-" + j,
+                                                    ContentModel.TYPE_CONTENT)
+                                            .getNodeRef();
+                            if (!inherit) {
+                                permissionService.setInheritParentPermissions(file, false);
+                                if (permission != null) {
+                                    permissionService.setPermission(file, user, permission, true);
+                                }
+                            }
+                        }
 
-				return null;
-			}
-		};
-		retryingTransactionHelper.doInTransaction(cb, false, false);
+                        return null;
+                    }
+                };
+        retryingTransactionHelper.doInTransaction(cb, false, false);
+    }
 
-		return nodes;
-	}
+    protected NodeRef[] build1000Nodes(
+            final String authority,
+            final String permission,
+            final int returnNodes,
+            final boolean inherit) {
+        runAs("admin");
 
-	protected NodeRef[] build1000Nodes(final String authority, final String permission, final boolean inherit)
-	{
-		return build1000Nodes(authority, permission, 0, inherit);
-	}
-	
-	protected void build1000NodesReadDenied(final String authority)
-	{
-		runAs("admin");
+        final NodeRef[] nodes = new NodeRef[returnNodes];
 
-		RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-		{
-			public Void execute() throws Throwable
-			{
-				String name = "simple" + System.currentTimeMillis();
+        RetryingTransactionCallback<Void> cb =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Throwable {
+                        int i = 0;
+                        int k = returnNodes > 0 ? 1000 / returnNodes : 0;
+                        String namePrefix = "simple" + System.currentTimeMillis();
 
-				NodeRef folder = fileFolderService.create(rootNodeRef, name, ContentModel.TYPE_FOLDER).getNodeRef();
+                        NodeRef folder =
+                                fileFolderService
+                                        .create(rootNodeRef, namePrefix, ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
 
-				NodeRef folder_1001 = fileFolderService.create(folder, name + "-1001", ContentModel.TYPE_FOLDER).getNodeRef();
-				permissionService.setPermission(folder_1001, authority, PermissionService.READ, true);
-				permissionService.setInheritParentPermissions(folder_1001, false);
-				for(int j = 0; j < 1000; j++)
-				{
-					NodeRef file = fileFolderService.create(folder_1001, name + "-1001-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-					permissionService.setInheritParentPermissions(file, false);
-					permissionService.setPermission(file, authority, PermissionService.READ, false);
-				}
+                        NodeRef folder_1000 =
+                                fileFolderService
+                                        .create(
+                                                folder,
+                                                namePrefix + "-1000-",
+                                                ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
+                        permissionService.setInheritParentPermissions(folder_1000, false);
+                        permissionService.setPermission(folder_1000, authority, permission, true);
+                        for (int j = 0; j < 1000; j++) {
+                            NodeRef file =
+                                    fileFolderService
+                                            .create(
+                                                    folder_1000,
+                                                    namePrefix + "-1000-" + j,
+                                                    ContentModel.TYPE_CONTENT)
+                                            .getNodeRef();
+                            if (!inherit) {
+                                permissionService.setInheritParentPermissions(file, false);
+                                permissionService.setPermission(file, authority, permission, true);
+                            }
+                            if (returnNodes > 0) {
+                                if (j % k == 0) {
+                                    nodes[i++] = file;
+                                }
+                            }
+                        }
 
-				return null;
-			}
-		};
-		retryingTransactionHelper.doInTransaction(cb, false, false);
-	}
+                        return null;
+                    }
+                };
+        retryingTransactionHelper.doInTransaction(cb, false, false);
 
-	protected void buildNodes()
-	{
-		final Random random = new Random(42);
+        return nodes;
+    }
 
-		runAs("admin");
+    protected NodeRef[] build1000Nodes(
+            final String authority, final String permission, final boolean inherit) {
+        return build1000Nodes(authority, permission, 0, inherit);
+    }
 
-		permissionService.setPermission(rootNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+    protected void build1000NodesReadDenied(final String authority) {
+        runAs("admin");
 
-		for(int ii = 0; ii < COUNT; ii++)
-		{
-			final String namePrefix = "name" + System.currentTimeMillis() + "-";
-			final int i = ii;
-			System.out.println("Loop " + i);
-			RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-			{
+        RetryingTransactionCallback<Void> cb =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Throwable {
+                        String name = "simple" + System.currentTimeMillis();
 
-				public Void execute() throws Throwable
-				{
-					NodeRef folder = fileFolderService.create(rootNodeRef, namePrefix + i, ContentModel.TYPE_FOLDER).getNodeRef();
+                        NodeRef folder =
+                                fileFolderService
+                                        .create(rootNodeRef, name, ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
 
-					NodeRef folder_1000 = fileFolderService.create(folder, namePrefix + "1000-"+i, ContentModel.TYPE_FOLDER).getNodeRef();
-					permissionService.setPermission(folder_1000, "1000", PermissionService.READ, true);
-					permissionService.setInheritParentPermissions(folder_1000, false);
-					for(int j = 0; j < 1000; j++)
-					{
-						NodeRef file = fileFolderService.create(folder_1000, namePrefix + "1000-"+i+"-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-						//permissionService.setInheritParentPermissions(file, false);
-						//permissionService.setPermission(file, "1000", PermissionService.READ, true);
-					}
+                        NodeRef folder_1001 =
+                                fileFolderService
+                                        .create(folder, name + "-1001", ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
+                        permissionService.setPermission(
+                                folder_1001, authority, PermissionService.READ, true);
+                        permissionService.setInheritParentPermissions(folder_1001, false);
+                        for (int j = 0; j < 1000; j++) {
+                            NodeRef file =
+                                    fileFolderService
+                                            .create(
+                                                    folder_1001,
+                                                    name + "-1001-" + j,
+                                                    ContentModel.TYPE_CONTENT)
+                                            .getNodeRef();
+                            permissionService.setInheritParentPermissions(file, false);
+                            permissionService.setPermission(
+                                    file, authority, PermissionService.READ, false);
+                        }
 
-					NodeRef folder_100 = fileFolderService.create(folder, namePrefix + "100-"+i, ContentModel.TYPE_FOLDER).getNodeRef();
-					permissionService.setPermission(folder_100, "100", PermissionService.READ, true);
-					permissionService.setInheritParentPermissions(folder_100, false);
-					for(int j = 0; j < 100; j++)
-					{
-						NodeRef file = fileFolderService.create(folder_100, namePrefix + "100-"+i+"-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-					}
+                        return null;
+                    }
+                };
+        retryingTransactionHelper.doInTransaction(cb, false, false);
+    }
 
-					NodeRef folder_10 = fileFolderService.create(folder, namePrefix + "10-"+i, ContentModel.TYPE_FOLDER).getNodeRef();
-					permissionService.setPermission(folder_10, "10", PermissionService.READ, true);
-					permissionService.setInheritParentPermissions(folder_10, false);
-					for(int j = 0; j < 10; j++)
-					{
-						NodeRef file = fileFolderService.create(folder_10, namePrefix + "10-"+i+"-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-					}
+    protected void buildNodes() {
+        final Random random = new Random(42);
 
-					NodeRef folder_10_1 = fileFolderService.create(folder, namePrefix + "10_1-"+i, ContentModel.TYPE_FOLDER).getNodeRef();
-					permissionService.setPermission(folder_10_1, "GROUP_X", PermissionService.READ, true);
-					permissionService.setInheritParentPermissions(folder_10_1, false);
-					for(int j = 0; j < 10; j++)
-					{
-						NodeRef file = fileFolderService.create(folder_10_1, "namePrefix + 10_1-"+i+"-"+j, ContentModel.TYPE_CONTENT).getNodeRef();
-					}
+        runAs("admin");
 
-					NodeRef folder_1 = fileFolderService.create(folder, namePrefix + "1"+i, ContentModel.TYPE_FOLDER).getNodeRef();
-					permissionService.setPermission(folder_1, "1", PermissionService.READ, true);
-					permissionService.setInheritParentPermissions(folder_1, false);
-					NodeRef file = fileFolderService.create(folder_1, namePrefix + "1-1-1", ContentModel.TYPE_CONTENT).getNodeRef();
+        permissionService.setPermission(
+                rootNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
 
-					double rn = random.nextDouble();
+        for (int ii = 0; ii < COUNT; ii++) {
+            final String namePrefix = "name" + System.currentTimeMillis() + "-";
+            final int i = ii;
+            System.out.println("Loop " + i);
+            RetryingTransactionCallback<Void> cb =
+                    new RetryingTransactionCallback<Void>() {
 
-					if(rn < 0.1)
-					{
-						NodeRef rf = fileFolderService.create(folder, namePrefix + "0.1", ContentModel.TYPE_CONTENT).getNodeRef();
-						//permissionService.setPermission(rf, "01", PermissionService.READ, true);
-						//permissionService.setInheritParentPermissions(rf, false);
-						c01.increment();
-					}
+                        public Void execute() throws Throwable {
+                            NodeRef folder =
+                                    fileFolderService
+                                            .create(
+                                                    rootNodeRef,
+                                                    namePrefix + i,
+                                                    ContentModel.TYPE_FOLDER)
+                                            .getNodeRef();
 
-					if(rn < 0.01)
-					{
-						NodeRef rf = fileFolderService.create(folder, namePrefix + "0.01", ContentModel.TYPE_CONTENT).getNodeRef();
-						//permissionService.setPermission(rf, "001", PermissionService.READ, true);
-						//permissionService.setInheritParentPermissions(rf, false);
-						c001.increment();
-					}
+                            NodeRef folder_1000 =
+                                    fileFolderService
+                                            .create(
+                                                    folder,
+                                                    namePrefix + "1000-" + i,
+                                                    ContentModel.TYPE_FOLDER)
+                                            .getNodeRef();
+                            permissionService.setPermission(
+                                    folder_1000, "1000", PermissionService.READ, true);
+                            permissionService.setInheritParentPermissions(folder_1000, false);
+                            for (int j = 0; j < 1000; j++) {
+                                NodeRef file =
+                                        fileFolderService
+                                                .create(
+                                                        folder_1000,
+                                                        namePrefix + "1000-" + i + "-" + j,
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                                // permissionService.setInheritParentPermissions(file, false);
+                                // permissionService.setPermission(file, "1000",
+                                // PermissionService.READ, true);
+                            }
 
-					if(rn < 0.001)
-					{
-						NodeRef rf = fileFolderService.create(folder, namePrefix + "0.001", ContentModel.TYPE_CONTENT).getNodeRef();
-						//permissionService.setPermission(rf, "0001", PermissionService.READ, true);
-						//permissionService.setInheritParentPermissions(rf, false);
-						c0001.increment();
-					}
-					return null;
-				}
-			};
-			retryingTransactionHelper.doInTransaction(cb, false, false);
+                            NodeRef folder_100 =
+                                    fileFolderService
+                                            .create(
+                                                    folder,
+                                                    namePrefix + "100-" + i,
+                                                    ContentModel.TYPE_FOLDER)
+                                            .getNodeRef();
+                            permissionService.setPermission(
+                                    folder_100, "100", PermissionService.READ, true);
+                            permissionService.setInheritParentPermissions(folder_100, false);
+                            for (int j = 0; j < 100; j++) {
+                                NodeRef file =
+                                        fileFolderService
+                                                .create(
+                                                        folder_100,
+                                                        namePrefix + "100-" + i + "-" + j,
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                            }
 
-		}
-	}
-	protected void deleteAuthentication(String name)
-	{
-		if(authenticationDAO.userExists(name))
-		{
-			authenticationService.deleteAuthentication(name);
-		}
-		if(personService.personExists(name))
-		{
-			personService.deletePerson(name);
-		}
-	}
+                            NodeRef folder_10 =
+                                    fileFolderService
+                                            .create(
+                                                    folder,
+                                                    namePrefix + "10-" + i,
+                                                    ContentModel.TYPE_FOLDER)
+                                            .getNodeRef();
+                            permissionService.setPermission(
+                                    folder_10, "10", PermissionService.READ, true);
+                            permissionService.setInheritParentPermissions(folder_10, false);
+                            for (int j = 0; j < 10; j++) {
+                                NodeRef file =
+                                        fileFolderService
+                                                .create(
+                                                        folder_10,
+                                                        namePrefix + "10-" + i + "-" + j,
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                            }
 
-	public void setUp() throws Exception
-	{
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
-        {
-            throw new AlfrescoRuntimeException(
-                    "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            NodeRef folder_10_1 =
+                                    fileFolderService
+                                            .create(
+                                                    folder,
+                                                    namePrefix + "10_1-" + i,
+                                                    ContentModel.TYPE_FOLDER)
+                                            .getNodeRef();
+                            permissionService.setPermission(
+                                    folder_10_1, "GROUP_X", PermissionService.READ, true);
+                            permissionService.setInheritParentPermissions(folder_10_1, false);
+                            for (int j = 0; j < 10; j++) {
+                                NodeRef file =
+                                        fileFolderService
+                                                .create(
+                                                        folder_10_1,
+                                                        "namePrefix + 10_1-" + i + "-" + j,
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                            }
+
+                            NodeRef folder_1 =
+                                    fileFolderService
+                                            .create(
+                                                    folder,
+                                                    namePrefix + "1" + i,
+                                                    ContentModel.TYPE_FOLDER)
+                                            .getNodeRef();
+                            permissionService.setPermission(
+                                    folder_1, "1", PermissionService.READ, true);
+                            permissionService.setInheritParentPermissions(folder_1, false);
+                            NodeRef file =
+                                    fileFolderService
+                                            .create(
+                                                    folder_1,
+                                                    namePrefix + "1-1-1",
+                                                    ContentModel.TYPE_CONTENT)
+                                            .getNodeRef();
+
+                            double rn = random.nextDouble();
+
+                            if (rn < 0.1) {
+                                NodeRef rf =
+                                        fileFolderService
+                                                .create(
+                                                        folder,
+                                                        namePrefix + "0.1",
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                                // permissionService.setPermission(rf, "01", PermissionService.READ,
+                                // true);
+                                // permissionService.setInheritParentPermissions(rf, false);
+                                c01.increment();
+                            }
+
+                            if (rn < 0.01) {
+                                NodeRef rf =
+                                        fileFolderService
+                                                .create(
+                                                        folder,
+                                                        namePrefix + "0.01",
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                                // permissionService.setPermission(rf, "001",
+                                // PermissionService.READ, true);
+                                // permissionService.setInheritParentPermissions(rf, false);
+                                c001.increment();
+                            }
+
+                            if (rn < 0.001) {
+                                NodeRef rf =
+                                        fileFolderService
+                                                .create(
+                                                        folder,
+                                                        namePrefix + "0.001",
+                                                        ContentModel.TYPE_CONTENT)
+                                                .getNodeRef();
+                                // permissionService.setPermission(rf, "0001",
+                                // PermissionService.READ, true);
+                                // permissionService.setInheritParentPermissions(rf, false);
+                                c0001.increment();
+                            }
+                            return null;
+                        }
+                    };
+            retryingTransactionHelper.doInTransaction(cb, false, false);
         }
-        
+    }
+
+    protected void deleteAuthentication(String name) {
+        if (authenticationDAO.userExists(name)) {
+            authenticationService.deleteAuthentication(name);
+        }
+        if (personService.personExists(name)) {
+            personService.deletePerson(name);
+        }
+    }
+
+    public void setUp() throws Exception {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE) {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: "
+                            + AlfrescoTransactionSupport.getTransactionId());
+        }
+
         nodeService = (NodeService) applicationContext.getBean("nodeService");
-        dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE
-                .getLocalName());
+        dictionaryService =
+                (DictionaryService)
+                        applicationContext.getBean(
+                                ServiceRegistry.DICTIONARY_SERVICE.getLocalName());
         permissionService = (PermissionServiceSPI) applicationContext.getBean("permissionService");
-        namespacePrefixResolver = (NamespacePrefixResolver) applicationContext
-                .getBean(ServiceRegistry.NAMESPACE_SERVICE.getLocalName());
-        authenticationService = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
-        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
-        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        namespacePrefixResolver =
+                (NamespacePrefixResolver)
+                        applicationContext.getBean(
+                                ServiceRegistry.NAMESPACE_SERVICE.getLocalName());
+        authenticationService =
+                (MutableAuthenticationService) applicationContext.getBean("authenticationService");
+        authenticationComponent =
+                (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        serviceRegistry =
+                (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         permissionModelDAO = (ModelDAO) applicationContext.getBean("permissionsModelDAO");
         personService = (PersonService) applicationContext.getBean("personService");
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         authorityDAO = (AuthorityDAO) applicationContext.getBean("authorityDAO");
         accessControlListDao = (AccessControlListDAO) applicationContext.getBean("admNodeACLDAO");
-        fileFolderService = (FileFolderService)applicationContext.getBean("fileFolderService");
+        fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
 
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
+        authenticationDAO =
+                (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         aclDaoComponent = (AclDAO) applicationContext.getBean("aclDAO");
-        
-        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
-        
-        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
-        
+
+        retryingTransactionHelper =
+                (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+
+        transactionService =
+                (TransactionService) applicationContext.getBean("transactionComponent");
+
         ownableService = (OwnableService) applicationContext.getBean("ownableService");
-        
+
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
+        StoreRef storeRef =
+                nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
-//        QName children = ContentModel.ASSOC_CHILDREN;
-//        QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
-//        QName container = ContentModel.TYPE_CONTAINER;
-//        QName types = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "people");
+        //        QName children = ContentModel.ASSOC_CHILDREN;
+        //        QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
+        //        QName container = ContentModel.TYPE_CONTAINER;
+        //        QName types = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "people");
 
-//        systemNodeRef = nodeService.createNode(rootNodeRef, children, system, container).getChildRef();
-//        NodeRef typesNodeRef = nodeService.createNode(systemNodeRef, children, types, container).getChildRef();
-//        Map<QName, Serializable> props = createPersonProperties("andy");
-//        nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
-//        props = createPersonProperties("lemur");
-//        nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
+        //        systemNodeRef = nodeService.createNode(rootNodeRef, children, system,
+        // container).getChildRef();
+        //        NodeRef typesNodeRef = nodeService.createNode(systemNodeRef, children, types,
+        // container).getChildRef();
+        //        Map<QName, Serializable> props = createPersonProperties("andy");
+        //        nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON,
+        // container, props).getChildRef();
+        //        props = createPersonProperties("lemur");
+        //        nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON,
+        // container, props).getChildRef();
 
         // create an authentication object e.g. the user
-        if(authenticationDAO.userExists("andy"))
-        {
+        if (authenticationDAO.userExists("andy")) {
             authenticationService.deleteAuthentication("andy");
         }
         authenticationService.createAuthentication("andy", "andy".toCharArray());
 
-        if(authenticationDAO.userExists("lemur"))
-        {
+        if (authenticationDAO.userExists("lemur")) {
             authenticationService.deleteAuthentication("lemur");
         }
         authenticationService.createAuthentication("lemur", "lemur".toCharArray());
-        
-        if(authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
-        {
+
+        if (authenticationDAO.userExists(AuthenticationUtil.getAdminUserName())) {
             authenticationService.deleteAuthentication(AuthenticationUtil.getAdminUserName());
         }
-        authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
-     
-		fIndexerAndSearcher = (IndexerAndSearcher)applicationContext.getBean("indexerAndSearcherFactory");
+        authenticationService.createAuthentication(
+                AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
 
-		for(String authority : authorities)
-		{
-			createAuthentication(authority);
-		}
+        fIndexerAndSearcher =
+                (IndexerAndSearcher) applicationContext.getBean("indexerAndSearcherFactory");
 
-		for(String authority : webAuthorities)
-		{
-			createAuthentication(authority);
-		}
-
-		// TODO define permission group to include Read in permissionDefinitions
-		// assign user to new permission group - should be able to read any node?
-
-		createGroup("X");
-		authorityService.addAuthority(authorityService.getName(AuthorityType.GROUP, "X"), "10_1");
-
-		authenticationComponent.clearCurrentSecurityContext();
-	}
-
-	protected void tearDown() throws Exception
-	{
-		try
-		{
-            testTX.rollback();
+        for (String authority : authorities) {
+            createAuthentication(authority);
         }
-		catch (Throwable e)
-		{
-		    e.printStackTrace();
-		}
+
+        for (String authority : webAuthorities) {
+            createAuthentication(authority);
+        }
+
+        // TODO define permission group to include Read in permissionDefinitions
+        // assign user to new permission group - should be able to read any node?
+
+        createGroup("X");
+        authorityService.addAuthority(authorityService.getName(AuthorityType.GROUP, "X"), "10_1");
+
+        authenticationComponent.clearCurrentSecurityContext();
+    }
+
+    protected void tearDown() throws Exception {
+        try {
+            testTX.rollback();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
-	}
-
+    }
 }

@@ -25,11 +25,6 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.ClassDefinitionMapper;
@@ -37,49 +32,57 @@ import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * Maps representations from TypeDefinition to NodeDefinition
  *
  * @author gfertuso
  */
-public class ClassDefinitionMapperImpl implements ClassDefinitionMapper
-{
+public class ClassDefinitionMapperImpl implements ClassDefinitionMapper {
 
     private final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
     private static final List<QName> EXCLUDED_PROPS = Arrays.asList(ContentModel.PROP_CONTENT);
 
-
     @Override
-    public ClassDefinition fromDictionaryClassDefinition(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup)
-    {
-        if (classDefinition == null)
-        {
+    public ClassDefinition fromDictionaryClassDefinition(
+            org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition,
+            MessageLookup messageLookup) {
+        if (classDefinition == null) {
             throw new AlfrescoRuntimeException("Undefined ClassDefinition for the node");
         }
 
         ClassDefinition _classDefinition = new ClassDefinition();
-        _classDefinition.setProperties(getProperties(classDefinition.getProperties(), messageLookup));
+        _classDefinition.setProperties(
+                getProperties(classDefinition.getProperties(), messageLookup));
 
         return _classDefinition;
     }
 
-    private boolean isPropertyExcluded(QName propertyName)
-    {
-        return EXCLUDED_NS.contains(propertyName.getNamespaceURI()) || EXCLUDED_PROPS.contains(propertyName);
+    private boolean isPropertyExcluded(QName propertyName) {
+        return EXCLUDED_NS.contains(propertyName.getNamespaceURI())
+                || EXCLUDED_PROPS.contains(propertyName);
     }
 
-    private List <org.alfresco.rest.api.model.PropertyDefinition> getProperties(Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> propertiesMap, MessageLookup messageLookup)
-    {
+    private List<org.alfresco.rest.api.model.PropertyDefinition> getProperties(
+            Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> propertiesMap,
+            MessageLookup messageLookup) {
         return propertiesMap.values().stream()
                 .filter(p -> !isPropertyExcluded(p.getName()))
-                .map(p -> fromPropertyDefinitionToProperty(p , messageLookup))
+                .map(p -> fromPropertyDefinitionToProperty(p, messageLookup))
                 .collect(Collectors.toList());
     }
-    
-    private org.alfresco.rest.api.model.PropertyDefinition fromPropertyDefinitionToProperty(org.alfresco.service.cmr.dictionary.PropertyDefinition propertyDefinition,
-                                                                MessageLookup messageLookup)
-    {
-        org.alfresco.rest.api.model.PropertyDefinition property = new org.alfresco.rest.api.model.PropertyDefinition();
+
+    private org.alfresco.rest.api.model.PropertyDefinition fromPropertyDefinitionToProperty(
+            org.alfresco.service.cmr.dictionary.PropertyDefinition propertyDefinition,
+            MessageLookup messageLookup) {
+        org.alfresco.rest.api.model.PropertyDefinition property =
+                new org.alfresco.rest.api.model.PropertyDefinition();
         property.setId(propertyDefinition.getName().toPrefixString());
         property.setTitle(propertyDefinition.getTitle(messageLookup));
         property.setDescription(propertyDefinition.getDescription(messageLookup));
@@ -90,13 +93,14 @@ public class ClassDefinitionMapperImpl implements ClassDefinitionMapper
         property.setIsMandatoryEnforced(propertyDefinition.isMandatoryEnforced());
         property.setIsProtected(propertyDefinition.isProtected());
         property.setConstraints(getConstraints(propertyDefinition.getConstraints(), messageLookup));
-       
+
         return property;
     }
-    
-    private List<org.alfresco.rest.api.model.ConstraintDefinition> getConstraints(Collection<org.alfresco.service.cmr.dictionary.ConstraintDefinition> constraintDefinitions,
-                                                      MessageLookup messageLookup)
-    {
+
+    private List<org.alfresco.rest.api.model.ConstraintDefinition> getConstraints(
+            Collection<org.alfresco.service.cmr.dictionary.ConstraintDefinition>
+                    constraintDefinitions,
+            MessageLookup messageLookup) {
 
         return constraintDefinitions.stream()
                 .filter(constraint -> constraint.getConstraint() != null)
@@ -104,10 +108,11 @@ public class ClassDefinitionMapperImpl implements ClassDefinitionMapper
                 .collect(Collectors.toList());
     }
 
-    private org.alfresco.rest.api.model.ConstraintDefinition fromConstraintDefinitionToConstraint(org.alfresco.service.cmr.dictionary.ConstraintDefinition constraintDefinition,
-                                                                      MessageLookup messageLookup)
-    {
-        org.alfresco.rest.api.model.ConstraintDefinition constraint = new org.alfresco.rest.api.model.ConstraintDefinition();
+    private org.alfresco.rest.api.model.ConstraintDefinition fromConstraintDefinitionToConstraint(
+            org.alfresco.service.cmr.dictionary.ConstraintDefinition constraintDefinition,
+            MessageLookup messageLookup) {
+        org.alfresco.rest.api.model.ConstraintDefinition constraint =
+                new org.alfresco.rest.api.model.ConstraintDefinition();
         constraint.setId(constraintDefinition.getConstraint().getShortName());
         constraint.setType(constraintDefinition.getConstraint().getType());
         constraint.setTitle(constraintDefinition.getTitle(messageLookup));

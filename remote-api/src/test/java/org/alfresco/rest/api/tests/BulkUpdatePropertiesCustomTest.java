@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,11 +29,6 @@ package org.alfresco.rest.api.tests;
 import static org.apache.chemistry.opencmis.tck.CmisTestResultStatus.FAILURE;
 import static org.apache.chemistry.opencmis.tck.CmisTestResultStatus.INFO;
 import static org.apache.chemistry.opencmis.tck.CmisTestResultStatus.SKIPPED;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -46,44 +41,46 @@ import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.tck.CmisTestResult;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Class to test if bulk properties update works for the
- * description(cmis:description) property
- * 
- * This test checks the fix from MNT-16376 is valid but only if the change in
- * MNT-13670 is not present in the code base. The fix from MNT-16376 ensures
- * that the correct call context is available to the working threads that
- * process bulk update. The fix from MNT-13670 added the description to the CMIS
- * version 1.0 mapping in RuntimePropertyAccessorMapping and that masks the
- * problem of the missing call context of the bulk update working threads for
- * the description property.
- * 
- * Currently all of the properties in the RuntimePropertyAccessorMapping are
- * added to the CMIS version 1.0, except for isSecondaryTypesProperty and
- * IsPrivateWorkingCopy. I am not sure if/how and what would be the consequences
- * if we update in the bulk update operation the two properties that are
- * missing for version CMIS 1.0.
+ * Class to test if bulk properties update works for the description(cmis:description) property
  *
+ * <p>This test checks the fix from MNT-16376 is valid but only if the change in MNT-13670 is not
+ * present in the code base. The fix from MNT-16376 ensures that the correct call context is
+ * available to the working threads that process bulk update. The fix from MNT-13670 added the
+ * description to the CMIS version 1.0 mapping in RuntimePropertyAccessorMapping and that masks the
+ * problem of the missing call context of the bulk update working threads for the description
+ * property.
+ *
+ * <p>Currently all of the properties in the RuntimePropertyAccessorMapping are added to the CMIS
+ * version 1.0, except for isSecondaryTypesProperty and IsPrivateWorkingCopy. I am not sure if/how
+ * and what would be the consequences if we update in the bulk update operation the two properties
+ * that are missing for version CMIS 1.0.
  */
-public class BulkUpdatePropertiesCustomTest extends AbstractSessionTest
-{
+public class BulkUpdatePropertiesCustomTest extends AbstractSessionTest {
     private static final String CONTENT = "Custom Bluk update test content.";
     private static final String NEW_DESCRIPTION_VALUE = "new description value";
 
     @Override
-    public void init(Map<String, String> parameters)
-    {
+    public void init(Map<String, String> parameters) {
         super.init(parameters);
         setName("Custom Bulk Update Properties Test");
-        setDescription("Creates a few folders and documents,bulk update the description and check that it has been updated, and deletes all created objects.");
+        setDescription(
+                "Creates a few folders and documents,bulk update the description and check that it"
+                        + " has been updated, and deletes all created objects.");
     }
 
     @Override
-    public void run(Session session)
-    {
-        if (session.getRepositoryInfo().getCmisVersion() == CmisVersion.CMIS_1_0)
-        {
-            addResult(createResult(SKIPPED, "Bulk Update Properties is not supported by CMIS 1.0. Test skipped!"));
+    public void run(Session session) {
+        if (session.getRepositoryInfo().getCmisVersion() == CmisVersion.CMIS_1_0) {
+            addResult(
+                    createResult(
+                            SKIPPED,
+                            "Bulk Update Properties is not supported by CMIS 1.0. Test skipped!"));
             return;
         }
 
@@ -93,17 +90,16 @@ public class BulkUpdatePropertiesCustomTest extends AbstractSessionTest
         // create a test folder
         Folder testFolder = createTestFolder(session);
 
-        try
-        {
+        try {
             Map<String, Folder> folders = new HashMap<String, Folder>();
             Map<String, Document> documents = new HashMap<String, Document>();
 
             // create folders and documents
-            for (int i = 0; i < numOfObjects; i++)
-            {
+            for (int i = 0; i < numOfObjects; i++) {
                 Folder newFolder = createFolder(session, testFolder, "bufolder" + i);
                 folders.put(newFolder.getId(), newFolder);
-                Document newDocument = createDocument(session, newFolder, "budoc" + i + ".txt", CONTENT);
+                Document newDocument =
+                        createDocument(session, newFolder, "budoc" + i + ".txt", CONTENT);
                 documents.put(newDocument.getId(), newDocument);
             }
 
@@ -112,59 +108,67 @@ public class BulkUpdatePropertiesCustomTest extends AbstractSessionTest
             Map<String, Object> properties = new HashMap<String, Object>();
             properties.put(PropertyIds.DESCRIPTION, NEW_DESCRIPTION_VALUE);
 
-            List<BulkUpdateObjectIdAndChangeToken> updatedIds = session.bulkUpdateProperties(objects, properties, null, null);
+            List<BulkUpdateObjectIdAndChangeToken> updatedIds =
+                    session.bulkUpdateProperties(objects, properties, null, null);
 
             // check the result
-            if (getBinding() == BindingType.WEBSERVICES)
-            {
-                addResult(createResult(INFO, "The Web Services binding does not return the updated ids."
-                        + " This issue has to be clarified by the CMIS TC and the test to adopted later."));
-            }
-            else
-            {
-                if (updatedIds == null || updatedIds.isEmpty())
-                {
-                    addResult(createResult(FAILURE, "Bulk Update Properties did not update any documents!"));
-                }
-                else
-                {
-                    failure = createResult(FAILURE, "Bulk Update Properties did not update all test documents!");
+            if (getBinding() == BindingType.WEBSERVICES) {
+                addResult(
+                        createResult(
+                                INFO,
+                                "The Web Services binding does not return the updated ids. This"
+                                    + " issue has to be clarified by the CMIS TC and the test to"
+                                    + " adopted later."));
+            } else {
+                if (updatedIds == null || updatedIds.isEmpty()) {
+                    addResult(
+                            createResult(
+                                    FAILURE,
+                                    "Bulk Update Properties did not update any documents!"));
+                } else {
+                    failure =
+                            createResult(
+                                    FAILURE,
+                                    "Bulk Update Properties did not update all test documents!");
                     addResult(assertEquals(documents.size(), updatedIds.size(), null, failure));
                 }
             }
 
             // check all documents
-            for (Folder folder : folders.values())
-            {
+            for (Folder folder : folders.values()) {
                 List<CmisObject> children = new ArrayList<CmisObject>();
-                for (CmisObject child : folder.getChildren(SELECT_ALL_NO_CACHE_OC))
-                {
+                for (CmisObject child : folder.getChildren(SELECT_ALL_NO_CACHE_OC)) {
                     children.add(child);
                 }
 
-                if (children.size() != 1)
-                {
-                    String errorMessage = "Test folder should have exactly one child, but it has " + children.size() + "!";
+                if (children.size() != 1) {
+                    String errorMessage =
+                            "Test folder should have exactly one child, but it has "
+                                    + children.size()
+                                    + "!";
                     addResult(createResult(FAILURE, errorMessage));
-                }
-                else
-                {
-                    failure = createResult(FAILURE, "Document does not have the new description! Id: " + children.get(0).getId());
-                    addResult(assertEquals(NEW_DESCRIPTION_VALUE, children.get(0).getDescription(), null, failure));
+                } else {
+                    failure =
+                            createResult(
+                                    FAILURE,
+                                    "Document does not have the new description! Id: "
+                                            + children.get(0).getId());
+                    addResult(
+                            assertEquals(
+                                    NEW_DESCRIPTION_VALUE,
+                                    children.get(0).getDescription(),
+                                    null,
+                                    failure));
                 }
             }
 
             // delete folders and documents
-            for (Folder folder : folders.values())
-            {
+            for (Folder folder : folders.values()) {
                 folder.deleteTree(true, null, true);
             }
-        }
-        finally
-        {
+        } finally {
             // delete the test folder
             deleteTestFolder();
         }
-
     }
 }

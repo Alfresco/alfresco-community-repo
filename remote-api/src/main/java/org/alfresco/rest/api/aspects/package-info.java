@@ -24,7 +24,8 @@
  * #L%
  */
 
-@WebApi(name="alfresco", scope= Api.SCOPE.PUBLIC, version=1)
+@WebApi(name = "alfresco", scope = Api.SCOPE.PUBLIC, version = 1)
 package org.alfresco.rest.api.aspects;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.WebApi;

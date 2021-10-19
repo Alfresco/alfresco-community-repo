@@ -25,48 +25,59 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.*;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_FAILING_MIME_TYPE;
+
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 
 import java.util.Map;
 
-import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.*;
-import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_FAILING_MIME_TYPE;
-
-/**
- * @author adavis
- */
-public class TestTransformServiceRegistry implements TransformServiceRegistry
-{
+/** @author adavis */
+public class TestTransformServiceRegistry implements TransformServiceRegistry {
     private TransformServiceRegistry delegate;
 
-    public TestTransformServiceRegistry(TransformServiceRegistry delegate)
-    {
+    public TestTransformServiceRegistry(TransformServiceRegistry delegate) {
         this.delegate = delegate;
     }
 
     @Override
-    public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
-                               Map<String, String> actualOptions, String transformName)
-    {
-        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE) ||
-                sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
+    public boolean isSupported(
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String transformName) {
+        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE)
+                        || sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
                 ? true
-                : delegate.isSupported(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, transformName);
+                : delegate.isSupported(
+                        sourceMimetype,
+                        sourceSizeInBytes,
+                        targetMimetype,
+                        actualOptions,
+                        transformName);
     }
 
     @Override
-    public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> actualOptions, String transformName)
-    {
-        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE) ||
-                sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
+    public long findMaxSize(
+            String sourceMimetype,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String transformName) {
+        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE)
+                        || sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
                 ? -1
-                : delegate.findMaxSize(sourceMimetype, targetMimetype, actualOptions, transformName);
+                : delegate.findMaxSize(
+                        sourceMimetype, targetMimetype, actualOptions, transformName);
     }
 
     @Override
-    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes,
-                                      String targetMimetype, Map<String, String> actualOptions, String renditionName)
-    {
+    public String findTransformerName(
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String renditionName) {
         throw new UnsupportedOperationException("not implemented");
     }
 }

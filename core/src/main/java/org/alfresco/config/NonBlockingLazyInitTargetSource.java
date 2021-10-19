@@ -18,49 +18,39 @@
  */
 package org.alfresco.config;
 
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.beans.BeansException;
 
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
  * A non-blocking version of LazyInitTargetSource.
- * 
+ *
  * @author dward
  */
-public class NonBlockingLazyInitTargetSource extends AbstractBeanFactoryBasedTargetSource
-{
+public class NonBlockingLazyInitTargetSource extends AbstractBeanFactoryBasedTargetSource {
 
     private static final long serialVersionUID = 4509578245779492037L;
     private Object target;
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public Object getTarget() throws BeansException
-    {
+    public Object getTarget() throws BeansException {
         this.lock.readLock().lock();
-        try
-        {
-            if (this.target != null)
-            {
+        try {
+            if (this.target != null) {
                 return this.target;
             }
-        }
-        finally
-        {
+        } finally {
             this.lock.readLock().unlock();
         }
         this.lock.writeLock().lock();
-        try
-        {
-            if (this.target == null)
-            {
+        try {
+            if (this.target == null) {
                 this.target = getBeanFactory().getBean(getTargetBeanName());
             }
             return this.target;
-        }
-        finally
-        {
+        } finally {
             this.lock.writeLock().unlock();
         }
     }

@@ -4,51 +4,49 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
-import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * A patch to update the value of a Mimetype.
- * <p>
- * This patch will only work fully if the content URL data has been fully normalized.
- * It supports renaming to existing, currently-used mimetypes as well as to
- * mimetypes that have not been used before.
- * 
+ *
+ * <p>This patch will only work fully if the content URL data has been fully normalized. It supports
+ * renaming to existing, currently-used mimetypes as well as to mimetypes that have not been used
+ * before.
+ *
  * @author Derek Hulley
  * @since 3.3 SP1
  */
-public class GenericMimetypeRenamePatch extends AbstractPatch
-{
+public class GenericMimetypeRenamePatch extends AbstractPatch {
     private static final String MSG_START = "patch.genericMimetypeUpdate.start";
     private static final String MSG_UPDATED = "patch.genericMimetypeUpdate.updated";
     private static final String MSG_INDEXED = "patch.genericMimetypeUpdate.indexed";
@@ -67,51 +65,38 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
 
     private static long BATCH_SIZE = 100000L;
 
-
     /** Mimetype mappings */
     private Map<String, String> mimetypeMappings;
+
     private boolean reindex;
 
-    public void setMimetypeDAO(MimetypeDAO mimetypeDAO)
-    {
+    public void setMimetypeDAO(MimetypeDAO mimetypeDAO) {
         this.mimetypeDAO = mimetypeDAO;
     }
 
-    public void setPatchDAO(PatchDAO patchDAO)
-    {
+    public void setPatchDAO(PatchDAO patchDAO) {
         this.patchDAO = patchDAO;
     }
 
-    public void setMimetypeMappings(Map<String, String> mimetypeMappings)
-    {
+    public void setMimetypeMappings(Map<String, String> mimetypeMappings) {
         this.mimetypeMappings = mimetypeMappings;
     }
 
-    public void setReindex(boolean reindex)
-    {
+    public void setReindex(boolean reindex) {
         this.reindex = reindex;
     }
 
-    
-    
-    /**
-     * @param nodeDAO the nodeDAO to set
-     */
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
+    /** @param nodeDAO the nodeDAO to set */
+    public void setNodeDAO(NodeDAO nodeDAO) {
         this.nodeDAO = nodeDAO;
     }
 
-    /**
-     * @param retryingTransactionHelper the retryingTransactionHelper to set
-     */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
+    /** @param retryingTransactionHelper the retryingTransactionHelper to set */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper) {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
-    protected void checkProperties()
-    {
+    protected void checkProperties() {
         super.checkProperties();
         checkPropertyNotNull(mimetypeDAO, "mimetypeDAO");
         checkPropertyNotNull(patchDAO, "patchDAO");
@@ -121,32 +106,27 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
     }
 
     @Override
-    protected String applyInternal() throws Exception
-    {
+    protected String applyInternal() throws Exception {
         StringBuilder result = new StringBuilder(I18NUtil.getMessage(MSG_START));
 
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
 
-        for (Map.Entry<String, String> element : mimetypeMappings.entrySet())
-        {
+        for (Map.Entry<String, String> element : mimetypeMappings.entrySet()) {
             String oldMimetype = element.getKey();
             String newMimetype = element.getValue();
 
             // First check if the mimetype is used at all
             Pair<Long, String> oldMimetypePair = mimetypeDAO.getMimetype(oldMimetype);
-            if (oldMimetypePair == null)
-            {
+            if (oldMimetypePair == null) {
                 // Not used
                 continue;
             }
 
             // pull all affectsed nodes into a new transaction id indexed
 
-            if(reindex)
-            {
+            if (reindex) {
                 long count = 0L;
-                for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-                {
+                for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE) {
                     Work work = new Work(oldMimetypePair.getFirst(), i);
                     count += retryingTransactionHelper.doInTransaction(work, false, true);
                 }
@@ -156,13 +136,10 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
             // Check if the new mimetype exists
             Pair<Long, String> newMimetypePair = mimetypeDAO.getMimetype(newMimetype);
             int updateCount = 0;
-            if (newMimetypePair == null)
-            {
+            if (newMimetypePair == null) {
                 // Easy, just rename the old one
                 updateCount = mimetypeDAO.updateMimetype(oldMimetype, newMimetype);
-            }
-            else
-            {
+            } else {
                 // We need to move all the old references to the new ones
                 Long oldMimetypeId = oldMimetypePair.getFirst();
                 Long newMimetypeId = mimetypeDAO.getOrCreateMimetype(newMimetype).getFirst();
@@ -171,27 +148,21 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
             result.append(I18NUtil.getMessage(MSG_UPDATED, updateCount, oldMimetype, newMimetype));
         }
         // Done
-        if (reindex)
-        {
+        if (reindex) {
             result.append(I18NUtil.getMessage(MSG_DONE));
-        }
-        else
-        {
+        } else {
             result.append(I18NUtil.getMessage(MSG_DONE_REINDEX));
         }
 
         return result.toString();
     }
 
-
-    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
-    {
+    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer> {
         long mimetypeId;
-        
+
         long lower;
 
-        Work(long mimetypeId, long lower)
-        {
+        Work(long mimetypeId, long lower) {
             this.mimetypeId = mimetypeId;
             this.lower = lower;
         }
@@ -201,9 +172,10 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
          * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
          */
         @Override
-        public Integer execute() throws Throwable
-        {
-            List<Long> nodeIds = patchDAO.getNodesByContentPropertyMimetypeId(mimetypeId, lower, lower + BATCH_SIZE);
+        public Integer execute() throws Throwable {
+            List<Long> nodeIds =
+                    patchDAO.getNodesByContentPropertyMimetypeId(
+                            mimetypeId, lower, lower + BATCH_SIZE);
             nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
             return nodeIds.size();
         }

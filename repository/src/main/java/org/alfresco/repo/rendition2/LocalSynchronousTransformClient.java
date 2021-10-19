@@ -41,99 +41,115 @@ import java.util.Map;
 /**
  * Request synchronous transforms.
  *
- * Transforms take place using transforms available on the local machine (based on {@link LocalTransform}).
+ * <p>Transforms take place using transforms available on the local machine (based on {@link
+ * LocalTransform}).
  *
  * @author adavis
  */
-public class LocalSynchronousTransformClient implements SynchronousTransformClient, InitializingBean
-{
+public class LocalSynchronousTransformClient
+        implements SynchronousTransformClient, InitializingBean {
     private static final String TRANSFORM = "Local synchronous transform ";
     private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
     private LocalTransformServiceRegistry localTransformServiceRegistry;
 
-    public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
-    {
+    public void setLocalTransformServiceRegistry(
+            LocalTransformServiceRegistry localTransformServiceRegistry) {
         this.localTransformServiceRegistry = localTransformServiceRegistry;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "localTransformServiceRegistry", localTransformServiceRegistry);
+    public void afterPropertiesSet() throws Exception {
+        PropertyCheck.mandatory(
+                this, "localTransformServiceRegistry", localTransformServiceRegistry);
     }
 
     @Override
-    public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
-                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
-    {
+    public boolean isSupported(
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String contentUrl,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String transformName,
+            NodeRef sourceNodeRef) {
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
-                sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+        LocalTransform transform =
+                localTransformServiceRegistry.getLocalTransform(
+                        sourceMimetype,
+                        sourceSizeInBytes,
+                        targetMimetype,
+                        actualOptions,
+                        renditionName);
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(TRANSFORM + renditionName + " from " + sourceMimetype +
-                    (transform == null ? " is unsupported" : " is supported"));
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    TRANSFORM
+                            + renditionName
+                            + " from "
+                            + sourceMimetype
+                            + (transform == null ? " is unsupported" : " is supported"));
         }
         return transform != null;
     }
 
     @Override
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
-                          String transformName, NodeRef sourceNodeRef)
-    {
+    public void transform(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> actualOptions,
+            String transformName,
+            NodeRef sourceNodeRef) {
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        try
-        {
-            if (reader == null)
-            {
+        try {
+            if (reader == null) {
                 throw new IllegalArgumentException("The content reader must be set");
             }
-            if (!reader.exists())
-            {
-                throw new IllegalArgumentException("sourceNodeRef "+sourceNodeRef+" has no content.");
+            if (!reader.exists()) {
+                throw new IllegalArgumentException(
+                        "sourceNodeRef " + sourceNodeRef + " has no content.");
             }
 
             String sourceMimetype = reader.getMimetype();
             long sourceSizeInBytes = reader.getSize();
-            if (sourceMimetype == null)
-            {
+            if (sourceMimetype == null) {
                 throw new IllegalArgumentException("The content reader mimetype must be set");
             }
 
             String targetMimetype = writer.getMimetype();
-            if (targetMimetype == null)
-            {
+            if (targetMimetype == null) {
                 throw new IllegalArgumentException("The content writer mimetype must be set");
             }
 
-            LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
-                    sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+            LocalTransform transform =
+                    localTransformServiceRegistry.getLocalTransform(
+                            sourceMimetype,
+                            sourceSizeInBytes,
+                            targetMimetype,
+                            actualOptions,
+                            renditionName);
 
-            if (transform == null)
-            {
-                throw new UnsupportedTransformationException("Transformation of " + sourceMimetype +
-                        (sourceSizeInBytes > 0 ? " size "+sourceSizeInBytes : "")+ " to " + targetMimetype +
-                        " unsupported");
+            if (transform == null) {
+                throw new UnsupportedTransformationException(
+                        "Transformation of "
+                                + sourceMimetype
+                                + (sourceSizeInBytes > 0 ? " size " + sourceSizeInBytes : "")
+                                + " to "
+                                + targetMimetype
+                                + " unsupported");
             }
 
-            if (logger.isDebugEnabled())
-            {
+            if (logger.isDebugEnabled()) {
                 logger.debug(TRANSFORM + "requested " + renditionName);
             }
 
             transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
-            if (logger.isDebugEnabled())
-            {
+            if (logger.isDebugEnabled()) {
                 logger.debug(TRANSFORM + "created " + renditionName);
             }
-        }
-        catch (Exception e)
-        {
-            if (logger.isDebugEnabled())
-            {
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
                 logger.debug(TRANSFORM + "failed " + renditionName, e);
             }
             throw e;
@@ -141,8 +157,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return "Local";
     }
 }

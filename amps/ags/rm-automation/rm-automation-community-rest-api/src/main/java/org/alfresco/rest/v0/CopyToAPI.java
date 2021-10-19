@@ -26,9 +26,6 @@
  */
 package org.alfresco.rest.v0;
 
-import java.text.MessageFormat;
-import java.util.List;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
@@ -37,6 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.text.MessageFormat;
+import java.util.List;
+
 /**
  * The v0 REST API for copy-to (which supports multi-item copy).
  *
@@ -44,8 +44,7 @@ import org.springframework.stereotype.Component;
  * @since 2.6
  */
 @Component
-public class CopyToAPI extends BaseAPI
-{
+public class CopyToAPI extends BaseAPI {
     /** Logger for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(CopyToAPI.class);
     /** The URI for the copy-to API. */
@@ -57,14 +56,14 @@ public class CopyToAPI extends BaseAPI
      * @param user The username of the user to use.
      * @param password The password of the user.
      * @param targetContainerPath The destination to copy the nodes to. This should be in the format
-     * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
-     * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
+     *     "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
+     *     "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
      * @param nodeRefs The list of nodes to copy.
      * @return The HTTP Response.
      * @throws AssertionError If the API call didn't return a 200 response.
      */
-    public HttpResponse copyTo(String user, String password, String targetContainerPath, List<String> nodeRefs)
-    {
+    public HttpResponse copyTo(
+            String user, String password, String targetContainerPath, List<String> nodeRefs) {
         return copyTo(user, password, 200, targetContainerPath, nodeRefs);
     }
 
@@ -75,18 +74,26 @@ public class CopyToAPI extends BaseAPI
      * @param password The password of the user.
      * @param expectedStatusCode The expected return status code.
      * @param targetContainerPath The destination to copy the nodes to. This should be in the format
-     * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
-     * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
+     *     "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
+     *     "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
      * @param nodeRefs The list of nodes to copy.
      * @return The HTTP Response.
      * @throws AssertionError If the API didn't return the expected status code.
      */
-    public HttpResponse copyTo(String user, String password, int expectedStatusCode, String targetContainerPath, List<String> nodeRefs)
-    {
+    public HttpResponse copyTo(
+            String user,
+            String password,
+            int expectedStatusCode,
+            String targetContainerPath,
+            List<String> nodeRefs) {
         JSONObject requestParams = new JSONObject();
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
-        return doSlingshotPostJsonRequest(user, password, expectedStatusCode, requestParams,
-                    MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
+        return doSlingshotPostJsonRequest(
+                user,
+                password,
+                expectedStatusCode,
+                requestParams,
+                MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
     }
 }

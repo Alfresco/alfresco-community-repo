@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,27 +26,26 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
+
 import org.alfresco.repo.forms.AssociationFieldDefinition;
-import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.repo.forms.processor.node.TransientFieldProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
-
 /**
  * {@link FieldProcessor} for handling package contents when displaying Workflow and Task Forms.
- * 
+ *
  * @since 3.4
  * @author Nick Smith
  */
-public class PackageItemsFieldProcessor extends TransientFieldProcessor
-{
+public class PackageItemsFieldProcessor extends TransientFieldProcessor {
     /** Logger */
-    private final static Log logger = LogFactory.getLog(PackageItemsFieldProcessor.class);
+    private static final Log logger = LogFactory.getLog(PackageItemsFieldProcessor.class);
 
     public static final String KEY = "packageItems";
 
@@ -57,10 +56,9 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
      * @see org.alfresco.repo.forms.processor.node.TransientFieldProcessor#makeTransientPropertyDefinition()
      */
     @Override
-    protected FieldDefinition makeTransientFieldDefinition()
-    {
-        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(
-                    KEY, KEY, Direction.TARGET);
+    protected FieldDefinition makeTransientFieldDefinition() {
+        AssociationFieldDefinition fieldDef =
+                new AssociationFieldDefinition(KEY, KEY, Direction.TARGET);
         fieldDef.setLabel(I18NUtil.getMessage(MSG_LABEL));
         fieldDef.setDescription(I18NUtil.getMessage(MSG_DESCRIPTION));
         fieldDef.setProtectedField(false);
@@ -77,8 +75,7 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
      * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getLogger()
      */
     @Override
-    protected Log getLogger()
-    {
+    protected Log getLogger() {
         return logger;
     }
 
@@ -86,9 +83,7 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
      * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#getRegistryKey()
      */
     @Override
-    protected String getRegistryKey()
-    {
+    protected String getRegistryKey() {
         return KEY;
     }
-
 }

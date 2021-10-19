@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.capability;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Group;
@@ -48,118 +41,114 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-/**
- * Capabilities GET web service implementation.
- */
-public class CapabilitiesGet extends DeclarativeWebScript
-{
-	/** File plan service */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.servlet.http.HttpServletResponse;
+
+/** Capabilities GET web service implementation. */
+public class CapabilitiesGet extends DeclarativeWebScript {
+    /** File plan service */
     private FilePlanService filePlanService;
 
     /** Capability service */
     private CapabilityService capabilityService;
 
-    /**
-     * @param capabilityService	capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
+    /** @param capabilityService capability service */
+    public void setCapabilityService(CapabilityService capabilityService) {
         this.capabilityService = capabilityService;
     }
 
-    /**
-     * @param filePlanService	file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-		this.filePlanService = filePlanService;
-	}
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @see org.alfresco.repo.web.scripts.content.StreamContent#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.alfresco.repo.web.scripts.content.StreamContent#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String storeType = templateVars.get("store_type");
         String storeId = templateVars.get("store_id");
         String nodeId = templateVars.get("id");
 
         NodeRef nodeRef = null;
-        if (StringUtils.isNotBlank(storeType) && StringUtils.isNotBlank(storeId) && StringUtils.isNotBlank(nodeId))
-        {
+        if (StringUtils.isNotBlank(storeType)
+                && StringUtils.isNotBlank(storeId)
+                && StringUtils.isNotBlank(nodeId)) {
             nodeRef = new NodeRef(new StoreRef(storeType, storeId), nodeId);
-        }
-        else
-        {
+        } else {
             // we are talking about the file plan node
             // TODO we are making the assumption there is only one file plan here!
             nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if (nodeRef == null)
-            {
-                throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The default file plan node could not be found.");
+            if (nodeRef == null) {
+                throw new WebScriptException(
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "The default file plan node could not be found.");
             }
         }
 
         boolean grouped = false;
         String groupedString = req.getParameter("grouped");
-        if (StringUtils.isNotBlank(groupedString))
-        {
+        if (StringUtils.isNotBlank(groupedString)) {
             grouped = Boolean.parseBoolean(groupedString);
         }
 
         Map<String, Object> model = new TreeMap<>();
-        if (grouped)
-        {
+        if (grouped) {
             // Construct the map which is needed to build the model
             Map<String, GroupedCapabilities> groupedCapabilitiesMap = new TreeMap<>();
 
             List<Group> groups = capabilityService.getGroups();
-            for (Group group : groups)
-            {
+            for (Group group : groups) {
                 String capabilityGroupTitle = group.getTitle();
-                if (StringUtils.isNotBlank(capabilityGroupTitle))
-                {
+                if (StringUtils.isNotBlank(capabilityGroupTitle)) {
                     String capabilityGroupId = group.getId();
 
-                    List<Capability> capabilities = capabilityService.getCapabilitiesByGroupId(capabilityGroupId);
-                    for (Capability capability : capabilities)
-                    {
-                       String capabilityName = capability.getName();
-                       String capabilityTitle = capability.getTitle();
+                    List<Capability> capabilities =
+                            capabilityService.getCapabilitiesByGroupId(capabilityGroupId);
+                    for (Capability capability : capabilities) {
+                        String capabilityName = capability.getName();
+                        String capabilityTitle = capability.getTitle();
 
-                       if (groupedCapabilitiesMap.containsKey(capabilityGroupId))
-                       {
-                           groupedCapabilitiesMap.get(capabilityGroupId).addCapability(capabilityName, capabilityTitle);
-                       }
-                       else
-                       {
-                           GroupedCapabilities groupedCapabilities = new GroupedCapabilities(capabilityGroupId, capabilityGroupTitle, capabilityName, capabilityTitle);
-                           groupedCapabilities.addCapability(capabilityName, capabilityTitle);
-                           groupedCapabilitiesMap.put(capabilityGroupId, groupedCapabilities);
-                       }
+                        if (groupedCapabilitiesMap.containsKey(capabilityGroupId)) {
+                            groupedCapabilitiesMap
+                                    .get(capabilityGroupId)
+                                    .addCapability(capabilityName, capabilityTitle);
+                        } else {
+                            GroupedCapabilities groupedCapabilities =
+                                    new GroupedCapabilities(
+                                            capabilityGroupId,
+                                            capabilityGroupTitle,
+                                            capabilityName,
+                                            capabilityTitle);
+                            groupedCapabilities.addCapability(capabilityName, capabilityTitle);
+                            groupedCapabilitiesMap.put(capabilityGroupId, groupedCapabilities);
+                        }
                     }
                 }
             }
             model.put("groupedCapabilities", groupedCapabilitiesMap);
-        }
-        else
-        {
+        } else {
             boolean includePrivate = false;
             String includePrivateString = req.getParameter("includeAll");
-            if (StringUtils.isNotBlank(includePrivateString))
-            {
+            if (StringUtils.isNotBlank(includePrivateString)) {
                 includePrivate = Boolean.parseBoolean(includePrivateString);
             }
 
-            Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(nodeRef, includePrivate);
+            Map<Capability, AccessStatus> map =
+                    capabilityService.getCapabilitiesAccessState(nodeRef, includePrivate);
             List<String> list = new ArrayList<>(map.size());
-            for (Map.Entry<Capability, AccessStatus> entry : map.entrySet())
-            {
+            for (Map.Entry<Capability, AccessStatus> entry : map.entrySet()) {
                 AccessStatus accessStatus = entry.getValue();
-                if (!AccessStatus.DENIED.equals(accessStatus))
-                {
+                if (!AccessStatus.DENIED.equals(accessStatus)) {
                     Capability capability = entry.getKey();
                     list.add(capability.getName());
                 }
@@ -170,20 +159,19 @@ public class CapabilitiesGet extends DeclarativeWebScript
         return model;
     }
 
-    /**
-     * Class to represent grouped capabilities for use in a Freemarker template
-     *
-     */
-    public class GroupedCapabilities
-    {
+    /** Class to represent grouped capabilities for use in a Freemarker template */
+    public class GroupedCapabilities {
         private String capabilityGroupId;
         private String capabilityGroupTitle;
         private String capabilityName;
         private String capabilityTitle;
         private Map<String, String> capabilities;
 
-        public GroupedCapabilities(String capabilityGroupId, String capabilityGroupTitle, String capabilityName, String capabilityTitle)
-        {
+        public GroupedCapabilities(
+                String capabilityGroupId,
+                String capabilityGroupTitle,
+                String capabilityName,
+                String capabilityTitle) {
             this.capabilityGroupId = capabilityGroupId;
             this.capabilityGroupTitle = capabilityGroupTitle;
             this.capabilityName = capabilityName;
@@ -191,33 +179,27 @@ public class CapabilitiesGet extends DeclarativeWebScript
             this.capabilities = new TreeMap<>();
         }
 
-        public String getGroupId()
-        {
+        public String getGroupId() {
             return this.capabilityGroupId;
         }
 
-        public String getGroupTitle()
-        {
+        public String getGroupTitle() {
             return this.capabilityGroupTitle;
         }
 
-        public String getCapabilityName()
-        {
+        public String getCapabilityName() {
             return this.capabilityName;
         }
 
-        public String getCapabilityTitle()
-        {
+        public String getCapabilityTitle() {
             return this.capabilityTitle;
         }
 
-        public Map<String, String> getCapabilities()
-        {
+        public Map<String, String> getCapabilities() {
             return this.capabilities;
         }
 
-        public void addCapability(String capabilityName, String capabilityTitle)
-        {
+        public void addCapability(String capabilityName, String capabilityTitle) {
             this.capabilities.put(capabilityName, capabilityTitle);
         }
     }

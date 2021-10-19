@@ -26,8 +26,6 @@
  */
 package org.alfresco.rm.rest.api.util;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -36,29 +34,29 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.io.IOException;
+
 /**
  * Custom Date Time serializer for formatting org.joda.time.DateTime
  *
  * @author Rodica Sutu
  * @since 3.0
  */
-public class CustomDateTimeSerializer extends StdSerializer<DateTime>
-{
+public class CustomDateTimeSerializer extends StdSerializer<DateTime> {
     /** Date time format */
-    private final static DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTime();
+    private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTime();
 
-    public CustomDateTimeSerializer()
-    {
+    public CustomDateTimeSerializer() {
         super(DateTime.class);
     }
 
-    protected CustomDateTimeSerializer(Class<DateTime> t)
-    {
+    protected CustomDateTimeSerializer(Class<DateTime> t) {
         super(t);
     }
 
     /**
-     * Custom serialize method to convert the org.joda.time.DateTime into string value using the DATE_TIME_FORMAT
+     * Custom serialize method to convert the org.joda.time.DateTime into string value using the
+     * DATE_TIME_FORMAT
      *
      * @param value datetime value
      * @param jgen
@@ -66,8 +64,8 @@ public class CustomDateTimeSerializer extends StdSerializer<DateTime>
      * @throws IOException
      */
     @Override
-    public void serialize(DateTime value, JsonGenerator jgen, SerializerProvider provider) throws IOException
-    {
+    public void serialize(DateTime value, JsonGenerator jgen, SerializerProvider provider)
+            throws IOException {
         jgen.writeString(DATE_TIME_FORMAT.print(value));
     }
 }

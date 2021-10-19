@@ -32,11 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -46,85 +41,84 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Eager content store cleaner unit test.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.4.a
  */
-public class EagerContentStoreCleanerUnitTest extends BaseUnitTest
-{
-    @InjectMocks private EagerContentStoreCleaner eagerContentStoreCleaner = new EagerContentStoreCleaner()
-    {
-        /** dummy implementation */
-        public boolean registerOrphanedContentUrl(String contentUrl, boolean force) {return true;}
-    };
-    
+public class EagerContentStoreCleanerUnitTest extends BaseUnitTest {
+    @InjectMocks
+    private EagerContentStoreCleaner eagerContentStoreCleaner =
+            new EagerContentStoreCleaner() {
+                /** dummy implementation */
+                public boolean registerOrphanedContentUrl(String contentUrl, boolean force) {
+                    return true;
+                }
+            };
+
     @Mock private ContentCleanser mockedContentCleanser;
-    
-    /**
-     * When content is registered for cleansing
-     * Then the content URL is recorded for use later
-     */
+
+    /** When content is registered for cleansing Then the content URL is recorded for use later */
     @SuppressWarnings("unchecked")
     @Test
-    public void registerContentURL()
-    {
+    public void registerContentURL() {
         String contentURL = AlfMock.generateText();
         Set<Object> mockedSet = mock(Set.class);
-        when(mockedTransactionalResourceHelper.getSet(EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
-            .thenReturn(mockedSet);
+        when(mockedTransactionalResourceHelper.getSet(
+                        EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
+                .thenReturn(mockedSet);
 
-        eagerContentStoreCleaner.registerOrphanedContentUrlForCleansing(contentURL);    
-        
+        eagerContentStoreCleaner.registerOrphanedContentUrlForCleansing(contentURL);
+
         verify(mockedSet).add(contentURL);
     }
-    
+
     /**
-     * Given that the content requires cleansing
-     * When the content is deleted from the store
-     * Then the content is cleansed first
+     * Given that the content requires cleansing When the content is deleted from the store Then the
+     * content is cleansed first
      */
     @Test
-    public void contentRequiresCleaning()
-    {
+    public void contentRequiresCleaning() {
         String contentURL = AlfMock.generateText();
         Set<Object> mockedSet = new HashSet<>(Arrays.asList(contentURL));
-        when(mockedTransactionalResourceHelper.getSet(EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
-            .thenReturn(mockedSet);
-        
+        when(mockedTransactionalResourceHelper.getSet(
+                        EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
+                .thenReturn(mockedSet);
+
         FileContentReader mockedReader = mock(FileContentReader.class);
-        when(mockedReader.exists())
-            .thenReturn(true);
-        
+        when(mockedReader.exists()).thenReturn(true);
+
         File mockedFile = mock(File.class);
-        when(mockedReader.getFile())
-            .thenReturn(mockedFile);
-        
+        when(mockedReader.getFile()).thenReturn(mockedFile);
+
         ContentStore mockedContentStore = mock(ContentStore.class);
-        when(mockedContentStore.getReader(contentURL))
-            .thenReturn(mockedReader);
-        
+        when(mockedContentStore.getReader(contentURL)).thenReturn(mockedReader);
+
         eagerContentStoreCleaner.deleteFromStore(contentURL, mockedContentStore);
-        
-        verify(mockedContentCleanser).cleanse(mockedFile);        
+
+        verify(mockedContentCleanser).cleanse(mockedFile);
     }
-    
+
     /**
-     * Given that the content does not require cleansing
-     * When the content is deleted from the store 
+     * Given that the content does not require cleansing When the content is deleted from the store
      * Then the content is not cleansed
      */
     @Test
-    public void contentDoesntRequireCleaning()
-    {
+    public void contentDoesntRequireCleaning() {
         String contentURL = AlfMock.generateText();
         Set<Object> mockedSet = new HashSet<>(Arrays.asList(contentURL));
-        when(mockedTransactionalResourceHelper.getSet(EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
-            .thenReturn(mockedSet);
-        
+        when(mockedTransactionalResourceHelper.getSet(
+                        EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
+                .thenReturn(mockedSet);
+
         eagerContentStoreCleaner.deleteFromStore(AlfMock.generateText(), mock(ContentStore.class));
-        
+
         verifyZeroInteractions(mockedContentCleanser);
     }
 }

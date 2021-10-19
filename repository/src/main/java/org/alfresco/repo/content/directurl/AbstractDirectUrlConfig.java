@@ -30,52 +30,44 @@ package org.alfresco.repo.content.directurl;
  *
  * @author Sara Aspery
  */
-public abstract class AbstractDirectUrlConfig implements DirectUrlConfig
-{
+public abstract class AbstractDirectUrlConfig implements DirectUrlConfig {
     /** System-wide direct access URL configuration */
     private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
 
     /** Direct access URL configuration settings */
     private Boolean enabled;
+
     private Long defaultExpiryTimeInSec;
 
-    public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig)
-    {
+    public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig) {
         this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
     }
 
-    public void setEnabled(Boolean enabled)
-    {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec)
-    {
+    public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec) {
         this.defaultExpiryTimeInSec = defaultExpiryTimeInSec;
     }
 
-    protected Boolean isSysWideEnabled()
-    {
+    protected Boolean isSysWideEnabled() {
         return systemWideDirectUrlConfig.isEnabled();
     }
 
-    public Long getSysWideDefaultExpiryTimeInSec()
-    {
+    public Long getSysWideDefaultExpiryTimeInSec() {
         return systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
     }
 
-    public Long getSysWideMaxExpiryTimeInSec()
-    {
+    public Long getSysWideMaxExpiryTimeInSec() {
         return systemWideDirectUrlConfig.getMaxExpiryTimeInSec();
     }
 
-    public Boolean isEnabled()
-    {
+    public Boolean isEnabled() {
         return enabled;
     }
 
-    public Long getDefaultExpiryTimeInSec()
-    {
+    public Long getDefaultExpiryTimeInSec() {
         return defaultExpiryTimeInSec;
     }
 }

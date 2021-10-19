@@ -30,17 +30,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import java.io.InputStream;
 
 /**
- * Used to send transform response messages to remote transform clients.
- * The response is identical to that produced by the Alfresco Transform Service (ATS).<p>
+ * Used to send transform response messages to remote transform clients. The response is identical
+ * to that produced by the Alfresco Transform Service (ATS).
  *
- * Not currently supported in community edition.
+ * <p>Not currently supported in community edition.
  */
-public class StubTransformReplyProvider implements TransformReplyProvider
-{
-    public void produceTransformEvent(NodeRef sourceNodeRef, InputStream transformInputStream,
-        TransformDefinition transformDefinition, int transformContentHashCode)
-    {
+public class StubTransformReplyProvider implements TransformReplyProvider {
+    public void produceTransformEvent(
+            NodeRef sourceNodeRef,
+            InputStream transformInputStream,
+            TransformDefinition transformDefinition,
+            int transformContentHashCode) {
         throw new UnsupportedOperationException("Not currently supported in community edition");
     }
-
 }

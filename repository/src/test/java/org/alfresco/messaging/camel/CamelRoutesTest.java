@@ -48,20 +48,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @Category(NeverRunsTests.class)
 @ContextConfiguration(locations = "/test-messaging-context.xml")
-public class CamelRoutesTest
-{
+public class CamelRoutesTest {
     @EndpointInject("mock:result1")
     protected MockEndpoint resultEndpoint1;
-    
+
     @EndpointInject("mock:result2")
     protected MockEndpoint resultEndpoint2;
-    
+
     @EndpointInject("mock:dlq")
     protected MockEndpoint dlqEndpoint;
-    
-    @Autowired
-    protected CamelContext camelContext;
-    
+
+    @Autowired protected CamelContext camelContext;
+
     @Produce("direct-vm:alfresco.test.1")
     protected ProducerTemplate template1;
 
@@ -74,14 +72,11 @@ public class CamelRoutesTest
     @Produce("direct-vm:alfresco.test.transacted")
     protected ProducerTemplate template4;
 
-    @Autowired
-    protected MockExceptionProcessor messagingExceptionProcessor;
+    @Autowired protected MockExceptionProcessor messagingExceptionProcessor;
 
-    @Autowired
-    protected MockConsumer mockConsumer;
+    @Autowired protected MockConsumer mockConsumer;
 
-    @Autowired
-    protected MockExceptionThrowingConsumer mockExceptionThrowingConsumer;
+    @Autowired protected MockExceptionThrowingConsumer mockExceptionThrowingConsumer;
 
     @Test
     public void testMessageRouteXmlDefined() throws Exception {
@@ -127,8 +122,11 @@ public class CamelRoutesTest
 
         // Test that our exception processor received the error
         assertNotNull(messagingExceptionProcessor.getLastError());
-        assertTrue(messagingExceptionProcessor.getLastError().getClass().equals(
-                IllegalArgumentException.class));
+        assertTrue(
+                messagingExceptionProcessor
+                        .getLastError()
+                        .getClass()
+                        .equals(IllegalArgumentException.class));
 
         // Check that an error was thrown the first time
         assertTrue(mockExceptionThrowingConsumer.isErrorThrown());

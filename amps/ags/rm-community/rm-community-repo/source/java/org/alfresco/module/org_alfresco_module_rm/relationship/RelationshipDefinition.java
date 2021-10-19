@@ -36,8 +36,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public interface RelationshipDefinition
-{
+public interface RelationshipDefinition {
     /**
      * Gets the unique name of the relationship definition
      *

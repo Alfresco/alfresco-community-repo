@@ -19,10 +19,8 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that have been discovered not to be part of any test suites, but the cause of why they
- * have not been added to a test suite is not clear. Investigation Jira tickets should also be created when marking
- * these tests.
+ * Category marker for tests that have been discovered not to be part of any test suites, but the
+ * cause of why they have not been added to a test suite is not clear. Investigation Jira tickets
+ * should also be created when marking these tests.
  */
-public interface NeverRunsTests extends NonBuildTests
-{
-}
+public interface NeverRunsTests extends NonBuildTests {}

@@ -28,30 +28,23 @@ package org.alfresco.messaging.camel;
 /**
  * Consumer which throws an error on the first method, then just saves the last message thereafter.
  */
-public class MockExceptionThrowingConsumer
-{
+public class MockExceptionThrowingConsumer {
     private boolean isErrorThrown;
     private Object lastMessage;
-    
-    public boolean isErrorThrown()
-    {
+
+    public boolean isErrorThrown() {
         return isErrorThrown;
     }
 
-    public Object getLastMessage()
-    {
+    public Object getLastMessage() {
         return lastMessage;
     }
 
-    public void onReceive(Object body)
-    {
-        if (!isErrorThrown)
-        {
+    public void onReceive(Object body) {
+        if (!isErrorThrown) {
             isErrorThrown = true;
             throw new IllegalArgumentException("some bogus error");
-        }
-        else
-        {
+        } else {
             lastMessage = body;
         }
     }

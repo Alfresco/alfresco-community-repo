@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -54,14 +47,20 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
- * Implementation for Java backed webscript to return lists
- * of values for various records management services.
+ * Implementation for Java backed webscript to return lists of values for various records management
+ * services.
  *
  * @author Gavin Cornwell
  */
-public class ListOfValuesGet extends DeclarativeWebScript
-{
+public class ListOfValuesGet extends DeclarativeWebScript {
     protected RecordsManagementActionService rmActionService;
     protected RecordsManagementAuditService rmAuditService;
     protected RecordsManagementEventService rmEventService;
@@ -74,8 +73,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
      *
      * @param rmActionService The RecordsManagementActionService instance
      */
-    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
-    {
+    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService) {
         this.rmActionService = rmActionService;
     }
 
@@ -84,8 +82,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
      *
      * @param rmAuditService The RecordsManagementAuditService instance
      */
-    public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
-    {
+    public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService) {
         this.rmAuditService = rmAuditService;
     }
 
@@ -94,18 +91,16 @@ public class ListOfValuesGet extends DeclarativeWebScript
      *
      * @param rmEventService The RecordsManagementEventService instance
      */
-    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
-    {
+    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService) {
         this.rmEventService = rmEventService;
     }
 
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    the disposition service
+     * @param dispositionService the disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
@@ -114,8 +109,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
      *
      * @param ddService The DictionaryService instance
      */
-    public void setDictionaryService(DictionaryService ddService)
-    {
+    public void setDictionaryService(DictionaryService ddService) {
         this.ddService = ddService;
     }
 
@@ -124,8 +118,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
      *
      * @param namespaceService The NamespaceService instance
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
@@ -133,8 +126,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         // add all the lists data to a Map
         Map<String, Object> listsModel = new HashMap<>(4);
         String requestUrl = req.getURL();
@@ -156,13 +148,12 @@ public class ListOfValuesGet extends DeclarativeWebScript
      * @param baseUrl The base URL of the service
      * @return model of disposition actions list
      */
-    protected Map<String, Object> createDispositionActionsModel(String baseUrl)
-    {
+    protected Map<String, Object> createDispositionActionsModel(String baseUrl) {
         // iterate over the disposition actions
-        List<RecordsManagementAction> dispositionActions = this.rmActionService.getDispositionActions();
+        List<RecordsManagementAction> dispositionActions =
+                this.rmActionService.getDispositionActions();
         List<Map<String, String>> items = new ArrayList<>(dispositionActions.size());
-        for (RecordsManagementAction dispositionAction : dispositionActions)
-        {
+        for (RecordsManagementAction dispositionAction : dispositionActions) {
             Map<String, String> item = new HashMap<>(2);
             item.put("label", dispositionAction.getLabel());
             item.put("value", dispositionAction.getName());
@@ -183,18 +174,17 @@ public class ListOfValuesGet extends DeclarativeWebScript
      * @param baseUrl The base URL of the service
      * @return model of events list
      */
-    protected Map<String, Object> createEventsModel(String baseUrl)
-    {
+    protected Map<String, Object> createEventsModel(String baseUrl) {
         // get all the events including their display labels from the event service
         List<RecordsManagementEvent> events = this.rmEventService.getEvents();
         List<Map<String, Object>> items = new ArrayList<>(events.size());
-        for (RecordsManagementEvent event : events)
-        {
+        for (RecordsManagementEvent event : events) {
             Map<String, Object> item = new HashMap<>(3);
             item.put("label", event.getDisplayLabel());
             item.put("value", event.getName());
-            item.put("automatic",
-                        this.rmEventService.getEventType(event.getType()).isAutomaticEvent());
+            item.put(
+                    "automatic",
+                    this.rmEventService.getEventType(event.getType()).isAutomaticEvent());
             items.add(item);
         }
 
@@ -212,16 +202,13 @@ public class ListOfValuesGet extends DeclarativeWebScript
      * @param baseUrl The base URL of the service
      * @return model of period types list
      */
-    protected Map<String, Object> createPeriodTypesModel(String baseUrl)
-    {
+    protected Map<String, Object> createPeriodTypesModel(String baseUrl) {
         // iterate over all period provides, but ignore 'cron'
         Set<String> providers = Period.getProviderNames();
         List<Map<String, String>> items = new ArrayList<>(providers.size());
-        for (String provider : providers)
-        {
+        for (String provider : providers) {
             PeriodProvider pp = Period.getProvider(provider);
-            if (!pp.getPeriodType().equals("cron"))
-            {
+            if (!pp.getPeriodType().equals("cron")) {
                 Map<String, String> item = new HashMap<>(2);
                 item.put("label", pp.getDisplayLabel());
                 item.put("value", pp.getPeriodType());
@@ -243,22 +230,19 @@ public class ListOfValuesGet extends DeclarativeWebScript
      * @param baseUrl The base URL of the service
      * @return model of period properties list
      */
-    protected Map<String, Object> createPeriodPropertiesModel(String baseUrl)
-    {
+    protected Map<String, Object> createPeriodPropertiesModel(String baseUrl) {
         // iterate over all period properties and get the label from their type definition
-        Collection<DispositionProperty> dispositionProperties = dispositionService.getDispositionProperties();
+        Collection<DispositionProperty> dispositionProperties =
+                dispositionService.getDispositionProperties();
         List<Map<String, String>> items = new ArrayList<>(dispositionProperties.size());
-        for (DispositionProperty dispositionProperty : dispositionProperties)
-        {
+        for (DispositionProperty dispositionProperty : dispositionProperties) {
             PropertyDefinition propDef = dispositionProperty.getPropertyDefinition();
             QName propName = dispositionProperty.getQName();
 
-            if (propDef != null)
-            {
+            if (propDef != null) {
                 Map<String, String> item = new HashMap<>(2);
                 String propTitle = propDef.getTitle(ddService);
-                if (propTitle == null || propTitle.length() == 0)
-                {
+                if (propTitle == null || propTitle.length() == 0) {
                     propTitle = StringUtils.capitalize(propName.getLocalName());
                 }
                 item.put("label", propTitle);
@@ -281,13 +265,11 @@ public class ListOfValuesGet extends DeclarativeWebScript
      * @param baseUrl The base URL of the service
      * @return model of audit events list
      */
-    protected Map<String, Object> createAuditEventsModel(String baseUrl)
-    {
+    protected Map<String, Object> createAuditEventsModel(String baseUrl) {
         // iterate over all audit events
         List<AuditEvent> auditEvents = this.rmAuditService.getAuditEvents();
         List<Map<String, String>> items = new ArrayList<>(auditEvents.size());
-        for (AuditEvent event : auditEvents)
-        {
+        for (AuditEvent event : auditEvents) {
             Map<String, String> item = new HashMap<>(2);
             item.put("label", event.getLabel());
             item.put("value", event.getName());

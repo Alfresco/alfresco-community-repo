@@ -4,32 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api.impl;
-
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
@@ -52,86 +46,79 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Centralises access to tag services and maps between representations.
- * 
+ *
  * @author steveglover
  * @since publicapi1.0
  */
-public class TagsImpl implements Tags
-{
-	private static final Object PARAM_INCLUDE_COUNT = "count";
+public class TagsImpl implements Tags {
+    private static final Object PARAM_INCLUDE_COUNT = "count";
     private Nodes nodes;
-	private TaggingService taggingService;
-	private TypeConstraint typeConstraint;
-	
-	public void setTypeConstraint(TypeConstraint typeConstraint)
-	{
-		this.typeConstraint = typeConstraint;
-	}
+    private TaggingService taggingService;
+    private TypeConstraint typeConstraint;
 
-	public void setNodes(Nodes nodes) 
-    {
-		this.nodes = nodes;
-	}
-	
-    public void setTaggingService(TaggingService taggingService)
-    {
-		this.taggingService = taggingService;
-	}
-
-	public List<Tag> addTags(String nodeId, final List<Tag> tags)
-	{
-	        NodeRef nodeRef = nodes.validateNode(nodeId);
-			if(!typeConstraint.matches(nodeRef))
-			{
-				throw new UnsupportedResourceOperationException("Cannot tag this node");
-			}
-
-	        List<String> tagValues = new AbstractList<String>()
-            {
-                @Override
-                public String get(int arg0)
-                {
-                	String tag = tags.get(arg0).getTag();
-                    return tag;
-                }
-    
-                @Override
-                public int size()
-                {
-                    return tags.size();
-                }
-            };
-            try
-            {
-		        List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
-		        List<Tag> ret = new ArrayList<Tag>(tags.size());
-		        for(Pair<String, NodeRef> pair : tagNodeRefs)
-		        {
-		        	ret.add(new Tag(pair.getSecond(), pair.getFirst()));
-		        }
-		        return ret;
-            }
-            catch(IllegalArgumentException e)
-            {
-            	throw new InvalidArgumentException(e.getMessage());
-            }
-	}
-	
-    public void deleteTag(String nodeId, String tagId)
-    {
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		getTag(tagId);
-    	NodeRef existingTagNodeRef = validateTag(tagId);
-    	String tagValue = taggingService.getTagName(existingTagNodeRef);
-    	taggingService.removeTag(nodeRef, tagValue);
+    public void setTypeConstraint(TypeConstraint typeConstraint) {
+        this.typeConstraint = typeConstraint;
     }
 
-    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
-    {
+    public void setNodes(Nodes nodes) {
+        this.nodes = nodes;
+    }
+
+    public void setTaggingService(TaggingService taggingService) {
+        this.taggingService = taggingService;
+    }
+
+    public List<Tag> addTags(String nodeId, final List<Tag> tags) {
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        if (!typeConstraint.matches(nodeRef)) {
+            throw new UnsupportedResourceOperationException("Cannot tag this node");
+        }
+
+        List<String> tagValues =
+                new AbstractList<String>() {
+                    @Override
+                    public String get(int arg0) {
+                        String tag = tags.get(arg0).getTag();
+                        return tag;
+                    }
+
+                    @Override
+                    public int size() {
+                        return tags.size();
+                    }
+                };
+        try {
+            List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
+            List<Tag> ret = new ArrayList<Tag>(tags.size());
+            for (Pair<String, NodeRef> pair : tagNodeRefs) {
+                ret.add(new Tag(pair.getSecond(), pair.getFirst()));
+            }
+            return ret;
+        } catch (IllegalArgumentException e) {
+            throw new InvalidArgumentException(e.getMessage());
+        }
+    }
+
+    public void deleteTag(String nodeId, String tagId) {
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        getTag(tagId);
+        NodeRef existingTagNodeRef = validateTag(tagId);
+        String tagValue = taggingService.getTagName(existingTagNodeRef);
+        taggingService.removeTag(nodeRef, tagValue);
+    }
+
+    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params) {
         Paging paging = params.getPaging();
-        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging));
+        PagingResults<Pair<NodeRef, String>> results =
+                taggingService.getTags(storeRef, Util.getPagingRequest(paging));
         taggingService.getPagedTags(storeRef, 0, paging.getMaxItems());
         Integer totalItems = results.getTotalResultCount().getFirst();
         List<Pair<NodeRef, String>> page = results.getPage();
@@ -139,96 +126,85 @@ public class TagsImpl implements Tags
         List<Pair<String, Integer>> tagsByCount = null;
         Map<String, Integer> tagsByCountMap = new HashMap<String, Integer>();
 
-        if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
-        {
+        if (params.getInclude().contains(PARAM_INCLUDE_COUNT)) {
             tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
-            if (tagsByCount != null)
-            {
-                for (Pair<String, Integer> tagByCountElem : tagsByCount)
-                {
+            if (tagsByCount != null) {
+                for (Pair<String, Integer> tagByCountElem : tagsByCount) {
                     tagsByCountMap.put(tagByCountElem.getFirst(), tagByCountElem.getSecond());
                 }
             }
         }
-        for (Pair<NodeRef, String> pair : page)
-        {
+        for (Pair<NodeRef, String> pair : page) {
             Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
             selectedTag.setCount(tagsByCountMap.get(selectedTag.getTag()));
             tags.add(selectedTag);
         }
 
-        return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+        return CollectionWithPagingInfo.asPaged(
+                paging,
+                tags,
+                results.hasMoreItems(),
+                (totalItems == null ? null : totalItems.intValue()));
     }
 
-    public NodeRef validateTag(String tagId)
-    {
-    	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
-    }
-    
-    public NodeRef validateTag(StoreRef storeRef, String tagId)
-    {
-    	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+    public NodeRef validateTag(String tagId) {
+        NodeRef tagNodeRef = nodes.validateNode(tagId);
+        if (tagNodeRef == null) {
+            throw new EntityNotFoundException(tagId);
+        }
+        return tagNodeRef;
     }
 
-    public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
-    {
-    	try
-    	{
-	    	NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
-	    	String existingTagName = taggingService.getTagName(existingTagNodeRef);
-	    	String newTagName = tag.getTag();
-	    	NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
-	    	return new Tag(newTagNodeRef, newTagName);
-    	}
-    	catch(NonExistentTagException e)
-    	{
-    		throw new NotFoundException(e.getMessage());
-    	}
-    	catch(TagExistsException e)
-    	{
-    		throw new ConstraintViolatedException(e.getMessage());
-    	}
-    	catch(TaggingException e)
-    	{
-    		throw new InvalidArgumentException(e.getMessage());
-    	}
+    public NodeRef validateTag(StoreRef storeRef, String tagId) {
+        NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
+        if (tagNodeRef == null) {
+            throw new EntityNotFoundException(tagId);
+        }
+        return tagNodeRef;
     }
 
-    public Tag getTag(String tagId)
-    {
-    	return getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, tagId);
+    public Tag changeTag(StoreRef storeRef, String tagId, Tag tag) {
+        try {
+            NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
+            String existingTagName = taggingService.getTagName(existingTagNodeRef);
+            String newTagName = tag.getTag();
+            NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
+            return new Tag(newTagNodeRef, newTagName);
+        } catch (NonExistentTagException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (TagExistsException e) {
+            throw new ConstraintViolatedException(e.getMessage());
+        } catch (TaggingException e) {
+            throw new InvalidArgumentException(e.getMessage());
+        }
     }
 
-    public Tag getTag(StoreRef storeRef, String tagId)
-    {
-    	NodeRef tagNodeRef = validateTag(storeRef, tagId);
-    	String tagValue = taggingService.getTagName(tagNodeRef);
-    	return new Tag(tagNodeRef, tagValue);
+    public Tag getTag(String tagId) {
+        return getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, tagId);
     }
 
-    public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
-    {
-		NodeRef nodeRef = validateTag(nodeId);
+    public Tag getTag(StoreRef storeRef, String tagId) {
+        NodeRef tagNodeRef = validateTag(storeRef, tagId);
+        String tagValue = taggingService.getTagName(tagNodeRef);
+        return new Tag(tagNodeRef, tagValue);
+    }
 
-		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
-    	Integer totalItems = results.getTotalResultCount().getFirst();
-    	List<Pair<NodeRef, String>> page = results.getPage();
-    	List<Tag> tags = new ArrayList<Tag>(page.size());
-    	for(Pair<NodeRef, String> pair : page)
-    	{
-    		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
-    	}
+    public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params) {
+        NodeRef nodeRef = validateTag(nodeId);
 
-    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+        PagingResults<Pair<NodeRef, String>> results =
+                taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
+        Integer totalItems = results.getTotalResultCount().getFirst();
+        List<Pair<NodeRef, String>> page = results.getPage();
+        List<Tag> tags = new ArrayList<Tag>(page.size());
+        for (Pair<NodeRef, String> pair : page) {
+            tags.add(new Tag(pair.getFirst(), pair.getSecond()));
+        }
+
+        return CollectionWithPagingInfo.asPaged(
+                params.getPaging(),
+                tags,
+                results.hasMoreItems(),
+                (totalItems == null ? null : totalItems.intValue()));
     }
 }

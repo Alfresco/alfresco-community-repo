@@ -32,8 +32,7 @@ import java.util.Map;
  *
  * @author mikeh
  */
-public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorExtension
-{
+public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorExtension {
     private Map<String, Object> customResponses;
 
     /**
@@ -41,8 +40,7 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
      *
      * @param customResponses
      */
-    public void setCustomResponses(Map<String, Object> customResponses)
-    {
+    public void setCustomResponses(Map<String, Object> customResponses) {
         this.customResponses = customResponses;
     }
 
@@ -51,8 +49,7 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
      *
      * @return The JSON string
      */
-    public String getJSON()
-    {
+    public String getJSON() {
         return this.getJSONObj().toString();
     }
 
@@ -61,20 +58,14 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
      *
      * @return The JSON object
      */
-    protected Object getJSONObj()
-    {
+    protected Object getJSONObj() {
         JSONObject json = new JSONObject();
 
-
-        for (Map.Entry<String, Object> entry : this.customResponses.entrySet())
-        {
-            try
-            {
+        for (Map.Entry<String, Object> entry : this.customResponses.entrySet()) {
+            try {
                 Serializable response = ((CustomResponse) entry.getValue()).populate();
-                json.put(entry.getKey(), response == null ? JSONObject.NULL: response);
-            }
-            catch (JSONException error)
-            {
+                json.put(entry.getKey(), response == null ? JSONObject.NULL : response);
+            } catch (JSONException error) {
                 error.printStackTrace();
             }
         }

@@ -35,23 +35,22 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
 
-
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
-import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
-import org.alfresco.utility.model.TestModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.rm.community.model.common.Owner;
+import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
+import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
+import org.alfresco.utility.model.TestModel;
+
+import java.util.List;
 
 /**
  * POJO for record category properties
@@ -64,37 +63,36 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class RecordCategoryProperties extends TestModel
-{
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class RecordCategoryProperties extends TestModel {
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty (required = true, value = PROPERTIES_REVIEW_PERIOD)
-    @JsonSerialize (using = ReviewPeriodSerializer.class)
+    @JsonProperty(required = true, value = PROPERTIES_REVIEW_PERIOD)
+    @JsonSerialize(using = ReviewPeriodSerializer.class)
     private ReviewPeriod reviewPeriod;
 
-    @JsonProperty (required = true, value = PROPERTIES_VITAL_RECORD_INDICATOR)
+    @JsonProperty(required = true, value = PROPERTIES_VITAL_RECORD_INDICATOR)
     private Boolean vitalRecordIndicator;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty (PROPERTIES_TITLE)
+    @JsonProperty(PROPERTIES_TITLE)
     private String title;
 
-    @JsonProperty (PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty(PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
-    @JsonProperty (PROPERTIES_DESCRIPTION)
+    @JsonProperty(PROPERTIES_DESCRIPTION)
     private String description;
 
-    @JsonProperty (PROPERTIES_OWNER)
+    @JsonProperty(PROPERTIES_OWNER)
     private Owner owner;
 
-    @JsonProperty (PROPERTIES_CLASSIFICATION)
+    @JsonProperty(PROPERTIES_CLASSIFICATION)
     private List<String> classification;
 }

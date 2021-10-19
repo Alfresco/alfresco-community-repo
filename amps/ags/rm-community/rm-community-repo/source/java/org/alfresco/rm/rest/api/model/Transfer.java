@@ -27,25 +27,23 @@
 
 package org.alfresco.rm.rest.api.model;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * POJO object carrying information of a transfer node
- * 
+ *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
-public class Transfer
-{
+public class Transfer {
     public static final String PARAM_TRANSFER_ACCESSION_INDICATOR = "transferAccessionIndicator";
     public static final String PARAM_TRANSFER_LOCATION = "transferLocation";
     public static final String PARAM_TRANSFER_PDF_INDICATOR = "transferPDFIndicator";
@@ -65,130 +63,105 @@ public class Transfer
     private String transferLocation;
     private Boolean transferAccessionIndicator;
 
-    public Transfer()
-    {
-        //Default constructor
+    public Transfer() {
+        // Default constructor
     }
 
-    @JsonProperty ("id")
+    @JsonProperty("id")
     @UniqueId
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return nodeRef;
     }
 
-    public void setNodeRef(NodeRef nodeRef)
-    {
+    public void setNodeRef(NodeRef nodeRef) {
         this.nodeRef = nodeRef;
     }
 
-    public NodeRef getParentId()
-    {
+    public NodeRef getParentId() {
         return parentNodeRef;
     }
 
-    public void setParentId(NodeRef parentNodeRef)
-    {
+    public void setParentId(NodeRef parentNodeRef) {
         this.parentNodeRef = parentNodeRef;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getNodeType()
-    {
+    public String getNodeType() {
         return nodeType;
     }
 
-    public void setNodeType(String nodeType)
-    {
+    public void setNodeType(String nodeType) {
         this.nodeType = nodeType;
     }
 
-    public Date getCreatedAt()
-    {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt)
-    {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public UserInfo getCreatedByUser()
-    {
+    public UserInfo getCreatedByUser() {
         return createdByUser;
     }
 
-    public void setCreatedByUser(UserInfo createdByUser)
-    {
+    public void setCreatedByUser(UserInfo createdByUser) {
         this.createdByUser = createdByUser;
     }
 
-    public List<String> getAspectNames()
-    {
+    public List<String> getAspectNames() {
         return aspectNames;
     }
 
-    public void setAspectNames(List<String> aspectNames)
-    {
+    public void setAspectNames(List<String> aspectNames) {
         this.aspectNames = aspectNames;
     }
 
-    public Map<String, Object> getProperties()
-    {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, Object> properties)
-    {
+    public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
 
-    public List<String> getAllowableOperations()
-    {
+    public List<String> getAllowableOperations() {
         return allowableOperations;
     }
 
-    public void setAllowableOperations(List<String> allowableOperations)
-    {
+    public void setAllowableOperations(List<String> allowableOperations) {
         this.allowableOperations = allowableOperations;
     }
 
-    public Boolean getTransferPDFIndicator()
-    {
+    public Boolean getTransferPDFIndicator() {
         return transferPDFIndicator;
     }
 
-    public void setTransferPDFIndicator(Boolean transferPDFIndicator)
-    {
+    public void setTransferPDFIndicator(Boolean transferPDFIndicator) {
         this.transferPDFIndicator = transferPDFIndicator;
     }
 
-    public String getTransferLocation()
-    {
+    public String getTransferLocation() {
         return transferLocation;
     }
 
-    public void setTransferLocation(String transferLocation)
-    {
+    public void setTransferLocation(String transferLocation) {
         this.transferLocation = transferLocation;
     }
 
-    public Boolean getTransferAccessionIndicator()
-    {
+    public Boolean getTransferAccessionIndicator() {
         return transferAccessionIndicator;
     }
 
-    public void setTransferAccessionIndicator(Boolean transferAccessionIndicator)
-    {
+    public void setTransferAccessionIndicator(Boolean transferAccessionIndicator) {
         this.transferAccessionIndicator = transferAccessionIndicator;
     }
 }

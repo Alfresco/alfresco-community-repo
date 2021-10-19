@@ -38,25 +38,20 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public final class RmDictionaryWebServiceUtils
-{
+public final class RmDictionaryWebServiceUtils {
     private static final String SITE_ID = "siteId";
     private static final String SITE_PRESET = "rm-site-dashboard";
 
-    private RmDictionaryWebServiceUtils()
-    {
+    private RmDictionaryWebServiceUtils() {
         // Will not be called
     }
 
-    public static boolean isRmSite(WebScriptRequest req, SiteService siteService)
-    {
+    public static boolean isRmSite(WebScriptRequest req, SiteService siteService) {
         boolean isRmSite = false;
         String siteId = req.getParameter(SITE_ID);
-        if (StringUtils.isNotBlank(siteId))
-        {
+        if (StringUtils.isNotBlank(siteId)) {
             SiteInfo site = siteService.getSite(siteId);
-            if (site != null && site.getSitePreset().equals(SITE_PRESET))
-            {
+            if (site != null && site.getSitePreset().equals(SITE_PRESET)) {
                 isRmSite = true;
             }
         }

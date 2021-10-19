@@ -18,57 +18,42 @@
  */
 package org.alfresco.httpclient;
 
-/**
- * 
- * @since 4.0
- *
- */
-public class MD5EncryptionParameters
-{
+/** @since 4.0 */
+public class MD5EncryptionParameters {
     private String cipherAlgorithm;
     private long messageTimeout;
     private String macAlgorithm;
 
-    public MD5EncryptionParameters()
-    {
-        
-    }
+    public MD5EncryptionParameters() {}
 
-    public MD5EncryptionParameters(String cipherAlgorithm,
-            Long messageTimeout, String macAlgorithm)
-    {
+    public MD5EncryptionParameters(
+            String cipherAlgorithm, Long messageTimeout, String macAlgorithm) {
         this.cipherAlgorithm = cipherAlgorithm;
         this.messageTimeout = messageTimeout;
         this.macAlgorithm = macAlgorithm;
     }
-    
-    public String getCipherAlgorithm()
-    {
+
+    public String getCipherAlgorithm() {
         return cipherAlgorithm;
     }
 
-    public void setCipherAlgorithm(String cipherAlgorithm)
-    {
+    public void setCipherAlgorithm(String cipherAlgorithm) {
         this.cipherAlgorithm = cipherAlgorithm;
     }
-    
-    public long getMessageTimeout()
-    {
+
+    public long getMessageTimeout() {
         return messageTimeout;
     }
 
-    public String getMacAlgorithm()
-    {
+    public String getMacAlgorithm() {
         return macAlgorithm;
     }
-    
-    public void setMessageTimeout(long messageTimeout)
-    {
+
+    public void setMessageTimeout(long messageTimeout) {
         this.messageTimeout = messageTimeout;
     }
 
-    public void setMacAlgorithm(String macAlgorithm)
-    {
+    public void setMacAlgorithm(String macAlgorithm) {
         this.macAlgorithm = macAlgorithm;
     }
 }

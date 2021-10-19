@@ -4,35 +4,34 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.workflow.api.model;
 
-import java.util.Date;
-import java.util.List;
-
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.DelegationState;
 
-public class Task
-{
+import java.util.Date;
+import java.util.List;
+
+public class Task {
     String id;
     String processId;
     String processDefinitionId;
@@ -49,13 +48,10 @@ public class Task
     String formResourceKey;
     String state;
     List<TaskVariable> variables;
-    
-    public Task()
-    {
-    }
 
-    public Task(HistoricTaskInstance taskInstance)
-    {
+    public Task() {}
+
+    public Task(HistoricTaskInstance taskInstance) {
         this.id = taskInstance.getId();
         this.processId = taskInstance.getProcessInstanceId();
         this.processDefinitionId = taskInstance.getProcessDefinitionId();
@@ -70,22 +66,16 @@ public class Task
         this.owner = taskInstance.getOwner();
         this.assignee = taskInstance.getAssignee();
         this.formResourceKey = taskInstance.getFormKey();
-        if (taskInstance.getEndTime() != null)
-        {
-        	this.state = TaskStateTransition.COMPLETED.name().toLowerCase();
-        }
-        else if (taskInstance.getAssignee() != null)
-        {
-        	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
-        }
-        else
-        {
-        	this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
+        if (taskInstance.getEndTime() != null) {
+            this.state = TaskStateTransition.COMPLETED.name().toLowerCase();
+        } else if (taskInstance.getAssignee() != null) {
+            this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
+        } else {
+            this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
         }
     }
-    
-    public Task(org.activiti.engine.task.Task taskInstance)
-    {
+
+    public Task(org.activiti.engine.task.Task taskInstance) {
         this.id = taskInstance.getId();
         this.processId = taskInstance.getProcessInstanceId();
         this.processDefinitionId = taskInstance.getProcessDefinitionId();
@@ -97,181 +87,142 @@ public class Task
         this.priority = taskInstance.getPriority();
         this.owner = taskInstance.getOwner();
         this.assignee = taskInstance.getAssignee();
-        if (taskInstance.getDelegationState() == DelegationState.PENDING)
-        {
+        if (taskInstance.getDelegationState() == DelegationState.PENDING) {
             this.state = TaskStateTransition.DELEGATED.name().toLowerCase();
-        }
-        else if (taskInstance.getDelegationState() == DelegationState.RESOLVED)
-        {
+        } else if (taskInstance.getDelegationState() == DelegationState.RESOLVED) {
             this.state = TaskStateTransition.RESOLVED.name().toLowerCase();
-        }
-        else if (taskInstance.getAssignee() != null)
-        {
-        	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
-        }
-        else
-        {
-        	this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
+        } else if (taskInstance.getAssignee() != null) {
+            this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
+        } else {
+            this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
         }
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getProcessId()
-    {
+    public String getProcessId() {
         return processId;
     }
 
-    public void setProcessId(String processId)
-    {
+    public void setProcessId(String processId) {
         this.processId = processId;
     }
 
-    public String getProcessDefinitionId()
-    {
+    public String getProcessDefinitionId() {
         return processDefinitionId;
     }
 
-    public void setProcessDefinitionId(String processDefinitionId)
-    {
+    public void setProcessDefinitionId(String processDefinitionId) {
         this.processDefinitionId = processDefinitionId;
     }
 
-    public String getActivityDefinitionId()
-    {
+    public String getActivityDefinitionId() {
         return activityDefinitionId;
     }
 
-    public void setActivityDefinitionId(String activityDefinitionId)
-    {
+    public void setActivityDefinitionId(String activityDefinitionId) {
         this.activityDefinitionId = activityDefinitionId;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public Date getDueAt()
-    {
+    public Date getDueAt() {
         return dueAt;
     }
 
-    public void setDueAt(Date dueAt)
-    {
+    public void setDueAt(Date dueAt) {
         this.dueAt = dueAt;
     }
 
-    public Date getStartedAt()
-    {
+    public Date getStartedAt() {
         return startedAt;
     }
 
-    public void setStartedAt(Date startedAt)
-    {
+    public void setStartedAt(Date startedAt) {
         this.startedAt = startedAt;
     }
 
-    public Date getEndedAt()
-    {
+    public Date getEndedAt() {
         return endedAt;
     }
 
-    public void setEndedAt(Date endedAt)
-    {
+    public void setEndedAt(Date endedAt) {
         this.endedAt = endedAt;
     }
 
-    public Long getDurationInMs()
-    {
+    public Long getDurationInMs() {
         return durationInMs;
     }
 
-    public void setDurationInMs(Long durationInMs)
-    {
+    public void setDurationInMs(Long durationInMs) {
         this.durationInMs = durationInMs;
     }
 
-    public int getPriority()
-    {
+    public int getPriority() {
         return priority;
     }
 
-    public void setPriority(int priority)
-    {
+    public void setPriority(int priority) {
         this.priority = priority;
     }
 
-    public String getOwner()
-    {
+    public String getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner)
-    {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 
-    public String getAssignee()
-    {
+    public String getAssignee() {
         return assignee;
     }
 
-    public void setAssignee(String assignee)
-    {
+    public void setAssignee(String assignee) {
         this.assignee = assignee;
     }
 
-    public String getFormResourceKey()
-    {
+    public String getFormResourceKey() {
         return formResourceKey;
     }
 
-    public void setFormResourceKey(String formResourceKey)
-    {
+    public void setFormResourceKey(String formResourceKey) {
         this.formResourceKey = formResourceKey;
     }
-    
-    public String getState()
-    {
+
+    public String getState() {
         return this.state;
     }
-    
-    public void setState(String state)
-    {
+
+    public void setState(String state) {
         this.state = state;
     }
 
-    public List<TaskVariable> getVariables()
-    {
+    public List<TaskVariable> getVariables() {
         return variables;
     }
 
-    public void setVariables(List<TaskVariable> variables)
-    {
+    public void setVariables(List<TaskVariable> variables) {
         this.variables = variables;
     }
 }

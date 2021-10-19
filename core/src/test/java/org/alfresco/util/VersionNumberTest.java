@@ -22,13 +22,11 @@ import junit.framework.TestCase;
 
 /**
  * Test for extension version class.
- * 
+ *
  * @author Roy Wetherall
  */
-public class VersionNumberTest extends TestCase
-{
-    public void testCreate()
-    {
+public class VersionNumberTest extends TestCase {
+    public void testCreate() {
         VersionNumber version1 = new VersionNumber("1");
         int[] parts1 = version1.getParts();
         assertNotNull(parts1);
@@ -50,50 +48,39 @@ public class VersionNumberTest extends TestCase
         assertEquals(2, parts3[1]);
         assertEquals(3, parts3[2]);
 
-        try
-        {
+        try {
             new VersionNumber("xxx");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
-        {
+        } catch (Exception exception) {
             // OK
         }
-        try
-        {
+        try {
             new VersionNumber("1-1-2");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
-        {
+        } catch (Exception exception) {
             // OK
         }
-        try
-        {
+        try {
             new VersionNumber("1.2.3a");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
-        {
+        } catch (Exception exception) {
             // OK
         }
-        try
-        {
+        try {
             new VersionNumber("1.2.3-M4");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
-        {
+        } catch (Exception exception) {
             // OK
         }
-        try
-        {
+        try {
             new VersionNumber("1.2.3-A4");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
-        {
+        } catch (Exception exception) {
             // OK
         }
     }
 
-    public void testEquals()
-    {
+    public void testEquals() {
         VersionNumber version0 = new VersionNumber("1");
         VersionNumber version1 = new VersionNumber("1.2");
         VersionNumber version2 = new VersionNumber("1.2");
@@ -110,8 +97,7 @@ public class VersionNumberTest extends TestCase
         assertTrue(version0.equals(version6));
     }
 
-    public void testCompare()
-    {
+    public void testCompare() {
         VersionNumber version0 = new VersionNumber("1");
         VersionNumber version1 = new VersionNumber("1.2");
         VersionNumber version2 = new VersionNumber("1.2");
@@ -123,7 +109,7 @@ public class VersionNumberTest extends TestCase
         VersionNumber version8 = new VersionNumber("10.0");
         VersionNumber version9 = new VersionNumber("10.3");
         VersionNumber version10 = new VersionNumber("11.1");
-        
+
         assertEquals(-1, version0.compareTo(version1));
         assertEquals(1, version1.compareTo(version0));
         assertEquals(0, version1.compareTo(version2));

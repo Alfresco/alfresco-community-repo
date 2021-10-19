@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,19 +28,17 @@ package org.alfresco.rest.framework.tests.api.mocks2;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.GoatEntityResource;
 
-
 /**
  * This inherits all Farmer's son's properties and ANNOTATIONS
  *
- * getSheepId is overidden but no annotation specified (OK)
- * getGoatId is overidden, a new annotation key is specified (THIS IS NOT RECOMMENDED)
- * getId is overidden but no annotation specified (OK)
+ * <p>getSheepId is overidden but no annotation specified (OK) getGoatId is overidden, a new
+ * annotation key is specified (THIS IS NOT RECOMMENDED) getId is overidden but no annotation
+ * specified (OK)
+ *
  * @author Gethin James
  */
-public class FarmersGrandson extends FarmersSon
-{
-    public FarmersGrandson(String id)
-    {
+public class FarmersGrandson extends FarmersSon {
+    public FarmersGrandson(String id) {
         super(id);
     }
 
@@ -48,8 +46,7 @@ public class FarmersGrandson extends FarmersSon
      * @see org.alfresco.rest.framework.tests.api.mocks.Farmer#getSheepId()
      */
     @Override
-    public String getSheepId()
-    {
+    public String getSheepId() {
         return super.getSheepId();
     }
 
@@ -57,9 +54,8 @@ public class FarmersGrandson extends FarmersSon
      * @see org.alfresco.rest.framework.tests.api.mocks.Farmer#getGoatId()
      */
     @Override
-    @EmbeddedEntityResource(propertyName = "grandgoat", entityResource=GoatEntityResource.class)
-    public String getGoatId()
-    {
+    @EmbeddedEntityResource(propertyName = "grandgoat", entityResource = GoatEntityResource.class)
+    public String getGoatId() {
         return super.getGoatId();
     }
 
@@ -67,9 +63,7 @@ public class FarmersGrandson extends FarmersSon
      * @see org.alfresco.rest.framework.tests.api.mocks2.FarmersSon#getId()
      */
     @Override
-    public String getId()
-    {
+    public String getId() {
         return super.getId();
     }
-
 }

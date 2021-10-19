@@ -28,6 +28,7 @@ package org.alfresco.rest.framework.jacksonextensions;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
+
 import java.io.IOException;
 
 /**
@@ -36,17 +37,14 @@ import java.io.IOException;
  * @author steveglover
  * @author amukha
  */
-public class RestApiStringDeserializer extends StringDeserializer
-{
+public class RestApiStringDeserializer extends StringDeserializer {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
-    {
+    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String ret = super.deserialize(p, ctxt);
         // Return null for empty string
-        if(ret != null && ret.length() == 0)
-        {
+        if (ret != null && ret.length() == 0) {
             ret = null;
         }
         return ret;

@@ -4,33 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.bulkimport.metadataloaders;
-
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 
 import org.alfresco.repo.bulkimport.ImportableItem.ContentAndMetadata;
 import org.alfresco.repo.bulkimport.MetadataLoader;
@@ -43,148 +36,140 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+
 /**
- * Abstract MetadataLoader abstracts out the common features of loading metadata
- * from a <code>java.util.Map</code>, regardless of where it came from.
+ * Abstract MetadataLoader abstracts out the common features of loading metadata from a <code>
+ * java.util.Map</code>, regardless of where it came from.
  *
  * @since 4.0
- * 
  * @see MetadataLoader
  */
-abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
-{
-    private final static Log log = LogFactory.getLog(AbstractMapBasedMetadataLoader.class);
-    
-    private final static String PROPERTY_NAME_TYPE    = "type";
-    private final static String PROPERTY_NAME_ASPECTS = "aspects";
-    
-    private final static String DEFAULT_MULTI_VALUED_SEPARATOR = ",";
-    
-    protected final NamespaceService  namespaceService;
-    protected final DictionaryService dictionaryService; 
-    protected final String            multiValuedSeparator;
-    protected final String            metadataFileExtension;
-    
-    protected AbstractMapBasedMetadataLoader(final ServiceRegistry serviceRegistry, final String fileExtension)
-    {
+abstract class AbstractMapBasedMetadataLoader implements MetadataLoader {
+    private static final Log log = LogFactory.getLog(AbstractMapBasedMetadataLoader.class);
+
+    private static final String PROPERTY_NAME_TYPE = "type";
+    private static final String PROPERTY_NAME_ASPECTS = "aspects";
+
+    private static final String DEFAULT_MULTI_VALUED_SEPARATOR = ",";
+
+    protected final NamespaceService namespaceService;
+    protected final DictionaryService dictionaryService;
+    protected final String multiValuedSeparator;
+    protected final String metadataFileExtension;
+
+    protected AbstractMapBasedMetadataLoader(
+            final ServiceRegistry serviceRegistry, final String fileExtension) {
         this(serviceRegistry, DEFAULT_MULTI_VALUED_SEPARATOR, fileExtension);
     }
-    
-    protected AbstractMapBasedMetadataLoader(final ServiceRegistry serviceRegistry, final String multiValuedSeparator, final String fileExtension)
-    {
+
+    protected AbstractMapBasedMetadataLoader(
+            final ServiceRegistry serviceRegistry,
+            final String multiValuedSeparator,
+            final String fileExtension) {
         // PRECONDITIONS
-        assert serviceRegistry      != null : "serviceRegistry must not be null";
+        assert serviceRegistry != null : "serviceRegistry must not be null";
         assert multiValuedSeparator != null : "multiValuedSeparator must not be null";
-        
+
         // Body
-        this.namespaceService      = serviceRegistry.getNamespaceService();
-        this.dictionaryService     = serviceRegistry.getDictionaryService();
-        this.multiValuedSeparator  = multiValuedSeparator;
+        this.namespaceService = serviceRegistry.getNamespaceService();
+        this.dictionaryService = serviceRegistry.getDictionaryService();
+        this.multiValuedSeparator = multiValuedSeparator;
         this.metadataFileExtension = fileExtension;
     }
-    
+
+    /** @see org.alfresco.repo.bulkimport.MetadataLoader#getMetadataFileExtension() */
+    @Override
+    public final String getMetadataFileExtension() {
+        return (metadataFileExtension);
+    }
 
     /**
-     * @see org.alfresco.repo.bulkimport.MetadataLoader#getMetadataFileExtension()
-     */
-    @Override
-    public final String getMetadataFileExtension()
-    {
-        return(metadataFileExtension);
-    }
-    
-    
-    /**
-     * Method that actually loads the properties from the file. 
+     * Method that actually loads the properties from the file.
+     *
      * @param metadataFile The file to load the properties from <i>(must not be null)</i>.
      * @return A new <code>Properties</code> object loaded from that file.
      */
-    abstract protected Map<String,Serializable> loadMetadataFromFile(final Path metadataFile);
+    protected abstract Map<String, Serializable> loadMetadataFromFile(final Path metadataFile);
 
     @Override
-    public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata)
-    {
-        if (contentAndMetadata.metadataFileExists())
-        {
+    public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata) {
+        if (contentAndMetadata.metadataFileExists()) {
             final Path metadataFile = contentAndMetadata.getMetadataFile();
             String metadataFilePath = FileUtils.getFileName(metadataFile);
-            try
-            {
+            try {
                 loadMetadataInternal(metadata, metadataFile);
-            }
-            catch (Exception e)
-            {
-                log.error("Error encountered when reading metadata file '" + metadataFilePath + "'.");
-                throw new RuntimeException("Exception from reading file: '" + metadataFilePath + "'.", e);
+            } catch (Exception e) {
+                log.error(
+                        "Error encountered when reading metadata file '" + metadataFilePath + "'.");
+                throw new RuntimeException(
+                        "Exception from reading file: '" + metadataFilePath + "'.", e);
             }
         }
     }
 
-    private void loadMetadataInternal(Metadata metadata, final Path metadataFile)
-    {
+    private void loadMetadataInternal(Metadata metadata, final Path metadataFile) {
         final String metadataFilePath = FileUtils.getFileName(metadataFile);
-        if (Files.isReadable(metadataFile))
-        {
+        if (Files.isReadable(metadataFile)) {
             Map<String, Serializable> metadataProperties = loadMetadataFromFile(metadataFile);
 
-            for (String key : metadataProperties.keySet())
-            {
-                if (PROPERTY_NAME_TYPE.equals(key))
-                {
+            for (String key : metadataProperties.keySet()) {
+                if (PROPERTY_NAME_TYPE.equals(key)) {
                     String typeName = (String) metadataProperties.get(key);
                     QName type = QName.createQName(typeName, namespaceService);
 
                     metadata.setType(type);
-                }
-                else if (PROPERTY_NAME_ASPECTS.equals(key))
-                {
+                } else if (PROPERTY_NAME_ASPECTS.equals(key)) {
                     String[] aspectNames = ((String) metadataProperties.get(key)).split(",");
 
-                    for (final String aspectName : aspectNames)
-                    {
+                    for (final String aspectName : aspectNames) {
                         QName aspect = QName.createQName(aspectName.trim(), namespaceService);
                         metadata.addAspect(aspect);
                     }
-                }
-                else // Any other key => property
+                } else // Any other key => property
                 {
-                    // ####TODO: figure out how to handle properties of type cm:content - they need to be streamed in via a Writer
+                    // ####TODO: figure out how to handle properties of type cm:content - they need
+                    // to be streamed in via a Writer
                     QName name = QName.createQName(key, namespaceService);
-                    PropertyDefinition propertyDefinition = dictionaryService.getProperty(name);// TODO: measure performance impact of this API call!!
+                    PropertyDefinition propertyDefinition =
+                            dictionaryService.getProperty(
+                                    name); // TODO: measure performance impact of this API call!!
 
-                    if (propertyDefinition != null)
-                    {
-                        if (propertyDefinition.isMultiValued())
-                        {
+                    if (propertyDefinition != null) {
+                        if (propertyDefinition.isMultiValued()) {
                             // Multi-valued property
-                            ArrayList<Serializable> values = new ArrayList<Serializable>(
-                                    Arrays.asList(((String) metadataProperties.get(key)).split(multiValuedSeparator)));
+                            ArrayList<Serializable> values =
+                                    new ArrayList<Serializable>(
+                                            Arrays.asList(
+                                                    ((String) metadataProperties.get(key))
+                                                            .split(multiValuedSeparator)));
                             metadata.addProperty(name, values);
-                        }
-                        else
-                        {
+                        } else {
                             // Single value property
                             metadata.addProperty(name, metadataProperties.get(key));
                         }
-                    }
-                    else
-                    {
-                        if (log.isWarnEnabled())
-                        {
-                            log.warn("Property " + String.valueOf(name) + " from '" + metadataFilePath
-                                    + "' doesn't exist in the Data Dictionary.  Ignoring it.");
+                    } else {
+                        if (log.isWarnEnabled()) {
+                            log.warn(
+                                    "Property "
+                                            + String.valueOf(name)
+                                            + " from '"
+                                            + metadataFilePath
+                                            + "' doesn't exist in the Data Dictionary.  Ignoring"
+                                            + " it.");
                         }
                     }
                 }
             }
-        }
-        else
-        {
-            if (log.isWarnEnabled())
-            {
+        } else {
+            if (log.isWarnEnabled()) {
                 log.warn("Metadata file '" + metadataFilePath + "' is not readable.");
             }
         }
     }
-
 }

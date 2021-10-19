@@ -36,40 +36,35 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
  *
  * @author andyh
  */
-public interface RMPermissionModel
-{
+public interface RMPermissionModel {
     // Assignment of Filing
     String FILING = "Filing";
     String READ_RECORDS = "ReadRecords";
     String FILE_RECORDS = "FileRecords";
 
     // Roles
+    /** @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_USER} instead */
+    @Deprecated String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
+    /** @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_POWER_USER} instead */
+    @Deprecated String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_USER} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_SECURITY_OFFICER}
+     *     instead
      */
-    @Deprecated
-    String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
+    @Deprecated String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_POWER_USER} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_RECORDS_MANAGER}
+     *     instead
      */
-    @Deprecated
-    String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
-    /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_SECURITY_OFFICER} instead
-     */
-    @Deprecated
-    String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
-    /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_RECORDS_MANAGER} instead
-     */
-    @Deprecated
-    String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
-    /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_ADMIN} instead
-     */
-    @Deprecated
-    String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;
-    String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, FilePlanRoleService.ROLE_ADMIN).toString();
+    @Deprecated String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
+    /** @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_ADMIN} instead */
+    @Deprecated String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;
+
+    String ROLE_ADMINISTRATOR =
+            SimplePermissionReference.getPermissionReference(
+                            RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT,
+                            FilePlanRoleService.ROLE_ADMIN)
+                    .toString();
 
     // Capability permissions
     String DECLARE_RECORDS = "DeclareRecords";

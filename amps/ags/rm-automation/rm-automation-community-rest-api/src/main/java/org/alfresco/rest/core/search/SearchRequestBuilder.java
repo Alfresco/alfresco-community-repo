@@ -26,32 +26,25 @@
  */
 package org.alfresco.rest.core.search;
 
-import java.util.List;
-
 import org.alfresco.rest.search.Pagination;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 
-/**
- * Builder class for creating a search api request
- */
-public class SearchRequestBuilder extends SearchRequest
-{
-    /**
-     * Constructor for Search API Request
-     */
-    public SearchRequestBuilder()
-    {
+import java.util.List;
+
+/** Builder class for creating a search api request */
+public class SearchRequestBuilder extends SearchRequest {
+    /** Constructor for Search API Request */
+    public SearchRequestBuilder() {
         new SearchRequest();
     }
     /**
      * Set the sql statement for the SearchRequest
      *
      * @param query sql statement
-     * @return search  request
+     * @return search request
      */
-    public SearchRequestBuilder setQueryBuilder(RestRequestQueryModel query)
-    {
+    public SearchRequestBuilder setQueryBuilder(RestRequestQueryModel query) {
         super.setQuery(query);
         return this;
     }
@@ -62,17 +55,13 @@ public class SearchRequestBuilder extends SearchRequest
      * @param paging pagination requested
      * @return search request
      */
-    public SearchRequestBuilder setPagingBuilder(Pagination paging)
-    {
+    public SearchRequestBuilder setPagingBuilder(Pagination paging) {
         super.setPaging(paging);
         return this;
     }
 
-    /**
-     * Set the pagination properties
-     */
-    public Pagination setPagination(Integer maxItems, Integer skipCount)
-    {
+    /** Set the pagination properties */
+    public Pagination setPagination(Integer maxItems, Integer skipCount) {
         Pagination pagination = new Pagination();
         pagination.setMaxItems(maxItems);
         pagination.setSkipCount(skipCount);
@@ -85,10 +74,8 @@ public class SearchRequestBuilder extends SearchRequest
      * @param fields requested fields
      * @return search request
      */
-    public SearchRequestBuilder setFieldsBuilder(List<String> fields)
-    {
+    public SearchRequestBuilder setFieldsBuilder(List<String> fields) {
         super.setFields(fields);
         return this;
     }
-
 }

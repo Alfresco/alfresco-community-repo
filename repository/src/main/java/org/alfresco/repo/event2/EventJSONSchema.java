@@ -25,70 +25,63 @@
  */
 package org.alfresco.repo.event2;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.util.Pair;
 
-/**
- * @author Jamal Kaabi-Mofrad
- */
-public enum EventJSONSchema
-{
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
+/** @author Jamal Kaabi-Mofrad */
+public enum EventJSONSchema {
     NODE_CREATED_V1("nodeCreated", 1, EventType.NODE_CREATED),
     NODE_UPDATED_V1("nodeUpdated", 1, EventType.NODE_UPDATED),
     NODE_DELETED_V1("nodeDeleted", 1, EventType.NODE_DELETED),
     CHILD_ASSOC_CREATED_V1("childAssocCreated", 1, EventType.CHILD_ASSOC_CREATED),
     CHILD_ASSOC_DELETED_V1("childAssocDeleted", 1, EventType.CHILD_ASSOC_DELETED),
-    PEER_ASSOC_CREATED_V1("peerAssocCreated", 1 , EventType.PEER_ASSOC_CREATED),
-    PEER_ASSOC_DELETED_V1("peerAssocDeleted", 1 , EventType.PEER_ASSOC_DELETED),
+    PEER_ASSOC_CREATED_V1("peerAssocCreated", 1, EventType.PEER_ASSOC_CREATED),
+    PEER_ASSOC_DELETED_V1("peerAssocDeleted", 1, EventType.PEER_ASSOC_DELETED),
     PERMISSION_UPDATED_V1("permissionUpdated", 1, EventType.PERMISSION_UPDATED);
 
     private static final String PREFIX = "https://api.alfresco.com/schema/event/repo/v";
 
     private static final Map<Pair<EventType, Integer>, EventJSONSchema> CACHE = new HashMap<>();
 
-    static
-    {
+    static {
         // Initialise the cache
-        for (EventJSONSchema value : EventJSONSchema.values())
-        {
+        for (EventJSONSchema value : EventJSONSchema.values()) {
             CACHE.put(new Pair<>(value.eventType, value.version), value);
         }
     }
 
-    private final URI       schema;
-    private final int       version;
+    private final URI schema;
+    private final int version;
     private final EventType eventType;
 
-    EventJSONSchema(String fileName, int version, EventType eventType)
-    {
+    EventJSONSchema(String fileName, int version, EventType eventType) {
         this.schema = URI.create(PREFIX + version + "/" + fileName);
         this.version = version;
         this.eventType = eventType;
     }
 
-    public URI getSchema()
-    {
+    public URI getSchema() {
         return schema;
     }
 
-    public static URI getSchemaV1(EventType eventType)
-    {
+    public static URI getSchemaV1(EventType eventType) {
         return getSchema(eventType, 1);
     }
 
-    public static URI getSchema(EventType eventType, int version)
-    {
+    public static URI getSchema(EventType eventType, int version) {
         EventJSONSchema jsonSchema = CACHE.get(new Pair<>(eventType, version));
-        if (jsonSchema == null)
-        {
+        if (jsonSchema == null) {
             throw new AlfrescoRuntimeException(
-                        "There is no JSON schema is registered for the given event type [" + eventType
-                                    + "] and version [" + version + "]");
+                    "There is no JSON schema is registered for the given event type ["
+                            + eventType
+                            + "] and version ["
+                            + version
+                            + "]");
         }
         return jsonSchema.schema;
     }

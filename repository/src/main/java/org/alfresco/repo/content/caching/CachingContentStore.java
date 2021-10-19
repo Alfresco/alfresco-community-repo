@@ -509,4 +509,12 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimeType, Long validFor)
+    {
+        return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, mimeType, validFor);
+    }
 }

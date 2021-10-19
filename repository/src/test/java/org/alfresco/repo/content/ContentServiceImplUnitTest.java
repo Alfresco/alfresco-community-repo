@@ -83,6 +83,7 @@ public class ContentServiceImplUnitTest
         openMocks(this);
         when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentData);
         when(mockContentData.getContentUrl()).thenReturn("someContentUrl");
+        when(mockContentData.getMimetype()).thenReturn("someMimetype");
         when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_NAME)).thenReturn("someFilename");
     }
 
@@ -133,7 +134,7 @@ public class ContentServiceImplUnitTest
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
         assertNull(directAccessUrl);
-        verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong());
+        verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
 
     @Test
@@ -144,7 +145,7 @@ public class ContentServiceImplUnitTest
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
         assertNull(directAccessUrl);
-        verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong());
+        verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
 
     /* Helper method to set system-wide direct access url configuration settings */

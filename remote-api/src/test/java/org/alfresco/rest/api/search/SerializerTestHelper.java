@@ -52,7 +52,7 @@ import java.io.StringReader;
 public class SerializerTestHelper implements RequestReader
 {
 
-    JacksonHelper jsonHelper = null;
+    JacksonHelper jsonHelper;
 
     public static final String JSON = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"afts\"}, "
                 + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"},"
@@ -99,16 +99,23 @@ public class SerializerTestHelper implements RequestReader
         }
     }
 
-    public SearchQuery extractFromJson(String json) throws IOException
+    public SearchQuery extractFromJson(String json)
     {
         Content content = mock(Content.class);
-        when(content.getReader()).thenReturn(new StringReader(json));
+        try
+        {
+            when(content.getReader()).thenReturn(new StringReader(json));
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Unexpectedly received exception when configuring mock.", e);
+        }
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getContent()).thenReturn(content);
         return extractJsonContent(request, jsonHelper, SearchQuery.class);
     }
 
-    public SearchQuery searchQueryFromJson() throws IOException
+    public SearchQuery searchQueryFromJson()
     {
         return extractFromJson(JSON);
     }

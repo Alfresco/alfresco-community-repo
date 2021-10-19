@@ -33,7 +33,7 @@
       <#elseif v?is_number>
          ${v?c}
       <#elseif v?is_string>
-         "${v?string}"
+         "${v?html}"
       <#elseif v?is_hash>
          <#if v?keys?size gt maxDepth >
             <#stop "Max depth of object achieved">

@@ -67,7 +67,7 @@ import org.apache.commons.logging.LogFactory;
  * @see CachingContentStore
  */
 public class AggregatingContentStore extends AbstractContentStore
-{
+{    
     private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
     public static final String REPLICATING_CONTENT_STORE_NOT_INITIALISED = "ReplicatingContentStore not initialised";
 
@@ -173,7 +173,6 @@ public class AggregatingContentStore extends AbstractContentStore
         }     
     }
 
-    @Override
     public boolean exists(String contentUrl)
     {
         if (primaryStore == null)
@@ -244,11 +243,12 @@ public class AggregatingContentStore extends AbstractContentStore
         }
     }
 
-    @Override
     public ContentWriter getWriter(ContentContext ctx)
     {
         // get the writer
-        return primaryStore.getWriter(ctx);
+        ContentWriter writer = primaryStore.getWriter(ctx);
+                
+        return writer;
     }
 
     /**
@@ -257,7 +257,6 @@ public class AggregatingContentStore extends AbstractContentStore
      * 
      * @return Returns the value returned by the delete on the primary store.
      */
-    @Override
     public boolean delete(String contentUrl) throws ContentIOException
     {
         // delete on the primary store
@@ -273,7 +272,6 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * @return Returns {@code true} if at least one store supports direct access URLs
      */
-    @Override
     public boolean isContentDirectUrlEnabled()
     {
         // Check the primary store
@@ -300,7 +298,6 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * @return Returns {@code true} if at least one store supports direct access URL for node
      */
-    @Override
     public boolean isContentDirectUrlEnabled(String contentUrl)
     {
         // Check the primary store
@@ -324,8 +321,7 @@ public class AggregatingContentStore extends AbstractContentStore
         return isContentDirectUrlEnabled;
     }
 
-    @Override
-    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
         if (primaryStore == null)
         {

@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -54,8 +54,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractRoutingContentStore implements ContentStore
 {
-    public static final String STORE = "   Store:       ";
-    public static final String CONTENT_URL = "   Content URL: ";
     private static Log logger = LogFactory.getLog(AbstractRoutingContentStore.class);
     
     private String instanceKey = GUID.generate();
@@ -103,7 +101,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      */
     private ContentStore selectReadStore(String contentUrl)
     {
-        Pair<String, String> cacheKey = new Pair<>(instanceKey, contentUrl);
+        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
         storesCacheReadLock.lock();
         try
         {
@@ -128,8 +126,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     // no longer does so.  I can't think of a reason why that would be.
                     throw new AlfrescoRuntimeException(
                             "Found a content store that previously supported a URL, but no longer does: \n" +
-                                    STORE + store + "\n" +
-                                    CONTENT_URL + contentUrl);
+                            "   Store:       " + store + "\n" +
+                            "   Content URL: " + contentUrl);
                 }
             }
         }
@@ -150,8 +148,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 {
                     logger.debug(
                             "Found mapped store for content URL: \n" +
-                                    CONTENT_URL + contentUrl + "\n" +
-                                    STORE + store);
+                            "   Content URL: " + contentUrl + "\n" +
+                            "   Store:       " + store);
                 }
                 return store;
             }
@@ -197,8 +195,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 logger.debug(
                         "Mapped content URL to store for reading: \n" +
-                                CONTENT_URL + contentUrl + "\n" +
-                                STORE + store);
+                        "   Content URL: " + contentUrl + "\n" +
+                        "   Store:       " + store);
             }
             return store;
         }
@@ -301,8 +299,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             if (logger.isDebugEnabled())
             {
                 logger.debug("Getting reader from store: \n" +
-                        CONTENT_URL + contentUrl + "\n" +
-                        STORE + store);
+                        "   Content URL: " + contentUrl + "\n" +
+                        "   Store:       " + store);
             }
             return store.getReader(contentUrl);
         }
@@ -324,7 +322,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public ContentWriter getWriter(ContentContext context) throws ContentIOException
     {
         String contentUrl = context.getContentUrl();
-        Pair<String, String> cacheKey = new Pair<>(instanceKey, contentUrl);
+        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
         if (contentUrl != null)
         {
             // Check to see if it is in the cache
@@ -369,7 +367,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         }
         ContentWriter writer = store.getWriter(context);
         String newContentUrl = writer.getContentUrl();
-        Pair<String, String> newCacheKey = new Pair<>(instanceKey, newContentUrl);
+        Pair<String, String> newCacheKey = new Pair<String, String>(instanceKey, newContentUrl);
         // Cache the store against the URL
         storesCacheWriteLock.lock();
         try

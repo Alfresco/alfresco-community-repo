@@ -28,15 +28,37 @@ package org.alfresco.repo.content;
 
 import org.alfresco.service.Experimental;
 
+/**
+ * Enumeration with "header" values for Alfresco derived Storage Properties
+ * Values of this enum should be used when adding Alfresco derived key-value pairs in Storage Properties map.
+ * Subject to expand/change.
+ *
+ * @author mpichura
+ */
 @Experimental
 public enum ObjectStorageProps {
+    /**
+     * Object's content is archived
+     */
     X_ALF_ARCHIVED("x-alf-archived"),
+    /**
+     * Object's content retrieval from archive is in progress
+     */
     X_ALF_RESTORE_IN_PROGRESS("x-alf-restore-in-progress"),
+    /**
+     * Expiry date and time of object's content restored from archive.
+     * Use YYYYMMDDThhmmssZ (ISO-8601) datetime format when using this value as key in Storage Properties map.
+     */
     X_ALF_RESTORE_EXPIRY("x-alf-restore-expiry");
-
-    private final String value;
 
     ObjectStorageProps(String value) {
         this.value = value;
     }
+
+    private final String value;
+
+    public String getValue() {
+        return value;
+    }
+
 }

@@ -266,7 +266,7 @@ public class ResultMapper
         catch (PermissionDeniedException e)
         {
             logger.debug("Unable to access node: " + aRow.toString());
-            aNode = null;
+            return null;
         }
 
         if (aNode != null)

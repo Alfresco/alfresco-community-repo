@@ -78,6 +78,7 @@ import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.rest.api.search.model.TupleEntry;
 import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -152,7 +153,7 @@ public class ResultMapper
      * Turns the results into a CollectionWithPagingInfo
      * @param params
      * @param searchQuery
-     *@param results  @return CollectionWithPagingInfo<Node>
+     * @param results  @return CollectionWithPagingInfo<Node>
      */
     public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, SearchRequestContext searchRequestContext, SearchQuery searchQuery, ResultSet results)
     {
@@ -205,61 +206,69 @@ public class ResultMapper
      * @param params
      * @param mapUserInfo
      * @param isHistory
-     * @return Node
+     * @return The node object or null if the user does not have permission to view it.
      */
     public Node getNode(ResultSetRow aRow, Params params, Map<String, UserInfo> mapUserInfo, boolean isHistory)
     {
-        String nodeStore = storeMapper.getStore(aRow.getNodeRef());
-        if (isHistory) nodeStore = HISTORY;
+        String nodeStore = isHistory ? HISTORY : storeMapper.getStore(aRow.getNodeRef());
+
         Node aNode = null;
-
-        switch (nodeStore)
+        try
         {
-            case LIVE_NODES:
-                aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
-                break;
-            case HISTORY:
-                aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
-                break;
-            case VERSIONS:
-                Map<QName, Serializable> properties = serviceRegistry.getNodeService().getProperties(aRow.getNodeRef());
-                NodeRef frozenNodeRef = ((NodeRef) properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF));
-                String versionLabelId = (String) properties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
-                Version v = null;
-                try
-                {
-                    if (frozenNodeRef != null && versionLabelId != null)
+            switch (nodeStore)
+            {
+                case LIVE_NODES:
+                    aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                    break;
+                case HISTORY:
+                    aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                    break;
+                case VERSIONS:
+                    Map<QName, Serializable> properties = serviceRegistry.getNodeService().getProperties(aRow.getNodeRef());
+                    NodeRef frozenNodeRef = ((NodeRef) properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF));
+                    String versionLabelId = (String) properties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
+                    Version v = null;
+                    try
                     {
-                        v = nodeVersions.findVersion(frozenNodeRef.getId(),versionLabelId);
-                        aNode = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                        if (frozenNodeRef != null && versionLabelId != null)
+                        {
+                            v = nodeVersions.findVersion(frozenNodeRef.getId(), versionLabelId);
+                            aNode = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                        }
                     }
-                }
-                catch (EntityNotFoundException|InvalidNodeRefException e)
-                {
-                    //Solr says there is a node but we can't find it
-                    logger.debug("Failed to find a versioned node with id of "+frozenNodeRef
+                    catch (EntityNotFoundException | InvalidNodeRefException e)
+                    {
+                        //Solr says there is a node but we can't find it
+                        logger.debug("Failed to find a versioned node with id of " + frozenNodeRef
                                 + " this is probably because the original node has been deleted.");
-                }
+                    }
 
-                if (v != null && aNode != null)
-                {
-                    nodeVersions.mapVersionInfo(v, aNode, aRow.getNodeRef());
-                    aNode.setNodeId(frozenNodeRef.getId());
-                    aNode.setVersionLabel(versionLabelId);
-                }
-                break;
-            case DELETED:
-                try
-                {
-                    aNode = deletedNodes.getDeletedNode(aRow.getNodeRef().getId(), params, false, mapUserInfo);
-                }
-                catch (EntityNotFoundException enfe)
-                {
-                    //Solr says there is a deleted node but we can't find it, we want the rest of the search to return so lets ignore it.
-                    logger.debug("Failed to find a deleted node with id of "+aRow.getNodeRef().getId());
-                }
-                break;
+                    if (v != null && aNode != null)
+                    {
+                        nodeVersions.mapVersionInfo(v, aNode, aRow.getNodeRef());
+                        aNode.setNodeId(frozenNodeRef.getId());
+                        aNode.setVersionLabel(versionLabelId);
+                    }
+                    break;
+                case DELETED:
+                    try
+                    {
+                        aNode = deletedNodes.getDeletedNode(aRow.getNodeRef().getId(), params, false, mapUserInfo);
+                    }
+                    catch (EntityNotFoundException enfe)
+                    {
+                        //Solr says there is a deleted node but we can't find it, we want the rest of the search to return so lets ignore it.
+                        logger.debug("Failed to find a deleted node with id of " + aRow.getNodeRef().getId());
+                    }
+                    break;
+            }
         }
+        catch (PermissionDeniedException e)
+        {
+            logger.debug("Unable to access node: " + aRow.toString());
+            return null;
+        }
+
         if (aNode != null)
         {
             aNode.setLocation(nodeStore);

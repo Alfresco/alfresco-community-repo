@@ -25,13 +25,16 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -51,6 +54,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractRoutingContentStore implements ContentStore
 {
+    public static final String STORE = "   Store:       ";
+    public static final String CONTENT_URL = "   Content URL: ";
     private static Log logger = LogFactory.getLog(AbstractRoutingContentStore.class);
     
     private String instanceKey = GUID.generate();
@@ -98,7 +103,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      */
     private ContentStore selectReadStore(String contentUrl)
     {
-        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
+        Pair<String, String> cacheKey = new Pair<>(instanceKey, contentUrl);
         storesCacheReadLock.lock();
         try
         {
@@ -123,8 +128,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     // no longer does so.  I can't think of a reason why that would be.
                     throw new AlfrescoRuntimeException(
                             "Found a content store that previously supported a URL, but no longer does: \n" +
-                            "   Store:       " + store + "\n" +
-                            "   Content URL: " + contentUrl);
+                                    STORE + store + "\n" +
+                                    CONTENT_URL + contentUrl);
                 }
             }
         }
@@ -145,8 +150,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 {
                     logger.debug(
                             "Found mapped store for content URL: \n" +
-                            "   Content URL: " + contentUrl + "\n" +
-                            "   Store:       " + store);
+                                    CONTENT_URL + contentUrl + "\n" +
+                                    STORE + store);
                 }
                 return store;
             }
@@ -192,8 +197,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 logger.debug(
                         "Mapped content URL to store for reading: \n" +
-                        "   Content URL: " + contentUrl + "\n" +
-                        "   Store:       " + store);
+                                CONTENT_URL + contentUrl + "\n" +
+                                STORE + store);
             }
             return store;
         }
@@ -296,8 +301,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             if (logger.isDebugEnabled())
             {
                 logger.debug("Getting reader from store: \n" +
-                        "   Content URL: " + contentUrl + "\n" +
-                        "   Store:       " + store);
+                        CONTENT_URL + contentUrl + "\n" +
+                        STORE + store);
             }
             return store.getReader(contentUrl);
         }
@@ -319,7 +324,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public ContentWriter getWriter(ContentContext context) throws ContentIOException
     {
         String contentUrl = context.getContentUrl();
-        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
+        Pair<String, String> cacheKey = new Pair<>(instanceKey, contentUrl);
         if (contentUrl != null)
         {
             // Check to see if it is in the cache
@@ -364,7 +369,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         }
         ContentWriter writer = store.getWriter(context);
         String newContentUrl = writer.getContentUrl();
-        Pair<String, String> newCacheKey = new Pair<String, String>(instanceKey, newContentUrl);
+        Pair<String, String> newCacheKey = new Pair<>(instanceKey, newContentUrl);
         // Cache the store against the URL
         storesCacheWriteLock.lock();
         try
@@ -415,5 +420,25 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     "   Deleted: " + deleted);
         }
         return deleted;
+    }
+
+    @Override
+    @Experimental
+    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+        ContentStore contentStore = selectReadStore(contentUrl);
+
+        if (contentStore == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Storage properties not found for content URL: " + contentUrl);
+            }
+            return Collections.emptyMap();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Getting storage properties from store: \n" +
+                    CONTENT_URL + contentUrl + "\n" +
+                    STORE + contentStore);
+        }
+        return contentStore.getObjectStorageProperties(contentUrl);
     }
 }
